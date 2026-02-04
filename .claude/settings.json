@@ -1,0 +1,60 @@
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "./.claude/hooks/safety-check.sh \"$TOOL_INPUT\""
+          }
+        ]
+      }
+    ]
+  },
+  "permissions": {
+    "allow": [
+      "Read",
+      "Glob",
+      "Grep",
+      "Edit",
+      "Write",
+      "Bash(npm:*)",
+      "Bash(git:*)",
+      "Bash(node:*)",
+      "Bash(npx:*)",
+      "Bash(pnpm:*)",
+      "Bash(yarn:*)",
+      "Bash(vitest:*)",
+      "Bash(playwright:*)",
+      "Bash(tsc:*)",
+      "Bash(eslint:*)",
+      "Bash(prettier:*)",
+      "Bash(ls:*)",
+      "Bash(mkdir:*)",
+      "Bash(cp:*)",
+      "Bash(mv:*)",
+      "Bash(cat:*)",
+      "Bash(echo:*)",
+      "Bash(pwd:*)",
+      "Bash(which:*)",
+      "Bash(head:*)",
+      "Bash(tail:*)",
+      "Bash(wc:*)",
+      "Bash(sort:*)",
+      "Bash(uniq:*)",
+      "Bash(diff:*)",
+      "Bash(touch:*)",
+      "Task"
+    ],
+    "deny": [
+      "Bash(rm -rf /)*",
+      "Bash(rm -rf ~)*",
+      "Bash(rm -rf $HOME)*",
+      "Bash(chmod -R 777)*",
+      "Bash(dd if=)*",
+      "Bash(mkfs)*",
+      "Bash(> /dev/)*"
+    ]
+  }
+}

@@ -33,21 +33,48 @@ Throughout execution, display progress:
 ═══════════════════════════════════════════════════════════════
 ```
 
-When delegating to subagents, show:
+When spawning/receiving subagents, use the **Live Activity Feed** format:
+
 ```
-  ┌──────────────────────────────────────────────────────────┐
-  │  🔀 DELEGATING TO: [agent-name]                          │
-  │  📝 Task: [brief description]                            │
-  └──────────────────────────────────────────────────────────┘
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃  LIVE AGENT ACTIVITY                                        ┃
+┣━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┫
+┃                                                              ┃
+┃  [time]  >> SPAWN   [agent] ([model])                       ┃
+┃          |  Task: [description]                              ┃
+┃          |  Parent: engineering-team                         ┃
+┃          |  Depth: [n]/3                                     ┃
+┃                                                              ┃
+┃  [time]  << RETURN  [agent] -> engineering-team             ┃
+┃          |  Status: [completed|blocked|error]                ┃
+┃          |  Result: [summary]                                ┃
+┃          |  Duration: [time]                                 ┃
+┃                                                              ┃
+┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
 ```
 
-When receiving results:
+Example during execution:
 ```
-  ┌──────────────────────────────────────────────────────────┐
-  │  ✅ RECEIVED FROM: [agent-name]                          │
-  │  📊 Status: [status]                                     │
-  │  📄 Summary: [one-line summary]                          │
-  └──────────────────────────────────────────────────────────┘
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃  LIVE AGENT ACTIVITY                                        ┃
+┣━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┫
+┃                                                              ┃
+┃  13:45:01  >> SPAWN   qa (sonnet)                           ┃
+┃            |  Task: Write test specs for shared memory       ┃
+┃            |  Parent: engineering-team                       ┃
+┃            |  Depth: 2/3                                     ┃
+┃                                                              ┃
+┃  13:46:12  << RETURN  qa -> engineering-team                ┃
+┃            |  Status: completed                              ┃
+┃            |  Result: 28 unit tests, 27 integration tests    ┃
+┃            |  Duration: 71s                                  ┃
+┃                                                              ┃
+┃  13:46:13  >> SPAWN   dev (sonnet)                          ┃
+┃            |  Task: Implement shared memory layer            ┃
+┃            |  Parent: engineering-team                       ┃
+┃            |  Depth: 2/3                                     ┃
+┃                                                              ┃
+┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
 ```
 
 ---

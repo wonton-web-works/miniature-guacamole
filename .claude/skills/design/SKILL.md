@@ -349,6 +349,23 @@ You can consult with peers using the Task tool:
 
 Note: Peer consultations are fire-and-forget.
 
+### Agent Spawning Feedback (Minimal Inline)
+
+When spawning peer agents via Task tool, use the **Minimal Inline** format:
+
+```
+  >> spawn: [agent] ([model]) -> "[brief task description]"
+  .. running: [agent] ([model])
+  << recv:  [agent] [completed|failed] -> [brief result summary]
+```
+
+Example:
+```
+  >> spawn: dev (sonnet) -> "Check if CSS Grid is feasible for this layout"
+  .. running: dev (sonnet)
+  << recv:  dev completed -> "Yes, Grid works. Use grid-template-areas for responsive"
+```
+
 ## Delegation Guidelines
 - Maximum delegation depth is 3 levels
 - As an IC, you are typically at the bottom of the delegation chain

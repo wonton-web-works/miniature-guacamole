@@ -46,6 +46,27 @@ Prepare work for engineering:
 
 When the user asks you to also "execute" or "implement", use the Task tool to delegate directly to IC agents.
 
+### Agent Spawning Feedback
+
+When spawning subagents via Task tool, use the **Live Activity Feed** format:
+
+```
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃  LIVE AGENT ACTIVITY                                        ┃
+┣━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┫
+┃                                                              ┃
+┃  [time]  >> SPAWN   [agent] ([model])                       ┃
+┃          |  Task: [description]                              ┃
+┃          |  Parent: product-team                             ┃
+┃          |  Depth: [n]/3                                     ┃
+┃                                                              ┃
+┃  [time]  << RETURN  [agent] -> product-team                 ┃
+┃          |  Status: [completed|failed]                       ┃
+┃          |  Result: [brief summary]                          ┃
+┃                                                              ┃
+┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+```
+
 ## Communication Style
 - User-centric and outcome-focused
 - Clear requirements and acceptance criteria

@@ -87,28 +87,93 @@ For composite teams:
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
 
-## Subagent Invocation Notice
+## Agent Spawning Feedback
 
-When delegating to a subagent:
+Three styles available based on context:
 
-```
-  ┌──────────────────────────────────────────────────────────┐
-  │  🔀 DELEGATING TO: [agent-name]                          │
-  │  📝 Task: [brief description]                            │
-  │  ⏱️  Waiting for response...                             │
-  └──────────────────────────────────────────────────────────┘
-```
+### Style 1: Live Activity Feed (for Teams)
 
-## Subagent Return Notice
-
-When subagent returns:
+Use this for team skills (engineering-team, leadership-team, design-team):
 
 ```
-  ┌──────────────────────────────────────────────────────────┐
-  │  ✅ RECEIVED FROM: [agent-name]                          │
-  │  📊 Status: [completed | blocked | needs_escalation]     │
-  │  📄 Summary: [one-line summary]                          │
-  └──────────────────────────────────────────────────────────┘
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃  LIVE AGENT ACTIVITY                                        ┃
+┣━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┫
+┃                                                              ┃
+┃  13:45:01  >> SPAWN   qa (sonnet)                           ┃
+┃            |  Task: Write test specifications                ┃
+┃            |  Parent: engineering-team                       ┃
+┃            |  Depth: 2/3                                     ┃
+┃                                                              ┃
+┃  13:45:32  << RETURN  qa -> engineering-team                ┃
+┃            |  Status: completed                              ┃
+┃            |  Result: 28 tests created                       ┃
+┃            |  Duration: 31s                                  ┃
+┃                                                              ┃
+┃  13:45:33  >> SPAWN   dev (sonnet)                          ┃
+┃            |  Task: Implement to pass tests                  ┃
+┃            |  Parent: engineering-team                       ┃
+┃            |  Depth: 2/3                                     ┃
+┃                                                              ┃
+┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+```
+
+### Style 2: Minimal Inline (for ICs)
+
+Use this for IC agents (dev, qa, design, etc.):
+
+```
+  >> spawn: qa (sonnet) -> "Write test specs for auth"
+  << recv:  qa completed in 45s -> 28 tests created
+  >> spawn: dev (sonnet) -> "Implement auth feature"
+  .. running: dev (sonnet) [████████░░░░░░░░░░░░] 40%
+  << recv:  dev completed in 120s -> impl ready
+```
+
+### Style 3: Debug Dashboard (for verbose/debug mode)
+
+Use when DEBUG=true or --verbose flag. ASCII-focused, data-rich:
+
+```
++===============================================================+
+|                     AGENT DASHBOARD [DEBUG]                    |
++===============+===============+===============+================+
+| AGENT         | MODEL         | STATUS        | TASK           |
++---------------+---------------+---------------+----------------+
+| leadership    | opus          | idle          | --             |
+| engineering   | sonnet        | active        | coordinating   |
+| dev           | sonnet        | running       | implementing   |
+| qa            | sonnet        | complete      | 28 tests       |
+| design        | sonnet        | waiting       | --             |
+| deploy        | haiku         | idle          | --             |
++---------------+---------------+---------------+----------------+
+| SPAWN HISTORY                                                  |
++---------------+---------------+---------------+----------------+
+| TIME          | ACTION        | AGENT         | PARENT         |
++---------------+---------------+---------------+----------------+
+| 13:45:01.234  | spawn         | qa            | engineering    |
+| 13:45:32.891  | return        | qa            | engineering    |
+| 13:45:33.102  | spawn         | dev           | engineering    |
++---------------+---------------+---------------+----------------+
+| METRICS                                                        |
++---------------+---------------+---------------+----------------+
+| Total Spawns: 3    | Active: 1    | Completed: 1  | Failed: 0  |
+| Avg Duration: 31s  | Max Depth: 2 | Token Est: ~50k            |
++===============================================================+
+```
+
+## Legacy Delegation Notices (deprecated, use above)
+
+Simple delegation notice (still supported):
+
+```
+  >> delegating: [agent-name] -> "[task]"
+```
+
+Simple return notice:
+
+```
+  << received: [agent-name] ([status]) -> "[summary]"
 ```
 
 ## Gate Check Display

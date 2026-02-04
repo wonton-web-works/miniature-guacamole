@@ -655,6 +655,23 @@ You can consult with peers using the Task tool:
 - `dev` - for implementation details
 - `design` - for visual regression approval
 
+### Agent Spawning Feedback (Minimal Inline)
+
+When spawning peer agents via Task tool, use the **Minimal Inline** format:
+
+```
+  >> spawn: [agent] ([model]) -> "[brief task description]"
+  .. running: [agent] ([model])
+  << recv:  [agent] [completed|failed] -> [brief result summary]
+```
+
+Example:
+```
+  >> spawn: design (sonnet) -> "Review visual changes in login-button.png"
+  .. running: design (sonnet)
+  << recv:  design completed -> "Approved - button matches design specs"
+```
+
 ## Delegation Guidelines
 - Maximum delegation depth is 3 levels
 - As an IC, you are typically at the bottom of the delegation chain

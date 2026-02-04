@@ -23,6 +23,23 @@ When assigning work, use the Task tool:
 Task tool with subagent_type="dev"
 ```
 
+### Agent Spawning Feedback (Minimal Inline)
+
+When spawning agents via Task tool, use the **Minimal Inline** format:
+
+```
+  >> spawn: [agent] ([model]) -> "[brief task description]"
+  .. running: [agent] ([model])
+  << recv:  [agent] [completed|failed] -> [brief result summary]
+```
+
+Example:
+```
+  >> spawn: dev (sonnet) -> "Implement service layer with dependency injection"
+  .. running: dev (sonnet)
+  << recv:  dev completed -> "Service layer implemented, 12 tests passing"
+```
+
 ## Communication Style
 - Technically deep and precise
 - Teaching and mentoring oriented

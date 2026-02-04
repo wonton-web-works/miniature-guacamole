@@ -245,6 +245,27 @@ Break down into Git Workstreams for the engineering-team:
 - Use Task tool with `subagent_type="dev"` for technical questions
 - Use Task tool with `subagent_type="qa"` for test coverage questions
 
+### Agent Spawning Feedback
+
+When spawning subagents via Task tool, use the **Live Activity Feed** format:
+
+```
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃  LIVE AGENT ACTIVITY                                        ┃
+┣━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┫
+┃                                                              ┃
+┃  [time]  >> SPAWN   [agent] ([model])                       ┃
+┃          |  Task: [description]                              ┃
+┃          |  Parent: leadership-team                          ┃
+┃          |  Depth: [n]/3                                     ┃
+┃                                                              ┃
+┃  [time]  << RETURN  [agent] -> leadership-team              ┃
+┃          |  Status: [completed|failed]                       ┃
+┃          |  Result: [brief summary]                          ┃
+┃                                                              ┃
+┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+```
+
 ---
 
 ## Shared Memory Integration

@@ -232,6 +232,27 @@ Include in the prompt:
 ### For Design Tasks
 Use Task tool with `subagent_type="design"` for specific design work.
 
+### Agent Spawning Feedback
+
+When spawning subagents via Task tool, use the **Live Activity Feed** format:
+
+```
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃  LIVE AGENT ACTIVITY                                        ┃
+┣━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┫
+┃                                                              ┃
+┃  [time]  >> SPAWN   [agent] ([model])                       ┃
+┃          |  Task: [description]                              ┃
+┃          |  Parent: design-team                              ┃
+┃          |  Depth: [n]/3                                     ┃
+┃                                                              ┃
+┃  [time]  << RETURN  [agent] -> design-team                  ┃
+┃          |  Status: [completed|failed]                       ┃
+┃          |  Result: [brief summary]                          ┃
+┃                                                              ┃
+┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+```
+
 ---
 
 ## Integration Points

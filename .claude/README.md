@@ -10,13 +10,74 @@
 
 ## Table of Contents
 
-1. [Overview](#overview)
-2. [Quick Start](#quick-start)
-3. [Agent Roster](#agent-roster)
-4. [Delegation Model](#delegation-model)
-5. [Configuration](#configuration)
-6. [Testing](#testing)
-7. [Architecture](#architecture)
+1. [Installation](#installation)
+2. [Overview](#overview)
+3. [Quick Start](#quick-start)
+4. [Agent Roster](#agent-roster)
+5. [Delegation Model](#delegation-model)
+6. [Configuration](#configuration)
+7. [Testing](#testing)
+8. [Architecture](#architecture)
+
+---
+
+## Installation
+
+### Option 1: Clone into your project (Recommended)
+
+Clone this repository and the `.claude` directory will be automatically recognized by Claude Code when you run it from this directory:
+
+```bash
+git clone https://github.com/YOUR_USERNAME/miniature-guacamole.git
+cd miniature-guacamole
+claude  # Start Claude Code - agents will be available
+```
+
+### Option 2: Copy to an existing project
+
+Copy the `.claude` directory to the root of any existing project:
+
+```bash
+cp -r /path/to/miniature-guacamole/.claude /path/to/your-project/
+cd /path/to/your-project
+claude  # Agents now available in this project
+```
+
+### Option 3: Install globally (User-level)
+
+To make these agents available across all projects, copy to your home directory:
+
+```bash
+# Copy skills to user-level location
+cp -r /path/to/miniature-guacamole/.claude/skills/* ~/.claude/skills/
+
+# Copy agents to user-level location
+cp -r /path/to/miniature-guacamole/.claude/agents/* ~/.claude/agents/
+
+# Copy shared protocols
+mkdir -p ~/.claude/shared
+cp -r /path/to/miniature-guacamole/.claude/shared/* ~/.claude/shared/
+```
+
+### Verify Installation
+
+After installation, start Claude Code and verify agents are available:
+
+```bash
+claude
+# Then type: /ceo
+# You should see the CEO agent respond
+```
+
+List available skills:
+```
+/help
+```
+
+### Requirements
+
+- [Claude Code CLI](https://claude.ai/code) installed and authenticated
+- Git (for cloning)
 
 ---
 

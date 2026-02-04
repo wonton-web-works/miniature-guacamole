@@ -1,12 +1,36 @@
 {
   "organization": {
     "name": "Product Development Team",
-    "description": "A simulated product development organization with leadership and IC roles"
+    "description": "A product development organization with TDD/BDD workflow, 99% coverage, and visual regression testing"
   },
   "hierarchy": {
     "executive": ["ceo", "cto", "engineering-director"],
     "leadership": ["product-owner", "product-manager", "engineering-manager", "staff-engineer", "art-director"],
-    "ic": ["dev", "qa", "design"]
+    "ic": ["dev", "qa", "design"],
+    "operations": ["deployment-engineer"]
+  },
+  "teams": {
+    "leadership-team": {
+      "description": "Strategic decisions, executive reviews, code review approvals",
+      "members": ["ceo", "cto", "engineering-director"],
+      "model": "opus"
+    },
+    "product-team": {
+      "description": "Product definition, requirements, and UX",
+      "members": ["product-owner", "product-manager", "design"],
+      "model": "sonnet"
+    },
+    "engineering-team": {
+      "description": "TDD/BDD development cycle with 99% coverage",
+      "members": ["engineering-manager", "staff-engineer", "dev", "qa"],
+      "model": "sonnet"
+    },
+    "design-team": {
+      "description": "UI/UX design with visual regression and frontend-design implementation",
+      "members": ["art-director", "design"],
+      "model": "sonnet",
+      "integrations": ["frontend-design"]
+    }
   },
   "roles": {
     "ceo": {
@@ -22,7 +46,7 @@
     "engineering-director": {
       "title": "Engineering Director",
       "reports_to": "ceo",
-      "direct_reports": ["engineering-manager", "staff-engineer"]
+      "direct_reports": ["engineering-manager", "staff-engineer", "deployment-engineer"]
     },
     "product-owner": {
       "title": "Product Owner",
@@ -50,22 +74,113 @@
       "direct_reports": ["design"]
     },
     "dev": {
-      "title": "Developer",
+      "title": "Senior Fullstack Engineer",
       "reports_to": "engineering-manager",
       "direct_reports": [],
-      "can_consult": ["qa", "design"]
+      "can_consult": ["qa", "design"],
+      "skills": ["TDD", "DRY", "config-over-composition", "fullstack"]
     },
     "qa": {
       "title": "QA Engineer",
       "reports_to": "engineering-manager",
       "direct_reports": [],
-      "can_consult": ["dev"]
+      "can_consult": ["dev", "design"],
+      "skills": ["TDD/BDD", "Playwright", "visual-regression", "99%-coverage"]
     },
     "design": {
-      "title": "Designer",
+      "title": "UI/UX Designer",
       "reports_to": "art-director",
       "direct_reports": [],
+      "can_consult": ["dev", "qa"],
+      "integrations": ["frontend-design"]
+    },
+    "deployment-engineer": {
+      "title": "Deployment Engineer",
+      "reports_to": "engineering-director",
+      "direct_reports": [],
       "can_consult": ["dev", "qa"]
+    }
+  },
+  "engineering_principles": {
+    "tdd_bdd": {
+      "description": "Tests are written BEFORE code",
+      "workflow": "Red → Green → Refactor"
+    },
+    "configuration_over_composition": {
+      "description": "Prefer configurable components over composed ones",
+      "rationale": "Easier to test, serialize, and maintain"
+    },
+    "dry": {
+      "description": "Don't Repeat Yourself",
+      "rule": "If you write it twice, extract it"
+    },
+    "coverage": {
+      "target": "99%",
+      "types": ["unit", "integration"],
+      "enforcement": "CI blocks merge below threshold"
+    },
+    "visual_regression": {
+      "tool": "Playwright",
+      "workflow": "Screenshots compared against baselines",
+      "approval": "Design team must approve visual changes"
+    }
+  },
+  "workflow": {
+    "type": "TDD/BDD Cyclical with Visual Regression",
+    "stages": [
+      {
+        "name": "Planning",
+        "owner": "leadership-team",
+        "output": "Executive Review + Git Workstream Breakdown"
+      },
+      {
+        "name": "Test Specification",
+        "owner": "qa + product-manager",
+        "output": "Failing tests (unit, integration, E2E, visual baselines)",
+        "coverage_target": "99%"
+      },
+      {
+        "name": "Implementation",
+        "owner": "dev (Senior Fullstack Engineer)",
+        "output": "Code that passes tests with 99% coverage",
+        "principles": ["TDD", "DRY", "config-over-composition"]
+      },
+      {
+        "name": "Verification",
+        "owner": "qa",
+        "output": "QA Sign-off + Visual regression report"
+      },
+      {
+        "name": "Visual Review (if changes)",
+        "owner": "design-team",
+        "output": "Design approval for visual changes",
+        "condition": "Only if visual diffs detected"
+      },
+      {
+        "name": "Internal Review",
+        "owner": "staff-engineer",
+        "output": "Code review approval"
+      },
+      {
+        "name": "Executive Review",
+        "owner": "leadership-team",
+        "output": "APPROVED or REQUEST CHANGES"
+      },
+      {
+        "name": "Merge & Deploy",
+        "owner": "deployment-engineer",
+        "output": "Merged to main"
+      }
+    ],
+    "git_branching": {
+      "main": "Production-ready code",
+      "feature/ws-{n}-{name}": "Workstream feature branches"
+    },
+    "testing": {
+      "unit": "Vitest/Jest",
+      "integration": "React Testing Library",
+      "e2e": "Playwright",
+      "visual": "Playwright Screenshots"
     }
   }
 }

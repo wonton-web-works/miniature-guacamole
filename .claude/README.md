@@ -1,8 +1,8 @@
 # Product Development Team Agent System
 
-> A simulated product development organization with 11 specialized AI agents representing leadership and individual contributor roles.
+> A product development organization with 12 specialized AI agents, 3 composite teams, and a disciplined TDD/BDD development workflow with Git workstreams.
 
-**Version:** 1.0.0
+**Version:** 1.3.0
 **Last Updated:** 2026-02-04
 **Status:** Active
 
@@ -13,11 +13,12 @@
 1. [Installation](#installation)
 2. [Overview](#overview)
 3. [Quick Start](#quick-start)
-4. [Agent Roster](#agent-roster)
-5. [Delegation Model](#delegation-model)
-6. [Configuration](#configuration)
-7. [Testing](#testing)
-8. [Architecture](#architecture)
+4. [Development Workflow](#development-workflow)
+5. [Agent Roster](#agent-roster)
+6. [Delegation Model](#delegation-model)
+7. [Configuration](#configuration)
+8. [Testing](#testing)
+9. [Architecture](#architecture)
 
 ---
 
@@ -95,6 +96,9 @@ The system supports structured delegation between agents with depth tracking and
 
 ### Key Features
 
+- **TDD/BDD Workflow** - Tests written before code, cyclical development process
+- **Git Workstreams** - Each feature in its own branch with structured merge process
+- **Executive Reviews** - Leadership team approves all work before merge
 - **Hierarchical Delegation** - Work flows naturally from executives to ICs
 - **Bounded Depth** - Maximum 3 levels of delegation prevents infinite chains
 - **Peer Consultation** - ICs can query each other without affecting delegation depth
@@ -112,6 +116,16 @@ Use slash commands to invoke any agent:
 /ceo Review the Q4 product strategy
 /cto Evaluate our microservices architecture
 /dev Implement the user authentication feature
+```
+
+### Invoking a Team
+
+Use team commands for coordinated multi-perspective collaboration:
+
+```
+/leadership-team Evaluate whether we should build vs buy for payments
+/product-team Define the requirements for user onboarding
+/engineering-team Break down and implement the authentication feature
 ```
 
 ### Basic Workflow Example
@@ -144,6 +158,71 @@ All agents accept arguments after the slash command:
 
 ---
 
+## Development Workflow
+
+The system uses a **TDD/BDD cyclical workflow** with Git workstreams. See `.claude/shared/development-workflow.md` for full details.
+
+### The Cycle
+
+```
+┌─────────────────┐
+│ /leadership-    │  ← Executive Review + Workstream Plan
+│     team        │
+└────────┬────────┘
+         │
+         ▼
+┌─────────────────┐
+│ /engineering-   │  ← TDD Cycle: Tests → Code → Verify → Review
+│     team        │
+└────────┬────────┘
+         │
+         ▼
+┌─────────────────┐
+│ /leadership-    │  ← Code Review: APPROVE or REQUEST CHANGES
+│     team        │
+└────────┬────────┘
+         │
+    ┌────┴────┐
+    │         │
+    ▼         ▼
+┌───────┐  ┌──────────────┐
+│APPROVE│  │REQUEST CHANGES│
+└───┬───┘  └──────┬───────┘
+    │             │
+    ▼             │ (back to engineering-team)
+┌─────────────────┐
+│ /deployment-    │  ← Merge to main
+│   engineer      │
+└─────────────────┘
+```
+
+### Example Workflow
+
+1. **Plan the work:**
+   ```
+   /leadership-team Build a user authentication system
+   ```
+   Output: Executive Review + Workstreams (WS-1, WS-2, etc.)
+
+2. **Execute a workstream:**
+   ```
+   /engineering-team execute workstream WS-1: Add login endpoint
+   ```
+   This runs: QA writes tests → Dev implements → QA verifies → Staff Eng reviews
+
+3. **Leadership reviews:**
+   ```
+   /leadership-team review workstream WS-1 on branch feature/ws-1-login
+   ```
+   Output: APPROVED or REQUEST CHANGES
+
+4. **Merge (after approval):**
+   ```
+   /deployment-engineer merge feature/ws-1-login
+   ```
+
+---
+
 ## Agent Roster
 
 ### Executive Level
@@ -168,9 +247,24 @@ All agents accept arguments after the slash command:
 
 | Agent | Slash Command | Model | Role | Can Consult |
 |-------|---------------|-------|------|-------------|
-| **Developer** | `/dev` | haiku | Implements features and writes code | QA, Design |
-| **QA Engineer** | `/qa` | haiku | Tests features and ensures quality | Dev |
-| **Designer** | `/design` | haiku | Creates UI/UX designs and visual assets | Dev, QA |
+| **Senior Fullstack Engineer** | `/dev` | sonnet | Implements with TDD, DRY, config-over-composition, 99% coverage | QA, Design |
+| **QA Engineer** | `/qa` | sonnet | TDD/BDD tests, Playwright E2E, visual regression screenshots | Dev, Design |
+| **UI/UX Designer** | `/design` | sonnet | Creates wireframes, mockups, and interaction designs | Dev, QA |
+
+### Operations Level
+
+| Agent | Slash Command | Model | Role |
+|-------|---------------|-------|------|
+| **Deployment Engineer** | `/deployment-engineer` | sonnet | Handles merges and releases after leadership approval |
+
+### Composite Teams
+
+| Team | Slash Command | Model | Members | Purpose |
+|------|---------------|-------|---------|---------|
+| **Leadership Team** | `/leadership-team` | opus | CEO, CTO, Engineering Director | Strategic decisions, executive reviews, code review approvals |
+| **Product Team** | `/product-team` | sonnet | Product Owner, Product Manager, Designer | Product definition, requirements, UX specifications |
+| **Engineering Team** | `/engineering-team` | sonnet | Engineering Manager, Staff Engineer, Dev, QA | TDD/BDD development cycle with 99% coverage |
+| **Design Team** | `/design-team` | sonnet | Art Director, Designer | UI/UX design with visual regression and `/frontend-design` |
 
 ### Tool Access by Agent
 
@@ -529,6 +623,9 @@ handoff_response:
 
 | Version | Date | Changes |
 |---------|------|---------|
+| 1.3.0 | 2026-02-04 | Added design-team, upgraded dev to Senior Fullstack Engineer, QA with Playwright visual regression, engineering principles (TDD, DRY, config-over-composition, 99% coverage) |
+| 1.2.0 | 2026-02-04 | Added TDD/BDD workflow, Git workstreams, deployment-engineer, updated QA/dev agents |
+| 1.1.0 | 2026-02-04 | Added composite team skills (leadership-team, product-team, engineering-team) |
 | 1.0.0 | 2026-02-04 | Initial documentation |
 
 ---

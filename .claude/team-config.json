@@ -1,0 +1,71 @@
+{
+  "organization": {
+    "name": "Product Development Team",
+    "description": "A simulated product development organization with leadership and IC roles"
+  },
+  "hierarchy": {
+    "executive": ["ceo", "cto", "engineering-director"],
+    "leadership": ["product-owner", "product-manager", "engineering-manager", "staff-engineer", "art-director"],
+    "ic": ["dev", "qa", "design"]
+  },
+  "roles": {
+    "ceo": {
+      "title": "Chief Executive Officer",
+      "reports_to": null,
+      "direct_reports": ["cto", "engineering-director", "product-owner", "art-director"]
+    },
+    "cto": {
+      "title": "Chief Technology Officer",
+      "reports_to": "ceo",
+      "direct_reports": ["engineering-director", "staff-engineer"]
+    },
+    "engineering-director": {
+      "title": "Engineering Director",
+      "reports_to": "ceo",
+      "direct_reports": ["engineering-manager", "staff-engineer"]
+    },
+    "product-owner": {
+      "title": "Product Owner",
+      "reports_to": "ceo",
+      "direct_reports": ["product-manager"]
+    },
+    "product-manager": {
+      "title": "Product Manager",
+      "reports_to": "product-owner",
+      "direct_reports": []
+    },
+    "engineering-manager": {
+      "title": "Engineering Manager",
+      "reports_to": "engineering-director",
+      "direct_reports": ["dev", "qa"]
+    },
+    "staff-engineer": {
+      "title": "Staff Engineer",
+      "reports_to": "cto",
+      "direct_reports": ["dev"]
+    },
+    "art-director": {
+      "title": "Art Director",
+      "reports_to": "ceo",
+      "direct_reports": ["design"]
+    },
+    "dev": {
+      "title": "Developer",
+      "reports_to": "engineering-manager",
+      "direct_reports": [],
+      "can_consult": ["qa", "design"]
+    },
+    "qa": {
+      "title": "QA Engineer",
+      "reports_to": "engineering-manager",
+      "direct_reports": [],
+      "can_consult": ["dev"]
+    },
+    "design": {
+      "title": "Designer",
+      "reports_to": "art-director",
+      "direct_reports": [],
+      "can_consult": ["dev", "qa"]
+    }
+  }
+}

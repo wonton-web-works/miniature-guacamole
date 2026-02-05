@@ -45,6 +45,12 @@
       "Bash(uniq:*)",
       "Bash(diff:*)",
       "Bash(touch:*)",
+      "Bash(jq:*)",
+      "Bash(sed:*)",
+      "Bash(awk:*)",
+      "Bash(xargs:*)",
+      "Bash(find:*)",
+      "Bash(rm:*)",
       "Task"
     ],
     "deny": [

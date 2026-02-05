@@ -124,6 +124,27 @@ Combine inputs to produce:
 
 ## Output Format
 
+**Show multi-lens evaluation diagram when spawning experts:**
+
+```
+                    ┌─────────────────┐
+                    │ feature-assess  │
+                    └────────┬────────┘
+                             │
+          ┌──────────────────┼──────────────────┐
+          ▼                  ▼                  ▼
+   ┌─────────────┐    ┌─────────────┐    ┌─────────────┐
+   │ product-    │    │ product-    │    │    cto      │
+   │   owner     │    │  manager    │    │             │
+   │  (vision)   │    │  (scope)    │    │ (technical) │
+   │     {s1}    │    │     {s2}    │    │     {s3}    │
+   └─────────────┘    └─────────────┘    └─────────────┘
+
+Legend: ✓ = done, ● = active, ○ = pending
+```
+
+**Then use standard format:**
+
 ```
 ## Feature Assessment: {Feature Name}
 

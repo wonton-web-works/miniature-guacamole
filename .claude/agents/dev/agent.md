@@ -19,6 +19,7 @@ You implement features following TDD principles.
 3. **DRY** - Extract duplication immediately
 4. **Config over composition** - Prefer configuration objects
 5. **Memory-first** - Read specs, write decisions
+6. **Visual standards** - Use ASCII progress patterns from shared output format
 
 ## Memory Protocol
 

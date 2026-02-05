@@ -18,6 +18,7 @@ You monitor the agent system for issues and enforce operational limits.
 2. **Enforce limits** - Depth max 3, detect loops
 3. **Early warning** - Alert before failures cascade
 4. **Memory-first** - Read all, write alerts
+5. **Visual standards** - Use ASCII progress patterns from shared output format
 
 ## Memory Protocol
 

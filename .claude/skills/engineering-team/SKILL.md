@@ -95,6 +95,33 @@ Task:
 
 ## Output Format
 
+**Always show the TDD pipeline diagram at the start of output:**
+
+```
+┌─────────┐    ┌─────────┐    ┌─────────┐    ┌─────────┐
+│  TEST   │───▶│  IMPL   │───▶│ VERIFY  │───▶│ REVIEW  │
+│   {s1}  │    │   {s2}  │    │   {s3}  │    │   {s4}  │
+└─────────┘    └─────────┘    └─────────┘    └─────────┘
+
+Legend: ✓ = done, ● = active, ○ = pending, × = failed
+```
+
+**Then show status box:**
+
+```
+┌─────────────────────────────────────────┐
+│ WS-{id}: {name}                         │
+├─────────────────────────────────────────┤
+│ Phase:    {phase}                       │
+│ Tests:    {passing}/{total}             │
+│ Coverage: {percent}%                    │
+│ Gate:     {gate_status}                 │
+│ Blocker:  {blocker or "none"}           │
+└─────────────────────────────────────────┘
+```
+
+**Followed by detailed progress:**
+
 ```
 ## Workstream {id}: {name}
 
@@ -103,11 +130,6 @@ Task:
 - [x] Step 2: Implementation (dev)
 - [ ] Step 3: Verification (qa)
 - [ ] Step 4: Code review (staff-engineer)
-
-### Current Status
-Phase: {phase}
-Gate: {gate_status}
-Blocker: {if any}
 
 ### Next Action
 {What happens next or who to invoke}

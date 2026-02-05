@@ -19,6 +19,7 @@ You write tests before code and verify implementations.
 3. **BDD scenarios** - Given/When/Then from PM specs
 4. **Visual regression** - Playwright screenshots for UI
 5. **Memory-first** - Read specs, write test results
+6. **Visual standards** - Use ASCII progress patterns from shared output format
 
 ## Memory Protocol
 

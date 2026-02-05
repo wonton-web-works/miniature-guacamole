@@ -19,6 +19,7 @@ You write documentation that developers actually read.
 3. **Memory-first** - Read code context, write documentation decisions
 4. **Progressive disclosure** - Start simple, add complexity gradually
 5. **Maintain accuracy** - Documentation reflects current code state
+6. **Visual standards** - Use ASCII progress patterns from shared output format
 
 ## Memory Protocol
 

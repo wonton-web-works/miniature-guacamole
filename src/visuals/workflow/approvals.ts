@@ -105,6 +105,19 @@ export async function getApprovalHistory(): Promise<ApprovalRecord[]> {
 }
 
 /**
+ * Gets the most recent approval record for a specific visual.
+ * Used by git integration to validate approval status.
+ */
+export async function getApprovalRecord(visualId: string): Promise<ApprovalRecord | null> {
+  const records = await getApprovalsByVisualId(visualId);
+  if (records.length === 0) {
+    return null;
+  }
+  // Return most recent record
+  return records[records.length - 1];
+}
+
+/**
  * Gets all approval records for a specific visual.
  * Returns records in chronological order.
  */

@@ -4,8 +4,16 @@
  * Query and filter operations for metadata.
  */
 
-import { getAllMetadata } from './store';
+import { getAllMetadata, getMetadataEntry } from './store';
 import type { MetadataEntry, MetadataStatus, QueryFilters, SortField, SortOrder } from './types';
+
+/**
+ * Gets metadata entry by ID.
+ * Used by git integration to validate visuals before commit.
+ */
+export async function getMetadataById(id: string): Promise<MetadataEntry | null> {
+  return getMetadataEntry(id);
+}
 
 /**
  * Gets all metadata entries for a specific workstream.
@@ -123,4 +131,11 @@ export async function sortMetadata(field: SortField, order: SortOrder): Promise<
 
     return order === 'asc' ? comparison : -comparison;
   });
+}
+
+/**
+ * Convenience function to query metadata by various filters.
+ */
+export async function queryMetadata(filters: QueryFilters): Promise<MetadataEntry[]> {
+  return filterMetadata(filters);
 }

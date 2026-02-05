@@ -4,7 +4,7 @@
 
 name: feature-assessment
 description: "Interactive feature evaluation workflow. Invoke to assess scope, feasibility, and value of feature requests."
-model: sonnet
+model: opus
 tools: [Read, Glob, Grep, Task]
 ---
 

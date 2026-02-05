@@ -4,7 +4,7 @@
 
 name: accessibility-review
 description: "WCAG 2.1 AA/AAA compliance review. Invoke for accessibility audits, keyboard navigation checks, screen reader testing, and inclusive design validation."
-model: sonnet
+model: opus
 tools: [Read, Glob, Grep, Edit, Write, Task]
 ---
 

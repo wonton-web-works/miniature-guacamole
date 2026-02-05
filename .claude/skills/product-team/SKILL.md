@@ -4,7 +4,7 @@
 
 name: product-team
 description: "Product definition, user stories, and design specs. Invoke to define requirements before engineering work."
-model: sonnet
+model: opus
 tools: [Read, Glob, Grep, Task]
 ---
 
@@ -27,6 +27,7 @@ Coordinates product-owner, product-manager, and design for product definition.
 1. Product Owner: Vision, priority, strategic fit
 2. Product Manager: User stories, acceptance criteria, BDD scenarios
 3. Designer: UX requirements, wireframes, accessibility
+4. [GATE] Spike Validation: If external dependencies exist, validate via spike
         ↓
 Write to memory → Hand off to /engineering-team
 ```
@@ -62,6 +63,33 @@ write: .claude/memory/agent-product-team-decisions.json
 | Execute feature | Recommend `/engineering-team` |
 | Design deep-dive | Spawn `design` |
 | Technical feasibility | Spawn `dev` or `staff-engineer` |
+| External dependency validation | Spawn `staff-engineer` for spike research |
+
+## External Dependency Policy
+
+**Before writing feature specs that depend on external APIs/tools:**
+
+1. Identify all external dependencies
+2. Classify as Tier 1 (internal) or Tier 2 (external)
+3. For Tier 2 dependencies:
+   - Spawn `staff-engineer` to run validation spike
+   - Spike MUST use WebSearch to verify existence
+   - Wait for spike results before finalizing specs
+4. If spike returns NO-GO:
+   - Revise feature specs to use validated alternatives
+   - Document assumption failure in lessons learned
+
+**Examples requiring spikes (Tier 2):**
+- Third-party APIs (Stripe, Figma, UX Pilot, etc.)
+- External services (webhooks, CDNs)
+- New libraries/frameworks not yet used in codebase
+- Cloud services (AWS features, Anthropic APIs)
+
+**Examples NOT requiring spikes (Tier 1):**
+- Existing codebase features
+- Internal tools already in use
+- Standard Node.js/language features
+- Previously validated dependencies
 
 ## Output Format
 
@@ -83,6 +111,7 @@ write: .claude/memory/agent-product-team-decisions.json
 
 ### Ready for Engineering
 Priority: {high|medium|low}
+External Dependencies Validated: {yes|no|n/a}
 Next: /engineering-team
 ```
 

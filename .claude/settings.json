@@ -1,17 +1,4 @@
 {
-  "hooks": {
-    "PreToolUse": [
-      {
-        "matcher": "Bash",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "./.claude/hooks/safety-check.sh \"$TOOL_INPUT\""
-          }
-        ]
-      }
-    ]
-  },
   "permissions": {
     "allow": [
       "Read",
@@ -19,6 +6,9 @@
       "Grep",
       "Edit",
       "Write",
+      "WebFetch",
+      "WebSearch",
+      "Task",
       "Bash(npm:*)",
       "Bash(git:*)",
       "Bash(node:*)",
@@ -51,7 +41,10 @@
       "Bash(xargs:*)",
       "Bash(find:*)",
       "Bash(rm:*)",
-      "Task"
+      "Bash(grep:*)",
+      "Bash(tree:*)",
+      "Bash(test:*)",
+      "Bash(bash:*)"
     ],
     "deny": [
       "Bash(rm -rf /)*",

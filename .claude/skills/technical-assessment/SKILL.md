@@ -4,7 +4,7 @@
 
 name: technical-assessment
 description: "Evaluates architecture decisions and technical approaches. Invoke for technical recommendations, risk assessment, and scalability analysis."
-model: sonnet
+model: opus
 tools: [Read, Glob, Grep, Edit, Write, Task, Bash]
 ---
 

@@ -4,7 +4,7 @@
 
 name: security-review
 description: "Performs comprehensive security audits for code vulnerabilities, OWASP Top 10 compliance, authentication/authorization, input validation, XSS, and SQL injection risks. Outputs vulnerability findings with severity ratings and remediation steps."
-model: sonnet
+model: opus
 tools: [Read, Glob, Grep, Edit, Write, Task, Bash]
 ---
 

@@ -4,7 +4,7 @@
 
 name: code-review
 description: "Reviews code quality, standards compliance, test coverage, performance, and error handling. Invoke for implementation quality review before approval."
-model: sonnet
+model: opus
 tools: [Read, Glob, Grep, Edit, Write, Task, Bash]
 ---
 

@@ -4,7 +4,7 @@
 
 name: design-review
 description: "Visual quality and UX assessment workflow. Invoke for design reviews, brand consistency checks, or visual approval."
-model: sonnet
+model: opus
 tools: [Read, Glob, Grep, Task]
 ---
 

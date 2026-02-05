@@ -237,6 +237,47 @@ cp -r /path/to/miniature-guacamole/.claude/shared/* ~/.claude/shared/
 
 ---
 
+## Audit Logging
+
+Track token usage and API costs for every Claude Code request with opt-in audit logging. Capture metadata (token counts, model names, timestamps) without logging any message content or user data.
+
+**Quick Start:**
+
+Add to `~/.claude/config.json`:
+```json
+{
+  "audit_logging": {
+    "enabled": true
+  }
+}
+```
+
+Then make a Claude request and check the log:
+```bash
+# View your audit log
+cat ~/.claude/audit.log
+
+# Analyze total tokens used today
+grep $(date +%Y-%m-%d) ~/.claude/audit.log | \
+  jq -s 'map(.input_tokens + .output_tokens) | add'
+```
+
+**Features:**
+- Metadata-only logging (no prompts, responses, or user data)
+- Automatic log rotation (default: 10MB, customizable)
+- JSONL format for easy analysis with `jq` and Unix tools
+- Opt-in by default for privacy
+- Tracks token counts, models, costs, and request duration
+
+**Example log entry:**
+```json
+{"timestamp":"2026-02-04T10:00:00.000Z","session_id":"sess-1","model":"claude-sonnet-4-5-20250929","input_tokens":1234,"output_tokens":567,"cache_creation_tokens":0,"cache_read_tokens":0,"total_cost_usd":0.00789,"duration_ms":3200}
+```
+
+See [docs/audit-logging.md](docs/audit-logging.md) for full documentation, configuration options, and analysis examples.
+
+---
+
 ## Architecture
 
 ### Directory Structure

@@ -34,3 +34,7 @@ npm-debug.log*
 # Temp
 *.tmp
 .cache/
+
+# Claude memory (agent state - project-specific)
+**/*memory/
+.claude/memory/

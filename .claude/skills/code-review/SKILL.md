@@ -19,6 +19,7 @@ Coordinates comprehensive code review for implementation quality assurance.
 3. **Teach through review** - Explain why changes are needed, not just what
 4. **Performance consciousness** - Identify anti-patterns before they reach production
 5. **Memory-first** - Read implementation context, write review decisions
+6. **Visual standards** - Follow standard output format in `../_shared/output-format.md`
 
 ## Review Areas
 

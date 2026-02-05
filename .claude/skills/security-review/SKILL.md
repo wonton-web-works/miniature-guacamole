@@ -19,6 +19,7 @@ Coordinates security-engineer to perform comprehensive security audits and vulne
 3. **Memory-first** - Read workstream context and security policies, write findings for team visibility
 4. **Actionable remediation** - Every vulnerability includes specific remediation steps
 5. **Defense in depth** - Check code, dependencies, secrets, and API security layers
+6. **Visual standards** - Follow standard output format in `../_shared/output-format.md`
 
 ## Security Audit Areas
 

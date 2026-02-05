@@ -45,14 +45,14 @@ describe('Code Review Skill - WS-13', () => {
       expect(content).toMatch(/^##\s+Constitution\s*$/m);
     });
 
-    it('should have 5 constitutional principles', () => {
+    it('should have 6 constitutional principles', () => {
       const content = fs.readFileSync(skillPath, 'utf-8');
       const constitutionSection = content.split('## Constitution')[1]?.split('##')[0];
       expect(constitutionSection).toBeTruthy();
 
       const principles = constitutionSection.match(/^\d+\.\s+\*\*/gm);
       expect(principles).toBeTruthy();
-      expect(principles?.length).toBe(5);
+      expect(principles?.length).toBe(6);
     });
 
     it('should contain ## Memory Protocol section', () => {

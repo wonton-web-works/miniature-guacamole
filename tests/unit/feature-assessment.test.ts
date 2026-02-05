@@ -70,14 +70,14 @@ describe('Feature Assessment - WS-8', () => {
       expect(content).toMatch(/\*\*ESCALATES TO:\*\*/);
     });
 
-    it('should have 5 principles in Constitution', () => {
+    it('should have 6 principles in Constitution', () => {
       const content = fs.readFileSync(skillPath, 'utf-8');
       const constitutionMatch = content.match(/##\s+Constitution\s*$(.*?)(?=^##)/ms);
       expect(constitutionMatch).toBeTruthy();
       if (constitutionMatch) {
         const principles = constitutionMatch[1].match(/^\d+\.\s+\*\*/gm);
         expect(principles).toBeTruthy();
-        expect(principles?.length).toBe(5);
+        expect(principles?.length).toBe(6);
       }
     });
 

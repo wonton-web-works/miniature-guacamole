@@ -19,6 +19,7 @@ Execute the TDD cycle to build features. This is the "build it" skill.
 3. **Clear progress reporting** - Update memory at each gate transition
 4. **Escalate blockers fast** - Don't hide problems, surface early
 5. **Hand off when done** - Complete cycle ends at staff-engineer review
+6. **Visual standards** - Follow standard output format in `../_shared/output-format.md`
 
 ## The TDD Cycle
 

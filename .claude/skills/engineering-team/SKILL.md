@@ -19,6 +19,7 @@ Coordinates engineering-manager, staff-engineer, dev, and qa through the TDD/BDD
 3. **Memory-first** - Read workstream context, write phase transitions
 4. **Four-step cycle** - Test → Implement → Verify → Review (never skip)
 5. **Escalate blockers** - Surface issues early, don't hide problems
+6. **Visual standards** - Follow standard output format in `../_shared/output-format.md`
 
 ## The Cycle
 

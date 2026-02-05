@@ -19,6 +19,7 @@ Comprehensive accessibility audit workflow for WCAG 2.1 compliance and inclusive
 3. **Inclusive by default** - Design for permanent, temporary, and situational disabilities
 4. **Document violations** - Reference specific WCAG criteria (e.g., 1.4.3, 2.1.1, 4.1.2)
 5. **Memory-first** - Read design specs, write detailed A11y reports
+6. **Visual standards** - Follow standard output format in `../_shared/output-format.md`
 
 ## Review Process
 

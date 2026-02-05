@@ -50,9 +50,9 @@ describe('Technical Assessment - WS-9', () => {
       const constitutionSection = content.split(/^##\s+Constitution\s*$/m)[1]?.split(/^##\s+/m)[0];
       expect(constitutionSection).toBeTruthy();
 
-      // Count numbered principles (1. 2. 3. 4. 5.)
+      // Count numbered principles (1. 2. 3. 4. 5. 6.)
       const principles = constitutionSection?.match(/^\d+\.\s+\*\*/gm) || [];
-      expect(principles.length).toBe(5);
+      expect(principles.length).toBe(6);
     });
 
     it('should contain ## Memory Protocol section', () => {

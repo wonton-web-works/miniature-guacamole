@@ -19,6 +19,7 @@ Interactive workflow for evaluating feature requests with the client through str
 3. **Risk-aware** - Identify dependencies and blockers early
 4. **Memory-first** - Document decisions for downstream teams
 5. **Actionable outcomes** - Every assessment ends with clear next steps
+6. **Visual standards** - Follow standard output format in `../_shared/output-format.md`
 
 ## Workflow
 

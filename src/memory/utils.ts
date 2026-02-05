@@ -8,11 +8,8 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { MEMORY_CONFIG } from './config';
 
-export function ensureDirectoryExists(dirPath: string): void {
-  if (!fs.existsSync(dirPath)) {
-    fs.mkdirSync(dirPath, { recursive: true });
-  }
-}
+// Re-export from shared utilities for backwards compatibility
+export { ensureDirectoryExists } from '../utils/fs';
 
 export function getTimestamp(): string {
   return new Date().toISOString();

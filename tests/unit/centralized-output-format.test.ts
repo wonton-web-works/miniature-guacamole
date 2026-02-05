@@ -19,7 +19,7 @@ import { describe, it, expect, beforeAll } from 'vitest';
 import * as fs from 'fs';
 import * as path from 'path';
 
-// Test data: All 12 skills that need output format standardization
+// Test data: All 13 skills that need output format standardization
 const ALL_SKILLS = [
   'leadership-team',
   'engineering-team',
@@ -32,7 +32,8 @@ const ALL_SKILLS = [
   'accessibility-review',
   'design-review',
   'code-review',
-  'implement'
+  'implement',
+  'agent-loading-test'
 ] as const;
 
 const SKILLS_DIR = path.resolve(__dirname, '../../.claude/skills');
@@ -409,7 +410,7 @@ describe('WS-15: Centralized Skill Visual Output', () => {
               return fs.statSync(itemPath).isDirectory() && !item.startsWith('_');
             });
 
-          expect(skillDirs.length).toBe(12);
+          expect(skillDirs.length).toBe(13);
           expect(skillDirs.sort()).toEqual([...ALL_SKILLS].sort());
         });
 

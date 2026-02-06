@@ -1,28 +1,28 @@
 # File Manifest - Shared Memory Layer Implementation
 
-**Project Root:** `/Users/brodieyazaki/work/claude_things/miniature-guacamole`
+**Project Root:** `<project-root>`
 
 ---
 
 ## Source Code Files (11 modules)
 
 ### Memory Module Files
-1. `/Users/brodieyazaki/work/claude_things/miniature-guacamole/src/memory/index.ts`
+1. `<project-root>/src/memory/index.ts`
    - Public API exports
    - All functions and types re-exported
 
-2. `/Users/brodieyazaki/work/claude_things/miniature-guacamole/src/memory/types.ts`
+2. `<project-root>/src/memory/types.ts`
    - MemoryEntry interface
    - MemoryWriteResult interface
    - MemoryReadResult interface
    - MemoryQuery interface
    - FileLock, Backup, ValidationResult interfaces
 
-3. `/Users/brodieyazaki/work/claude_things/miniature-guacamole/src/memory/config.ts`
+3. `<project-root>/src/memory/config.ts`
    - MEMORY_CONFIG object
    - All paths, timeouts, limits, encoding settings
 
-4. `/Users/brodieyazaki/work/claude_things/miniature-guacamole/src/memory/utils.ts`
+4. `<project-root>/src/memory/utils.ts`
    - ensureDirectoryExists()
    - getTimestamp()
    - hasCircularReferences()
@@ -32,40 +32,40 @@
    - createBackupPath()
    - getBackupTimestamp()
 
-5. `/Users/brodieyazaki/work/claude_things/miniature-guacamole/src/memory/write.ts`
+5. `<project-root>/src/memory/write.ts`
    - writeMemory() async function
    - acquireLock() (internal)
    - releaseLock() (internal)
    - Full validation and backup logic
 
-6. `/Users/brodieyazaki/work/claude_things/miniature-guacamole/src/memory/read.ts`
+6. `<project-root>/src/memory/read.ts`
    - readMemory() async function
    - Graceful error handling
    - Permission and corruption recovery
 
-7. `/Users/brodieyazaki/work/claude_things/miniature-guacamole/src/memory/query.ts`
+7. `<project-root>/src/memory/query.ts`
    - queryMemory() async function
    - Filter by agent_id, workstream_id, timestamp range
    - Chronological ordering
 
-8. `/Users/brodieyazaki/work/claude_things/miniature-guacamole/src/memory/validate.ts`
+8. `<project-root>/src/memory/validate.ts`
    - validateMemoryFile() function
    - JSON and Markdown validation
    - ValidationResult with error messages
 
-9. `/Users/brodieyazaki/work/claude_things/miniature-guacamole/src/memory/locking.ts`
+9. `<project-root>/src/memory/locking.ts`
    - acquireLock() async function
    - releaseLock() async function
    - FileLock interface with locked flag
 
-10. `/Users/brodieyazaki/work/claude_things/miniature-guacamole/src/memory/backup.ts`
+10. `<project-root>/src/memory/backup.ts`
     - createBackup() async function
     - listBackups() async function
     - restoreFromBackup() async function
     - deleteMemory() async function
     - cleanupOldBackups() async function
 
-11. `/Users/brodieyazaki/work/claude_things/miniature-guacamole/src/memory/errors.ts`
+11. `<project-root>/src/memory/errors.ts`
     - recoverMemory() async function
     - validatePath() function
     - checkDiskSpace() function
@@ -73,7 +73,7 @@
     - isValidUTF8() function
 
 ### Root Module Files
-12. `/Users/brodieyazaki/work/claude_things/miniature-guacamole/src/index.ts`
+12. `<project-root>/src/index.ts`
     - Root export file
     - Re-exports all memory module exports
 
@@ -81,22 +81,22 @@
 
 ## Configuration Files
 
-1. `/Users/brodieyazaki/work/claude_things/miniature-guacamole/package.json`
+1. `<project-root>/package.json`
    - NPM dependencies
    - Test scripts (test, test:unit, test:integration, test:watch, test:coverage)
    - Project metadata
 
-2. `/Users/brodieyazaki/work/claude_things/miniature-guacamole/tsconfig.json`
+2. `<project-root>/tsconfig.json`
    - TypeScript configuration
    - Strict mode enabled
    - ES2020 target with ESNext module system
 
-3. `/Users/brodieyazaki/work/claude_things/miniature-guacamole/vitest.config.ts`
+3. `<project-root>/vitest.config.ts`
    - Test runner configuration (pre-existing)
    - Coverage settings (99% target)
    - Test include/exclude patterns
 
-4. `/Users/brodieyazaki/work/claude_things/miniature-guacamole/playwright.config.ts`
+4. `<project-root>/playwright.config.ts`
    - E2E test configuration (pre-existing)
    - Browser settings
    - E2E test paths
@@ -106,7 +106,7 @@
 ## Test Files
 
 ### Unit Tests
-`/Users/brodieyazaki/work/claude_things/miniature-guacamole/tests/unit/shared-memory.test.ts`
+`<project-root>/tests/unit/shared-memory.test.ts`
 - 28 unit tests, all PASSING
 - Categories:
   - Memory Write Operations (5 tests)
@@ -118,7 +118,7 @@
   - Memory Query Operations (3 tests)
 
 ### Integration Tests
-`/Users/brodieyazaki/work/claude_things/miniature-guacamole/tests/integration/cross-agent-memory.test.ts`
+`<project-root>/tests/integration/cross-agent-memory.test.ts`
 - 27 integration tests, all PASSING
 - Categories:
   - Agent A to Agent B State Transfer (3 tests)
@@ -130,7 +130,7 @@
   - Performance & Scalability (2 tests)
 
 ### E2E Tests
-`/Users/brodieyazaki/work/claude_things/miniature-guacamole/tests/e2e/workstream-persistence.spec.ts`
+`<project-root>/tests/e2e/workstream-persistence.spec.ts`
 - 19 E2E tests, all skipped (API not implemented)
 - Placeholder structure for future implementation
 
@@ -138,27 +138,27 @@
 
 ## Documentation Files
 
-1. `/Users/brodieyazaki/work/claude_things/miniature-guacamole/src/memory/README.md`
+1. `<project-root>/src/memory/README.md`
    - API reference
    - Usage examples
    - Configuration guide
    - Troubleshooting
 
-2. `/Users/brodieyazaki/work/claude_things/miniature-guacamole/IMPLEMENTATION_SUMMARY.md`
+2. `<project-root>/IMPLEMENTATION_SUMMARY.md`
    - Implementation details
    - Architecture overview
    - Design patterns
    - Test coverage breakdown
    - Success criteria checklist
 
-3. `/Users/brodieyazaki/work/claude_things/miniature-guacamole/TDD_CYCLE_COMPLETE.md`
+3. `<project-root>/TDD_CYCLE_COMPLETE.md`
    - Step 2 completion status
    - Test results summary
    - Performance verification
    - Verification checklist
    - Next steps for Step 3
 
-4. `/Users/brodieyazaki/work/claude_things/miniature-guacamole/FILE_MANIFEST.md`
+4. `<project-root>/FILE_MANIFEST.md`
    - This file
    - Complete file listing with descriptions
 
@@ -166,7 +166,7 @@
 
 ## Data Files
 
-1. `/Users/brodieyazaki/work/claude_things/miniature-guacamole/.claude/memory/shared.json`
+1. `<project-root>/.claude/memory/shared.json`
    - Default shared memory file
    - System initialization record
 
@@ -174,15 +174,15 @@
 
 ## Test Guides (Pre-existing)
 
-1. `/Users/brodieyazaki/work/claude_things/miniature-guacamole/tests/IMPLEMENTATION_GUIDE.md`
+1. `<project-root>/tests/IMPLEMENTATION_GUIDE.md`
    - QA-provided implementation roadmap
    - Test contract specifications
 
-2. `/Users/brodieyazaki/work/claude_things/miniature-guacamole/tests/README.md`
+2. `<project-root>/tests/README.md`
    - Test suite documentation
    - Test execution guide
 
-3. `/Users/brodieyazaki/work/claude_things/miniature-guacamole/tests/INDEX.md`
+3. `<project-root>/tests/INDEX.md`
    - Test file index
 
 ---
@@ -193,7 +193,7 @@
 
 ```bash
 # All tests
-cd /Users/brodieyazaki/work/claude_things/miniature-guacamole
+cd <project-root>
 npm test
 
 # Unit tests only
@@ -231,7 +231,7 @@ import {
   detectCircularReferences,
   isValidUTF8,
   MEMORY_CONFIG,
-} from '/Users/brodieyazaki/work/claude_things/miniature-guacamole/src/memory';
+} from '<project-root>/src/memory';
 
 // Types only
 import type {
@@ -242,26 +242,26 @@ import type {
   FileLock,
   Backup,
   ValidationResult,
-} from '/Users/brodieyazaki/work/claude_things/miniature-guacamole/src/memory/types';
+} from '<project-root>/src/memory/types';
 ```
 
 ### Key Directories
 
 ```
 Root Project:
-  /Users/brodieyazaki/work/claude_things/miniature-guacamole
+  <project-root>
 
 Source Code:
-  /Users/brodieyazaki/work/claude_things/miniature-guacamole/src/memory
+  <project-root>/src/memory
 
 Tests:
-  /Users/brodieyazaki/work/claude_things/miniature-guacamole/tests
+  <project-root>/tests
 
 Configuration:
-  /Users/brodieyazaki/work/claude_things/miniature-guacamole (package.json, tsconfig.json, etc.)
+  <project-root> (package.json, tsconfig.json, etc.)
 
 Data:
-  /Users/brodieyazaki/work/claude_things/miniature-guacamole/.claude/memory
+  <project-root>/.claude/memory
 ```
 
 ---
@@ -294,7 +294,7 @@ To verify the implementation:
 
 1. **Navigate to project directory**
    ```bash
-   cd /Users/brodieyazaki/work/claude_things/miniature-guacamole
+   cd <project-root>
    ```
 
 2. **Install dependencies**
@@ -316,6 +316,6 @@ All tests should PASS with 99%+ coverage.
 
 ---
 
-**Project Location:** `/Users/brodieyazaki/work/claude_things/miniature-guacamole`
+**Project Location:** `<project-root>`
 **Implementation Status:** ✓ COMPLETE - Step 2 (Green Phase)
 **Last Updated:** 2026-02-04

@@ -11,19 +11,19 @@
 ### Test Files (3 suites, 74 tests - ALL FAILING)
 
 1. **Unit Tests**
-   - **Path:** `/Users/brodieyazaki/work/claude_things/miniature-guacamole/tests/unit/shared-memory.test.ts`
+   - **Path:** `<project-root>/tests/unit/shared-memory.test.ts`
    - **Tests:** 28 (all FAILING)
    - **Size:** ~25KB
    - **Coverage:** Function coverage (99% target)
 
 2. **Integration Tests**
-   - **Path:** `/Users/brodieyazaki/work/claude_things/miniature-guacamole/tests/integration/cross-agent-memory.test.ts`
+   - **Path:** `<project-root>/tests/integration/cross-agent-memory.test.ts`
    - **Tests:** 27 (all FAILING)
    - **Size:** ~40KB
    - **Coverage:** Flow coverage (99% target)
 
 3. **E2E Tests**
-   - **Path:** `/Users/brodieyazaki/work/claude_things/miniature-guacamole/tests/e2e/workstream-persistence.spec.ts`
+   - **Path:** `<project-root>/tests/e2e/workstream-persistence.spec.ts`
    - **Tests:** 19 (all SKIPPED)
    - **Size:** ~35KB
    - **Coverage:** Workflow coverage
@@ -31,49 +31,49 @@
 ### Configuration Files (2)
 
 1. **Vitest Configuration**
-   - **Path:** `/Users/brodieyazaki/work/claude_things/miniature-guacamole/vitest.config.ts`
+   - **Path:** `<project-root>/vitest.config.ts`
    - **Purpose:** Unit & integration test configuration
    - **Features:** 99% coverage target, 4 workers, V8 provider
 
 2. **Playwright Configuration**
-   - **Path:** `/Users/brodieyazaki/work/claude_things/miniature-guacamole/playwright.config.ts`
+   - **Path:** `<project-root>/playwright.config.ts`
    - **Purpose:** E2E test configuration
    - **Features:** Cross-browser (Chromium, Firefox, Safari), HTML reporting
 
 ### Documentation Files (7)
 
 1. **Main Summary**
-   - **Path:** `/Users/brodieyazaki/work/claude_things/miniature-guacamole/SHARED_MEMORY_TDD_SUMMARY.md`
+   - **Path:** `<project-root>/SHARED_MEMORY_TDD_SUMMARY.md`
    - **Purpose:** Executive summary of all deliverables
    - **Audience:** Everyone
 
 2. **Deliverables Index** (This file)
-   - **Path:** `/Users/brodieyazaki/work/claude_things/miniature-guacamole/DELIVERABLES.md`
+   - **Path:** `<project-root>/DELIVERABLES.md`
    - **Purpose:** Quick reference to all files and locations
    - **Audience:** Everyone
 
 3. **Test Navigation Hub**
-   - **Path:** `/Users/brodieyazaki/work/claude_things/miniature-guacamole/tests/INDEX.md`
+   - **Path:** `<project-root>/tests/INDEX.md`
    - **Purpose:** Navigation and quick reference
    - **Audience:** Everyone
 
 4. **Test Quick Start**
-   - **Path:** `/Users/brodieyazaki/work/claude_things/miniature-guacamole/tests/README.md`
+   - **Path:** `<project-root>/tests/README.md`
    - **Purpose:** How to run tests, scenarios, debugging
    - **Audience:** QA, Dev
 
 5. **Full Test Specifications**
-   - **Path:** `/Users/brodieyazaki/work/claude_things/miniature-guacamole/tests/SHARED_MEMORY_TESTS.md`
+   - **Path:** `<project-root>/tests/SHARED_MEMORY_TESTS.md`
    - **Purpose:** Complete test breakdown, contracts, acceptance criteria
    - **Audience:** Everyone
 
 6. **Implementation Guide**
-   - **Path:** `/Users/brodieyazaki/work/claude_things/miniature-guacamole/tests/IMPLEMENTATION_GUIDE.md`
+   - **Path:** `<project-root>/tests/IMPLEMENTATION_GUIDE.md`
    - **Purpose:** Step-by-step implementation roadmap for dev team
    - **Audience:** Dev Team
 
 7. **QA Handoff Summary**
-   - **Path:** `/Users/brodieyazaki/work/claude_things/miniature-guacamole/.claude/tests/qa-summary.md`
+   - **Path:** `<project-root>/.claude/tests/qa-summary.md`
    - **Purpose:** QA team handoff and phase completion
    - **Audience:** Leadership, Dev
 
@@ -82,7 +82,7 @@
 ## Complete File Listing
 
 ```
-/Users/brodieyazaki/work/claude_things/miniature-guacamole/
+<project-root>/
 ├── DELIVERABLES.md (this file)
 ├── SHARED_MEMORY_TDD_SUMMARY.md
 ├── vitest.config.ts
@@ -162,7 +162,7 @@ Then: .claude/tests/qa-summary.md
 
 ### Run all tests (should FAIL)
 ```bash
-cd /Users/brodieyazaki/work/claude_things/miniature-guacamole
+cd <project-root>
 npm run test
 ```
 
@@ -351,4 +351,4 @@ tests/
 **Delivered by:** QA Engineer (TDD/BDD Tests)
 **Date:** 2026-02-04
 **Status:** Ready for Step 2 Implementation
-**All files at:** `/Users/brodieyazaki/work/claude_things/miniature-guacamole/`
+**All files at:** `<project-root>/`

@@ -115,12 +115,12 @@ Spike succeeds when we can definitively answer:
 **Who**: Coordination skill with Task tool (engineering-team or implement)
 
 **Steps**:
-1. Read `/Users/brodieyazaki/work/claude_things/miniature-guacamole/.claude/skills/agent-loading-test/QUICK-START.md`
+1. Read `<project-root>/.claude/skills/agent-loading-test/QUICK-START.md`
 2. Execute Test 1: Spawn QA agent with constitution check
 3. Execute Test 2: Spawn dev agent with constitution check
 4. Execute Test 3: Spawn staff-engineer with constitution check
 5. Analyze responses - custom or built-in behavior?
-6. Update `/Users/brodieyazaki/work/claude_things/miniature-guacamole/.claude/memory/spike-agent-loading-results.json`
+6. Update `<project-root>/.claude/memory/spike-agent-loading-results.json`
 
 **Time**: 2-3 hours
 
@@ -195,20 +195,20 @@ Spike succeeds when we can definitively answer:
 ## Files Reference
 
 ### Execution Guides
-- `/Users/brodieyazaki/work/claude_things/miniature-guacamole/.claude/skills/agent-loading-test/QUICK-START.md` - Start here for execution
-- `/Users/brodieyazaki/work/claude_things/miniature-guacamole/.claude/skills/agent-loading-test/PROGRESS-CHECKLIST.md` - Track progress
+- `<project-root>/.claude/skills/agent-loading-test/QUICK-START.md` - Start here for execution
+- `<project-root>/.claude/skills/agent-loading-test/PROGRESS-CHECKLIST.md` - Track progress
 
 ### Documentation
-- `/Users/brodieyazaki/work/claude_things/miniature-guacamole/.claude/skills/agent-loading-test/README.md` - Overview
-- `/Users/brodieyazaki/work/claude_things/miniature-guacamole/.claude/skills/agent-loading-test/SPIKE-SUMMARY.md` - Comprehensive details
-- `/Users/brodieyazaki/work/claude_things/miniature-guacamole/.claude/skills/agent-loading-test/test-executor.md` - Detailed test scenarios
+- `<project-root>/.claude/skills/agent-loading-test/README.md` - Overview
+- `<project-root>/.claude/skills/agent-loading-test/SPIKE-SUMMARY.md` - Comprehensive details
+- `<project-root>/.claude/skills/agent-loading-test/test-executor.md` - Detailed test scenarios
 
 ### Results Tracking
-- `/Users/brodieyazaki/work/claude_things/miniature-guacamole/.claude/memory/spike-agent-loading-results.json` - Update with findings
+- `<project-root>/.claude/memory/spike-agent-loading-results.json` - Update with findings
 
 ### Reference
-- `/Users/brodieyazaki/work/claude_things/miniature-guacamole/.claude/memory/assessment-custom-agent-loading.json` - Original assessment
-- `/Users/brodieyazaki/work/claude_things/miniature-guacamole/.claude/agents/*/agent.md` - Custom agent definitions
+- `<project-root>/.claude/memory/assessment-custom-agent-loading.json` - Original assessment
+- `<project-root>/.claude/agents/*/agent.md` - Custom agent definitions
 
 ---
 

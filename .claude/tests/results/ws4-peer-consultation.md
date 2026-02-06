@@ -3,9 +3,9 @@
 **Test Date:** 2026-02-04
 **Test Type:** Static Verification
 **Files Analyzed:**
-- `/Users/brodieyazaki/work/claude_things/.claude/skills/dev/SKILL.md`
-- `/Users/brodieyazaki/work/claude_things/.claude/skills/qa/SKILL.md`
-- `/Users/brodieyazaki/work/claude_things/.claude/skills/design/SKILL.md`
+- `<user-home>/...
+- `<user-home>/...
+- `<user-home>/...
 
 ### Consultation Paths Verification
 | IC Agent | Can Consult | Documented | Fire-and-Forget Noted | Status |

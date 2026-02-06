@@ -216,8 +216,8 @@ describe('WS-3: Structured Return Envelopes', () => {
       const result: AgentResult = {
         summary: 'Tests created',
         deliverables: [
-          '/Users/brodieyazaki/work/claude_things/miniature-guacamole/tests/unit/return-envelope.test.ts',
-          '/Users/brodieyazaki/work/claude_things/miniature-guacamole/src/returns/validate.ts',
+          'tests/unit/return-envelope.test.ts',
+          'src/returns/validate.ts',
         ],
       };
 
@@ -630,8 +630,8 @@ describe('WS-3: Structured Return Envelopes', () => {
         result: {
           summary: 'Comprehensive test suite created',
           deliverables: [
-            '/Users/brodieyazaki/work/claude_things/miniature-guacamole/tests/unit/return-envelope.test.ts',
-            '/Users/brodieyazaki/work/claude_things/miniature-guacamole/src/returns/types.ts',
+            'tests/unit/return-envelope.test.ts',
+            'src/returns/types.ts',
           ],
           next_steps: [
             'Implement validateAgentReturn',

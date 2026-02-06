@@ -1,0 +1,21 @@
+# Auto detect text files and perform LF normalization
+* text=auto
+
+# Exclude internal directories from release archives
+.claude/memory/ export-ignore
+.claude/tests/ export-ignore
+coverage/ export-ignore
+dist/ export-ignore
+node_modules/ export-ignore
+dashboard/node_modules/ export-ignore
+dashboard/.next/ export-ignore
+dashboard/coverage/ export-ignore
+
+# Exclude environment files from exports (safety net)
+.env* export-ignore
+
+# Exclude test and development files from releases
+*.test.ts export-ignore
+*.test.js export-ignore
+*.spec.ts export-ignore
+*.spec.js export-ignore

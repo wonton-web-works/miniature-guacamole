@@ -27,6 +27,10 @@ Thumbs.db
 .env.local
 .env.*.local
 
+# Private keys and certificates
+*.pem
+*.key
+
 # Logs
 *.log
 npm-debug.log*

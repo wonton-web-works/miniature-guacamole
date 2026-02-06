@@ -30,7 +30,7 @@ The deleteMemory() function creates backups before deletion:
 ## Fixes Applied
 
 ### Fix 1: Enhanced beforeEach Setup in Unit Tests
-**File**: `/Users/brodieyazaki/work/claude_things/miniature-guacamole/tests/unit/shared-memory.test.ts`
+**File**: `<project-root>/tests/unit/shared-memory.test.ts`
 
 Added comprehensive setup that ensures:
 - Temp MEMORY_DIR is clean and created fresh
@@ -62,7 +62,7 @@ beforeEach(() => {
 **Impact**: Eliminates test isolation issues for all unit tests
 
 ### Fix 2: Enhanced beforeEach Setup in Integration Tests
-**File**: `/Users/brodieyazaki/work/claude_things/miniature-guacamole/tests/integration/cross-agent-memory.test.ts`
+**File**: `<project-root>/tests/integration/cross-agent-memory.test.ts`
 
 Applied identical comprehensive setup as unit tests to ensure:
 - Temp MEMORY_DIR is fresh for each test
@@ -78,7 +78,7 @@ Applied identical comprehensive setup as unit tests to ensure:
 **Impact**: Eliminates data leakage between integration tests
 
 ### Fix 3: Unit Test Delete Behavior
-**File**: `/Users/brodieyazaki/work/claude_things/miniature-guacamole/tests/unit/shared-memory.test.ts` (Line 296)
+**File**: `<project-root>/tests/unit/shared-memory.test.ts` (Line 296)
 
 **Changed**:
 - Test now writes to `MEMORY_CONFIG.SHARED_MEMORY_FILE` (the file that deleteMemory operates on)
@@ -102,7 +102,7 @@ it('Should delete memory files on cleanup', async () => {
 **Impact**: Test now validates correct behavior (deleteMemory deletes the actual shared memory file)
 
 ### Fix 4: Query Test Data Location
-**File**: `/Users/brodieyazaki/work/claude_things/miniature-guacamole/tests/unit/shared-memory.test.ts` (Line 384-417)
+**File**: `<project-root>/tests/unit/shared-memory.test.ts` (Line 384-417)
 
 **Changed**:
 - Query test beforeEach now writes to `MEMORY_CONFIG.MEMORY_DIR`
@@ -200,13 +200,13 @@ All fixes maintain 99%+ coverage requirements:
 
 ## Files Modified
 
-1. `/Users/brodieyazaki/work/claude_things/miniature-guacamole/tests/unit/shared-memory.test.ts`
+1. `<project-root>/tests/unit/shared-memory.test.ts`
    - Enhanced beforeEach/afterEach setup
    - Fixed delete test to use MEMORY_CONFIG.SHARED_MEMORY_FILE
    - Fixed query tests to write to MEMORY_CONFIG.MEMORY_DIR
    - Added MEMORY_CONFIG import
 
-2. `/Users/brodieyazaki/work/claude_things/miniature-guacamole/tests/integration/cross-agent-memory.test.ts`
+2. `<project-root>/tests/integration/cross-agent-memory.test.ts`
    - Enhanced beforeEach/afterEach setup
    - All integration tests now properly isolated
 

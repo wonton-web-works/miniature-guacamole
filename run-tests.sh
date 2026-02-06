@@ -1,3 +1,3 @@
 #!/bin/bash
-cd /Users/brodieyazaki/work/claude_things/miniature-guacamole
+cd "$(dirname "$0")"
 npm test -- --reporter=verbose --coverage 2>&1

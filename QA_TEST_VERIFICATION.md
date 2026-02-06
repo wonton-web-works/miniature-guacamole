@@ -17,7 +17,7 @@ Conducting comprehensive QA verification on the integration test fixes for WS-1 
 ## Test Suite Analysis
 
 ### Unit Tests: 28 Total Tests
-**File:** `/Users/brodieyazaki/work/claude_things/miniature-guacamole/tests/unit/shared-memory.test.ts`
+**File:** `<project-root>/tests/unit/shared-memory.test.ts`
 
 #### Memory Write Operations (5 tests)
 - Should write valid JSON to shared.json
@@ -62,7 +62,7 @@ Conducting comprehensive QA verification on the integration test fixes for WS-1 
 ---
 
 ### Integration Tests: 27 Total Tests
-**File:** `/Users/brodieyazaki/work/claude_things/miniature-guacamole/tests/integration/cross-agent-memory.test.ts`
+**File:** `<project-root>/tests/integration/cross-agent-memory.test.ts`
 
 #### Agent A to Agent B State Transfer (3 tests)
 - Agent A writes state that Agent B can read
@@ -199,7 +199,7 @@ Conducting comprehensive QA verification on the integration test fixes for WS-1 
 ## Test Execution Log
 
 **Command:** `npm test -- --reporter=verbose --coverage`
-**Working Directory:** `/Users/brodieyazaki/work/claude_things/miniature-guacamole`
+**Working Directory:** `<project-root>`
 
 [Test results will be populated after execution]
 

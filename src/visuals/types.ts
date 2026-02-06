@@ -44,3 +44,7 @@ export interface ValidationResult {
   valid: boolean;
   errors: string[];
 }
+
+// WS-DIAGRAMS: Diagram types
+export type { DiagramSpec, DiagramTheme, DiagramOutput, MermaidConfig } from './diagrams/types';
+export { DiagramType, DiagramSyntaxError, isDiagramSpec } from './diagrams/types';

@@ -1,0 +1,5 @@
+{
+  "audit_logging": {
+    "enabled": true
+  }
+}

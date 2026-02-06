@@ -43,5 +43,5 @@ export const MEMORY_CONFIG = {
   DETECT_CIRCULAR_REFS: true,
 
   // Encoding
-  ENCODING: 'utf-8',
+  ENCODING: 'utf-8' as const,
 };

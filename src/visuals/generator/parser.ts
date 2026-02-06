@@ -6,7 +6,7 @@
  * Implements AC-4: Design tokens (colors, typography, spacing) injected into templates.
  */
 
-import type { DesignSpec } from '@/visuals/types';
+import type { DesignSpec } from '../types';
 
 function isValidColor(color: string): boolean {
   // Check for hex, rgb, rgba formats

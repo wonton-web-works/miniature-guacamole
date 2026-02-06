@@ -9,7 +9,7 @@
  * - Registers shutdownGenerator with lifecycle manager (STD-005)
  */
 
-import type { DesignSpec } from '@/visuals/types';
+import type { DesignSpec } from '../types';
 import { getAvailableTemplates } from './templates';
 import {
   initializeBrowser,
@@ -17,7 +17,7 @@ import {
   generateComponentVisual,
   cleanupBrowserResources,
 } from './renderer';
-import { registerCleanup } from '@/lifecycle/index';
+import { registerCleanup } from '../../lifecycle/index';
 import type { Browser } from 'puppeteer';
 import * as fs from 'fs';
 import * as path from 'path';

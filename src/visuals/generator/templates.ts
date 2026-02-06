@@ -5,7 +5,7 @@
  * Implements AC-1: Template library with header, card, form, button components.
  */
 
-import type { DesignSpec } from '@/visuals/types';
+import type { DesignSpec } from '../types';
 
 interface TemplateOptions {
   title?: string;
@@ -104,6 +104,7 @@ export function generateFormTemplate(
   validateDesignSpec(designSpec);
 
   const { colors, typography, dimensions } = designSpec;
+  const padding = dimensions.padding ?? 16;
   const fields = options.fields || [
     { name: 'name', label: 'Name', type: 'text' },
     { name: 'email', label: 'Email', type: 'email' },
@@ -115,27 +116,27 @@ export function generateFormTemplate(
     const label = escapeHtml(field.label);
     const fieldId = field.name;
 
-    html += `\n  <div style="margin-bottom: ${dimensions.padding}px;">`;
+    html += `\n  <div style="margin-bottom: ${padding}px;">`;
     html += `\n    <label for="${fieldId}" style="display: block; margin-bottom: 8px; font-size: ${typography.fontSize.base}; font-weight: ${typography.fontWeight.normal};">${label}</label>`;
 
     if (field.type === 'textarea') {
       const placeholder = field.placeholder ? `placeholder="${escapeHtml(field.placeholder)}"` : '';
-      html += `\n    <textarea id="${fieldId}" name="${field.name}" ${placeholder} style="width: 100%; padding: ${dimensions.padding / 2}px; font-size: ${typography.fontSize.base}; font-family: ${typography.fontFamily}; border: 1px solid ${colors.secondary}; border-radius: 4px; box-sizing: border-box;"></textarea>`;
+      html += `\n    <textarea id="${fieldId}" name="${field.name}" ${placeholder} style="width: 100%; padding: ${padding / 2}px; font-size: ${typography.fontSize.base}; font-family: ${typography.fontFamily}; border: 1px solid ${colors.secondary}; border-radius: 4px; box-sizing: border-box;"></textarea>`;
     } else if (field.type === 'select' && field.options) {
-      html += `\n    <select id="${fieldId}" name="${field.name}" style="width: 100%; padding: ${dimensions.padding / 2}px; font-size: ${typography.fontSize.base}; font-family: ${typography.fontFamily}; border: 1px solid ${colors.secondary}; border-radius: 4px; box-sizing: border-box;">`;
+      html += `\n    <select id="${fieldId}" name="${field.name}" style="width: 100%; padding: ${padding / 2}px; font-size: ${typography.fontSize.base}; font-family: ${typography.fontFamily}; border: 1px solid ${colors.secondary}; border-radius: 4px; box-sizing: border-box;">`;
       for (const option of field.options) {
         html += `\n      <option>${escapeHtml(option)}</option>`;
       }
       html += '\n    </select>';
     } else {
       const placeholder = field.placeholder ? `placeholder="${escapeHtml(field.placeholder)}"` : '';
-      html += `\n    <input type="${field.type}" id="${fieldId}" name="${field.name}" ${placeholder} style="width: 100%; padding: ${dimensions.padding / 2}px; font-size: ${typography.fontSize.base}; font-family: ${typography.fontFamily}; border: 1px solid ${colors.secondary}; border-radius: 4px; box-sizing: border-box;">`;
+      html += `\n    <input type="${field.type}" id="${fieldId}" name="${field.name}" ${placeholder} style="width: 100%; padding: ${padding / 2}px; font-size: ${typography.fontSize.base}; font-family: ${typography.fontFamily}; border: 1px solid ${colors.secondary}; border-radius: 4px; box-sizing: border-box;">`;
     }
 
     html += '\n  </div>';
   }
 
-  html += `\n  <button type="submit" style="background-color: ${colors.primary}; color: #ffffff; padding: ${dimensions.padding / 2}px ${dimensions.padding}px; font-size: ${typography.fontSize.base}; font-family: ${typography.fontFamily}; border: none; border-radius: 4px; cursor: pointer; font-weight: ${typography.fontWeight.bold};">Submit</button>`;
+  html += `\n  <button type="submit" style="background-color: ${colors.primary}; color: #ffffff; padding: ${padding / 2}px ${padding}px; font-size: ${typography.fontSize.base}; font-family: ${typography.fontFamily}; border: none; border-radius: 4px; cursor: pointer; font-weight: ${typography.fontWeight.bold};">Submit</button>`;
   html += '\n</form>';
 
   return html;
@@ -149,6 +150,7 @@ export function generateButtonTemplate(
 
   const text = options.text ? escapeHtml(options.text) : 'Button';
   const { colors, typography, dimensions } = designSpec;
+  const basePadding = dimensions.padding ?? 16;
   const variant = options.variant || 'primary';
   const size = options.size || 'medium';
   const disabled = options.disabled || false;
@@ -174,11 +176,11 @@ export function generateButtonTemplate(
 
   let padding: string;
   if (size === 'small') {
-    padding = `${dimensions.padding / 3}px ${dimensions.padding / 1.5}px`;
+    padding = `${basePadding / 3}px ${basePadding / 1.5}px`;
   } else if (size === 'large') {
-    padding = `${dimensions.padding * 1.5}px ${dimensions.padding * 2}px`;
+    padding = `${basePadding * 1.5}px ${basePadding * 2}px`;
   } else {
-    padding = `${dimensions.padding / 2}px ${dimensions.padding}px`;
+    padding = `${basePadding / 2}px ${basePadding}px`;
   }
 
   const opacity = disabled ? 'opacity: 0.6;' : '';

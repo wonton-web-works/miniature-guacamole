@@ -30,9 +30,9 @@ describe('Code Review Skill - WS-13', () => {
       expect(content).toMatch(/description:\s*"[^"]+"/);
     });
 
-    it('should have frontmatter with model: sonnet', () => {
+    it('should have frontmatter with model: opus', () => {
       const content = fs.readFileSync(skillPath, 'utf-8');
-      expect(content).toMatch(/model:\s+sonnet/);
+      expect(content).toMatch(/model:\s+opus/);
     });
 
     it('should have frontmatter with tools array', () => {

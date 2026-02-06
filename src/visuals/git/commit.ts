@@ -17,7 +17,7 @@ import { getApprovalRecord } from '../workflow/approvals';
 import type { MetadataEntry } from '../metadata/types';
 import { shouldUseLfs, checkLfsPrerequisites, configureGitAttributes, trackFileWithLfs } from './lfs';
 import { validateVisualPath, validateVisualPaths } from './security';
-import { registerTempFile, deregisterTempFile } from '@/lifecycle/index';
+import { registerTempFile, deregisterTempFile } from '../../lifecycle/index';
 
 const METADATA_FILE = '.claude/visuals/metadata.json';
 

@@ -72,24 +72,20 @@ if [ -d "$SOURCE_CLAUDE/shared" ]; then
 fi
 
 # ----------------------------------------------------------------------------
-# Copy select skills (workflow-level only, not individual roles)
+# Copy all skills
 # ----------------------------------------------------------------------------
 
-echo -e "${GREEN}Copying workflow skills...${NC}"
+echo -e "${GREEN}Copying skills...${NC}"
 
-# List of workflow skills to include in distribution
-# Individual agent skills are not needed - agents have their own definitions
-WORKFLOW_SKILLS=(
-    "leadership-team"
-    "engineering-team"
-    "product-team"
-    "design-team"
-)
-
-for skill in "${WORKFLOW_SKILLS[@]}"; do
-    if [ -d "$SOURCE_CLAUDE/skills/$skill" ]; then
-        cp -r "$SOURCE_CLAUDE/skills/$skill" "$DIST_CLAUDE/skills/"
-        echo "  ✓ $skill"
+# Copy all skills (except _shared which is internal)
+for skill_dir in "$SOURCE_CLAUDE/skills"/*; do
+    if [ -d "$skill_dir" ]; then
+        skill_name=$(basename "$skill_dir")
+        # Skip internal directories starting with underscore
+        if [[ "$skill_name" != _* ]]; then
+            cp -r "$skill_dir" "$DIST_CLAUDE/skills/"
+            echo "  ✓ $skill_name"
+        fi
     fi
 done
 

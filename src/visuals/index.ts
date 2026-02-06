@@ -27,3 +27,6 @@ export {
   validateDirectoryPermissions,
   createVisualsDirectory
 } from './directories';
+
+// WS-DIAGRAMS: Diagram generation
+export * from './diagrams';

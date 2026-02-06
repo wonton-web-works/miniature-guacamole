@@ -15,11 +15,11 @@
 import puppeteer, { type Browser, type Page } from 'puppeteer';
 import * as fs from 'fs';
 import * as path from 'path';
-import type { DesignSpec } from '@/visuals/types';
+import type { DesignSpec } from '../types';
 import { renderTemplate } from './templates';
 import { generateFullHTML } from './parser';
-import { registerCleanup } from '@/lifecycle/registry';
-import { LIFECYCLE_DEFAULTS } from '@/lifecycle/config';
+import { registerCleanup } from '../../lifecycle/registry';
+import { LIFECYCLE_DEFAULTS } from '../../lifecycle/config';
 
 let browserInstance: Browser | null = null;
 let lastCallCount = -1;
@@ -155,6 +155,7 @@ export async function renderHTMLToPNG(
     viewport?: { width: number; height: number };
     fullPage?: boolean;
     timeout?: number;
+    scale?: number;
   } = {}
 ): Promise<Buffer> {
   if (!html || html.trim() === '') {
@@ -173,6 +174,7 @@ export async function renderHTMLToPNG(
       await page.setViewport({
         width: options.viewport.width,
         height: options.viewport.height,
+        deviceScaleFactor: options.scale || 1,
       });
     }
 

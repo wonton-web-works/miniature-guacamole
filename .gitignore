@@ -39,6 +39,10 @@ npm-debug.log*
 *.tmp
 .cache/
 
+# VitePress
+docs/.vitepress/cache/
+docs/.vitepress/dist/
+
 # GitHub Actions
 .github/.cache/
 

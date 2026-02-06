@@ -10,43 +10,7 @@ import * as path from 'path';
 import { MemoryEntry, MemoryWriteResult } from './types';
 import { MEMORY_CONFIG } from './config';
 import { ensureDirectoryExists, getTimestamp, hasCircularReferences, formatJSON, parseJSON, createBackupPath, sanitizePath } from './utils';
-
-// Simple in-memory lock management
-const locks: Map<string, { count: number; timestamp: number }> = new Map();
-
-async function acquireLock(filePath: string, timeout: number = MEMORY_CONFIG.LOCK_TIMEOUT): Promise<void> {
-  const startTime = Date.now();
-
-  while (Date.now() - startTime < timeout) {
-    const lock = locks.get(filePath);
-
-    if (!lock) {
-      locks.set(filePath, { count: 1, timestamp: Date.now() });
-      return;
-    }
-
-    // Check if lock has expired
-    if (Date.now() - lock.timestamp > timeout) {
-      locks.delete(filePath);
-      locks.set(filePath, { count: 1, timestamp: Date.now() });
-      return;
-    }
-
-    await new Promise((resolve) => setTimeout(resolve, MEMORY_CONFIG.LOCK_RETRY_INTERVAL));
-  }
-
-  throw new Error(`Could not acquire lock for ${filePath} within ${timeout}ms`);
-}
-
-function releaseLock(filePath: string): void {
-  const lock = locks.get(filePath);
-  if (lock) {
-    lock.count--;
-    if (lock.count <= 0) {
-      locks.delete(filePath);
-    }
-  }
-}
+import { acquireLock, releaseLock } from './locking';
 
 export async function writeMemory(
   entry: Partial<MemoryEntry>,
@@ -111,7 +75,7 @@ export async function writeMemory(
     };
 
     // Acquire lock for atomic write
-    await acquireLock(safePath);
+    const lock = await acquireLock(safePath);
 
     try {
       // Create backup if file exists
@@ -140,7 +104,7 @@ export async function writeMemory(
         path: safePath,
       };
     } finally {
-      releaseLock(safePath);
+      releaseLock(lock);
     }
   } catch (error) {
     return {

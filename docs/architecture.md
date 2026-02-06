@@ -294,7 +294,7 @@ handoff_response:
     confidence: "high" | "medium" | "low"
 ```
 
-See [Handoff Protocol Documentation](https://github.com/YOUR_ORG/miniature-guacamole/blob/main/.claude/shared/handoff-protocol.md) for complete specification.
+See [Handoff Protocol Documentation](https://github.com/RivermarkResearch/miniature-guacamole/blob/main/.claude/shared/handoff-protocol.md) for complete specification.
 
 ## Git Workstream Strategy
 

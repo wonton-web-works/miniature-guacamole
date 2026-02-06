@@ -79,7 +79,7 @@ Use it to orchestrate complex product development workflows with AI agents that 
 
 ### 1. Install
 ```bash
-git clone https://github.com/YOUR_ORG/miniature-guacamole.git
+git clone https://github.com/RivermarkResearch/miniature-guacamole.git
 cd miniature-guacamole
 npm install
 ```
@@ -109,7 +109,7 @@ The team runs the full TDD cycle: QA writes tests → Dev implements → QA veri
 
 ### Option 1: Clone into Project (Recommended)
 ```bash
-git clone https://github.com/YOUR_ORG/miniature-guacamole.git
+git clone https://github.com/RivermarkResearch/miniature-guacamole.git
 cd miniature-guacamole
 claude  # Start Claude Code - agents will be available
 ```
@@ -702,4 +702,4 @@ MIT
 
 ---
 
-**Built with Claude Code** | [Report Issues](https://github.com/YOUR_ORG/miniature-guacamole/issues) | [Documentation](.claude/README.md)
+**Built with Claude Code** | [Report Issues](https://github.com/RivermarkResearch/miniature-guacamole/issues) | [Documentation](.claude/README.md)

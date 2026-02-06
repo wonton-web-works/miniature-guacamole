@@ -17,7 +17,7 @@ Choose the installation method that best fits your needs.
 Clone this repository and the `.claude` directory will be automatically recognized by Claude Code:
 
 ```bash
-git clone https://github.com/YOUR_ORG/miniature-guacamole.git
+git clone https://github.com/RivermarkResearch/miniature-guacamole.git
 cd miniature-guacamole
 npm install  # Install shared memory dependencies
 claude      # Start Claude Code - agents will be available
@@ -207,7 +207,7 @@ Add to `~/.claude/config.json`:
 }
 ```
 
-See [docs/audit-logging.md](https://github.com/YOUR_ORG/miniature-guacamole/blob/main/docs/audit-logging.md) for full documentation.
+See [docs/audit-logging.md](https://github.com/RivermarkResearch/miniature-guacamole/blob/main/docs/audit-logging.md) for full documentation.
 
 ## Troubleshooting
 
@@ -239,6 +239,6 @@ chmod -R 755 src/
 
 ## Support
 
-- [Report Issues](https://github.com/YOUR_ORG/miniature-guacamole/issues)
-- [View Documentation](https://github.com/YOUR_ORG/miniature-guacamole/blob/main/.claude/README.md)
+- [Report Issues](https://github.com/RivermarkResearch/miniature-guacamole/issues)
+- [View Documentation](https://github.com/RivermarkResearch/miniature-guacamole/blob/main/.claude/README.md)
 - [Read Contributing Guide](/contributing)

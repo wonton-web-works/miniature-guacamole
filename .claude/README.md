@@ -29,7 +29,7 @@
 Clone this repository and the `.claude` directory will be automatically recognized by Claude Code when you run it from this directory:
 
 ```bash
-git clone https://github.com/YOUR_ORG/miniature-guacamole.git
+git clone https://github.com/RivermarkResearch/miniature-guacamole.git
 cd miniature-guacamole
 claude  # Start Claude Code - agents will be available
 ```

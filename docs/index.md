@@ -11,7 +11,7 @@ hero:
       link: /getting-started
     - theme: alt
       text: View on GitHub
-      link: https://github.com/YOUR_ORG/miniature-guacamole
+      link: https://github.com/RivermarkResearch/miniature-guacamole
 
 features:
   - icon: 🤖

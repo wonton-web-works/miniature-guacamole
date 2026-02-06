@@ -70,8 +70,8 @@ export default defineConfig({
     // Retry failed tests
     retry: 0,
 
-    // Setup files
-    setupFiles: [],
+    // Setup files - enables vi.spyOn for built-in modules like fs
+    setupFiles: ['./tests/setup-fs-mock.ts'],
 
     // Mock reset between tests
     mockReset: true,

@@ -3,6 +3,10 @@
  *
  * Public API and orchestration for visual generation.
  * Implements end-to-end component generation workflow.
+ *
+ * WS-MEM-1: Lifecycle integration
+ * - Delegates browser management to renderer.ts (STD-006: no duplication)
+ * - Registers shutdownGenerator with lifecycle manager (STD-005)
  */
 
 import type { DesignSpec } from '@/visuals/types';
@@ -13,6 +17,7 @@ import {
   generateComponentVisual,
   cleanupBrowserResources,
 } from './renderer';
+import { registerCleanup } from '@/lifecycle/index';
 import type { Browser } from 'puppeteer';
 import * as fs from 'fs';
 import * as path from 'path';
@@ -33,7 +38,9 @@ interface GenerationResult {
   error?: string;
 }
 
-let generatorBrowser: Browser | null = null;
+// Use renderer.ts singleton (no duplicate browser reference)
+let generatorInitialized = false;
+let generatorBrowserRef: Browser | null = null;
 let generatedCount = 0;
 
 export async function initializeGenerator(): Promise<GeneratorStatus> {
@@ -44,10 +51,17 @@ export async function initializeGenerator(): Promise<GeneratorStatus> {
     await fs.promises.mkdir(pendingDir, { recursive: true });
   }
 
-  // Initialize browser if not already initialized
-  if (!generatorBrowser) {
-    generatorBrowser = await initializeBrowser();
+  // Initialize browser via renderer singleton (STD-006: delegate to renderer)
+  if (!generatorBrowserRef) {
+    generatorBrowserRef = await initializeBrowser();
+
+    // Register shutdown with lifecycle manager (STD-005)
+    registerCleanup('generator-browser', async () => {
+      await shutdownGenerator();
+    });
   }
+
+  generatorInitialized = true;
 
   return {
     initialized: true,
@@ -58,16 +72,17 @@ export async function initializeGenerator(): Promise<GeneratorStatus> {
 }
 
 export async function shutdownGenerator(): Promise<void> {
-  if (generatorBrowser) {
-    await cleanupBrowserResources(generatorBrowser);
-    generatorBrowser = null;
+  if (generatorBrowserRef) {
+    await cleanupBrowserResources(generatorBrowserRef);
+    generatorBrowserRef = null;
   }
+  generatorInitialized = false;
 }
 
 export function getGeneratorStatus(): GeneratorStatus {
   return {
-    initialized: generatorBrowser !== null,
-    browserReady: generatorBrowser !== null,
+    initialized: generatorInitialized && generatorBrowserRef !== null,
+    browserReady: generatorBrowserRef !== null,
     timestamp: Date.now(),
     generatedCount,
   };
@@ -81,7 +96,7 @@ export async function generateVisual(
 
   try {
     // Auto-initialize if not initialized
-    if (!generatorBrowser) {
+    if (!generatorBrowserRef) {
       await initializeGenerator();
     }
 
@@ -114,7 +129,7 @@ export async function generateVisual(
     const filePath = await generateComponentVisual(
       componentName,
       designSpec,
-      generatorBrowser
+      generatorBrowserRef
     );
 
     generatedCount++;
@@ -142,7 +157,7 @@ export async function generateAllComponents(
   designSpec: DesignSpec
 ): Promise<GenerationResult[]> {
   // Auto-initialize if not initialized
-  if (!generatorBrowser) {
+  if (!generatorBrowserRef) {
     await initializeGenerator();
   }
 

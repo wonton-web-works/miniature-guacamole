@@ -17,6 +17,7 @@ import { getApprovalRecord } from '../workflow/approvals';
 import type { MetadataEntry } from '../metadata/types';
 import { shouldUseLfs, checkLfsPrerequisites, configureGitAttributes, trackFileWithLfs } from './lfs';
 import { validateVisualPath, validateVisualPaths } from './security';
+import { registerTempFile, deregisterTempFile } from '@/lifecycle/index';
 
 const METADATA_FILE = '.claude/visuals/metadata.json';
 
@@ -205,6 +206,8 @@ export async function commitApprovedVisual(
     // Create commit with message file to prevent injection
     const tmpFile = path.join(os.tmpdir(), `commit-${Date.now()}-${Math.random()}.txt`);
     fs.writeFileSync(tmpFile, message, 'utf8');
+    // Register temp file with lifecycle manager BEFORE git commit (AC-4)
+    registerTempFile(tmpFile);
     try {
       const commitResult = execFileSync('git', ['commit', '-F', tmpFile], {
         cwd: process.cwd(),
@@ -216,6 +219,8 @@ export async function commitApprovedVisual(
       if (fs.existsSync(tmpFile)) {
         fs.unlinkSync(tmpFile);
       }
+      // Deregister from lifecycle after cleanup
+      deregisterTempFile(tmpFile);
     }
 
     // Get commit hash using secure execFileSync
@@ -358,6 +363,8 @@ export async function commitMultipleVisuals(
     // Create commit with message file to prevent injection
     const tmpFile = path.join(os.tmpdir(), `commit-${Date.now()}-${Math.random()}.txt`);
     fs.writeFileSync(tmpFile, message, 'utf8');
+    // Register temp file with lifecycle manager BEFORE git commit (AC-4)
+    registerTempFile(tmpFile);
     try {
       const commitResult = execFileSync('git', ['commit', '-F', tmpFile], {
         cwd: process.cwd(),
@@ -369,6 +376,8 @@ export async function commitMultipleVisuals(
       if (fs.existsSync(tmpFile)) {
         fs.unlinkSync(tmpFile);
       }
+      // Deregister from lifecycle after cleanup
+      deregisterTempFile(tmpFile);
     }
 
     // Get commit hash using secure execFileSync

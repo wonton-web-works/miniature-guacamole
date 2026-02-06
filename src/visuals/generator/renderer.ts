@@ -6,6 +6,10 @@
  * Implements AC-5: Generation completes in <5 seconds per component.
  * Implements AC-6: Generated file saved to pending/.
  * Implements AC-7: Graceful error handling for rendering failures.
+ *
+ * WS-MEM-1: Lifecycle integration
+ * - Browser idle timeout with auto-close (AC-5, STD-007)
+ * - Lifecycle cleanup registration (STD-005)
  */
 
 import puppeteer, { type Browser, type Page } from 'puppeteer';
@@ -14,9 +18,73 @@ import * as path from 'path';
 import type { DesignSpec } from '@/visuals/types';
 import { renderTemplate } from './templates';
 import { generateFullHTML } from './parser';
+import { registerCleanup } from '@/lifecycle/registry';
+import { LIFECYCLE_DEFAULTS } from '@/lifecycle/config';
 
 let browserInstance: Browser | null = null;
 let lastCallCount = -1;
+
+// Idle timeout management
+let idleTimer: NodeJS.Timeout | null = null;
+let lastActivityTimestamp: number = 0;
+let browserAutoClosedByIdle = false;
+
+function startIdleTimer(): void {
+  clearIdleTimer();
+  lastActivityTimestamp = Date.now();
+  browserAutoClosedByIdle = false;
+  idleTimer = setTimeout(() => {
+    if (browserInstance) {
+      const browser = browserInstance;
+      browserInstance = null;
+      browserAutoClosedByIdle = true;
+      idleTimer = null;
+      // Close browser asynchronously (fire-and-forget, state already updated)
+      browser.close().catch(() => {
+        // Ignore close errors during auto-close
+      });
+    }
+  }, LIFECYCLE_DEFAULTS.BROWSER_IDLE_TIMEOUT_MS);
+}
+
+function clearIdleTimer(): void {
+  if (idleTimer) {
+    clearTimeout(idleTimer);
+    idleTimer = null;
+  }
+}
+
+/**
+ * Resets the browser idle timer. Call when browser activity occurs.
+ */
+export function resetBrowserIdleTimer(): void {
+  if (!browserInstance) {
+    return;
+  }
+  startIdleTimer();
+}
+
+/**
+ * Returns the browser idle status for monitoring (STD-008).
+ */
+export function getBrowserIdleStatus(): {
+  isIdle: boolean;
+  lastActivityMs: number;
+  browserExists: boolean;
+} {
+  if (!browserInstance) {
+    return {
+      isIdle: browserAutoClosedByIdle,
+      lastActivityMs: lastActivityTimestamp > 0 ? Date.now() - lastActivityTimestamp : 0,
+      browserExists: false,
+    };
+  }
+  return {
+    isIdle: false,
+    lastActivityMs: Date.now() - lastActivityTimestamp,
+    browserExists: true,
+  };
+}
 
 export async function initializeBrowser(): Promise<Browser> {
   // Detect if mocks have been cleared by checking if call count decreased
@@ -24,6 +92,7 @@ export async function initializeBrowser(): Promise<Browser> {
   if (lastCallCount > currentCallCount) {
     // Mocks were cleared, reset our singleton
     browserInstance = null;
+    clearIdleTimer();
   }
 
   // Reuse existing instance if available
@@ -41,6 +110,24 @@ export async function initializeBrowser(): Promise<Browser> {
 
   lastCallCount = (puppeteer.launch as any).mock?.calls?.length || 0;
   browserInstance = browser;
+  browserAutoClosedByIdle = false;
+
+  // Start idle timer (AC-5, STD-007)
+  startIdleTimer();
+
+  // Register cleanup with lifecycle manager (STD-005)
+  registerCleanup('puppeteer-browser', async () => {
+    clearIdleTimer();
+    if (browserInstance) {
+      try {
+        await browserInstance.close();
+      } catch {
+        // Already closed - graceful handling
+      }
+      browserInstance = null;
+    }
+  });
+
   return browser;
 }
 
@@ -54,6 +141,7 @@ export async function closeBrowser(browser: Browser | null): Promise<void> {
     // Reset singleton if closing the singleton instance
     if (browser === browserInstance) {
       browserInstance = null;
+      clearIdleTimer();
     }
   } catch (error) {
     console.warn(`Failed to close browser: ${error}`);
@@ -77,6 +165,9 @@ export async function renderHTMLToPNG(
 
   try {
     page = await browser.newPage();
+
+    // Reset idle timer on activity
+    resetBrowserIdleTimer();
 
     if (options.viewport) {
       await page.setViewport({
@@ -200,6 +291,7 @@ export async function cleanupBrowserResources(browser: Browser | null): Promise<
     // Reset singleton if this is the cached instance
     if (browser === browserInstance) {
       browserInstance = null;
+      clearIdleTimer();
     }
   } catch (error) {
     console.warn(`Failed to cleanup browser: ${error}`);

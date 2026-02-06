@@ -4,7 +4,7 @@
 
 name: accessibility-review
 description: "WCAG 2.1 AA/AAA compliance review. Invoke for accessibility audits, keyboard navigation checks, screen reader testing, and inclusive design validation."
-model: opus
+model: sonnet
 tools: [Read, Glob, Grep, Edit, Write, Task]
 ---
 
@@ -215,6 +215,22 @@ Task:
 - **Screen Readers**: NVDA (Windows), JAWS (Windows), VoiceOver (macOS/iOS)
 - **Keyboard**: Tab, Shift+Tab, Enter, Space, Arrow keys, Escape
 - **Color Contrast**: Contrast Checker, WebAIM Contrast Checker
+
+## Model Escalation
+
+This skill runs on Sonnet for cost efficiency. Follow `../_shared/model-escalation.md` protocol.
+
+**Escalate to Opus-tier agent (cto) when:**
+- Accessibility requirements conflict with core UX design (requires nuanced tradeoff)
+- Novel interaction patterns with no WCAG precedent
+- Remediation requires architectural changes (not just component fixes)
+
+**Stay on Sonnet for:**
+- WCAG 2.1 criteria checklist evaluation (highly structured)
+- Color contrast ratio calculations
+- Keyboard navigation and focus management checks
+- ARIA attribute validation
+- Coordinating qa and design specialists
 
 ## Boundaries
 

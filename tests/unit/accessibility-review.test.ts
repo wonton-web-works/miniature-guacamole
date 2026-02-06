@@ -32,7 +32,7 @@ describe('Accessibility Review - WS-11', () => {
 
     it('should have frontmatter with model', () => {
       const content = fs.readFileSync(skillPath, 'utf-8');
-      expect(content).toMatch(/model:\s+opus/);
+      expect(content).toMatch(/model:\s+sonnet/);
     });
 
     it('should have frontmatter with tools array', () => {

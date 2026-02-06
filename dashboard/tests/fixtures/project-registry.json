@@ -1,0 +1,26 @@
+{
+  "version": "1.0",
+  "last_updated": "2026-02-05T12:00:00Z",
+  "projects": [
+    {
+      "id": "agent-c-core",
+      "name": "Agent-C Core System",
+      "memory_path": "/Users/test/.claude/memory",
+      "status": "active",
+      "created_at": "2026-01-15T00:00:00Z",
+      "last_activity": "2026-02-05T11:30:00Z",
+      "workstream_count": 15,
+      "agent_count": 8
+    },
+    {
+      "id": "example-project",
+      "name": "Example Project",
+      "memory_path": "/Users/test/projects/example/.claude/memory",
+      "status": "active",
+      "created_at": "2026-02-01T00:00:00Z",
+      "last_activity": "2026-02-04T16:00:00Z",
+      "workstream_count": 3,
+      "agent_count": 4
+    }
+  ]
+}

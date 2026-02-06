@@ -1,0 +1,5 @@
+{
+  "workstream_id": "WS-MALFORMED",
+  "incomplete": true,
+  "missing_quote: "this will cause parse error
+}

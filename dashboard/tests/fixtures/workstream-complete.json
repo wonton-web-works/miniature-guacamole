@@ -1,0 +1,65 @@
+{
+  "workstream_id": "WS-DASH-TEST-COMPLETE",
+  "name": "Test Complete Workstream",
+  "status": "merged",
+  "phase": "complete",
+  "merge_commit": "abc123def",
+  "merged_at": "2026-02-03T18:00:00Z",
+  "agent_id": "deployment-engineer",
+  "created_at": "2026-02-01",
+  "description": "Completed workstream for testing",
+  "acceptance_criteria": [
+    "AC-1: Feature delivered",
+    "AC-2: All tests passing",
+    "AC-3: Code reviewed and approved",
+    "AC-4: Documentation published"
+  ],
+  "gate_status": "merged_to_main",
+  "delegated_to": null,
+  "tdd_cycle": {
+    "step_1_test_spec": {
+      "status": "complete",
+      "assigned_to": "qa",
+      "completed": "2026-02-01T10:00:00Z",
+      "test_count": 62
+    },
+    "step_2_implementation": {
+      "status": "complete",
+      "assigned_to": "dev",
+      "completed": "2026-02-02T15:00:00Z"
+    },
+    "step_3_verification": {
+      "status": "complete",
+      "assigned_to": "qa",
+      "completed": "2026-02-02T17:00:00Z"
+    },
+    "step_4_review": {
+      "status": "complete",
+      "assigned_to": "engineering-manager",
+      "completed": "2026-02-03T09:00:00Z"
+    }
+  },
+  "tests": {
+    "total": 62,
+    "passing": 62,
+    "failing": 0,
+    "test_files": [
+      "tests/unit/feature-a.test.ts",
+      "tests/unit/feature-b.test.ts",
+      "tests/integration/e2e.test.ts"
+    ]
+  },
+  "coverage": 99.2,
+  "dependencies": [],
+  "blocked_reason": null,
+  "code_review_status": "approved",
+  "verification_results": {
+    "verified_at": "2026-02-02T17:00:00Z",
+    "verified_by": "qa",
+    "test_execution": {
+      "all_tests_pass": true,
+      "total_tests": 62,
+      "test_duration_ms": 450
+    }
+  }
+}

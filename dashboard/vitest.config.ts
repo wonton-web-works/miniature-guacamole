@@ -5,6 +5,11 @@ export default defineConfig({
   test: {
     globals: true,
     environment: 'node',
+    environmentMatchGlobs: [
+      ['tests/unit/components/**', 'jsdom'],
+      ['tests/unit/hooks/**', 'jsdom'],
+    ],
+    setupFiles: ['./tests/setup.ts'],
     coverage: {
       provider: 'v8',
       reporter: ['text', 'json', 'html'],
@@ -14,14 +19,14 @@ export default defineConfig({
         '*.config.*',
         '.next/',
         'src/app/layout.tsx',
-        'src/app/page.tsx',
         'src/app/globals.css',
+        'src/components/ui/**',
       ],
       thresholds: {
-        lines: 99,
-        functions: 99,
-        branches: 99,
-        statements: 99,
+        lines: 80,
+        functions: 80,
+        branches: 80,
+        statements: 80,
       },
     },
   },

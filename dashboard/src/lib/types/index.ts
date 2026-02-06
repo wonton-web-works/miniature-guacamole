@@ -30,3 +30,12 @@ export type {
   ApiResponse,
   PaginatedResponse,
 } from './api';
+
+export type {
+  SSEEventType,
+  SSEEvent,
+  WorkstreamUpdatedEvent,
+  ActivityAddedEvent,
+  QuestionEvent,
+  HeartbeatEvent,
+} from './events';

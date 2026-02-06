@@ -39,6 +39,9 @@ npm-debug.log*
 *.tmp
 .cache/
 
+# GitHub Actions
+.github/.cache/
+
 # Claude memory (agent state - project-specific)
 **/*memory/
 .claude/memory/

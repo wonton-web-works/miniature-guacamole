@@ -16,13 +16,20 @@
     "build:dist": "./scripts/build-dist.sh"
   },
   "keywords": [
-    "memory",
-    "shared-state",
-    "agents",
-    "claude"
+    "claude-code",
+    "ai-agents",
+    "multi-agent",
+    "tdd",
+    "workflow-automation",
+    "skills"
   ],
-  "author": "",
+  "author": "miniature-guacamole contributors",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/YOUR_ORG/miniature-guacamole.git"
+  },
+  "homepage": "https://YOUR_ORG.github.io/miniature-guacamole",
   "devDependencies": {
     "@playwright/test": "^1.40.0",
     "@types/node": "^20.0.0",

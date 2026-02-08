@@ -103,7 +103,8 @@ describe('GET /api/health', () => {
 
       if (response.status === 503) {
         expect(data.success).toBe(false);
-        expect(data.data).toBeNull();
+        expect(data.data).toHaveProperty('status');
+        expect(data.data).toHaveProperty('checks');
         expect(data.error).toBeTruthy();
       }
     });
@@ -115,7 +116,8 @@ describe('GET /api/health', () => {
 
       if (response.status === 503) {
         expect(data.error).toBe('System health checks failed');
-        expect(data.data).toBeNull();
+        expect(data.data).toHaveProperty('status', 'unhealthy');
+        expect(data.data).toHaveProperty('checks');
       }
     });
   });

@@ -71,10 +71,23 @@ function deriveDescription(data: Record<string, unknown>): string {
   return `${agentId} updated ${name}`;
 }
 
+export interface ActivitiesWithTotal {
+  items: Activity[];
+  total: number;
+}
+
 export function getActivities(
   memoryPath: string = DEFAULT_MEMORY_PATH,
   options: ActivityOptions = {}
 ): Activity[] {
+  const result = getActivitiesWithTotal(memoryPath, options);
+  return result.items;
+}
+
+export function getActivitiesWithTotal(
+  memoryPath: string = DEFAULT_MEMORY_PATH,
+  options: ActivityOptions = {}
+): ActivitiesWithTotal {
   const { limit, offset = 0, agentId, workstreamId } = options;
 
   const files = listJsonFiles(memoryPath);
@@ -126,10 +139,16 @@ export function getActivities(
     filtered = filtered.filter(a => a.workstream_id === workstreamId);
   }
 
+  // Get total BEFORE pagination
+  const total = filtered.length;
+
   // Apply pagination
   const normalizedOffset = Math.max(0, offset);
   const start = normalizedOffset;
   const end = limit !== undefined ? start + limit : undefined;
 
-  return filtered.slice(start, end);
+  return {
+    items: filtered.slice(start, end),
+    total,
+  };
 }

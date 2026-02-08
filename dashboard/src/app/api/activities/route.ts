@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getActivities } from '@/lib/data';
+import { getActivitiesWithTotal } from '@/lib/data';
 import { MemoryCache } from '@/lib/data/cache';
+import { DEFAULT_ACTIVITY_LIMIT } from '@/lib/constants';
 import type { ApiResponse, Activity } from '@/lib/types';
 
 const cache = new MemoryCache();
@@ -14,26 +15,34 @@ export async function GET(request: NextRequest): Promise<NextResponse<ApiRespons
     const workstreamId = searchParams.get('workstreamId');
 
     const cacheKey = `activities:${limit}:${offset}:${agentId}:${workstreamId}`;
-    const cached = cache.getWithMeta<Activity[]>(cacheKey);
+    const cached = cache.getWithMeta<{ items: Activity[]; total: number }>(cacheKey);
 
     let activities: Activity[];
+    let total: number;
     let isCached = false;
     let cacheAge = 0;
 
     if (cached) {
-      activities = cached.data;
+      activities = cached.data.items;
+      total = cached.data.total;
       isCached = true;
       cacheAge = cached.meta.cacheAge;
     } else {
-      activities = getActivities(undefined, {
+      const result = getActivitiesWithTotal(undefined, {
         limit,
         offset,
         agentId: agentId || undefined,
         workstreamId: workstreamId || undefined,
       });
 
-      cache.set(cacheKey, activities);
+      activities = result.items;
+      total = result.total;
+
+      cache.set(cacheKey, result);
     }
+
+    const actualLimit = limit ?? DEFAULT_ACTIVITY_LIMIT;
+    const actualOffset = offset ?? 0;
 
     const response: ApiResponse<Activity[]> = {
       success: true,
@@ -43,6 +52,10 @@ export async function GET(request: NextRequest): Promise<NextResponse<ApiRespons
       meta: {
         cached: isCached,
         cacheAge,
+        total,
+        offset: actualOffset,
+        limit: actualLimit,
+        hasMore: (actualOffset + actualLimit) < total,
       },
     };
 

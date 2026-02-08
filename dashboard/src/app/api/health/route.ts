@@ -39,7 +39,7 @@ export async function GET(_request: NextRequest): Promise<NextResponse<ApiRespon
 
     const response: ApiResponse<HealthData> = {
       success: allHealthy,
-      data: allHealthy ? healthData : null,
+      data: healthData,
       error: allHealthy ? null : 'System health checks failed',
       timestamp: new Date().toISOString(),
       meta: {},

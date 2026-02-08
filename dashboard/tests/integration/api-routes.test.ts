@@ -16,6 +16,7 @@ describe('API Routes Integration', () => {
     tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'dashboard-api-test-'));
     memoryPath = path.join(tempDir, 'memory');
     fs.mkdirSync(memoryPath, { recursive: true });
+    process.env.CLAUDE_MEMORY_PATH = memoryPath;
 
     // Create test workstreams
     fs.writeFileSync(

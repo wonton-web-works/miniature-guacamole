@@ -39,13 +39,13 @@ function ensureDirectoryExists(dirPath: string): void {
 }
 
 function writeRegistry(dashboardPath: string, registry: ProjectRegistry): void {
-  try {
-    ensureDirectoryExists(dashboardPath);
-    const filePath = join(dashboardPath, PROJECT_REGISTRY_FILE);
-    writeFileSync(filePath, JSON.stringify(registry, null, 2), 'utf-8');
-  } catch (error) {
-    // Silently handle write errors
-  }
+  ensureDirectoryExists(dashboardPath);
+  const filePath = join(dashboardPath, PROJECT_REGISTRY_FILE);
+
+  // Let write errors propagate to callers so they can detect persistence failures
+  // Functions like addProject(), removeProject(), and updateProject() should be
+  // aware when data may not have been saved successfully
+  writeFileSync(filePath, JSON.stringify(registry, null, 2), 'utf-8');
 }
 
 export function getRegistry(dashboardPath: string = DEFAULT_DASHBOARD_PATH): ProjectRegistry {

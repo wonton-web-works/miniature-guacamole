@@ -1,6 +1,8 @@
 import { NextRequest } from 'next/server';
 import { detectChanges } from '@/lib/data/change-detector';
 
+export const dynamic = 'force-dynamic';
+
 const POLL_INTERVAL = 5000;
 const HEARTBEAT_INTERVAL = 30000;
 

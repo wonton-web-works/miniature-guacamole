@@ -4,11 +4,6 @@ import { listJsonFiles } from './memory-reader';
 import { DEFAULT_MEMORY_PATH } from '../constants';
 import type { SSEEventType } from '../types/events';
 
-interface FileState {
-  path: string;
-  mtime: number;
-}
-
 interface DetectedChange {
   type: SSEEventType;
   data: Record<string, unknown>;

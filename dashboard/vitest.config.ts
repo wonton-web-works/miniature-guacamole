@@ -2,12 +2,15 @@ import { defineConfig } from 'vitest/config';
 import path from 'path';
 
 export default defineConfig({
+  esbuild: {
+    jsx: 'automatic',
+  },
   test: {
     globals: true,
     environment: 'node',
     environmentMatchGlobs: [
-      ['tests/unit/components/**', 'jsdom'],
-      ['tests/unit/hooks/**', 'jsdom'],
+      ['tests/unit/components/**', 'happy-dom'],
+      ['tests/unit/hooks/**', 'happy-dom'],
     ],
     setupFiles: ['./tests/setup.ts'],
     coverage: {

@@ -1,5 +1,43 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
 import { NextRequest } from 'next/server';
+
+// Mock the data layer to return test data
+vi.mock('../../../src/lib/data', () => ({
+  getAllWorkstreams: vi.fn(() => [
+    {
+      workstream_id: 'WS-1',
+      name: 'Test Workstream 1',
+      status: 'in_progress',
+      phase: 'in_progress',
+      agent_id: 'test-agent',
+      timestamp: new Date().toISOString(),
+      created_at: new Date().toISOString().split('T')[0],
+    },
+    {
+      workstream_id: 'WS-2',
+      name: 'Test Workstream 2',
+      status: 'blocked',
+      phase: 'blocked',
+      agent_id: 'test-agent-2',
+      timestamp: new Date().toISOString(),
+      created_at: new Date().toISOString().split('T')[0],
+    },
+    {
+      workstream_id: 'WS-3',
+      name: 'Test Workstream 3',
+      status: 'complete',
+      phase: 'complete',
+      agent_id: 'test-agent-3',
+      timestamp: new Date().toISOString(),
+      created_at: new Date().toISOString().split('T')[0],
+    },
+  ]),
+  MemoryCache: vi.fn().mockImplementation(() => ({
+    get: vi.fn().mockReturnValue(null),
+    getWithMeta: vi.fn().mockReturnValue(null),
+    set: vi.fn(),
+  })),
+}));
 
 // AC-DASH-1.7: API route tests for workstreams list endpoint
 
@@ -11,6 +49,10 @@ describe('GET /api/workstreams', () => {
     // @ts-expect-error - module not implemented yet
     const module = await import('../../../src/app/api/workstreams/route');
     GET = module.GET;
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
   });
 
   describe('basic functionality', () => {
@@ -214,17 +256,21 @@ describe('GET /api/workstreams', () => {
     });
 
     it('should invalidate cache after TTL', async () => {
+      vi.useFakeTimers();
+
       const request1 = new NextRequest('http://localhost:3000/api/workstreams');
       await GET(request1);
 
-      // Wait for cache TTL to expire (5000ms + buffer)
-      await new Promise(resolve => setTimeout(resolve, 5100));
+      // Advance time past cache TTL (5000ms + buffer)
+      vi.advanceTimersByTime(5100);
 
       const request2 = new NextRequest('http://localhost:3000/api/workstreams');
       const response2 = await GET(request2);
       const data2 = await response2.json();
 
       expect(data2.meta.cached).toBe(false);
+
+      vi.useRealTimers();
     });
 
     it('should cache filtered results separately', async () => {
@@ -312,12 +358,13 @@ describe('GET /api/workstreams', () => {
       });
     });
 
-    it('should not include error field on success', async () => {
+    it('should include error field as null on success', async () => {
       const request = new NextRequest('http://localhost:3000/api/workstreams');
       const response = await GET(request);
       const data = await response.json();
 
-      expect(data).not.toHaveProperty('error');
+      // API returns error: null on success (consistent envelope)
+      expect(data.error).toBeNull();
     });
 
     it('should return valid JSON', async () => {

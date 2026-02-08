@@ -1,16 +1,29 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import {
   ApiError,
-  fetchWorkstreams,
-  fetchWorkstreamById,
-  fetchSystemHealth,
-  fetchQuestions,
-  fetchQuestionById,
-  updateQuestionPriority,
+  getWorkstreams,
+  getWorkstreamById,
+  getActivities,
+  getQuestions,
+  getHealth,
   answerQuestion,
 } from '@/lib/api-client';
 
-global.fetch = vi.fn();
+const mockFetch = vi.fn();
+global.fetch = mockFetch;
+
+function mockApiResponse(data: unknown, success = true) {
+  return {
+    ok: success,
+    status: success ? 200 : 500,
+    json: async () => ({
+      success,
+      data: success ? data : null,
+      error: success ? null : 'Server error',
+      timestamp: new Date().toISOString(),
+    }),
+  } as Response;
+}
 
 describe('ApiError', () => {
   it('creates error with message and status', () => {
@@ -19,6 +32,12 @@ describe('ApiError', () => {
     expect(error.status).toBe(404);
     expect(error.name).toBe('ApiError');
   });
+
+  it('stores response data', () => {
+    const resp = { success: false, data: null, error: 'not found', timestamp: '' };
+    const error = new ApiError('not found', 404, resp);
+    expect(error.response).toBe(resp);
+  });
 });
 
 describe('API Client', () => {
@@ -26,180 +45,138 @@ describe('API Client', () => {
     vi.clearAllMocks();
   });
 
-  describe('fetchWorkstreams', () => {
+  describe('getWorkstreams', () => {
     it('fetches workstreams successfully', async () => {
-      const mockData = [{ id: 'ws-1', name: 'Test Workstream' }];
-      vi.mocked(fetch).mockResolvedValueOnce({
-        ok: true,
-        json: async () => mockData,
-      } as Response);
+      const mockData = [{ workstream_id: 'ws-1', name: 'Test' }];
+      mockFetch.mockResolvedValueOnce(mockApiResponse(mockData));
 
-      const result = await fetchWorkstreams();
+      const result = await getWorkstreams();
       expect(result).toEqual(mockData);
-      expect(fetch).toHaveBeenCalledWith('/api/workstreams');
+      expect(mockFetch.mock.calls[0][0]).toBe('/api/workstreams');
+    });
+
+    it('passes status filter as query param', async () => {
+      mockFetch.mockResolvedValueOnce(mockApiResponse([]));
+      await getWorkstreams('blocked');
+      expect(mockFetch.mock.calls[0][0]).toBe('/api/workstreams?status=blocked');
     });
 
     it('throws ApiError on failure', async () => {
-      vi.mocked(fetch).mockResolvedValueOnce({
-        ok: false,
-        status: 500,
-        statusText: 'Internal Server Error',
-      } as Response);
-
-      await expect(fetchWorkstreams()).rejects.toThrow(ApiError);
-      await expect(fetchWorkstreams()).rejects.toThrow('Failed to fetch workstreams: Internal Server Error');
+      mockFetch.mockResolvedValueOnce(mockApiResponse(null, false));
+      await expect(getWorkstreams()).rejects.toThrow(ApiError);
     });
   });
 
-  describe('fetchWorkstreamById', () => {
+  describe('getWorkstreamById', () => {
     it('fetches workstream by id successfully', async () => {
-      const mockData = { id: 'ws-1', name: 'Test Workstream' };
-      vi.mocked(fetch).mockResolvedValueOnce({
-        ok: true,
-        json: async () => mockData,
-      } as Response);
+      const mockData = { workstream_id: 'ws-1', name: 'Test' };
+      mockFetch.mockResolvedValueOnce(mockApiResponse(mockData));
 
-      const result = await fetchWorkstreamById('ws-1');
+      const result = await getWorkstreamById('ws-1');
       expect(result).toEqual(mockData);
-      expect(fetch).toHaveBeenCalledWith('/api/workstreams/ws-1');
+      expect(mockFetch.mock.calls[0][0]).toBe('/api/workstreams/ws-1');
     });
 
     it('throws ApiError on 404', async () => {
-      vi.mocked(fetch).mockResolvedValueOnce({
+      mockFetch.mockResolvedValueOnce({
         ok: false,
         status: 404,
-        statusText: 'Not Found',
+        json: async () => ({
+          success: false,
+          data: null,
+          error: 'Not found',
+          timestamp: new Date().toISOString(),
+        }),
       } as Response);
 
-      await expect(fetchWorkstreamById('ws-999')).rejects.toThrow(ApiError);
+      await expect(getWorkstreamById('ws-999')).rejects.toThrow(ApiError);
     });
   });
 
-  describe('fetchSystemHealth', () => {
-    it('fetches system health successfully', async () => {
-      const mockData = { status: 'healthy', checks: [] };
-      vi.mocked(fetch).mockResolvedValueOnce({
-        ok: true,
-        json: async () => mockData,
-      } as Response);
+  describe('getActivities', () => {
+    it('fetches activities successfully', async () => {
+      const mockData = [{ id: 'a-1', description: 'Test' }];
+      mockFetch.mockResolvedValueOnce(mockApiResponse(mockData));
 
-      const result = await fetchSystemHealth();
+      const result = await getActivities();
       expect(result).toEqual(mockData);
-      expect(fetch).toHaveBeenCalledWith('/api/health');
+      expect(mockFetch.mock.calls[0][0]).toBe('/api/activities');
+    });
+
+    it('passes limit and offset as query params', async () => {
+      mockFetch.mockResolvedValueOnce(mockApiResponse([]));
+      await getActivities({ limit: 10, offset: 20 });
+      expect(mockFetch.mock.calls[0][0]).toBe('/api/activities?limit=10&offset=20');
     });
 
     it('throws ApiError on failure', async () => {
-      vi.mocked(fetch).mockResolvedValueOnce({
-        ok: false,
-        status: 503,
-        statusText: 'Service Unavailable',
-      } as Response);
-
-      await expect(fetchSystemHealth()).rejects.toThrow(ApiError);
+      mockFetch.mockResolvedValueOnce(mockApiResponse(null, false));
+      await expect(getActivities()).rejects.toThrow(ApiError);
     });
   });
 
-  describe('fetchQuestions', () => {
+  describe('getQuestions', () => {
     it('fetches questions successfully', async () => {
       const mockData = [{ id: 'q-1', question: 'Test?' }];
-      vi.mocked(fetch).mockResolvedValueOnce({
-        ok: true,
-        json: async () => mockData,
-      } as Response);
+      mockFetch.mockResolvedValueOnce(mockApiResponse(mockData));
 
-      const result = await fetchQuestions();
+      const result = await getQuestions();
       expect(result).toEqual(mockData);
-      expect(fetch).toHaveBeenCalledWith('/api/questions');
+      expect(mockFetch.mock.calls[0][0]).toBe('/api/questions');
+    });
+
+    it('passes status filter', async () => {
+      mockFetch.mockResolvedValueOnce(mockApiResponse([]));
+      await getQuestions('open');
+      expect(mockFetch.mock.calls[0][0]).toBe('/api/questions?status=open');
     });
 
     it('throws ApiError on failure', async () => {
-      vi.mocked(fetch).mockResolvedValueOnce({
-        ok: false,
-        status: 500,
-        statusText: 'Internal Server Error',
-      } as Response);
-
-      await expect(fetchQuestions()).rejects.toThrow(ApiError);
+      mockFetch.mockResolvedValueOnce(mockApiResponse(null, false));
+      await expect(getQuestions()).rejects.toThrow(ApiError);
     });
   });
 
-  describe('fetchQuestionById', () => {
-    it('fetches question by id successfully', async () => {
-      const mockData = { id: 'q-1', question: 'Test?' };
-      vi.mocked(fetch).mockResolvedValueOnce({
-        ok: true,
-        json: async () => mockData,
-      } as Response);
+  describe('getHealth', () => {
+    it('fetches health successfully', async () => {
+      const mockData = { status: 'healthy', checks: {} };
+      mockFetch.mockResolvedValueOnce(mockApiResponse(mockData));
 
-      const result = await fetchQuestionById('q-1');
+      const result = await getHealth();
       expect(result).toEqual(mockData);
-      expect(fetch).toHaveBeenCalledWith('/api/questions/q-1');
-    });
-
-    it('throws ApiError on 404', async () => {
-      vi.mocked(fetch).mockResolvedValueOnce({
-        ok: false,
-        status: 404,
-        statusText: 'Not Found',
-      } as Response);
-
-      await expect(fetchQuestionById('q-999')).rejects.toThrow(ApiError);
-    });
-  });
-
-  describe('updateQuestionPriority', () => {
-    it('updates question priority successfully', async () => {
-      const mockData = { id: 'q-1', priority: 'high' };
-      vi.mocked(fetch).mockResolvedValueOnce({
-        ok: true,
-        json: async () => mockData,
-      } as Response);
-
-      const result = await updateQuestionPriority('q-1', 'high');
-      expect(result).toEqual(mockData);
-      expect(fetch).toHaveBeenCalledWith('/api/questions/q-1', {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ priority: 'high' }),
-      });
+      expect(mockFetch.mock.calls[0][0]).toBe('/api/health');
     });
 
     it('throws ApiError on failure', async () => {
-      vi.mocked(fetch).mockResolvedValueOnce({
-        ok: false,
-        status: 400,
-        statusText: 'Bad Request',
-      } as Response);
-
-      await expect(updateQuestionPriority('q-1', 'high')).rejects.toThrow(ApiError);
+      mockFetch.mockResolvedValueOnce(mockApiResponse(null, false));
+      await expect(getHealth()).rejects.toThrow(ApiError);
     });
   });
 
   describe('answerQuestion', () => {
     it('answers question successfully', async () => {
-      const mockData = { id: 'q-1', answer: 'Test answer' };
-      vi.mocked(fetch).mockResolvedValueOnce({
-        ok: true,
-        json: async () => mockData,
-      } as Response);
+      const mockData = { success: true };
+      mockFetch.mockResolvedValueOnce(mockApiResponse(mockData));
 
-      const result = await answerQuestion('q-1', 'Test answer');
+      const result = await answerQuestion('q-1', 'My answer', 'approve');
       expect(result).toEqual(mockData);
-      expect(fetch).toHaveBeenCalledWith('/api/questions/q-1/answer', {
+      expect(mockFetch.mock.calls[0][0]).toBe('/api/questions/q-1/answer');
+      expect(mockFetch.mock.calls[0][1]).toEqual({
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ answer: 'Test answer' }),
+        body: JSON.stringify({ answer: 'My answer', action: 'approve' }),
       });
     });
 
-    it('throws ApiError on failure', async () => {
-      vi.mocked(fetch).mockResolvedValueOnce({
-        ok: false,
-        status: 500,
-        statusText: 'Internal Server Error',
-      } as Response);
+    it('encodes question id in URL', async () => {
+      mockFetch.mockResolvedValueOnce(mockApiResponse({ success: true }));
+      await answerQuestion('q/special', 'answer', 'respond');
+      expect(mockFetch.mock.calls[0][0]).toBe('/api/questions/q%2Fspecial/answer');
+    });
 
-      await expect(answerQuestion('q-1', 'Test answer')).rejects.toThrow(ApiError);
+    it('throws ApiError on failure', async () => {
+      mockFetch.mockResolvedValueOnce(mockApiResponse(null, false));
+      await expect(answerQuestion('q-1', 'answer', 'approve')).rejects.toThrow(ApiError);
     });
   });
 });

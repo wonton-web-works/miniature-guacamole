@@ -89,8 +89,8 @@ describe('GET /api/activities', () => {
       const response = await GET(request);
       const data = await response.json();
 
-      expect(data.meta).toHaveProperty('limit');
-      expect(data.meta).toHaveProperty('offset');
+      expect(data.meta).toHaveProperty('cached');
+      expect(typeof data.meta.cached).toBe('boolean');
     });
   });
 

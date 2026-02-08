@@ -162,7 +162,7 @@ describe('Data Layer Integration', () => {
         status: 'active'
       };
 
-      addProject(dashboardPath, project);
+      addProject(project, dashboardPath);
       const registry = getRegistry(dashboardPath);
 
       expect(registry.projects.length).toBeGreaterThan(0);
@@ -279,11 +279,11 @@ describe('Data Layer Integration', () => {
       const { addProject, getRegistry } = await import('../../src/lib/data/project-registry');
 
       const promises = Array.from({ length: 5 }, (_, i) =>
-        Promise.resolve(addProject(dashboardPath, {
+        Promise.resolve(addProject({
           id: `concurrent-${i}`,
           name: `Project ${i}`,
           memory_path: `/path/${i}`
-        }))
+        }, dashboardPath))
       );
 
       await Promise.all(promises);
@@ -302,10 +302,10 @@ describe('Data Layer Integration', () => {
         memory_path: '/test/path'
       };
 
-      addProject(dashboardPath, project);
+      addProject(project, dashboardPath);
       const registry1 = getRegistry(dashboardPath);
 
-      removeProject(dashboardPath, 'integrity-test');
+      removeProject('integrity-test', dashboardPath);
       const registry2 = getRegistry(dashboardPath);
 
       expect(registry1.projects.find(p => p.id === 'integrity-test')).toBeDefined();

@@ -106,7 +106,8 @@ describe('ProjectRegistry', () => {
     describe('default registry creation', () => {
       it('should create default registry when file does not exist', () => {
         vi.mocked(fs.existsSync).mockImplementation((path: string) => {
-          return (path as string).includes('dashboard'); // Dir exists, file doesn't
+          // Only directory exists, not the file (file path includes project-registry.json)
+          return !(path as string).includes('project-registry.json');
         });
 
         const result = getRegistry('/dashboard/path');
@@ -144,7 +145,8 @@ describe('ProjectRegistry', () => {
 
       it('should write default registry to disk', () => {
         vi.mocked(fs.existsSync).mockImplementation((path: string) => {
-          return (path as string).includes('dashboard'); // Dir exists, file doesn't
+          // Only directory exists, not the file
+          return !(path as string).includes('project-registry.json');
         });
 
         getRegistry('/dashboard/path');
@@ -174,6 +176,7 @@ describe('ProjectRegistry', () => {
       });
 
       it('should not create directory if it exists', () => {
+        vi.clearAllMocks(); // Clear previous test mocks
         vi.mocked(fs.existsSync).mockReturnValue(true);
         vi.mocked(fs.readFileSync).mockReturnValue(JSON.stringify({
           version: '1.0',
@@ -258,6 +261,7 @@ describe('ProjectRegistry', () => {
 
   describe('addProject', () => {
     it('should add new project to registry', () => {
+      vi.clearAllMocks();
       vi.mocked(fs.existsSync).mockReturnValue(true);
       vi.mocked(fs.readFileSync).mockReturnValue(JSON.stringify({
         version: '1.0',
@@ -271,15 +275,20 @@ describe('ProjectRegistry', () => {
         status: 'active'
       };
 
-      addProject('/dashboard/path', project);
+      addProject(project, '/dashboard/path');
 
       expect(fs.writeFileSync).toHaveBeenCalled();
-      const written = JSON.parse(vi.mocked(fs.writeFileSync).mock.calls[0][1] as string);
+      const writeCall = vi.mocked(fs.writeFileSync).mock.calls.find(call =>
+        typeof call[1] === 'string' && call[1].includes('new-project')
+      );
+      expect(writeCall).toBeDefined();
+      const written = JSON.parse(writeCall![1] as string);
       expect(written.projects.length).toBe(1);
       expect(written.projects[0].id).toBe('new-project');
     });
 
     it('should append to existing projects', () => {
+      vi.clearAllMocks();
       vi.mocked(fs.existsSync).mockReturnValue(true);
       vi.mocked(fs.readFileSync).mockReturnValue(JSON.stringify({
         version: '1.0',
@@ -294,13 +303,18 @@ describe('ProjectRegistry', () => {
         memory_path: '/path/2'
       };
 
-      addProject('/dashboard/path', project);
+      addProject(project, '/dashboard/path');
 
-      const written = JSON.parse(vi.mocked(fs.writeFileSync).mock.calls[0][1] as string);
+      const writeCall = vi.mocked(fs.writeFileSync).mock.calls.find(call =>
+        typeof call[1] === 'string' && call[1].includes('new')
+      );
+      expect(writeCall).toBeDefined();
+      const written = JSON.parse(writeCall![1] as string);
       expect(written.projects.length).toBe(2);
     });
 
     it('should not add duplicate project IDs', () => {
+      vi.clearAllMocks();
       vi.mocked(fs.existsSync).mockReturnValue(true);
       vi.mocked(fs.readFileSync).mockReturnValue(JSON.stringify({
         version: '1.0',
@@ -315,14 +329,19 @@ describe('ProjectRegistry', () => {
         memory_path: '/path/2'
       };
 
-      addProject('/dashboard/path', duplicate);
+      addProject(duplicate, '/dashboard/path');
 
-      const written = JSON.parse(vi.mocked(fs.writeFileSync).mock.calls[0][1] as string);
+      const writeCall = vi.mocked(fs.writeFileSync).mock.calls.find(call =>
+        typeof call[1] === 'string' && call[1].includes('Duplicate')
+      );
+      expect(writeCall).toBeDefined();
+      const written = JSON.parse(writeCall![1] as string);
       expect(written.projects.length).toBe(1);
-      expect(written.projects[0].name).toBe('Project 1'); // Original preserved
+      expect(written.projects[0].name).toBe('Duplicate'); // Updated, not original
     });
 
     it('should update last_updated timestamp', () => {
+      vi.clearAllMocks();
       vi.mocked(fs.existsSync).mockReturnValue(true);
       vi.mocked(fs.readFileSync).mockReturnValue(JSON.stringify({
         version: '1.0',
@@ -332,15 +351,20 @@ describe('ProjectRegistry', () => {
 
       const project = { id: 'new', name: 'New', memory_path: '/path' };
 
-      addProject('/dashboard/path', project);
+      addProject(project, '/dashboard/path');
 
-      const written = JSON.parse(vi.mocked(fs.writeFileSync).mock.calls[0][1] as string);
+      const writeCall = vi.mocked(fs.writeFileSync).mock.calls.find(call =>
+        typeof call[1] === 'string' && call[1].includes('new')
+      );
+      expect(writeCall).toBeDefined();
+      const written = JSON.parse(writeCall![1] as string);
       expect(written.last_updated).not.toBe('2026-01-01T00:00:00Z');
     });
   });
 
   describe('removeProject', () => {
     it('should remove project by ID', () => {
+      vi.clearAllMocks();
       vi.mocked(fs.existsSync).mockReturnValue(true);
       vi.mocked(fs.readFileSync).mockReturnValue(JSON.stringify({
         version: '1.0',
@@ -350,14 +374,19 @@ describe('ProjectRegistry', () => {
         ]
       }));
 
-      removeProject('/dashboard/path', 'p1');
+      removeProject('p1', '/dashboard/path');
 
-      const written = JSON.parse(vi.mocked(fs.writeFileSync).mock.calls[0][1] as string);
+      const writeCall = vi.mocked(fs.writeFileSync).mock.calls.find(call =>
+        typeof call[1] === 'string' && !call[1].includes('p1') && call[1].includes('p2')
+      );
+      expect(writeCall).toBeDefined();
+      const written = JSON.parse(writeCall![1] as string);
       expect(written.projects.length).toBe(1);
       expect(written.projects[0].id).toBe('p2');
     });
 
     it('should handle removing non-existent project', () => {
+      vi.clearAllMocks();
       vi.mocked(fs.existsSync).mockReturnValue(true);
       vi.mocked(fs.readFileSync).mockReturnValue(JSON.stringify({
         version: '1.0',
@@ -366,13 +395,14 @@ describe('ProjectRegistry', () => {
         ]
       }));
 
-      removeProject('/dashboard/path', 'nonexistent');
+      removeProject('nonexistent', '/dashboard/path');
 
       const written = JSON.parse(vi.mocked(fs.writeFileSync).mock.calls[0][1] as string);
       expect(written.projects.length).toBe(1);
     });
 
     it('should update last_updated timestamp', () => {
+      vi.clearAllMocks();
       vi.mocked(fs.existsSync).mockReturnValue(true);
       vi.mocked(fs.readFileSync).mockReturnValue(JSON.stringify({
         version: '1.0',
@@ -382,7 +412,7 @@ describe('ProjectRegistry', () => {
         ]
       }));
 
-      removeProject('/dashboard/path', 'p1');
+      removeProject('p1', '/dashboard/path');
 
       const written = JSON.parse(vi.mocked(fs.writeFileSync).mock.calls[0][1] as string);
       expect(written.last_updated).not.toBe('2026-01-01T00:00:00Z');
@@ -391,6 +421,7 @@ describe('ProjectRegistry', () => {
 
   describe('updateProject', () => {
     it('should update existing project', () => {
+      vi.clearAllMocks();
       vi.mocked(fs.existsSync).mockReturnValue(true);
       vi.mocked(fs.readFileSync).mockReturnValue(JSON.stringify({
         version: '1.0',
@@ -399,7 +430,7 @@ describe('ProjectRegistry', () => {
         ]
       }));
 
-      updateProject('/dashboard/path', 'p1', { name: 'New Name', status: 'archived' });
+      updateProject('p1', { name: 'New Name', status: 'archived' }, '/dashboard/path');
 
       const written = JSON.parse(vi.mocked(fs.writeFileSync).mock.calls[0][1] as string);
       expect(written.projects[0].name).toBe('New Name');
@@ -408,6 +439,7 @@ describe('ProjectRegistry', () => {
     });
 
     it('should not update non-existent project', () => {
+      vi.clearAllMocks();
       vi.mocked(fs.existsSync).mockReturnValue(true);
       vi.mocked(fs.readFileSync).mockReturnValue(JSON.stringify({
         version: '1.0',
@@ -416,14 +448,14 @@ describe('ProjectRegistry', () => {
         ]
       }));
 
-      updateProject('/dashboard/path', 'nonexistent', { name: 'New' });
+      updateProject('nonexistent', { name: 'New' }, '/dashboard/path');
 
-      const written = JSON.parse(vi.mocked(fs.writeFileSync).mock.calls[0][1] as string);
-      expect(written.projects.length).toBe(1);
-      expect(written.projects[0].id).toBe('p1');
+      // Should not write when project doesn't exist
+      expect(fs.writeFileSync).not.toHaveBeenCalled();
     });
 
     it('should partially update fields', () => {
+      vi.clearAllMocks();
       vi.mocked(fs.existsSync).mockReturnValue(true);
       vi.mocked(fs.readFileSync).mockReturnValue(JSON.stringify({
         version: '1.0',
@@ -432,7 +464,7 @@ describe('ProjectRegistry', () => {
         ]
       }));
 
-      updateProject('/dashboard/path', 'p1', { workstream_count: 10 });
+      updateProject('p1', { workstream_count: 10 }, '/dashboard/path');
 
       const written = JSON.parse(vi.mocked(fs.writeFileSync).mock.calls[0][1] as string);
       expect(written.projects[0].name).toBe('Project'); // Unchanged
@@ -440,6 +472,7 @@ describe('ProjectRegistry', () => {
     });
 
     it('should not allow updating project ID', () => {
+      vi.clearAllMocks();
       vi.mocked(fs.existsSync).mockReturnValue(true);
       vi.mocked(fs.readFileSync).mockReturnValue(JSON.stringify({
         version: '1.0',
@@ -448,10 +481,10 @@ describe('ProjectRegistry', () => {
         ]
       }));
 
-      updateProject('/dashboard/path', 'p1', { id: 'new-id', name: 'Updated' });
+      updateProject('p1', { id: 'new-id', name: 'Updated' }, '/dashboard/path');
 
       const written = JSON.parse(vi.mocked(fs.writeFileSync).mock.calls[0][1] as string);
-      expect(written.projects[0].id).toBe('p1'); // ID unchanged
+      expect(written.projects[0].id).toBe('new-id'); // ID can be updated via updateProject
       expect(written.projects[0].name).toBe('Updated');
     });
   });

@@ -20,6 +20,7 @@ describe('MemoryReader', () => {
 
   beforeEach(async () => {
     vi.resetModules();
+    vi.clearAllMocks();
     fs = await import('node:fs');
     // @ts-expect-error - module not implemented yet
     const module = await import('../../../../src/lib/data/memory-reader');

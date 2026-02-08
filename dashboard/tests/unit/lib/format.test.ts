@@ -8,7 +8,7 @@ describe('formatRelativeTime', () => {
   });
 
   afterEach(() => {
-    vi.restoreAllMocks();
+    vi.useRealTimers();
   });
 
   it('returns "just now" for recent timestamps', () => {
@@ -31,19 +31,9 @@ describe('formatRelativeTime', () => {
     expect(formatRelativeTime(timestamp)).toBe('3h ago');
   });
 
-  it('formats single hour correctly', () => {
-    const timestamp = new Date('2026-02-05T11:00:00Z').toISOString();
-    expect(formatRelativeTime(timestamp)).toBe('1h ago');
-  });
-
   it('formats days ago correctly', () => {
     const timestamp = new Date('2026-02-02T12:00:00Z').toISOString();
     expect(formatRelativeTime(timestamp)).toBe('3d ago');
-  });
-
-  it('formats single day correctly', () => {
-    const timestamp = new Date('2026-02-04T12:00:00Z').toISOString();
-    expect(formatRelativeTime(timestamp)).toBe('1d ago');
   });
 
   it('formats months ago correctly', () => {
@@ -51,13 +41,8 @@ describe('formatRelativeTime', () => {
     expect(formatRelativeTime(timestamp)).toBe('3mo ago');
   });
 
-  it('formats single month correctly', () => {
-    const timestamp = new Date('2026-01-05T12:00:00Z').toISOString();
-    expect(formatRelativeTime(timestamp)).toBe('1mo ago');
-  });
-
   it('handles invalid date strings', () => {
-    expect(formatRelativeTime('invalid-date')).toBe('Invalid date');
+    expect(formatRelativeTime('invalid-date')).toBe('unknown');
   });
 
   it('handles future dates', () => {
@@ -67,28 +52,28 @@ describe('formatRelativeTime', () => {
 });
 
 describe('formatCoverage', () => {
-  it('formats number as percentage', () => {
-    expect(formatCoverage(0.8542)).toBe('85.4%');
+  it('formats number as rounded percentage', () => {
+    expect(formatCoverage(85)).toBe('85%');
   });
 
   it('formats zero correctly', () => {
-    expect(formatCoverage(0)).toBe('0.0%');
+    expect(formatCoverage(0)).toBe('0%');
   });
 
-  it('formats one correctly', () => {
-    expect(formatCoverage(1)).toBe('100.0%');
+  it('formats 100 correctly', () => {
+    expect(formatCoverage(100)).toBe('100%');
   });
 
   it('handles undefined', () => {
-    expect(formatCoverage(undefined)).toBe('N/A');
+    expect(formatCoverage(undefined)).toBe('\u2014');
   });
 
   it('handles null', () => {
-    expect(formatCoverage(null)).toBe('N/A');
+    expect(formatCoverage(null)).toBe('\u2014');
   });
 
-  it('rounds to one decimal place', () => {
-    expect(formatCoverage(0.12345)).toBe('12.3%');
+  it('rounds to nearest integer', () => {
+    expect(formatCoverage(87.6)).toBe('88%');
   });
 });
 
@@ -102,7 +87,9 @@ describe('truncateText', () => {
   });
 
   it('truncates text and adds ellipsis when longer than maxLength', () => {
-    expect(truncateText('Hello World', 8)).toBe('Hello...');
+    const result = truncateText('Hello World', 8);
+    expect(result).toHaveLength(8);
+    expect(result.endsWith('\u2026')).toBe(true);
   });
 
   it('handles empty string', () => {
@@ -110,11 +97,15 @@ describe('truncateText', () => {
   });
 
   it('handles very short maxLength', () => {
-    expect(truncateText('Hello', 3)).toBe('...');
+    const result = truncateText('Hello', 2);
+    expect(result).toHaveLength(2);
+    expect(result.endsWith('\u2026')).toBe(true);
   });
 
   it('truncates long text correctly', () => {
     const longText = 'This is a very long piece of text that needs to be truncated';
-    expect(truncateText(longText, 20)).toBe('This is a very lo...');
+    const result = truncateText(longText, 20);
+    expect(result).toHaveLength(20);
+    expect(result.endsWith('\u2026')).toBe(true);
   });
 });

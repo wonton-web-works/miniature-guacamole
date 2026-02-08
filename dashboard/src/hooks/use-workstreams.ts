@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { getWorkstreams } from '@/lib/api-client';
-import type { WorkstreamSummary, WorkstreamCounts, WorkstreamStatus } from '@/lib/types';
+import type { WorkstreamSummary, WorkstreamCounts } from '@/lib/types';
 
 interface UseWorkstreamsResult {
   workstreams: WorkstreamSummary[];

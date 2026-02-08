@@ -31,11 +31,12 @@ export interface ValidationError {
   message: string;
 }
 
+// WS-DAEMON-4: Tracker types
 export interface ProcessedTicket {
-  ticketId: string;
-  status: 'pending' | 'processed' | 'failed';
-  processedAt: Date;
+  processedAt: string;
+  status: 'processing' | 'complete' | 'failed';
   prUrl?: string;
+  error?: string;
 }
 
 export interface DaemonState {
@@ -43,11 +44,14 @@ export interface DaemonState {
   processedTickets: ProcessedTicket[];
 }
 
+// WS-DAEMON-4: Jira ticket data
 export interface TicketData {
-  id: string;
+  key: string;
   summary: string;
   description: string;
-  acceptanceCriteria: string[];
+  priority: string;
+  labels: string[];
+  url: string;
 }
 
 // Process Manager types (WS-DAEMON-2)

@@ -17,6 +17,15 @@ export interface Logger {
 }
 
 /**
+ * Ensures the log directory exists
+ */
+function ensureLogDirectory(): void {
+  if (!existsSync(LOG_DIR)) {
+    mkdirSync(LOG_DIR, { recursive: true });
+  }
+}
+
+/**
  * Creates a logger instance that writes to .mg-daemon/daemon.log
  * AC-3.8: Logs with format '[ISO-TIMESTAMP] [LEVEL] message'
  * AC-3.9: Supports levels: info, warn, error
@@ -24,7 +33,13 @@ export interface Logger {
  * AC-3.11: Creates .mg-daemon/ directory if missing
  */
 export function createLogger(): Logger {
-  throw new Error('createLogger not implemented');
+  ensureLogDirectory();
+  return {
+    info: (message: string) => log('info', message),
+    warn: (message: string) => log('warn', message),
+    error: (message: string) => log('error', message),
+    log: (level: LogLevel, message: string) => log(level, message),
+  };
 }
 
 /**
@@ -32,26 +47,30 @@ export function createLogger(): Logger {
  * AC-3.8: Format '[ISO-TIMESTAMP] [LEVEL] message'
  */
 export function log(level: LogLevel, message: string): void {
-  throw new Error('log not implemented');
+  ensureLogDirectory();
+  const timestamp = new Date().toISOString();
+  const levelUpper = level.toUpperCase();
+  const logLine = `[${timestamp}] [${levelUpper}] ${message}\n`;
+  appendFileSync(LOG_FILE, logLine);
 }
 
 /**
  * Log an info message
  */
 export function info(message: string): void {
-  throw new Error('info not implemented');
+  log('info', message);
 }
 
 /**
  * Log a warning message
  */
 export function warn(message: string): void {
-  throw new Error('warn not implemented');
+  log('warn', message);
 }
 
 /**
  * Log an error message
  */
 export function error(message: string): void {
-  throw new Error('error not implemented');
+  log('error', message);
 }

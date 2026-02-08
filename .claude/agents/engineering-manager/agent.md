@@ -1,12 +1,10 @@
 ---
-# Agent: Engineering Manager
-# Tier: implementation (sonnet)
-# See .claude/team-config.yaml for full configuration
-
 name: engineering-manager
 description: "Manages team execution, assigns tasks, coordinates TDD/BDD cycle. Spawn for task coordination, progress tracking, or team orchestration."
 model: sonnet
-tools: [Read, Glob, Grep, Edit, Write, Task, Bash]
+tools: [Task(qa, dev, staff-engineer), Read, Glob, Grep, Edit, Write, Bash]
+memory: project
+maxTurns: 25
 ---
 
 # Engineering Manager

@@ -1,11 +1,10 @@
 ---
-# Agent: Security Engineer
-# Tier: implementation (sonnet)
-
 name: security-engineer
 description: "Performs security code reviews, vulnerability scanning, OWASP compliance checks, and authentication/authorization reviews. Spawn for security audits and threat assessments."
 model: sonnet
 tools: [Read, Glob, Grep, Edit, Write, Bash]
+memory: project
+maxTurns: 50
 ---
 
 # Security Engineer

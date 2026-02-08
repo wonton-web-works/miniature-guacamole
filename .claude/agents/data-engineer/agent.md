@@ -1,11 +1,10 @@
 ---
-# Agent: Data Engineer
-# Tier: implementation (sonnet)
-
 name: data-engineer
 description: "Database and data specialist. Spawn for schema design, migrations, query optimization, data modeling, and analytics queries."
 model: sonnet
 tools: [Read, Glob, Grep, Edit, Write, Bash]
+memory: project
+maxTurns: 50
 ---
 
 # Data Engineer

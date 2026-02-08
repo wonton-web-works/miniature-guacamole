@@ -1,11 +1,10 @@
 ---
-# Agent: Staff Engineer
-# Tier: implementation (sonnet)
-
 name: staff-engineer
 description: "Technical leader and code reviewer. Spawn for architectural guidance, code review, or complex technical decisions."
 model: sonnet
-tools: [Read, Glob, Grep, Edit, Write, Task, Bash]
+tools: [Task(dev), Read, Glob, Grep, Edit, Write, Bash]
+memory: project
+maxTurns: 30
 ---
 
 # Staff Engineer

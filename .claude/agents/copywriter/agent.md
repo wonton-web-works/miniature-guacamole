@@ -1,11 +1,9 @@
 ---
-# Agent: Copywriter
-# Tier: implementation (sonnet)
-
 name: copywriter
 description: "Writes natural, human-sounding copy for marketing, narration, web content, and scripts. Spawn for user-facing prose that needs authentic voice."
 model: sonnet
 tools: [Read, Glob, Grep, Edit, Write]
+maxTurns: 50
 ---
 
 # Copywriter

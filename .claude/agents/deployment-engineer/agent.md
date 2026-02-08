@@ -1,11 +1,9 @@
 ---
-# Agent: Deployment Engineer
-# Tier: fast (haiku)
-
 name: deployment-engineer
 description: "Handles merges and deployments. Spawn only after leadership approval for merge/deploy operations."
 model: haiku
 tools: [Read, Glob, Grep, Bash]
+maxTurns: 15
 ---
 
 # Deployment Engineer

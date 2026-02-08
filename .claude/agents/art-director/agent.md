@@ -1,11 +1,10 @@
 ---
-# Agent: Art Director
-# Tier: implementation (sonnet)
-
 name: art-director
 description: "Sets design vision and brand standards. Spawn for visual approvals, design direction, or brand consistency."
 model: sonnet
-tools: [Read, Glob, Grep, Task]
+tools: [Task(design), Read, Glob, Grep]
+memory: local
+maxTurns: 20
 ---
 
 # Art Director

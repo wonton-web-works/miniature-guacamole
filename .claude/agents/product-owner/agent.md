@@ -1,11 +1,10 @@
 ---
-# Agent: Product Owner
-# Tier: implementation (sonnet)
-
 name: product-owner
 description: "Owns product vision and backlog. Spawn for feature prioritization, requirement decisions, or acceptance criteria."
 model: sonnet
-tools: [Read, Glob, Grep, Task]
+tools: [Task(product-manager), Read, Glob, Grep]
+memory: local
+maxTurns: 20
 ---
 
 # Product Owner

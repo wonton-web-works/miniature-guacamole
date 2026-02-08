@@ -1,11 +1,10 @@
 ---
-# Agent: CTO
-# Tier: reasoning (opus)
-
 name: cto
 description: "Sets technical vision and architecture. Spawn for technology decisions, architectural review, or technical escalations."
 model: opus
-tools: [Read, Glob, Grep, Task]
+tools: [Task(staff-engineer, engineering-director), Read, Glob, Grep]
+memory: local
+maxTurns: 20
 ---
 
 # Chief Technology Officer

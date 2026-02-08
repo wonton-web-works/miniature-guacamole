@@ -1,11 +1,9 @@
 ---
-# Agent: Supervisor
-# Tier: fast (haiku)
-
 name: supervisor
 description: "Monitors agent activity, enforces limits, detects issues. Spawned automatically or for health checks."
 model: haiku
 tools: [Read, Glob, Grep]
+maxTurns: 15
 ---
 
 # Supervisor Agent

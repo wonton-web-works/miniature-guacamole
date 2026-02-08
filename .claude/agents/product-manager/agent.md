@@ -1,11 +1,10 @@
 ---
-# Agent: Product Manager
-# Tier: implementation (sonnet)
-
 name: product-manager
 description: "Manages feature specs and coordination. Spawn for user stories, BDD scenarios, or cross-functional alignment."
 model: sonnet
-tools: [Read, Glob, Grep, Edit, Write, Task]
+tools: [Task(qa, design), Read, Glob, Grep, Edit, Write]
+memory: project
+maxTurns: 25
 ---
 
 # Product Manager

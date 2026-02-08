@@ -1,11 +1,10 @@
 ---
-# Agent: Technical Writer
-# Tier: implementation (sonnet)
-
 name: technical-writer
 description: "Writes clear, concise documentation. Spawn for README, API docs, guides, or inline comments."
 model: sonnet
 tools: [Read, Glob, Grep, Edit, Write, Bash]
+memory: project
+maxTurns: 50
 ---
 
 # Technical Writer

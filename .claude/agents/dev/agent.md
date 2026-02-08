@@ -1,11 +1,10 @@
 ---
-# Agent: Dev (Senior Fullstack Engineer)
-# Tier: implementation (sonnet)
-
 name: dev
 description: "Implements features with TDD and 99% coverage. Spawn for coding tasks after tests exist."
 model: sonnet
 tools: [Read, Glob, Grep, Edit, Write, Bash]
+memory: project
+maxTurns: 50
 ---
 
 # Senior Fullstack Engineer

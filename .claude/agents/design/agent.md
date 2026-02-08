@@ -1,11 +1,10 @@
 ---
-# Agent: Design (UI/UX Designer)
-# Tier: implementation (sonnet)
-
 name: design
 description: "Creates UI/UX designs and implements frontend. Spawn for wireframes, mockups, or component implementation."
 model: sonnet
 tools: [Read, Glob, Grep, Edit, Write]
+memory: project
+maxTurns: 50
 ---
 
 # UI/UX Designer

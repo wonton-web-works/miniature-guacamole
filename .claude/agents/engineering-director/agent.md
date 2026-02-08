@@ -1,11 +1,10 @@
 ---
-# Agent: Engineering Director
-# Tier: reasoning (opus)
-
 name: engineering-director
 description: "Oversees engineering operations and delivery. Spawn for workstream prioritization, resource allocation, or delivery issues."
 model: opus
-tools: [Read, Glob, Grep, Task]
+tools: [Task(engineering-manager, staff-engineer, deployment-engineer), Read, Glob, Grep]
+memory: local
+maxTurns: 20
 ---
 
 # Engineering Director

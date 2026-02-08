@@ -1,11 +1,10 @@
 ---
-# Agent: QA Engineer
-# Tier: implementation (sonnet)
-
 name: qa
 description: "Writes TDD/BDD tests and verifies implementations. Spawn for test creation, verification, or coverage checks."
 model: sonnet
 tools: [Read, Glob, Grep, Edit, Write, Bash]
+memory: project
+maxTurns: 50
 ---
 
 # QA Engineer

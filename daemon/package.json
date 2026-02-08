@@ -1,0 +1,37 @@
+{
+  "name": "@miniature-guacamole/daemon",
+  "version": "0.1.0",
+  "description": "Jira-to-PR daemon powered by miniature-guacamole agent swarm",
+  "main": "dist/cli.js",
+  "bin": {
+    "mg-daemon": "dist/cli.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "test": "vitest run",
+    "test:unit": "vitest run tests/unit",
+    "test:integration": "vitest run tests/integration",
+    "test:watch": "vitest watch",
+    "test:coverage": "vitest run --coverage"
+  },
+  "keywords": [
+    "jira",
+    "github",
+    "daemon",
+    "ai-agents",
+    "claude-code",
+    "automation"
+  ],
+  "author": "miniature-guacamole contributors",
+  "license": "MIT",
+  "dependencies": {
+    "js-yaml": "^4.1.0"
+  },
+  "devDependencies": {
+    "@types/js-yaml": "^4.0.5",
+    "@types/node": "^20.0.0",
+    "@vitest/coverage-v8": "^1.0.0",
+    "typescript": "^5.3.0",
+    "vitest": "^1.0.0"
+  }
+}

@@ -108,6 +108,19 @@ The system supports structured delegation between agents with depth tracking and
 
 ## Quick Start
 
+### Initialize Your Project
+
+Before using agents and teams, initialize your project structure:
+
+```
+/init-project
+```
+
+This creates:
+- `.claude/memory/` - Agent task queues, decisions, and handoffs
+- `.claude/CLAUDE.md` - Project-specific context
+- `.gitignore` - Excludes memory files from version control
+
 ### Invoking an Agent
 
 Use slash commands to invoke any agent:

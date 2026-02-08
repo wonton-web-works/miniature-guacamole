@@ -89,14 +89,21 @@ npm install
 claude
 ```
 
-### 3. Use a Workflow
+### 3. Initialize Your Project
+```
+/init-project
+```
+
+This creates the `.claude/memory/` directory structure where agents store task queues, decisions, and handoffs. It also sets up project-specific context and shared protocols.
+
+### 4. Use a Workflow
 ```
 /feature-assessment Build a user authentication system
 ```
 
 The workflow will guide you through feature evaluation, spawn expert agents (Product Owner, Product Manager, CTO), and provide a structured recommendation with next steps.
 
-### 4. Execute with a Team
+### 5. Execute with a Team
 ```
 /engineering-team Execute WS-1: Add login endpoint
 ```

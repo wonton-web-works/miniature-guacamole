@@ -1,8 +1,40 @@
 # Test Suite Documentation
 
 **Status:** Step 1 of TDD Cycle - All Tests FAILING (Red Phase)
-**Total Tests:** 74 tests across 3 suites
+**Total Tests:** 74 tests across 3 suites + Infrastructure verification scripts
 **Target Coverage:** 99% (unit + integration)
+
+---
+
+## Infrastructure Verification Scripts
+
+### WS-INIT-1: Global Installation & Shared Protocols
+
+**Script:** `verify-ws-init-1.sh`
+
+**Purpose:** Validates the modified install.sh and new global files are set up correctly.
+
+**Usage:**
+```bash
+# After running install.sh
+./tests/verify-ws-init-1.sh
+```
+
+**What it checks:**
+- All symlinks in ~/.claude/agents/ and ~/.claude/skills/ resolve correctly
+- ~/.claude/shared/ contains all 6 protocol documents
+- ~/.claude/CLAUDE.md exists with framework intro
+- ~/.claude/hooks/project-init-check.sh exists and is executable
+- SessionStart hook configured in settings.json
+- Existing user settings preserved
+
+**Exit codes:**
+- `0` - All checks passed (ready to merge)
+- `1` - One or more checks failed (fix and re-run)
+
+**Documentation:** See `WS-INIT-1-VERIFICATION.md` for detailed check descriptions and troubleshooting.
+
+**Test Coverage:** 42+ individual checks across 6 acceptance criteria
 
 ---
 

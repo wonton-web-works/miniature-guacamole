@@ -105,6 +105,11 @@ if [ -f "$SOURCE_CLAUDE/settings.json" ]; then
     echo "  ✓ settings.json"
 fi
 
+if [ -f "$SOURCE_CLAUDE/CLAUDE.md" ]; then
+    cp "$SOURCE_CLAUDE/CLAUDE.md" "$DIST_CLAUDE/"
+    echo "  ✓ CLAUDE.md"
+fi
+
 # ----------------------------------------------------------------------------
 # Create .gitignore for memory directory
 # ----------------------------------------------------------------------------

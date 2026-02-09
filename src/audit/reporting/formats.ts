@@ -36,6 +36,9 @@ export function addTotalRow(summaries: WorkstreamSummary[]): WorkstreamSummary[]
     total_input_tokens: 0,
     total_output_tokens: 0,
     total_cost_usd: 0,
+    total_duration_ms: 0,
+    estimated_cost_usd: 0,
+    cache_savings_tokens: 0,
   };
 
   for (const summary of summaries) {
@@ -43,6 +46,9 @@ export function addTotalRow(summaries: WorkstreamSummary[]): WorkstreamSummary[]
     total.total_input_tokens += summary.total_input_tokens;
     total.total_output_tokens += summary.total_output_tokens;
     total.total_cost_usd += summary.total_cost_usd;
+    total.total_duration_ms += summary.total_duration_ms;
+    total.estimated_cost_usd += summary.estimated_cost_usd;
+    total.cache_savings_tokens += summary.cache_savings_tokens;
   }
 
   return [...summaries, total];
@@ -106,6 +112,9 @@ function formatWorkstreamTable(summaries: WorkstreamSummary[], dateRange?: DateR
   const col3Width = 15;
   const col4Width = 16;
   const col5Width = 12;
+  const col6Width = 15;
+  const col7Width = 16;
+  const col8Width = 16;
 
   // Helper to pad strings
   const padRight = (str: string, width: number) => str + ' '.repeat(Math.max(0, width - str.length));
@@ -119,8 +128,11 @@ function formatWorkstreamTable(summaries: WorkstreamSummary[], dateRange?: DateR
     padLeft('requests', col2Width) + ' ' +
     padLeft('input_tokens', col3Width) + ' ' +
     padLeft('output_tokens', col4Width) + ' ' +
-    padLeft('cost_usd', col5Width),
-    '─'.repeat(col1Width + col2Width + col3Width + col4Width + col5Width + 4),
+    padLeft('cost_usd', col5Width) + ' ' +
+    padLeft('duration_ms', col6Width) + ' ' +
+    padLeft('estimated_cost', col7Width) + ' ' +
+    padLeft('cache_savings', col8Width),
+    '─'.repeat(col1Width + col2Width + col3Width + col4Width + col5Width + col6Width + col7Width + col8Width + 7),
   ];
 
   // Data rows
@@ -130,7 +142,10 @@ function formatWorkstreamTable(summaries: WorkstreamSummary[], dateRange?: DateR
     const inputTokens = padLeft(formatNumber(s.total_input_tokens), col3Width);
     const outputTokens = padLeft(formatNumber(s.total_output_tokens), col4Width);
     const cost = padLeft(formatCost(s.total_cost_usd), col5Width);
-    return `${wsId} ${requests} ${inputTokens} ${outputTokens} ${cost}`;
+    const duration = padLeft(String(s.total_duration_ms), col6Width);
+    const estimatedCost = padLeft(formatCost(s.estimated_cost_usd), col7Width);
+    const cacheSavings = padLeft(String(s.cache_savings_tokens), col8Width);
+    return `${wsId} ${requests} ${inputTokens} ${outputTokens} ${cost} ${duration} ${estimatedCost} ${cacheSavings}`;
   });
 
   return [...header, ...rows].join('\n');
@@ -149,9 +164,9 @@ function formatWorkstreamJson(summaries: WorkstreamSummary[]): string {
  */
 function formatWorkstreamCsv(summaries: WorkstreamSummary[]): string {
   const sorted = sortByTotalCost(summaries);
-  const header = 'workstream_id,request_count,total_input_tokens,total_output_tokens,total_cost_usd';
+  const header = 'workstream_id,request_count,total_input_tokens,total_output_tokens,total_cost_usd,total_duration_ms,estimated_cost_usd,cache_savings_tokens';
   const rows = sorted.map(s =>
-    `${s.workstream_id || 'null'},${s.request_count},${s.total_input_tokens},${s.total_output_tokens},${s.total_cost_usd.toFixed(3)}`
+    `${s.workstream_id || 'null'},${s.request_count},${s.total_input_tokens},${s.total_output_tokens},${s.total_cost_usd.toFixed(3)},${s.total_duration_ms},${s.estimated_cost_usd.toFixed(3)},${s.cache_savings_tokens}`
   );
   return [header, ...rows].join('\n');
 }
@@ -192,6 +207,8 @@ function formatAgentTable(breakdowns: AgentBreakdown[], dateRange?: DateRange): 
   const col4Width = 13;
   const col5Width = 10;
   const col6Width = 12;
+  const col7Width = 15;
+  const col8Width = 16;
 
   // Helper to pad strings
   const padRight = (str: string, width: number) => str + ' '.repeat(Math.max(0, width - str.length));
@@ -206,8 +223,10 @@ function formatAgentTable(breakdowns: AgentBreakdown[], dateRange?: DateRange): 
     padLeft('requests', col3Width) + ' ' +
     padLeft('total_tokens', col4Width) + ' ' +
     padLeft('cost_usd', col5Width) + ' ' +
-    padLeft('success_rate', col6Width),
-    '─'.repeat(col1Width + col2Width + col3Width + col4Width + col5Width + col6Width + 5),
+    padLeft('success_rate', col6Width) + ' ' +
+    padLeft('duration_ms', col7Width) + ' ' +
+    padLeft('estimated_cost', col8Width),
+    '─'.repeat(col1Width + col2Width + col3Width + col4Width + col5Width + col6Width + col7Width + col8Width + 7),
   ];
 
   // Data rows
@@ -220,7 +239,9 @@ function formatAgentTable(breakdowns: AgentBreakdown[], dateRange?: DateRange): 
     const successRate = b.success_rate !== null
       ? padLeft(`${b.success_rate.toFixed(2)}%`, col6Width)
       : padLeft('N/A', col6Width);
-    return `${wsId} ${agentName} ${requests} ${tokens} ${cost} ${successRate}`;
+    const duration = padLeft(String(b.total_duration_ms), col7Width);
+    const estimatedCost = padLeft(formatCost(b.estimated_cost_usd), col8Width);
+    return `${wsId} ${agentName} ${requests} ${tokens} ${cost} ${successRate} ${duration} ${estimatedCost}`;
   });
 
   return [...header, ...rows].join('\n');
@@ -239,9 +260,9 @@ function formatAgentJson(breakdowns: AgentBreakdown[]): string {
  */
 function formatAgentCsv(breakdowns: AgentBreakdown[]): string {
   const sorted = sortByTotalCost(breakdowns);
-  const header = 'workstream_id,agent_name,request_count,total_tokens,total_cost_usd,success_count,success_rate';
+  const header = 'workstream_id,agent_name,request_count,total_tokens,total_cost_usd,success_count,success_rate,total_duration_ms,estimated_cost_usd';
   const rows = sorted.map(b =>
-    `${b.workstream_id || 'null'},${b.agent_name || 'null'},${b.request_count},${b.total_tokens},${b.total_cost_usd.toFixed(3)},${b.success_count ?? ''},${b.success_rate ?? ''}`
+    `${b.workstream_id || 'null'},${b.agent_name || 'null'},${b.request_count},${b.total_tokens},${b.total_cost_usd.toFixed(3)},${b.success_count ?? ''},${b.success_rate ?? ''},${b.total_duration_ms},${b.estimated_cost_usd.toFixed(3)}`
   );
   return [header, ...rows].join('\n');
 }

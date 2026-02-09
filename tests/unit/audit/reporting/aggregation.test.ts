@@ -650,3 +650,300 @@ describe('audit/reporting/aggregation - edge cases', () => {
     });
   });
 });
+
+// ============================================================================
+// WS-AUDIT-1: Enhanced Reporting with Duration and Cost Estimation
+// ============================================================================
+
+describe('audit/reporting/aggregation - WS-AUDIT-1 enhanced fields', () => {
+  const baseEntry: TrackedAuditEntry = {
+    timestamp: '2026-02-04T10:00:00.000Z',
+    session_id: 'session-1',
+    model: 'claude-opus-4-5-20251101',
+    input_tokens: 1000,
+    output_tokens: 500,
+    cache_creation_tokens: 100,
+    cache_read_tokens: 200,
+    total_cost_usd: 0.015,
+    duration_ms: 1500,
+    schema_version: '1.0',
+    workstream_id: 'WS-18',
+    agent_name: 'code-review',
+    feature_name: null,
+  };
+
+  describe('WorkstreamSummary with duration and cost (AC-3, AC-4)', () => {
+    it('When aggregating by workstream, Then includes total_duration_ms', () => {
+      const entry1 = { ...baseEntry, duration_ms: 1000 };
+      const entry2 = { ...baseEntry, session_id: 'session-2', duration_ms: 2000 };
+      const entry3 = { ...baseEntry, session_id: 'session-3', duration_ms: 1500 };
+
+      const entries = [entry1, entry2, entry3];
+
+      const result = aggregateByWorkstream(entries);
+
+      expect(result).toHaveLength(1);
+      expect(result[0].total_duration_ms).toBe(4500); // 1000 + 2000 + 1500
+    });
+
+    it('When aggregating by workstream, Then includes estimated_cost_usd', () => {
+      const entry1 = { ...baseEntry, total_cost_usd: null }; // Will need estimation
+      const entry2 = { ...baseEntry, session_id: 'session-2', total_cost_usd: null };
+
+      const entries = [entry1, entry2];
+
+      const result = aggregateByWorkstream(entries);
+
+      expect(result[0].estimated_cost_usd).toBeDefined();
+      expect(result[0].estimated_cost_usd).toBeGreaterThan(0);
+    });
+
+    it('When aggregating by workstream, Then includes cache_savings_tokens', () => {
+      const entry1 = { ...baseEntry, cache_read_tokens: 1000 };
+      const entry2 = { ...baseEntry, session_id: 'session-2', cache_read_tokens: 2000 };
+
+      const entries = [entry1, entry2];
+
+      const result = aggregateByWorkstream(entries);
+
+      expect(result[0].cache_savings_tokens).toBe(3000); // Sum of cache reads
+    });
+
+    it('When entries have null duration, Then handles gracefully', () => {
+      const entry1 = { ...baseEntry, duration_ms: 1000 };
+      const entry2 = { ...baseEntry, session_id: 'session-2', duration_ms: null };
+
+      const entries = [entry1, entry2];
+
+      const result = aggregateByWorkstream(entries);
+
+      expect(result[0].total_duration_ms).toBe(1000); // Only counts non-null
+    });
+
+    it('When all durations are null, Then total_duration_ms is 0', () => {
+      const entry1 = { ...baseEntry, duration_ms: null };
+      const entry2 = { ...baseEntry, session_id: 'session-2', duration_ms: null };
+
+      const entries = [entry1, entry2];
+
+      const result = aggregateByWorkstream(entries);
+
+      expect(result[0].total_duration_ms).toBe(0);
+    });
+
+    it('When no cache reads, Then cache_savings_tokens is 0', () => {
+      const entry1 = { ...baseEntry, cache_read_tokens: 0 };
+      const entry2 = { ...baseEntry, session_id: 'session-2', cache_read_tokens: 0 };
+
+      const entries = [entry1, entry2];
+
+      const result = aggregateByWorkstream(entries);
+
+      expect(result[0].cache_savings_tokens).toBe(0);
+    });
+
+    it('When cache_read_tokens is null, Then treats as zero', () => {
+      const entry1 = { ...baseEntry, cache_read_tokens: null };
+      const entry2 = { ...baseEntry, session_id: 'session-2', cache_read_tokens: 1000 };
+
+      const entries = [entry1, entry2];
+
+      const result = aggregateByWorkstream(entries);
+
+      expect(result[0].cache_savings_tokens).toBe(1000);
+    });
+  });
+
+  describe('AgentBreakdown with duration and cost (AC-4)', () => {
+    it('When aggregating by agent, Then includes total_duration_ms', () => {
+      const entry1 = { ...baseEntry, duration_ms: 1000 };
+      const entry2 = { ...baseEntry, session_id: 'session-2', duration_ms: 2000 };
+
+      const entries = [entry1, entry2];
+
+      const result = aggregateByAgent(entries);
+
+      expect(result[0].total_duration_ms).toBe(3000);
+    });
+
+    it('When aggregating by agent, Then includes estimated_cost_usd', () => {
+      const entry1 = { ...baseEntry, total_cost_usd: null };
+      const entry2 = { ...baseEntry, session_id: 'session-2', total_cost_usd: null };
+
+      const entries = [entry1, entry2];
+
+      const result = aggregateByAgent(entries);
+
+      expect(result[0].estimated_cost_usd).toBeDefined();
+      expect(result[0].estimated_cost_usd).toBeGreaterThan(0);
+    });
+
+    it('When different agents in same workstream, Then each has own duration', () => {
+      const qaEntry = { ...baseEntry, agent_name: 'qa', duration_ms: 2500 };
+      const devEntry = { ...baseEntry, session_id: 'session-2', agent_name: 'dev', duration_ms: 3500 };
+
+      const entries = [qaEntry, devEntry];
+
+      const result = aggregateByAgent(entries);
+
+      expect(result).toHaveLength(2);
+      const qa = result.find(r => r.agent_name === 'qa');
+      const dev = result.find(r => r.agent_name === 'dev');
+
+      expect(qa!.total_duration_ms).toBe(2500);
+      expect(dev!.total_duration_ms).toBe(3500);
+    });
+  });
+
+  describe('Cost estimation integration (AC-1)', () => {
+    it('When total_cost_usd is null, Then estimates from token counts', () => {
+      const entry = {
+        ...baseEntry,
+        total_cost_usd: null,
+        input_tokens: 1000000, // 1M tokens
+        output_tokens: 500000,  // 500k tokens
+        cache_creation_tokens: 0,
+        cache_read_tokens: 0,
+      };
+
+      const entries = [entry];
+
+      const result = aggregateByWorkstream(entries);
+
+      // Should estimate cost using pricing module
+      expect(result[0].estimated_cost_usd).toBeGreaterThan(0);
+      expect(result[0].total_cost_usd).toBe(0); // Original field remains 0
+    });
+
+    it('When some entries have cost and some do not, Then estimates missing only', () => {
+      const entry1 = { ...baseEntry, total_cost_usd: 0.015 };
+      const entry2 = { ...baseEntry, session_id: 'session-2', total_cost_usd: null };
+
+      const entries = [entry1, entry2];
+
+      const result = aggregateByWorkstream(entries);
+
+      // total_cost_usd: sum of known costs
+      expect(result[0].total_cost_usd).toBe(0.015);
+      // estimated_cost_usd: sum of all entries (known + estimated)
+      expect(result[0].estimated_cost_usd).toBeGreaterThan(0.015);
+    });
+
+    it('When all entries have total_cost_usd, Then estimated equals total', () => {
+      const entry1 = { ...baseEntry, total_cost_usd: 0.015 };
+      const entry2 = { ...baseEntry, session_id: 'session-2', total_cost_usd: 0.020 };
+
+      const entries = [entry1, entry2];
+
+      const result = aggregateByWorkstream(entries);
+
+      expect(result[0].total_cost_usd).toBe(0.035);
+      expect(result[0].estimated_cost_usd).toBe(0.035);
+    });
+  });
+
+  describe('Cache savings calculation (AC-3)', () => {
+    it('When calculating cache savings, Then sums cache_read_tokens', () => {
+      const entry1 = { ...baseEntry, cache_read_tokens: 5000 };
+      const entry2 = { ...baseEntry, session_id: 'session-2', cache_read_tokens: 3000 };
+      const entry3 = { ...baseEntry, session_id: 'session-3', cache_read_tokens: 2000 };
+
+      const entries = [entry1, entry2, entry3];
+
+      const result = aggregateByWorkstream(entries);
+
+      expect(result[0].cache_savings_tokens).toBe(10000);
+    });
+
+    it('When cache_creation_tokens present, Then does not count as savings', () => {
+      const entry = {
+        ...baseEntry,
+        cache_creation_tokens: 10000,
+        cache_read_tokens: 5000,
+      };
+
+      const entries = [entry];
+
+      const result = aggregateByWorkstream(entries);
+
+      // Only cache_read_tokens count as savings
+      expect(result[0].cache_savings_tokens).toBe(5000);
+    });
+
+    it('When no cache usage, Then cache_savings_tokens is 0', () => {
+      const entry = {
+        ...baseEntry,
+        cache_creation_tokens: 0,
+        cache_read_tokens: 0,
+      };
+
+      const entries = [entry];
+
+      const result = aggregateByWorkstream(entries);
+
+      expect(result[0].cache_savings_tokens).toBe(0);
+    });
+  });
+
+  describe('Enhanced zero-usage workstreams (AC-3)', () => {
+    it('When including zero-usage workstreams, Then initializes enhanced fields to zero', () => {
+      const summaries: WorkstreamSummary[] = [
+        {
+          workstream_id: 'WS-18',
+          request_count: 5,
+          total_input_tokens: 5000,
+          total_output_tokens: 2500,
+          total_cost_usd: 0.075,
+          total_duration_ms: 5000,
+          estimated_cost_usd: 0.075,
+          cache_savings_tokens: 1000,
+        },
+      ];
+
+      const knownWorkstreams = ['WS-18', 'WS-19'];
+
+      const result = includeZeroUsageWorkstreams(summaries, knownWorkstreams);
+
+      const ws19 = result.find(r => r.workstream_id === 'WS-19');
+      expect(ws19).toBeDefined();
+      expect(ws19!.total_duration_ms).toBe(0);
+      expect(ws19!.estimated_cost_usd).toBe(0);
+      expect(ws19!.cache_savings_tokens).toBe(0);
+    });
+  });
+
+  describe('Duration aggregation edge cases', () => {
+    it('When duration exceeds 1 hour, Then sums correctly', () => {
+      const longEntry = { ...baseEntry, duration_ms: 3600000 }; // 1 hour
+
+      const entries = Array(10).fill(longEntry);
+
+      const result = aggregateByWorkstream(entries);
+
+      expect(result[0].total_duration_ms).toBe(36000000); // 10 hours in ms
+    });
+
+    it('When duration is very small, Then maintains precision', () => {
+      const fastEntry = { ...baseEntry, duration_ms: 1 }; // 1ms
+
+      const entries = Array(1000).fill(fastEntry);
+
+      const result = aggregateByWorkstream(entries);
+
+      expect(result[0].total_duration_ms).toBe(1000);
+    });
+
+    it('When mixing null and valid durations, Then sums valid only', () => {
+      const entry1 = { ...baseEntry, duration_ms: 1000 };
+      const entry2 = { ...baseEntry, session_id: 'session-2', duration_ms: null };
+      const entry3 = { ...baseEntry, session_id: 'session-3', duration_ms: 2000 };
+
+      const entries = [entry1, entry2, entry3];
+
+      const result = aggregateByWorkstream(entries);
+
+      expect(result[0].total_duration_ms).toBe(3000);
+      expect(result[0].request_count).toBe(3); // Still counts all entries
+    });
+  });
+});

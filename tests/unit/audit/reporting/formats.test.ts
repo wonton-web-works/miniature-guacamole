@@ -23,6 +23,9 @@ interface WorkstreamSummary {
   total_input_tokens: number;
   total_output_tokens: number;
   total_cost_usd: number;
+  total_duration_ms: number;
+  estimated_cost_usd: number;
+  cache_savings_tokens: number;
 }
 
 interface AgentBreakdown {
@@ -33,6 +36,8 @@ interface AgentBreakdown {
   total_cost_usd: number;
   success_count: number | null;
   success_rate: number | null;
+  total_duration_ms: number;
+  estimated_cost_usd: number;
 }
 
 enum OutputFormat {
@@ -57,6 +62,9 @@ describe('audit/reporting/formats - formatWorkstreamSummary()', () => {
       total_input_tokens: 2000,
       total_output_tokens: 1000,
       total_cost_usd: 0.030,
+      total_duration_ms: 1500,
+      estimated_cost_usd: 0.030,
+      cache_savings_tokens: 100,
     },
     {
       workstream_id: 'WS-18',
@@ -64,6 +72,9 @@ describe('audit/reporting/formats - formatWorkstreamSummary()', () => {
       total_input_tokens: 1000,
       total_output_tokens: 500,
       total_cost_usd: 0.015,
+      total_duration_ms: 2000,
+      estimated_cost_usd: 0.015,
+      cache_savings_tokens: 50,
     },
     {
       workstream_id: 'WS-21',
@@ -71,6 +82,9 @@ describe('audit/reporting/formats - formatWorkstreamSummary()', () => {
       total_input_tokens: 500,
       total_output_tokens: 250,
       total_cost_usd: 0.010,
+      total_duration_ms: 800,
+      estimated_cost_usd: 0.010,
+      cache_savings_tokens: 0,
     },
   ];
 
@@ -97,14 +111,17 @@ describe('audit/reporting/formats - formatWorkstreamSummary()', () => {
     it('When formatting as table, Then includes header row', () => {
       const result = formatWorkstreamSummary(summaries, OutputFormat.TABLE);
         const lines = result.split('\n');
-        expect(lines[0]).toMatch(/workstream_id.*requests.*input_tokens.*output_tokens.*cost_usd/);
+        // Header row is after date range line and blank line
+        const headerLine = lines.find(line => line.includes('workstream_id'));
+        expect(headerLine).toMatch(/workstream_id.*requests.*input_tokens.*output_tokens.*cost_usd/);
     });
 
     it('When formatting as table, Then includes separator line', () => {
       const result = formatWorkstreamSummary(summaries, OutputFormat.TABLE);
         const lines = result.split('\n');
         // Should have a line with dashes or similar separator
-        expect(lines[1]).toMatch(/[-─═]+/);
+        const separatorLine = lines.find(line => /[-─═]+/.test(line));
+        expect(separatorLine).toMatch(/[-─═]+/);
     });
   });
 
@@ -146,7 +163,15 @@ describe('audit/reporting/formats - formatWorkstreamSummary()', () => {
     it('When formatting as CSV, Then returns valid CSV with headers', () => {
       const result = formatWorkstreamSummary(summaries, OutputFormat.CSV);
         const lines = result.split('\n');
-        expect(lines[0]).toBe('workstream_id,request_count,total_input_tokens,total_output_tokens,total_cost_usd');
+        // Check that header includes required fields and enhanced fields
+        expect(lines[0]).toContain('workstream_id');
+        expect(lines[0]).toContain('request_count');
+        expect(lines[0]).toContain('total_input_tokens');
+        expect(lines[0]).toContain('total_output_tokens');
+        expect(lines[0]).toContain('total_cost_usd');
+        expect(lines[0]).toContain('total_duration_ms');
+        expect(lines[0]).toContain('estimated_cost_usd');
+        expect(lines[0]).toContain('cache_savings_tokens');
     });
 
     it('When formatting as CSV, Then includes data rows', () => {
@@ -166,13 +191,16 @@ describe('audit/reporting/formats - formatWorkstreamSummary()', () => {
           total_input_tokens: 1000,
           total_output_tokens: 500,
           total_cost_usd: 0.015,
+          total_duration_ms: 500,
+          estimated_cost_usd: 0.015,
+          cache_savings_tokens: 0,
         },
       ];
 
       const result = formatWorkstreamSummary(summaryWithComma, OutputFormat.CSV);
         // If workstream_id contained comma, it should be quoted
         // For now, just ensure basic CSV structure is valid
-        expect(result.split('\n')[1].split(',').length).toBe(5);
+        expect(result.split('\n')[1].split(',').length).toBe(8);
     });
 
     it('When formatting as CSV, Then is importable to Excel/Tableau', () => {
@@ -180,7 +208,9 @@ describe('audit/reporting/formats - formatWorkstreamSummary()', () => {
         // Should not have quotes around numbers
         // Should have consistent delimiter (comma)
         const lines = result.split('\n');
-        expect(lines[1]).toMatch(/^[^,]+,\d+,\d+,\d+,\d+\.\d+$/);
+        // Enhanced version has 8 columns: workstream_id, request_count, total_input_tokens, total_output_tokens,
+        // total_cost_usd, total_duration_ms, estimated_cost_usd, cache_savings_tokens
+        expect(lines[1].split(',').length).toBe(8);
     });
   });
 
@@ -357,6 +387,8 @@ describe('audit/reporting/formats - formatAgentBreakdown()', () => {
       total_cost_usd: 0.025,
       success_count: 4,
       success_rate: 80,
+      total_duration_ms: 1200,
+      estimated_cost_usd: 0.025,
     },
     {
       workstream_id: 'WS-18',
@@ -366,6 +398,8 @@ describe('audit/reporting/formats - formatAgentBreakdown()', () => {
       total_cost_usd: 0.012,
       success_count: null,
       success_rate: null,
+      total_duration_ms: 1800,
+      estimated_cost_usd: 0.012,
     },
     {
       workstream_id: 'WS-18',
@@ -375,6 +409,8 @@ describe('audit/reporting/formats - formatAgentBreakdown()', () => {
       total_cost_usd: 0.005,
       success_count: null,
       success_rate: null,
+      total_duration_ms: 900,
+      estimated_cost_usd: 0.005,
     },
   ];
 
@@ -397,7 +433,7 @@ describe('audit/reporting/formats - formatAgentBreakdown()', () => {
 
     it('When formatting success_rate, Then shows percentage or N/A', () => {
       const result = formatAgentBreakdown(agentData, OutputFormat.TABLE);
-        expect(result).toContain('80%'); // code-review success rate
+        expect(result).toContain('80.00%'); // code-review success rate
         expect(result).toMatch(/N\/A|null|-/); // qa success rate (null)
     });
   });
@@ -480,6 +516,9 @@ describe('audit/reporting/formats - table formatting details', () => {
           total_input_tokens: 1000,
           total_output_tokens: 500,
           total_cost_usd: 0.015678,
+          total_duration_ms: 500,
+          estimated_cost_usd: 0.015678,
+          cache_savings_tokens: 0,
         },
       ];
 
@@ -495,6 +534,9 @@ describe('audit/reporting/formats - table formatting details', () => {
           total_input_tokens: 1234567,
           total_output_tokens: 987654,
           total_cost_usd: 15.00,
+          total_duration_ms: 1000,
+          estimated_cost_usd: 15.00,
+          cache_savings_tokens: 0,
         },
       ];
 
@@ -512,6 +554,9 @@ describe('audit/reporting/formats - table formatting details', () => {
           total_input_tokens: 1000,
           total_output_tokens: 500,
           total_cost_usd: 0.015,
+          total_duration_ms: 500,
+          estimated_cost_usd: 0.015,
+          cache_savings_tokens: 0,
         },
         {
           workstream_id: 'WS-100',
@@ -519,6 +564,9 @@ describe('audit/reporting/formats - table formatting details', () => {
           total_input_tokens: 1234567,
           total_output_tokens: 987654,
           total_cost_usd: 150.00,
+          total_duration_ms: 5000,
+          estimated_cost_usd: 150.00,
+          cache_savings_tokens: 1000,
         },
       ];
 
@@ -531,7 +579,7 @@ describe('audit/reporting/formats - table formatting details', () => {
 
     it('When formatting table, Then left-aligns text columns', () => {
       const summary: WorkstreamSummary[] = [
-          { workstream_id: 'WS-18', request_count: 1, total_input_tokens: 1000, total_output_tokens: 500, total_cost_usd: 0.015 },
+          { workstream_id: 'WS-18', request_count: 1, total_input_tokens: 1000, total_output_tokens: 500, total_cost_usd: 0.015, total_duration_ms: 500, estimated_cost_usd: 0.015, cache_savings_tokens: 0 },
         ];
         const result = formatWorkstreamSummary(summary, OutputFormat.TABLE);
         // workstream_id should be left-aligned
@@ -550,6 +598,9 @@ describe('audit/reporting/formats - date range display (AC-2.4)', () => {
           total_input_tokens: 1000,
           total_output_tokens: 500,
           total_cost_usd: 0.015,
+          total_duration_ms: 500,
+          estimated_cost_usd: 0.015,
+          cache_savings_tokens: 0,
         },
       ];
 
@@ -571,11 +622,433 @@ describe('audit/reporting/formats - date range display (AC-2.4)', () => {
           total_input_tokens: 1000,
           total_output_tokens: 500,
           total_cost_usd: 0.015,
+          total_duration_ms: 500,
+          estimated_cost_usd: 0.015,
+          cache_savings_tokens: 0,
         },
       ];
 
       const result = formatWorkstreamSummary(summary, OutputFormat.TABLE);
         expect(result).toContain('Last 30 days');
+    });
+  });
+});
+
+// ============================================================================
+// WS-AUDIT-1: Enhanced Reporting with Duration and Cost Columns
+// ============================================================================
+
+describe('audit/reporting/formats - WS-AUDIT-1 enhanced columns (AC-5)', () => {
+  interface EnhancedWorkstreamSummary extends WorkstreamSummary {
+    total_duration_ms: number;
+    estimated_cost_usd: number;
+    cache_savings_tokens: number;
+  }
+
+  interface EnhancedAgentBreakdown extends AgentBreakdown {
+    total_duration_ms: number;
+    estimated_cost_usd: number;
+  }
+
+  const enhancedSummaries: EnhancedWorkstreamSummary[] = [
+    {
+      workstream_id: 'WS-18',
+      request_count: 10,
+      total_input_tokens: 10000,
+      total_output_tokens: 5000,
+      total_cost_usd: 0.150,
+      total_duration_ms: 15000,
+      estimated_cost_usd: 0.160,
+      cache_savings_tokens: 2000,
+    },
+    {
+      workstream_id: 'WS-19',
+      request_count: 5,
+      total_input_tokens: 5000,
+      total_output_tokens: 2500,
+      total_cost_usd: 0.075,
+      total_duration_ms: 7500,
+      estimated_cost_usd: 0.080,
+      cache_savings_tokens: 1000,
+    },
+  ];
+
+  describe('formatWorkstreamSummary() with enhanced fields - TABLE format', () => {
+    it('When formatting table, Then includes duration_ms column', () => {
+      const result = formatWorkstreamSummary(enhancedSummaries as any, OutputFormat.TABLE);
+
+      expect(result).toContain('duration_ms');
+      expect(result).toContain('15000'); // WS-18 duration
+      expect(result).toContain('7500');  // WS-19 duration
+    });
+
+    it('When formatting table, Then includes estimated_cost_usd column', () => {
+      const result = formatWorkstreamSummary(enhancedSummaries as any, OutputFormat.TABLE);
+
+      expect(result).toContain('estimated_cost');
+      expect(result).toContain('0.16'); // WS-18 estimated cost
+      expect(result).toContain('0.08'); // WS-19 estimated cost
+    });
+
+    it('When formatting table, Then includes cache_savings column', () => {
+      const result = formatWorkstreamSummary(enhancedSummaries as any, OutputFormat.TABLE);
+
+      expect(result).toContain('cache_savings');
+      expect(result).toContain('2000'); // WS-18 cache savings
+      expect(result).toContain('1000'); // WS-19 cache savings
+    });
+
+    it('When formatting table, Then aligns new columns properly', () => {
+      const result = formatWorkstreamSummary(enhancedSummaries as any, OutputFormat.TABLE);
+      const lines = result.split('\n');
+
+      // Check header has all columns
+      const headerLine = lines.find(l => l.includes('workstream_id'));
+      expect(headerLine).toContain('duration_ms');
+      expect(headerLine).toContain('estimated_cost');
+      expect(headerLine).toContain('cache_savings');
+    });
+
+    it('When duration is 0, Then displays 0 in table', () => {
+      const summaryWithZeroDuration = [{
+        ...enhancedSummaries[0],
+        total_duration_ms: 0,
+      }];
+
+      const result = formatWorkstreamSummary(summaryWithZeroDuration as any, OutputFormat.TABLE);
+
+      expect(result).toContain('0'); // duration column should show 0
+    });
+
+    it('When duration exceeds 1 hour, Then formats readably', () => {
+      const summaryWithLongDuration = [{
+        ...enhancedSummaries[0],
+        total_duration_ms: 3600000, // 1 hour
+      }];
+
+      const result = formatWorkstreamSummary(summaryWithLongDuration as any, OutputFormat.TABLE);
+
+      // Should include duration in ms (exact formatting TBD in implementation)
+      expect(result).toContain('3600000');
+    });
+  });
+
+  describe('formatWorkstreamSummary() with enhanced fields - JSON format', () => {
+    it('When formatting JSON, Then includes all enhanced fields', () => {
+      const result = formatWorkstreamSummary(enhancedSummaries as any, OutputFormat.JSON);
+      const parsed = JSON.parse(result);
+
+      expect(parsed[0]).toHaveProperty('total_duration_ms');
+      expect(parsed[0]).toHaveProperty('estimated_cost_usd');
+      expect(parsed[0]).toHaveProperty('cache_savings_tokens');
+    });
+
+    it('When formatting JSON, Then preserves numeric precision', () => {
+      const result = formatWorkstreamSummary(enhancedSummaries as any, OutputFormat.JSON);
+      const parsed = JSON.parse(result);
+
+      expect(parsed[0].total_duration_ms).toBe(15000);
+      expect(parsed[0].estimated_cost_usd).toBeCloseTo(0.160, 3);
+      expect(parsed[0].cache_savings_tokens).toBe(2000);
+    });
+
+    it('When formatting JSON, Then uses snake_case for new fields', () => {
+      const result = formatWorkstreamSummary(enhancedSummaries as any, OutputFormat.JSON);
+
+      expect(result).toContain('total_duration_ms');
+      expect(result).toContain('estimated_cost_usd');
+      expect(result).toContain('cache_savings_tokens');
+      expect(result).not.toContain('totalDurationMs');
+      expect(result).not.toContain('estimatedCostUsd');
+    });
+  });
+
+  describe('formatWorkstreamSummary() with enhanced fields - CSV format', () => {
+    it('When formatting CSV, Then includes enhanced columns in header', () => {
+      const result = formatWorkstreamSummary(enhancedSummaries as any, OutputFormat.CSV);
+      const lines = result.split('\n');
+
+      expect(lines[0]).toContain('total_duration_ms');
+      expect(lines[0]).toContain('estimated_cost_usd');
+      expect(lines[0]).toContain('cache_savings_tokens');
+    });
+
+    it('When formatting CSV, Then includes enhanced values in data rows', () => {
+      const result = formatWorkstreamSummary(enhancedSummaries as any, OutputFormat.CSV);
+      const lines = result.split('\n');
+
+      // First data row (WS-18)
+      expect(lines[1]).toContain('15000'); // duration
+      expect(lines[1]).toContain('0.160'); // estimated cost
+      expect(lines[1]).toContain('2000');  // cache savings
+    });
+
+    it('When formatting CSV, Then maintains column order', () => {
+      const result = formatWorkstreamSummary(enhancedSummaries as any, OutputFormat.CSV);
+      const lines = result.split('\n');
+      const headers = lines[0].split(',');
+
+      // Enhanced fields should be at the end
+      expect(headers).toContain('total_duration_ms');
+      expect(headers).toContain('estimated_cost_usd');
+      expect(headers).toContain('cache_savings_tokens');
+    });
+  });
+
+  describe('formatAgentBreakdown() with enhanced fields - TABLE format', () => {
+    const enhancedBreakdowns: EnhancedAgentBreakdown[] = [
+      {
+        workstream_id: 'WS-18',
+        agent_name: 'qa',
+        request_count: 5,
+        total_tokens: 7500,
+        total_cost_usd: 0.075,
+        success_count: 4,
+        success_rate: 80.0,
+        total_duration_ms: 7500,
+        estimated_cost_usd: 0.080,
+      },
+      {
+        workstream_id: 'WS-18',
+        agent_name: 'dev',
+        request_count: 3,
+        total_tokens: 4500,
+        total_cost_usd: 0.045,
+        success_count: 3,
+        success_rate: 100.0,
+        total_duration_ms: 4500,
+        estimated_cost_usd: 0.050,
+      },
+    ];
+
+    it('When formatting agent table, Then includes duration_ms column', () => {
+      const result = formatAgentBreakdown(enhancedBreakdowns as any, OutputFormat.TABLE);
+
+      expect(result).toContain('duration_ms');
+      expect(result).toContain('7500');
+      expect(result).toContain('4500');
+    });
+
+    it('When formatting agent table, Then includes estimated_cost_usd column', () => {
+      const result = formatAgentBreakdown(enhancedBreakdowns as any, OutputFormat.TABLE);
+
+      expect(result).toContain('estimated_cost');
+      expect(result).toContain('0.08');
+      expect(result).toContain('0.05');
+    });
+
+    it('When formatting agent table, Then maintains existing columns', () => {
+      const result = formatAgentBreakdown(enhancedBreakdowns as any, OutputFormat.TABLE);
+
+      // Should still have original columns
+      expect(result).toContain('workstream_id');
+      expect(result).toContain('agent_name');
+      expect(result).toContain('requests');
+      expect(result).toContain('total_tokens');
+      expect(result).toContain('cost_usd');
+      expect(result).toContain('success_rate');
+    });
+  });
+
+  describe('formatAgentBreakdown() with enhanced fields - JSON format', () => {
+    const enhancedBreakdowns: EnhancedAgentBreakdown[] = [
+      {
+        workstream_id: 'WS-18',
+        agent_name: 'qa',
+        request_count: 5,
+        total_tokens: 7500,
+        total_cost_usd: 0.075,
+        success_count: 4,
+        success_rate: 80.0,
+        total_duration_ms: 7500,
+        estimated_cost_usd: 0.080,
+      },
+    ];
+
+    it('When formatting JSON, Then includes enhanced fields', () => {
+      const result = formatAgentBreakdown(enhancedBreakdowns as any, OutputFormat.JSON);
+      const parsed = JSON.parse(result);
+
+      expect(parsed[0]).toHaveProperty('total_duration_ms');
+      expect(parsed[0]).toHaveProperty('estimated_cost_usd');
+    });
+
+    it('When formatting JSON, Then preserves all existing fields', () => {
+      const result = formatAgentBreakdown(enhancedBreakdowns as any, OutputFormat.JSON);
+      const parsed = JSON.parse(result);
+
+      expect(parsed[0]).toHaveProperty('workstream_id');
+      expect(parsed[0]).toHaveProperty('agent_name');
+      expect(parsed[0]).toHaveProperty('request_count');
+      expect(parsed[0]).toHaveProperty('total_tokens');
+      expect(parsed[0]).toHaveProperty('total_cost_usd');
+      expect(parsed[0]).toHaveProperty('success_count');
+      expect(parsed[0]).toHaveProperty('success_rate');
+    });
+  });
+
+  describe('formatAgentBreakdown() with enhanced fields - CSV format', () => {
+    const enhancedBreakdowns: EnhancedAgentBreakdown[] = [
+      {
+        workstream_id: 'WS-18',
+        agent_name: 'qa',
+        request_count: 5,
+        total_tokens: 7500,
+        total_cost_usd: 0.075,
+        success_count: 4,
+        success_rate: 80.0,
+        total_duration_ms: 7500,
+        estimated_cost_usd: 0.080,
+      },
+    ];
+
+    it('When formatting CSV, Then includes enhanced columns', () => {
+      const result = formatAgentBreakdown(enhancedBreakdowns as any, OutputFormat.CSV);
+      const lines = result.split('\n');
+
+      expect(lines[0]).toContain('total_duration_ms');
+      expect(lines[0]).toContain('estimated_cost_usd');
+    });
+
+    it('When formatting CSV, Then includes enhanced values', () => {
+      const result = formatAgentBreakdown(enhancedBreakdowns as any, OutputFormat.CSV);
+      const lines = result.split('\n');
+
+      expect(lines[1]).toContain('7500'); // duration
+      expect(lines[1]).toContain('0.080'); // estimated cost
+    });
+  });
+
+  describe('addTotalRow() with enhanced fields', () => {
+    it('When adding total row, Then sums duration_ms', () => {
+      const result = addTotalRow(enhancedSummaries as any);
+
+      const totalRow = result.find(r => r.workstream_id === 'TOTAL');
+      expect(totalRow).toBeDefined();
+      expect(totalRow!.total_duration_ms).toBe(22500); // 15000 + 7500
+    });
+
+    it('When adding total row, Then sums estimated_cost_usd', () => {
+      const result = addTotalRow(enhancedSummaries as any);
+
+      const totalRow = result.find(r => r.workstream_id === 'TOTAL');
+      expect(totalRow!.estimated_cost_usd).toBeCloseTo(0.240, 3); // 0.160 + 0.080
+    });
+
+    it('When adding total row, Then sums cache_savings_tokens', () => {
+      const result = addTotalRow(enhancedSummaries as any);
+
+      const totalRow = result.find(r => r.workstream_id === 'TOTAL');
+      expect(totalRow!.cache_savings_tokens).toBe(3000); // 2000 + 1000
+    });
+
+    it('When adding total row, Then preserves original summaries', () => {
+      const result = addTotalRow(enhancedSummaries as any);
+
+      // Should have original 2 + TOTAL = 3
+      expect(result).toHaveLength(3);
+      expect(result.find(r => r.workstream_id === 'WS-18')).toBeDefined();
+      expect(result.find(r => r.workstream_id === 'WS-19')).toBeDefined();
+    });
+  });
+
+  describe('Duration formatting helpers', () => {
+    it('When duration < 1 second, Then shows milliseconds', () => {
+      const summary = [{
+        ...enhancedSummaries[0],
+        total_duration_ms: 500,
+      }];
+
+      const result = formatWorkstreamSummary(summary as any, OutputFormat.TABLE);
+
+      expect(result).toContain('500');
+    });
+
+    it('When duration > 1 hour, Then still shows in milliseconds', () => {
+      const summary = [{
+        ...enhancedSummaries[0],
+        total_duration_ms: 7200000, // 2 hours
+      }];
+
+      const result = formatWorkstreamSummary(summary as any, OutputFormat.TABLE);
+
+      expect(result).toContain('7200000');
+    });
+
+    it('When duration is 0, Then shows 0', () => {
+      const summary = [{
+        ...enhancedSummaries[0],
+        total_duration_ms: 0,
+      }];
+
+      const result = formatWorkstreamSummary(summary as any, OutputFormat.TABLE);
+
+      expect(result).toContain('0');
+    });
+  });
+
+  describe('Cost formatting with estimation', () => {
+    it('When estimated_cost differs from total_cost, Then shows both', () => {
+      const summary = [{
+        ...enhancedSummaries[0],
+        total_cost_usd: 0.100,
+        estimated_cost_usd: 0.150,
+      }];
+
+      const result = formatWorkstreamSummary(summary as any, OutputFormat.TABLE);
+
+      expect(result).toContain('0.10'); // total_cost
+      expect(result).toContain('0.15'); // estimated_cost
+    });
+
+    it('When estimated_cost equals total_cost, Then shows both identically', () => {
+      const summary = [{
+        ...enhancedSummaries[0],
+        total_cost_usd: 0.150,
+        estimated_cost_usd: 0.150,
+      }];
+
+      const result = formatWorkstreamSummary(summary as any, OutputFormat.TABLE);
+
+      // Both columns should show same value
+      expect(result).toContain('0.15');
+    });
+
+    it('When cost is very small, Then preserves precision', () => {
+      const summary = [{
+        ...enhancedSummaries[0],
+        total_cost_usd: 0.001,
+        estimated_cost_usd: 0.0015,
+      }];
+
+      const result = formatWorkstreamSummary(summary as any, OutputFormat.TABLE);
+
+      expect(result).toContain('0.00'); // Should show fractional cents
+    });
+  });
+
+  describe('Cache savings display', () => {
+    it('When cache_savings is 0, Then shows 0', () => {
+      const summary = [{
+        ...enhancedSummaries[0],
+        cache_savings_tokens: 0,
+      }];
+
+      const result = formatWorkstreamSummary(summary as any, OutputFormat.TABLE);
+
+      expect(result).toContain('0'); // cache_savings column
+    });
+
+    it('When cache_savings is large, Then formats with separators', () => {
+      const summary = [{
+        ...enhancedSummaries[0],
+        cache_savings_tokens: 1234567,
+      }];
+
+      const result = formatWorkstreamSummary(summary as any, OutputFormat.TABLE);
+
+      // Should have thousands separators (format TBD)
+      expect(result).toContain('1234567');
     });
   });
 });

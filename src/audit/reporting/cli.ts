@@ -5,7 +5,7 @@
  * Supports: --by-workstream, --by-agent, --format, --from, --to, --workstream
  */
 
-import { readAuditLog } from './reader';
+import { readAuditLog, type TrackedAuditEntry } from './reader';
 import {
   aggregateByWorkstream,
   aggregateByAgent,
@@ -16,6 +16,9 @@ import {
 import { formatWorkstreamSummary, formatAgentBreakdown, type OutputFormat } from './formats';
 import { loadTrackingConfig } from '../tracking/config';
 import { validateWorkstreamId } from '../tracking/validation';
+import { aggregateByWorkstreamPeriodic, type TimePeriod } from './periodic';
+import { enhanceSummaryWithROI, generateSummaryDashboard, DEFAULT_ROI_CONFIG, type ROIConfig } from './roi';
+import { readMultipleAuditLogs, aggregateCrossProject, parseProjectPaths } from './cross-project';
 
 /**
  * Report options parsed from CLI arguments.
@@ -30,6 +33,11 @@ export interface ReportOptions {
   auditLogPath?: string;
   currentDate?: Date;
   configPath?: string;
+  // WS-AUDIT-2: New options
+  period?: 'daily' | 'weekly' | 'monthly';
+  hourlyRate?: number;
+  summary?: boolean;
+  projects?: string;
 }
 
 /**
@@ -114,6 +122,106 @@ export function parseReportArgs(args: string[]): ReportOptions {
       options.workstream = args[++i];
       continue;
     }
+
+    // WS-AUDIT-2: --period=<value> or --period <value>
+    if (arg.startsWith('--period=')) {
+      const periodValue = arg.split('=')[1];
+      const validPeriods = ['daily', 'weekly', 'monthly'];
+      if (!periodValue || !validPeriods.includes(periodValue)) {
+        throw new Error(`Invalid period: ${periodValue || '(empty)'}. Must be daily, weekly, or monthly.`);
+      }
+      options.period = periodValue as 'daily' | 'weekly' | 'monthly';
+      continue;
+    }
+    if (arg === '--period' && i + 1 < args.length) {
+      const periodValue = args[++i];
+      const validPeriods = ['daily', 'weekly', 'monthly'];
+      if (!periodValue || !validPeriods.includes(periodValue)) {
+        throw new Error(`Invalid period: ${periodValue || '(empty)'}. Must be daily, weekly, or monthly.`);
+      }
+      options.period = periodValue as 'daily' | 'weekly' | 'monthly';
+      continue;
+    }
+
+    // WS-AUDIT-2: --hourly-rate=<value> or --hourly-rate <value>
+    if (arg.startsWith('--hourly-rate=')) {
+      const rateValue = parseFloat(arg.split('=')[1]);
+      if (isNaN(rateValue)) {
+        throw new Error('Invalid hourly rate: must be a valid number');
+      }
+      if (rateValue < 0) {
+        throw new Error('Negative hourly rate: hourly rate cannot be negative');
+      }
+      if (rateValue === 0) {
+        throw new Error('Invalid hourly rate: must be greater than zero');
+      }
+      if (!isFinite(rateValue)) {
+        throw new Error('Invalid hourly rate: must be a finite number');
+      }
+      if (rateValue > 10000) {
+        throw new Error('Hourly rate too high: must be 10000 or less');
+      }
+      options.hourlyRate = rateValue;
+      continue;
+    }
+    if (arg === '--hourly-rate' && i + 1 < args.length) {
+      const rateValue = parseFloat(args[++i]);
+      if (isNaN(rateValue)) {
+        throw new Error('Invalid hourly rate: must be a valid number');
+      }
+      if (rateValue < 0) {
+        throw new Error('Negative hourly rate: hourly rate cannot be negative');
+      }
+      if (rateValue === 0) {
+        throw new Error('Invalid hourly rate: must be greater than zero');
+      }
+      if (!isFinite(rateValue)) {
+        throw new Error('Invalid hourly rate: must be a finite number');
+      }
+      if (rateValue > 10000) {
+        throw new Error('Hourly rate too high: must be 10000 or less');
+      }
+      options.hourlyRate = rateValue;
+      continue;
+    }
+
+    // WS-AUDIT-2: --summary
+    if (arg === '--summary') {
+      options.summary = true;
+      continue;
+    }
+
+    // WS-AUDIT-2: --projects=<paths> or --projects <paths>
+    if (arg.startsWith('--projects=')) {
+      const pathsValue = arg.split('=')[1];
+      if (!pathsValue || pathsValue.trim() === '') {
+        throw new Error('Invalid projects: path cannot be empty');
+      }
+      // Check for commas-only
+      if (pathsValue.replace(/,/g, '').trim() === '') {
+        throw new Error('Invalid projects: path cannot contain only commas');
+      }
+      if (pathsValue.includes('..')) {
+        throw new Error('Path traversal detected: projects path cannot contain ..');
+      }
+      options.projects = pathsValue;
+      continue;
+    }
+    if (arg === '--projects' && i + 1 < args.length) {
+      const pathsValue = args[++i];
+      if (!pathsValue || pathsValue.trim() === '') {
+        throw new Error('Invalid projects: path cannot be empty');
+      }
+      // Check for commas-only
+      if (pathsValue.replace(/,/g, '').trim() === '') {
+        throw new Error('Invalid projects: path cannot contain only commas');
+      }
+      if (pathsValue.includes('..')) {
+        throw new Error('Path traversal detected: projects path cannot contain ..');
+      }
+      options.projects = pathsValue;
+      continue;
+    }
   }
 
   // Default to by-workstream if neither specified
@@ -175,6 +283,59 @@ export function validateReportArgs(options: ReportOptions): ValidationResult {
     warnings.push('--workstream filter has no effect with --by-workstream');
   }
 
+  // WS-AUDIT-2: Validate period
+  if (options.period) {
+    const validPeriods = ['daily', 'weekly', 'monthly'];
+    if (!validPeriods.includes(options.period)) {
+      errors.push(`Invalid period: ${options.period}. Must be daily, weekly, or monthly.`);
+    }
+
+    // Period only works with --by-workstream
+    if (options.byAgent) {
+      errors.push('--period can only be used with --by-workstream');
+    }
+  }
+
+  // WS-AUDIT-2: Validate hourly rate
+  if (options.hourlyRate !== undefined) {
+    if (isNaN(options.hourlyRate)) {
+      errors.push('Invalid hourly rate: must be a valid number');
+    } else if (options.hourlyRate <= 0) {
+      errors.push('Invalid hourly rate: must be greater than zero');
+    } else if (!isFinite(options.hourlyRate)) {
+      errors.push('Invalid hourly rate: must be a finite number');
+    } else if (options.hourlyRate > 10000) {
+      errors.push('Hourly rate too high: must be 10000 or less');
+    } else if (options.hourlyRate > 1000) {
+      warnings.push('Unusually high hourly rate detected');
+    }
+  }
+
+  // WS-AUDIT-2: Cannot combine --period and --summary
+  if (options.period && options.summary) {
+    errors.push('Cannot combine --period and --summary flags');
+  }
+
+  // WS-AUDIT-2: Validate projects paths
+  if (options.projects) {
+    try {
+      parseProjectPaths(options.projects);
+    } catch (error) {
+      if (error instanceof Error) {
+        errors.push(error.message);
+      }
+    }
+
+    // Check if project directories exist
+    const paths = options.projects.split(',').map(p => p.trim()).filter(p => p.length > 0);
+    const fs = require('fs');
+    for (const projectPath of paths) {
+      if (!fs.existsSync(projectPath)) {
+        errors.push(`Project directory not found: ${projectPath} does not exist`);
+      }
+    }
+  }
+
   return {
     valid: errors.length === 0,
     errors,
@@ -187,10 +348,35 @@ export function validateReportArgs(options: ReportOptions): ValidationResult {
  */
 export function runReport(options: ReportOptions): string {
   try {
-    // Read audit log
-    const entries = readAuditLog(options.auditLogPath);
+    // Validate period
+    if (options.period) {
+      const validPeriods: TimePeriod[] = ['daily', 'weekly', 'monthly'];
+      if (!validPeriods.includes(options.period as TimePeriod)) {
+        throw new Error(`Invalid period: ${options.period}`);
+      }
+    }
 
-    if (entries.length === 0) {
+    // Validate hourly rate
+    if (options.hourlyRate !== undefined && options.hourlyRate < 0) {
+      throw new Error('Negative hourly rate not allowed');
+    }
+
+    // Read audit log(s)
+    let entries: TrackedAuditEntry[];
+    try {
+      entries = options.projects
+        ? aggregateCrossProject(readMultipleAuditLogs(parseProjectPaths(options.projects))).combined
+        : readAuditLog(options.auditLogPath);
+    } catch (error) {
+      // If audit log not found and we're generating a summary, treat as empty data
+      if (error instanceof Error && error.message.includes('Audit log not found') && options.summary) {
+        entries = [];
+      } else {
+        throw error;
+      }
+    }
+
+    if (entries.length === 0 && !options.summary) {
       return 'No data available in audit log.';
     }
 
@@ -213,12 +399,67 @@ export function runReport(options: ReportOptions): string {
       aggOptions.workstream = options.workstream;
     }
 
+    // Build ROI config if hourly rate specified
+    const roiConfig: ROIConfig = options.hourlyRate
+      ? { ...DEFAULT_ROI_CONFIG, hourly_rate_usd: options.hourlyRate }
+      : DEFAULT_ROI_CONFIG;
+
     // Generate report
     if (options.byAgent) {
       const breakdowns = aggregateByAgent(entries, aggOptions);
       return formatAgentBreakdown(breakdowns, options.format, dateRange);
     } else {
       // By workstream (default)
+
+      // Handle periodic rollup
+      if (options.period) {
+        const periodicSummaries = aggregateByWorkstreamPeriodic(entries, options.period as TimePeriod);
+
+        // Format periodic summaries (simplified table format)
+        if (options.format === 'json') {
+          return JSON.stringify(periodicSummaries, null, 2);
+        } else {
+          // Table format showing time buckets
+          let output = 'Periodic Workstream Summary\n';
+          output += '='.repeat(80) + '\n\n';
+          for (const summary of periodicSummaries) {
+            output += `Period: ${summary.time_bucket.label}\n`;
+            output += `Workstream: ${summary.workstream_id || '(none)'}\n`;
+            output += `Requests: ${summary.request_count}\n`;
+            output += `Cost: $${summary.total_cost_usd.toFixed(6)}\n`;
+            output += '-'.repeat(40) + '\n';
+          }
+          return output.trim();
+        }
+      }
+
+      // Handle summary dashboard
+      if (options.summary) {
+        let summaries = aggregateByWorkstream(entries, aggOptions);
+        const summariesWithROI = enhanceSummaryWithROI(summaries, roiConfig);
+        const dashboard = generateSummaryDashboard(
+          summariesWithROI,
+          options.from && options.to ? { from: options.from, to: options.to } : undefined
+        );
+
+        if (options.format === 'json') {
+          return JSON.stringify(dashboard, null, 2);
+        } else {
+          // Table format for dashboard
+          let output = 'Summary Dashboard\n';
+          output += '='.repeat(80) + '\n';
+          output += `total spend:             $${dashboard.total_agent_cost_usd.toFixed(2)}\n`;
+          output += `total savings:           $${dashboard.total_savings_usd.toFixed(2)}\n`;
+          output += `Workstream Count:        ${dashboard.workstream_count}\n`;
+          output += `Average Cost per Workstream: $${dashboard.average_cost_per_workstream_usd.toFixed(2)}\n`;
+          if (dashboard.date_range) {
+            output += `Date Range:              ${dashboard.date_range.from} to ${dashboard.date_range.to}\n`;
+          }
+          return output;
+        }
+      }
+
+      // Regular workstream summary (with optional ROI)
       let summaries = aggregateByWorkstream(entries, aggOptions);
 
       // Include zero-usage workstreams if config has known workstreams
@@ -230,6 +471,38 @@ export function runReport(options: ReportOptions): string {
         }
       } catch (error) {
         // Config not found or parsing failed - continue without zero-usage workstreams
+      }
+
+      // Add ROI data if hourly rate specified
+      if (options.hourlyRate) {
+        const summariesWithROI = enhanceSummaryWithROI(summaries, roiConfig);
+
+        if (options.format === 'json') {
+          return JSON.stringify(summariesWithROI, null, 2);
+        } else {
+          // Table format with ROI columns
+          let output = 'Workstream Summary (with ROI)\n';
+          output += '='.repeat(120) + '\n';
+          output += 'Workstream'.padEnd(15) +
+                    'Requests'.padEnd(10) +
+                    'Agent Cost'.padEnd(12) +
+                    'Human Est.'.padEnd(12) +
+                    'Savings'.padEnd(12) +
+                    'Savings %'.padEnd(12) +
+                    'Est. Hours\n';
+          output += '-'.repeat(120) + '\n';
+
+          for (const summary of summariesWithROI) {
+            output += `${(summary.workstream_id || '(none)').padEnd(15)}`;
+            output += `${String(summary.request_count).padEnd(10)}`;
+            output += `$${summary.roi.agent_cost_usd.toFixed(2).padEnd(11)}`;
+            output += `$${summary.roi.human_cost_estimate_usd.toFixed(2).padEnd(11)}`;
+            output += `$${summary.roi.savings_usd.toFixed(2).padEnd(11)}`;
+            output += `${summary.roi.savings_percentage.toFixed(1)}%`.padEnd(12);
+            output += `${summary.roi.estimated_human_hours.toFixed(1)}\n`;
+          }
+          return output;
+        }
       }
 
       return formatWorkstreamSummary(summaries, options.format, dateRange);
@@ -259,6 +532,10 @@ Options:
   --from=YYYY-MM-DD          Start date (default: 30 days ago)
   --to=YYYY-MM-DD            End date (default: today)
   --workstream=<id>, --ws=<id>  Filter by workstream (for --by-agent)
+  --period=<period>          Time period: daily, weekly, monthly (for --by-workstream)
+  --hourly-rate=<rate>       Developer hourly rate in USD (for ROI calculations)
+  --summary                  Show summary dashboard with total costs and savings
+  --projects=<paths>         Comma-separated project directory paths (cross-project aggregation, synchronous read)
   --help                     Show this help message
 
 Examples:
@@ -266,6 +543,10 @@ Examples:
   claude-audit report --by-agent --workstream=WS-18
   claude-audit report --by-workstream --format=json
   claude-audit report --by-workstream --from=2026-02-01 --to=2026-02-04
+  claude-audit report --by-workstream --period=daily
+  claude-audit report --by-workstream --hourly-rate=150
+  claude-audit report --by-workstream --summary
+  claude-audit report --projects=/path/to/proj1,/path/to/proj2
   `.trim();
 }
 

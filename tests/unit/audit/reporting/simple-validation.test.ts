@@ -113,6 +113,9 @@ describe('Phase 2: Implementation Validation', () => {
         total_input_tokens: 1000,
         total_output_tokens: 500,
         total_cost_usd: 0.015,
+        total_duration_ms: 500,
+        estimated_cost_usd: 0.015,
+        cache_savings_tokens: 0,
       },
     ];
 
@@ -129,6 +132,9 @@ describe('Phase 2: Implementation Validation', () => {
         total_input_tokens: 1000,
         total_output_tokens: 500,
         total_cost_usd: 0.015,
+        total_duration_ms: 500,
+        estimated_cost_usd: 0.015,
+        cache_savings_tokens: 0,
       },
     ];
 

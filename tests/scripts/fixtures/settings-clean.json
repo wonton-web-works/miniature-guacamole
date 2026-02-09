@@ -1,0 +1,9 @@
+{
+  "disabledSkills": {
+    "patterns": [
+      "test-skill",
+      "another-skill"
+    ]
+  },
+  "enabledTools": ["Read", "Write", "Bash"]
+}

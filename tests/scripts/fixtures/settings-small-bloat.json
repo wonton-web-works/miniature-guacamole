@@ -1,0 +1,8 @@
+{
+  "disabledSkills": {
+    "patterns": [
+      "This is a very long permission pattern that exceeds two hundred characters in length and should be detected as bloat by the settings check script because it's unnecessarily verbose and wasteful of storage space, which defeats the purpose of having clean config files"
+    ]
+  },
+  "enabledTools": ["Read", "Write"]
+}

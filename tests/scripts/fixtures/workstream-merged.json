@@ -1,0 +1,30 @@
+{
+  "workstream_id": "WS-FIXTURE-3",
+  "name": "Fixture Workstream Merged",
+  "status": "merged",
+  "phase": "complete",
+  "merge_commit": "abc1234",
+  "merged_at": "2026-02-08",
+  "agent_id": "engineering-team",
+  "created_at": "2026-02-07",
+  "acceptance_criteria": [
+    "All tests pass",
+    "Coverage >= 99%"
+  ],
+  "technical_approach": {
+    "scope": "Completed scope",
+    "files": ["done.ts"],
+    "pattern": "Done pattern"
+  },
+  "gate_status": "ready_for_leadership",
+  "delegated_to": null,
+  "tests": {
+    "total": 50,
+    "passing": 50,
+    "failing": 0
+  },
+  "coverage": 100,
+  "dependencies": [],
+  "blocked_reason": null,
+  "blockers": []
+}

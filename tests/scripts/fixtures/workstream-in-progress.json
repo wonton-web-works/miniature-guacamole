@@ -1,0 +1,28 @@
+{
+  "workstream_id": "WS-FIXTURE-2",
+  "name": "Fixture Workstream In Progress",
+  "status": "in_progress",
+  "phase": "implementation",
+  "agent_id": "dev",
+  "created_at": "2026-02-08",
+  "acceptance_criteria": [
+    "Criteria A",
+    "Criteria B"
+  ],
+  "technical_approach": {
+    "scope": "Implementation scope",
+    "files": ["impl.ts"],
+    "pattern": "Implementation pattern"
+  },
+  "gate_status": "tests_written",
+  "delegated_to": null,
+  "tests": {
+    "total": 10,
+    "passing": 8,
+    "failing": 2
+  },
+  "coverage": 80,
+  "dependencies": ["WS-FIXTURE-1"],
+  "blocked_reason": null,
+  "blockers": ["Need API access"]
+}

@@ -1,0 +1,28 @@
+{
+  "workstream_id": "WS-FIXTURE-1",
+  "name": "Fixture Workstream Pending",
+  "status": "pending",
+  "phase": "planning",
+  "agent_id": "dev",
+  "created_at": "2026-02-08",
+  "acceptance_criteria": [
+    "Criteria 1",
+    "Criteria 2"
+  ],
+  "technical_approach": {
+    "scope": "Test scope",
+    "files": ["test.ts"],
+    "pattern": "Test pattern"
+  },
+  "gate_status": "not_started",
+  "delegated_to": null,
+  "tests": {
+    "total": 0,
+    "passing": 0,
+    "failing": 0
+  },
+  "coverage": 0,
+  "dependencies": [],
+  "blocked_reason": null,
+  "blockers": []
+}

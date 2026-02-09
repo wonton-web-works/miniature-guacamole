@@ -1,0 +1,25 @@
+{
+  "workstream_id": "WS-TEST-1",
+  "name": "Test Workstream",
+  "status": "in_progress",
+  "phase": "implementation",
+  "agent_id": "dev",
+  "created_at": "2026-02-08",
+  "acceptance_criteria": [
+    "Test criteria 1",
+    "Test criteria 2"
+  ],
+  "technical_approach": {
+    "scope": "Test scope",
+    "files": ["test.ts"],
+    "pattern": "Test pattern"
+  },
+  "gate_status": "tests_written",
+  "delegated_to": null,
+  "tests": {
+    "total": 10,
+    "passing": 10,
+    "failing": 0
+  },
+  "coverage": 99
+}

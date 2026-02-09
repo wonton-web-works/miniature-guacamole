@@ -1,10 +1,22 @@
-# Product Development Team Agent System
+# miniature-guacamole: Product Development Team Agent System
 
-> A complete AI-powered product development organization for Claude Code with workflow automation, specialized agents, and shared memory state management.
+> A complete AI-powered product development organization for Claude Code with workflow automation, specialized agents, and project-local architecture.
 
-**Version:** 1.3.0
+**Version:** 2.0.0
 **Status:** Production Ready
 **License:** MIT
+
+---
+
+## What's New in v2.x
+
+**Project-Local Architecture** - Each project has its own `.claude/` directory with agents, skills, and protocols. No global installation means:
+- Complete data isolation between projects
+- Per-project customization
+- No conflicts between different framework versions
+- Easy uninstall without affecting other projects
+
+**Migrating from v1.x?** Use `mg-migrate` to convert from global `~/.claude/` to project-local `.claude/`.
 
 ---
 
@@ -22,6 +34,7 @@
 - [Development Workflow](#development-workflow)
 - [Example Workflows](#example-workflows)
 - [Testing](#testing)
+- [Migration from v1.x](#migration-from-v1x)
 - [Contributing](#contributing)
 
 ---
@@ -77,24 +90,26 @@ Use it to orchestrate complex product development workflows with AI agents that 
 
 ## Quick Start
 
-### 1. Install
+### 1. Build Distribution
 ```bash
 git clone https://github.com/RivermarkResearch/miniature-guacamole.git
 cd miniature-guacamole
 npm install
+./scripts/build-dist.sh
 ```
 
-### 2. Start Claude Code
+### 2. Install to Your Project
+```bash
+cd /path/to/your-project
+/path/to/miniature-guacamole/dist/miniature-guacamole/install.sh
+```
+
+This creates `.claude/` in your project with all agents, skills, protocols, and scripts.
+
+### 3. Start Claude Code
 ```bash
 claude
 ```
-
-### 3. Initialize Your Project
-```
-/init-project
-```
-
-This creates the `.claude/memory/` directory structure where agents store task queues, decisions, and handoffs. It also sets up project-specific context and shared protocols.
 
 ### 4. Use a Workflow
 ```
@@ -114,34 +129,93 @@ The team runs the full TDD cycle: QA writes tests → Dev implements → QA veri
 
 ## Installation
 
-### Option 1: Clone into Project (Recommended)
+### Method 1: Local Project Install (Recommended)
+
+Install directly to a project directory:
+
 ```bash
-git clone https://github.com/RivermarkResearch/miniature-guacamole.git
+# Build distribution (one-time)
 cd miniature-guacamole
-claude  # Start Claude Code - agents will be available
+./scripts/build-dist.sh
+
+# Install to your project
+cd /path/to/your-project
+/path/to/miniature-guacamole/dist/miniature-guacamole/install.sh
 ```
 
-### Option 2: Add to Existing Project
+This creates `.claude/` in your project with:
+- 18 agents
+- 13 skills
+- 6 shared protocols
+- 9 mg-* utility scripts
+- Project-level settings.json
+- Memory directory structure
+
+**Idempotent** - Safe to run multiple times. Preserves user customizations.
+
+### Method 2: Web Install (Coming Soon)
+
+One-line install from distribution server:
+
 ```bash
-cp -r /path/to/miniature-guacamole/.claude /path/to/your-project/
+curl -fsSL https://mg.rivermarkresearch.com/install.sh | bash
+```
+
+### Method 3: Config Cache + mg-init
+
+Install config cache once, then initialize new projects quickly:
+
+```bash
+# One-time: Install config cache to ~/.claude/.mg-configs/
+cd miniature-guacamole
+./scripts/install-config-cache.sh
+
+# Add to PATH (optional)
+export PATH="$PATH:$HOME/.claude/.mg-configs/scripts"
+
+# For each new project:
+cd /path/to/new-project
+mg-init
+```
+
+**Benefits:**
+- Fast initialization (no git clone needed)
+- Consistent framework version across projects
+- Minimal global footprint
+
+### Method 4: Migration from v1.x
+
+If you have v1.x installed (global `~/.claude/`):
+
+```bash
 cd /path/to/your-project
+/path/to/miniature-guacamole/dist/miniature-guacamole/mg-migrate
+```
+
+This will:
+1. Copy MG components from `~/.claude/` to project's `.claude/`
+2. Migrate settings.json and CLAUDE.md
+3. Clean up global installation (with confirmation)
+4. Create backup of everything removed
+
+### Verify Installation
+
+```bash
+# Check directory structure
+ls .claude/
+
+# List available agents
+ls .claude/agents/
+
+# Test a script
+.claude/scripts/mg-help
+
+# Start Claude Code
 claude
 ```
 
-### Option 3: Install Globally
-```bash
-# Copy skills to user-level location
-cp -r /path/to/miniature-guacamole/.claude/skills/* ~/.claude/skills/
+In Claude Code:
 
-# Copy agents to user-level location
-cp -r /path/to/miniature-guacamole/.claude/agents/* ~/.claude/agents/
-
-# Copy shared protocols
-mkdir -p ~/.claude/shared
-cp -r /path/to/miniature-guacamole/.claude/shared/* ~/.claude/shared/
-```
-
-### Verify Installation
 ```
 /help
 # Should show all available skills
@@ -152,8 +226,10 @@ cp -r /path/to/miniature-guacamole/.claude/shared/* ~/.claude/shared/
 
 ### Requirements
 - [Claude Code CLI](https://claude.ai/code) installed and authenticated
-- Git (for cloning)
-- Node.js 20+ and npm (for shared memory layer)
+- Git (for cloning the repository)
+- Bash 4.0+ (for installation scripts)
+- Python 3.6+ (for JSON processing in scripts)
+- Node.js 20+ and npm (optional, for TypeScript memory layer development)
 
 ---
 
@@ -287,64 +363,124 @@ See [docs/audit-logging.md](docs/audit-logging.md) for full documentation, confi
 
 ## Architecture
 
-### Directory Structure
-```
-.claude/
-├── skills/                      # Workflow and team slash commands
-│   ├── feature-assessment/
-│   ├── technical-assessment/
-│   ├── security-review/
-│   ├── accessibility-review/
-│   ├── design-review/
-│   ├── code-review/
-│   ├── implement/
-│   ├── leadership-team/
-│   ├── product-team/
-│   ├── engineering-team/
-│   ├── design-team/
-│   └── docs-team/
-│
-├── agents/                      # Subagent definitions (for Task tool)
-│   ├── ceo/
-│   ├── cto/
-│   ├── dev/
-│   ├── qa/
-│   ├── design/
-│   ├── security-engineer/
-│   ├── technical-writer/
-│   └── supervisor/
-│
-├── shared/                      # Shared protocols
-│   ├── handoff-protocol.md     # Delegation specification
-│   ├── development-workflow.md # TDD/BDD workflow
-│   └── engineering-principles.md
-│
-└── memory/                      # Shared state (created at runtime)
-    ├── shared.json
-    ├── ws-1.json
-    └── backups/
+### v2.x: Project-Local Architecture
 
-src/
-├── memory/                      # Shared memory TypeScript layer
-│   ├── config.ts               # Configuration
-│   ├── types.ts                # TypeScript interfaces
-│   ├── write.ts                # Write operations
-│   ├── read.ts                 # Read operations
-│   ├── query.ts                # Query operations
-│   ├── validate.ts             # Format validation
-│   ├── locking.ts              # File locking
-│   ├── backup.ts               # Backup/recovery
-│   └── errors.ts               # Error handling
+Each project has its own `.claude/` directory:
+
+```
+your-project/
+└── .claude/
+    ├── agents/                      # 18 specialized roles
+    │   ├── ceo/
+    │   ├── cto/
+    │   ├── dev/
+    │   ├── qa/
+    │   ├── design/
+    │   └── ...
+    │
+    ├── skills/                      # 13 collaborative workflows
+    │   ├── feature-assessment/
+    │   ├── technical-assessment/
+    │   ├── leadership-team/
+    │   ├── engineering-team/
+    │   └── ...
+    │
+    ├── shared/                      # 6 protocol documents
+    │   ├── handoff-protocol.md
+    │   ├── development-workflow.md
+    │   ├── tdd-workflow.md
+    │   ├── memory-protocol.md
+    │   ├── engineering-principles.md
+    │   ├── visual-formatting.md
+    │   └── script-invocation-protocol.md
+    │
+    ├── scripts/                     # 9 mg-* utilities
+    │   ├── mg-memory-read
+    │   ├── mg-memory-write
+    │   ├── mg-workstream-status
+    │   ├── mg-workstream-create
+    │   ├── mg-workstream-transition
+    │   ├── mg-gate-check
+    │   ├── mg-git-summary
+    │   ├── mg-diff-summary
+    │   └── mg-help
+    │
+    ├── hooks/                       # Project initialization hooks
+    │   └── project-init-check.sh
+    │
+    ├── memory/                      # Agent memory (project-local)
+    │   ├── .gitignore
+    │   ├── tasks-dev.json
+    │   ├── tasks-qa.json
+    │   ├── handoffs-qa-dev.json
+    │   ├── workstream-ws-1-state.json
+    │   └── decisions.json
+    │
+    ├── settings.json                # Project-level permissions
+    ├── CLAUDE.md                    # Framework + project context
+    ├── team-config.yaml             # Framework configuration
+    ├── MG_INSTALL.json              # Installation metadata
+    └── MG_PROJECT                   # Project marker
+```
+
+### Config Cache (Optional)
+
+For quick project initialization:
+
+```
+~/.claude/.mg-configs/
+├── templates/                   # Agent, skill, protocol templates
+│   ├── agents/
+│   ├── skills/
+│   ├── shared/
+│   ├── hooks/
+│   ├── settings.json
+│   └── CLAUDE.md
 │
-├── returns/                     # Structured return envelopes
-│   ├── types.ts
-│   └── validate.ts
+├── scripts/                     # mg-* utilities + mg-init
+│   ├── mg-init
+│   ├── mg-memory-read
+│   └── ...
 │
-└── supervisor/                  # Depth/loop monitoring
-    ├── depth.ts
-    ├── loops.ts
-    ├── escalation.ts
-    └── control.ts
+├── VERSION.json                 # Framework version
+└── README.md                    # Usage guide
+```
+
+### Framework Repository Structure
+
+```
+miniature-guacamole/
+├── .claude/                     # Source templates
+│   ├── agents/
+│   ├── skills/
+│   ├── shared/
+│   └── ...
+│
+├── dist/                        # Distribution build
+│   └── miniature-guacamole/
+│       ├── .claude/             # Pre-built framework files
+│       ├── install.sh           # Project installer
+│       ├── uninstall.sh         # Uninstaller
+│       ├── web-install.sh       # Web installer wrapper
+│       └── mg-migrate           # v1.x → v2.x migration tool
+│
+├── templates/                   # Config cache templates
+│   ├── agents/
+│   ├── skills/
+│   ├── mg-init                  # Project initializer
+│   └── ...
+│
+├── scripts/                     # Build and install utilities
+│   ├── build-dist.sh            # Build distribution
+│   ├── build-templates.sh       # Build config cache templates
+│   └── install-config-cache.sh  # Install config cache
+│
+├── src/                         # TypeScript development utilities
+│   └── memory/                  # Shared memory layer (optional)
+│
+└── tests/                       # Test suites
+    ├── integration/             # End-to-end tests
+    └── validation/              # Phase validation tests
 ```
 
 ### Component Flow
@@ -631,6 +767,9 @@ npm run test:watch
 
 # Coverage report
 npm run test:coverage
+
+# Run project-local integration tests
+./tests/integration/test-project-local.sh
 ```
 
 ### Test Results
@@ -644,8 +783,100 @@ Test Files  2 passed (2)
 - **Unit Tests** (18 tests) - Memory layer functions
 - **Integration Tests** (31 tests) - Cross-agent communication
 - **E2E Tests** (Playwright) - Workflow automation
+- **Project-Local Tests** (60+ tests) - v2.x installation and migration
 
 See [tests/README.md](tests/README.md) for detailed testing documentation.
+
+---
+
+## Migration from v1.x
+
+### What Changed in v2.x
+
+**v1.x (Global Installation)**
+- Agents, skills, protocols installed to `~/.claude/`
+- Shared between all projects
+- Global settings.json affected all projects
+- Single framework version system-wide
+
+**v2.x (Project-Local Installation)**
+- Each project has its own `.claude/` directory
+- Complete data isolation
+- Per-project settings.json
+- Different framework versions per project possible
+
+### Migration Steps
+
+1. **Backup your v1.x installation**
+   ```bash
+   cp -r ~/.claude ~/.claude-v1-backup
+   ```
+
+2. **Run the migration tool**
+   ```bash
+   cd /path/to/your-project
+   /path/to/miniature-guacamole/dist/miniature-guacamole/mg-migrate
+   ```
+
+3. **Review the migration**
+   The tool will:
+   - Detect MG components in `~/.claude/`
+   - Copy them to project's `.claude/`
+   - Migrate settings.json (MG-specific entries only)
+   - Migrate CLAUDE.md (with bounded markers)
+   - Ask before cleaning up global installation
+   - Create backup of everything removed
+
+4. **Test the migrated project**
+   ```bash
+   claude
+   /help  # Should show all skills
+   ```
+
+5. **Migrate additional projects**
+   Repeat step 2-4 for each project that needs MG.
+
+6. **Clean up backup** (optional)
+   ```bash
+   rm -rf ~/.claude-v1-backup
+   ```
+
+### Coexistence Mode
+
+You can run both v1.x and v2.x installations simultaneously:
+
+- **v1.x projects**: Continue using global `~/.claude/`
+- **v2.x projects**: Use project-local `.claude/`
+
+The migration tool's `--no-cleanup` flag preserves the global installation:
+
+```bash
+mg-migrate --no-cleanup
+```
+
+This installs project-local but leaves global files intact.
+
+### Troubleshooting Migration
+
+**Issue: Settings.json permissions lost**
+
+Solution: Re-run installer with `--force`:
+```bash
+./dist/miniature-guacamole/install.sh --force
+```
+
+**Issue: Scripts not executable**
+
+Solution: Fix permissions:
+```bash
+chmod +x .claude/scripts/mg-*
+```
+
+**Issue: CLAUDE.md content duplicated**
+
+Solution: Edit CLAUDE.md and remove duplicate sections between markers.
+
+See [dist/miniature-guacamole/mg-migrate](dist/miniature-guacamole/mg-migrate) for full migration documentation.
 
 ---
 
@@ -690,10 +921,20 @@ MIT
 
 | Version | Date | Changes |
 |---------|------|---------|
+| 2.0.0 | 2026-02-09 | **Project-Local Architecture** - Each project has own `.claude/` directory. Config cache at `~/.claude/.mg-configs/`. Migration tool `mg-migrate` for v1.x users. New install methods: local, web, config cache. Script utilities in `.claude/scripts/`. Complete data isolation. |
 | 1.3.0 | 2026-02-04 | Added design-team, docs-team, 7 workflow skills, shared memory layer (99% coverage), supervisor system |
 | 1.2.0 | 2026-02-04 | Added TDD/BDD workflow, Git workstreams, deployment-engineer |
 | 1.1.0 | 2026-02-04 | Added composite team skills (leadership-team, product-team, engineering-team) |
 | 1.0.0 | 2026-02-04 | Initial release with 11 agents and delegation system |
+
+### v2.0.0 Breaking Changes
+
+- **Global installation no longer supported** - Use `mg-migrate` to convert existing v1.x installations
+- **~/.claude/ is now config cache only** - Projects use `.claude/` in their own directory
+- **/init-project skill removed** - Replaced by `install.sh` and `mg-init` utilities
+- **Script invocation changed** - Scripts now in `.claude/scripts/` instead of `~/.claude/scripts/`
+
+See [Migration from v1.x](#migration-from-v1x) for upgrade guide.
 
 ---
 

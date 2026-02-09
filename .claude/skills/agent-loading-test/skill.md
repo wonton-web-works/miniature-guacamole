@@ -1,7 +1,4 @@
 ---
-# Skill: Agent Loading Test
-# Test skill to verify Task tool agent loading behavior
-
 name: agent-loading-test
 description: "Test skill to verify how Task tool loads agent definitions. Used for WS-AGENT-SPIKE."
 model: sonnet

@@ -1,0 +1,313 @@
+#!/usr/bin/env bash
+
+# mg-init - Initialize a project with miniature-guacamole
+#
+# Usage: mg-init [OPTIONS] [PROJECT_DIR]
+#
+# Options:
+#   --force          Force re-initialization (overwrites existing templates)
+#   --help           Show this help message
+#
+# Arguments:
+#   PROJECT_DIR      Target project directory (default: current directory)
+#
+# Description:
+#   Initializes a project with miniature-guacamole by:
+#   1. Copying agent, skill, and shared protocol templates
+#   2. Creating .claude/memory/ directory structure
+#   3. Merging settings.json (preserves existing config)
+#   4. Adding/updating CLAUDE.md with bounded markers
+#   5. Creating MG_PROJECT marker file
+#
+#   Safe to run multiple times (idempotent).
+
+set -euo pipefail
+
+# Security hardening - prevent sourcing
+if [[ "${BASH_SOURCE[0]}" != "$0" ]]; then
+    echo "Error: This script must be executed, not sourced" >&2
+    return 1
+fi
+
+# Security hardening - verify script location
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+case "$SCRIPT_DIR" in
+    */.mg-configs/scripts|*/.claude/scripts) ;;
+    *) echo "Error: Script must run from a trusted directory" >&2; exit 1 ;;
+esac
+
+# Configuration
+TEMPLATES_DIR="$(dirname "$SCRIPT_DIR")/templates"
+FORCE=false
+PROJECT_DIR="$PWD"
+
+# Parse arguments
+while [[ $# -gt 0 ]]; do
+    case "$1" in
+        --force)
+            FORCE=true
+            shift
+            ;;
+        --help)
+            # Extract and display help from header comments
+            sed -n '/^# mg-init/,/^$/p' "$0" | sed 's/^# \?//'
+            exit 0
+            ;;
+        -*)
+            echo "Error: Unknown option: $1" >&2
+            echo "Run 'mg-init --help' for usage information." >&2
+            exit 1
+            ;;
+        *)
+            PROJECT_DIR="$1"
+            shift
+            ;;
+    esac
+done
+
+# Resolve absolute path
+PROJECT_DIR="$(cd "$PROJECT_DIR" 2>/dev/null && pwd)" || {
+    echo "Error: Project directory does not exist: $PROJECT_DIR" >&2
+    exit 1
+}
+
+CLAUDE_DIR="$PROJECT_DIR/.claude"
+MG_PROJECT_MARKER="$CLAUDE_DIR/MG_PROJECT"
+
+echo "Initializing miniature-guacamole in: $PROJECT_DIR"
+
+# Check if already initialized
+if [[ -f "$MG_PROJECT_MARKER" ]] && [[ "$FORCE" != "true" ]]; then
+    echo "Warning: Project already initialized (MG_PROJECT marker exists)"
+    echo "Use --force to re-initialize"
+    exit 0
+fi
+
+# Create .claude directory structure
+echo "Creating .claude directory structure..."
+mkdir -p "$CLAUDE_DIR"/{agents,skills,shared,hooks,memory,scripts}
+
+# Copy templates
+echo "Copying framework templates..."
+
+if [[ "$FORCE" == "true" ]] || [[ ! -d "$CLAUDE_DIR/agents" ]] || [[ -z "$(ls -A "$CLAUDE_DIR/agents" 2>/dev/null)" ]]; then
+    echo "  - agents/"
+    cp -r "$TEMPLATES_DIR/agents/"* "$CLAUDE_DIR/agents/" 2>/dev/null || true
+fi
+
+if [[ "$FORCE" == "true" ]] || [[ ! -d "$CLAUDE_DIR/skills" ]] || [[ -z "$(ls -A "$CLAUDE_DIR/skills" 2>/dev/null)" ]]; then
+    echo "  - skills/"
+    cp -r "$TEMPLATES_DIR/skills/"* "$CLAUDE_DIR/skills/" 2>/dev/null || true
+fi
+
+if [[ "$FORCE" == "true" ]] || [[ ! -d "$CLAUDE_DIR/shared" ]] || [[ -z "$(ls -A "$CLAUDE_DIR/shared" 2>/dev/null)" ]]; then
+    echo "  - shared/"
+    cp -r "$TEMPLATES_DIR/shared/"* "$CLAUDE_DIR/shared/" 2>/dev/null || true
+fi
+
+if [[ "$FORCE" == "true" ]] || [[ ! -d "$CLAUDE_DIR/hooks" ]] || [[ -z "$(ls -A "$CLAUDE_DIR/hooks" 2>/dev/null)" ]]; then
+    echo "  - hooks/"
+    cp -r "$TEMPLATES_DIR/hooks/"* "$CLAUDE_DIR/hooks/" 2>/dev/null || true
+    chmod +x "$CLAUDE_DIR/hooks/"*.sh 2>/dev/null || true
+fi
+
+if [[ "$FORCE" == "true" ]] || [[ ! -d "$CLAUDE_DIR/scripts" ]] || [[ -z "$(ls -A "$CLAUDE_DIR/scripts" 2>/dev/null)" ]]; then
+    echo "  - scripts/"
+    cp "$SCRIPT_DIR"/mg-* "$CLAUDE_DIR/scripts/" 2>/dev/null || true
+    chmod +x "$CLAUDE_DIR/scripts/"mg-* 2>/dev/null || true
+fi
+
+# Merge settings.json
+echo "Configuring settings.json..."
+SETTINGS_FILE="$CLAUDE_DIR/settings.json"
+TEMPLATE_SETTINGS="$TEMPLATES_DIR/settings.json"
+
+if [[ -f "$SETTINGS_FILE" ]]; then
+    # Backup existing settings
+    BACKUP_FILE="$SETTINGS_FILE.backup.$(date +%Y%m%d-%H%M%S)"
+    cp "$SETTINGS_FILE" "$BACKUP_FILE"
+    echo "  - Backed up existing settings to: $(basename "$BACKUP_FILE")"
+
+    # Merge settings using Python
+    python3 <<'MERGE_SCRIPT'
+import json
+import os
+import sys
+
+def merge_settings(user_file, template_file, output_file):
+    """Merge template settings into user settings, preserving user config."""
+
+    # Load both files
+    with open(user_file, 'r') as f:
+        user = json.load(f)
+
+    with open(template_file, 'r') as f:
+        template = json.load(f)
+
+    # Merge permissions (add template allows, preserve user allows and denies)
+    if 'permissions' not in user:
+        user['permissions'] = {'allow': [], 'deny': []}
+
+    if 'allow' not in user['permissions']:
+        user['permissions']['allow'] = []
+
+    # Add template allows that aren't already present
+    template_allows = template.get('permissions', {}).get('allow', [])
+    for allow in template_allows:
+        if allow not in user['permissions']['allow']:
+            user['permissions']['allow'].append(allow)
+
+    # Preserve template denies if user doesn't have any
+    if 'deny' not in user['permissions'] or not user['permissions']['deny']:
+        user['permissions']['deny'] = template.get('permissions', {}).get('deny', [])
+
+    # Merge env (preserve user env, add template env)
+    if 'env' not in user:
+        user['env'] = {}
+
+    template_env = template.get('env', {})
+    for key, value in template_env.items():
+        if key not in user['env']:
+            user['env'][key] = value
+
+    # Preserve teammateMode from template if not set
+    if 'teammateMode' not in user:
+        user['teammateMode'] = template.get('teammateMode', 'auto')
+
+    # Write merged result
+    with open(output_file, 'w') as f:
+        json.dump(user, f, indent=2)
+
+    return True
+
+# Get paths from environment
+user_file = os.environ.get('SETTINGS_FILE')
+template_file = os.environ.get('TEMPLATE_SETTINGS')
+
+try:
+    merge_settings(user_file, template_file, user_file)
+    print("  - Merged template permissions into existing settings")
+except Exception as e:
+    print(f"  - Error merging settings: {e}", file=sys.stderr)
+    sys.exit(1)
+
+MERGE_SCRIPT
+
+else
+    # No existing settings, just copy template
+    cp "$TEMPLATE_SETTINGS" "$SETTINGS_FILE"
+    echo "  - Created settings.json from template"
+fi
+
+# Update CLAUDE.md with bounded markers
+echo "Updating CLAUDE.md..."
+CLAUDE_MD="$CLAUDE_DIR/CLAUDE.md"
+TEMPLATE_CLAUDE_MD="$TEMPLATES_DIR/CLAUDE.md"
+
+if [[ -f "$CLAUDE_MD" ]]; then
+    # Check if markers already exist
+    if grep -q "<!-- BEGIN MINIATURE-GUACAMOLE -->" "$CLAUDE_MD" 2>/dev/null; then
+        # Replace content between markers
+        python3 <<'UPDATE_SCRIPT'
+import os
+import re
+
+claude_md_path = os.environ.get('CLAUDE_MD')
+template_path = os.environ.get('TEMPLATE_CLAUDE_MD')
+
+# Read existing file
+with open(claude_md_path, 'r') as f:
+    existing = f.read()
+
+# Read template
+with open(template_path, 'r') as f:
+    template = f.read()
+
+# Extract template content between markers
+template_match = re.search(
+    r'<!-- BEGIN MINIATURE-GUACAMOLE -->.*?<!-- END MINIATURE-GUACAMOLE -->',
+    template,
+    re.DOTALL
+)
+
+if not template_match:
+    print("  - Error: Template markers not found", file=sys.stderr)
+    sys.exit(1)
+
+template_content = template_match.group(0)
+
+# Replace content between markers in existing file
+updated = re.sub(
+    r'<!-- BEGIN MINIATURE-GUACAMOLE -->.*?<!-- END MINIATURE-GUACAMOLE -->',
+    template_content,
+    existing,
+    flags=re.DOTALL
+)
+
+# Write updated content
+with open(claude_md_path, 'w') as f:
+    f.write(updated)
+
+print("  - Updated framework documentation in CLAUDE.md")
+UPDATE_SCRIPT
+
+    else
+        # No markers, prepend template content
+        TEMP_FILE="$CLAUDE_MD.tmp"
+        cat "$TEMPLATE_CLAUDE_MD" > "$TEMP_FILE"
+        echo "" >> "$TEMP_FILE"
+        echo "---" >> "$TEMP_FILE"
+        echo "" >> "$TEMP_FILE"
+        echo "# Existing Project Context" >> "$TEMP_FILE"
+        echo "" >> "$TEMP_FILE"
+        cat "$CLAUDE_MD" >> "$TEMP_FILE"
+        mv "$TEMP_FILE" "$CLAUDE_MD"
+        echo "  - Prepended framework documentation to CLAUDE.md"
+    fi
+else
+    # No existing CLAUDE.md, copy template
+    cp "$TEMPLATE_CLAUDE_MD" "$CLAUDE_MD"
+    echo "  - Created CLAUDE.md from template"
+fi
+
+# Create memory directory structure
+echo "Creating memory directory structure..."
+mkdir -p "$CLAUDE_DIR/memory"
+
+# Create .gitignore in memory directory if it doesn't exist
+MEMORY_GITIGNORE="$CLAUDE_DIR/memory/.gitignore"
+if [[ ! -f "$MEMORY_GITIGNORE" ]]; then
+    cat > "$MEMORY_GITIGNORE" <<'GITIGNORE'
+# Memory files are project-local and should not be committed
+*.json
+!.gitignore
+
+# Exception: Some template files may be committed
+# Uncomment if needed:
+# !decisions.json
+# !workstream-*.json
+GITIGNORE
+    echo "  - Created memory/.gitignore"
+fi
+
+# Create MG_PROJECT marker
+echo "Creating MG_PROJECT marker..."
+cat > "$MG_PROJECT_MARKER" <<MARKER
+This directory contains miniature-guacamole framework files.
+
+Version: $(cat "$(dirname "$SCRIPT_DIR")/VERSION.json" 2>/dev/null | python3 -c "import sys, json; print(json.load(sys.stdin).get('version', 'unknown'))" 2>/dev/null || echo "unknown")
+Initialized: $(date -u +"%Y-%m-%dT%H:%M:%SZ")
+MARKER
+
+echo ""
+echo "Success! Project initialized with miniature-guacamole."
+echo ""
+echo "Next steps:"
+echo "  1. Review settings: $CLAUDE_DIR/settings.json"
+echo "  2. Review context: $CLAUDE_DIR/CLAUDE.md"
+echo "  3. Explore agents: ls $CLAUDE_DIR/agents/"
+echo "  4. Explore skills: ls $CLAUDE_DIR/skills/"
+echo "  5. Run mg-help for available commands"
+echo ""
+echo "Project directory: $PROJECT_DIR"
+echo "Framework version: $(cat "$(dirname "$SCRIPT_DIR")/VERSION.json" 2>/dev/null | python3 -c "import sys, json; print(json.load(sys.stdin).get('version', 'unknown'))" 2>/dev/null || echo "unknown")"

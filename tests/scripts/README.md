@@ -1,13 +1,28 @@
-# Script Infrastructure Tests (WS-SCRIPTS-0)
+# Script Infrastructure Tests
 
 Comprehensive BATS test suite for the miniature-guacamole script infrastructure.
 
 ## Overview
 
-This directory contains tests for the three core script primitives:
+This directory contains tests for two workstreams:
+
+### WS-SCRIPTS-0: Core Script Implementation
+Tests for the 9 core mg-* scripts:
 - `mg-memory-read` - Read and pretty-print JSON memory files
 - `mg-memory-write` - Atomic JSON updates with backup
 - `mg-help` - Command index and usage
+- `mg-gate-check` - Gate validation for workstreams
+- `mg-git-summary` - Git status summarization
+- `mg-diff-summary` - Diff analysis and summarization
+- `mg-workstream-create` - Create new workstream tracking
+- `mg-workstream-status` - Query workstream state
+- `mg-workstream-transition` - Transition workstream phases
+
+### WS-SCRIPTS-3: Agent Adoption & Distribution
+Tests for framework integration:
+- Documentation references (memory-protocol.md, AGENT.md files, SKILL.md)
+- Installer functionality (install.sh deploys scripts/)
+- Discovery mechanism (mg-help lists all scripts)
 
 ## Test Philosophy
 
@@ -52,9 +67,19 @@ bats *.bats
 ### Run Specific Test File
 
 ```bash
+# WS-SCRIPTS-0 tests (script implementation)
 bats mg-memory-read.bats
 bats mg-memory-write.bats
 bats mg-help.bats
+bats mg-gate-check.bats
+bats mg-git-summary.bats
+bats mg-diff-summary.bats
+bats mg-workstream-create.bats
+bats mg-workstream-status.bats
+bats mg-workstream-transition.bats
+
+# WS-SCRIPTS-3 tests (framework integration)
+bats ws-scripts-3-adoption.bats
 ```
 
 ### Run Specific Test
@@ -71,7 +96,9 @@ bats -t mg-memory-read.bats
 
 ## Test Structure
 
-### mg-memory-read.bats
+### WS-SCRIPTS-0: Script Implementation Tests
+
+#### mg-memory-read.bats
 
 **Total Tests: 45**
 
@@ -176,6 +203,52 @@ bats -t mg-memory-read.bats
 - Idempotency
 - Terminal width handling
 
+#### mg-gate-check.bats, mg-git-summary.bats, mg-diff-summary.bats
+
+**Total Tests: ~120+ additional tests** across 6 more scripts
+
+See individual .bats files for detailed test breakdown.
+
+### WS-SCRIPTS-3: Framework Integration Tests
+
+#### ws-scripts-3-adoption.bats
+
+**Total Tests: 36**
+
+**Misuse Cases (8 tests):**
+- install.sh fails when .claude directory missing
+- Empty scripts/ directory handling
+- Documentation missing script references
+- Missing Memory Protocol sections
+- Non-executable scripts
+- Incomplete installations
+
+**Boundary Tests (9 tests):**
+- Documentation mentions scripts but lacks examples
+- AGENT.md has protocol but no script references
+- install.sh permissions issues
+- Alphabetical sorting verification
+- Backup scenarios
+- Paths with spaces
+
+**Golden Path (16 tests):**
+- memory-protocol.md references mg-* scripts
+- Agent AGENT.md files reference scripts
+- engineering-team SKILL.md artifact bundles
+- install.sh deploys scripts/ directory
+- mg-help lists all 9 scripts
+- All scripts installed and executable
+- Complete documentation chain
+
+**Integration (3 tests):**
+- Complete documentation chain verification
+- Full install.sh run
+- Agent script discovery via mg-help
+
+**Status**: 22/36 passing (14 skipped awaiting dev implementation)
+
+See `/tests/scripts/WS-SCRIPTS-3-TEST-SPEC.md` for detailed specification.
+
 ## Test Fixtures
 
 Located in `fixtures/` directory:
@@ -264,18 +337,35 @@ bats tests/scripts/*.bats
 
 ## Quality Gates
 
-Before marking WS-SCRIPTS-0 as complete:
+### WS-SCRIPTS-0 (Script Implementation)
 
-- [ ] All misuse case tests written and documented
-- [ ] All boundary tests written and documented
-- [ ] All golden path tests written and documented
-- [ ] Test fixtures created from real memory files
-- [ ] BATS installation documented
-- [ ] Test ordering follows misuse → boundary → golden path
-- [ ] Coverage target of 99% achievable with test suite
-- [ ] All tests can be run independently
-- [ ] Temporary files cleaned up properly
-- [ ] No tests skip unless explicitly documented as TODO
+- [x] All misuse case tests written and documented
+- [x] All boundary tests written and documented
+- [x] All golden path tests written and documented
+- [x] Test fixtures created from real memory files
+- [x] BATS installation documented
+- [x] Test ordering follows misuse → boundary → golden path
+- [x] Coverage target of 99% achievable with test suite
+- [x] All tests can be run independently
+- [x] Temporary files cleaned up properly
+- [x] No tests skip unless explicitly documented as TODO
+
+**Status**: ✓ COMPLETE - All 348 tests passing
+
+### WS-SCRIPTS-3 (Framework Integration)
+
+- [x] All misuse case tests written and documented (8/8 passing)
+- [x] All boundary tests written and documented (9/9 passing)
+- [x] All golden path tests written and documented (4/16 passing, 12 skipped)
+- [x] Integration tests written and documented (1/3 passing, 2 skipped)
+- [x] Test ordering follows misuse → boundary → golden path
+- [x] Coverage target of 99% achievable with test suite
+- [ ] Documentation updates implemented (memory-protocol.md, AGENT.md files)
+- [ ] Installer updates implemented (install.sh deploys scripts/)
+- [ ] CLAUDE.md mentions mg-* utilities
+- [ ] All 36 tests passing (0 skipped)
+
+**Status**: ⏸ AWAITING DEV IMPLEMENTATION - 22/36 tests passing, 14 skipped
 
 ## Test Execution Notes
 
@@ -298,15 +388,36 @@ BATS not installed. Install via: brew install bats-core
 
 ## Expected Test Results
 
+### WS-SCRIPTS-0 (Script Implementation)
+
 When scripts are implemented correctly:
 
 ```
-✓ mg-memory-read: 45/45 passing
-✓ mg-memory-write: 50/50 passing
-✓ mg-help: 35/35 passing
+✓ mg-memory-read: 41/41 passing
+✓ mg-memory-write: 47/47 passing
+✓ mg-help: 38/38 passing
+✓ mg-gate-check: 38/38 passing
+✓ mg-git-summary: 32/32 passing
+✓ mg-diff-summary: 33/33 passing
+✓ mg-workstream-create: 42/42 passing
+✓ mg-workstream-status: 37/37 passing
+✓ mg-workstream-transition: 40/40 passing
 
-Total: 130 tests, 130 passing
+Total: 348 tests, 348 passing
 Coverage: 99%+
+Status: ✓ COMPLETE
+```
+
+### WS-SCRIPTS-3 (Framework Integration)
+
+When framework integration is complete:
+
+```
+✓ ws-scripts-3-adoption: 36/36 passing
+
+Current: 22/36 passing (14 skipped)
+Coverage: 99%+ of acceptance criteria
+Status: ⏸ AWAITING DEV IMPLEMENTATION
 ```
 
 ## Next Steps

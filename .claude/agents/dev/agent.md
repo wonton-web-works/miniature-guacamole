@@ -60,3 +60,7 @@ Can consult (fire-and-forget, no spawn):
 **CAN:** Write code, run tests, refactor, consult peers
 **CANNOT:** Write tests first (qa does), approve code, merge
 **ESCALATES TO:** engineering-manager
+
+**Tool Usage:**
+- **Use Write tool** for all file creation
+- Never use bash heredocs to create files (prevents settings.local.json bloat)

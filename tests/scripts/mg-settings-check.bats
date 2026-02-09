@@ -147,10 +147,12 @@ teardown() {
     # Create a pattern with exactly 200 characters (should pass)
     cat > "$PROJECT_SETTINGS_DIR/settings.local.json" <<EOF
 {
-  "disabledSkills": {
-    "patterns": [
+  "permissions": {
+    "allow": [
       "$(printf 'a%.0s' {1..200})"
-    ]
+    ],
+    "deny": [],
+    "ask": []
   }
 }
 EOF
@@ -164,10 +166,12 @@ EOF
     # Create a pattern with exactly 201 characters (should be detected)
     cat > "$PROJECT_SETTINGS_DIR/settings.local.json" <<EOF
 {
-  "disabledSkills": {
-    "patterns": [
+  "permissions": {
+    "allow": [
       "$(printf 'a%.0s' {1..201})"
-    ]
+    ],
+    "deny": [],
+    "ask": []
   }
 }
 EOF
@@ -178,17 +182,25 @@ EOF
 
 @test "mg-settings-check: file exactly 5000 characters (no warning)" {
     cd "$TEST_DIR"
-    # Create a file with exactly 5000 chars (should not warn)
-    printf '{"disabledSkills":{"patterns":["%s"]}}' "$(printf 'x%.0s' {1..4960})" > "$PROJECT_SETTINGS_DIR/settings.local.json"
+    # Create a file with exactly 5000 chars using patterns <200 chars each
+    # Calculated: 32 patterns of 150 chars + 1 pattern of 54 chars = exactly 5000 bytes
+    PATTERN_150=$(printf 'p%.0s' {1..150})
+    PATTERN_54=$(printf 'q%.0s' {1..54})
+    cat > "$PROJECT_SETTINGS_DIR/settings.local.json" <<EOF
+{"permissions":{"allow":["$PATTERN_150","$PATTERN_150","$PATTERN_150","$PATTERN_150","$PATTERN_150","$PATTERN_150","$PATTERN_150","$PATTERN_150","$PATTERN_150","$PATTERN_150","$PATTERN_150","$PATTERN_150","$PATTERN_150","$PATTERN_150","$PATTERN_150","$PATTERN_150","$PATTERN_150","$PATTERN_150","$PATTERN_150","$PATTERN_150","$PATTERN_150","$PATTERN_150","$PATTERN_150","$PATTERN_150","$PATTERN_150","$PATTERN_150","$PATTERN_150","$PATTERN_150","$PATTERN_150","$PATTERN_150","$PATTERN_150","$PATTERN_150","$PATTERN_54"],"deny":[],"ask":[]}}
+EOF
+    # Verify it's exactly 5000 chars
+    local file_size=$(wc -c < "$PROJECT_SETTINGS_DIR/settings.local.json" | tr -d ' ')
+    [ "$file_size" -eq 5000 ]
     run "$SCRIPT_PATH" --project
-    # Should not warn about file size at exactly 5K
+    [ "$status" -eq 0 ]
     [[ ! "$output" =~ "file size" ]]
 }
 
 @test "mg-settings-check: file exactly 5001 characters (warning) (AC-2.3)" {
     cd "$TEST_DIR"
     # Create a file with exactly 5001 chars (should warn)
-    printf '{"disabledSkills":{"patterns":["%s"]}}' "$(printf 'x%.0s' {1..4961})" > "$PROJECT_SETTINGS_DIR/settings.local.json"
+    printf '{"permissions":{"allow":["%s"],"deny":[],"ask":[]}}' "$(printf 'x%.0s' {1..4952})" > "$PROJECT_SETTINGS_DIR/settings.local.json"
     run "$SCRIPT_PATH" --project
     [ "$status" -eq 1 ]
     [[ "$output" =~ "5001" ]] || [[ "$output" =~ ">5K" ]] || [[ "$output" =~ "file size" ]]
@@ -206,7 +218,7 @@ EOF
     skip "TODO: Mock missing global settings scenario"
 }
 
-@test "mg-settings-check: settings with no disabledSkills key" {
+@test "mg-settings-check: settings with no permissions key" {
     cd "$TEST_DIR"
     cat > "$PROJECT_SETTINGS_DIR/settings.local.json" <<EOF
 {
@@ -218,12 +230,14 @@ EOF
     [[ "$output" =~ "No issues" ]] || [[ "$output" =~ "clean" ]]
 }
 
-@test "mg-settings-check: settings with empty patterns array" {
+@test "mg-settings-check: settings with empty permissions arrays" {
     cd "$TEST_DIR"
     cat > "$PROJECT_SETTINGS_DIR/settings.local.json" <<EOF
 {
-  "disabledSkills": {
-    "patterns": []
+  "permissions": {
+    "allow": [],
+    "deny": [],
+    "ask": []
   }
 }
 EOF
@@ -244,10 +258,12 @@ EOF
     cd "$TEST_DIR"
     cat > "$PROJECT_SETTINGS_DIR/settings.local.json" <<EOF
 {
-  "disabledSkills": {
-    "patterns": [
+  "permissions": {
+    "allow": [
       "test-skill-with-emoji-🚀-and-unicode-特殊文字"
-    ]
+    ],
+    "deny": [],
+    "ask": []
   }
 }
 EOF
@@ -259,10 +275,12 @@ EOF
     cd "$TEST_DIR"
     cat > "$PROJECT_SETTINGS_DIR/settings.local.json" <<EOF
 {
-  "disabledSkills": {
-    "patterns": [
+  "permissions": {
+    "allow": [
       "test-skill-with\\nnewline"
-    ]
+    ],
+    "deny": [],
+    "ask": []
   }
 }
 EOF
@@ -274,10 +292,12 @@ EOF
     cd "$TEST_DIR"
     cat > "$PROJECT_SETTINGS_DIR/settings.local.json" <<EOF
 {
-  "disabledSkills": {
-    "patterns": [
+  "permissions": {
+    "allow": [
       "$(printf 'a%.0s' {1..1000})"
-    ]
+    ],
+    "deny": [],
+    "ask": []
   }
 }
 EOF
@@ -354,9 +374,9 @@ EOF
     [ "$status" -eq 0 ]
     [[ "$output" =~ "Removed" ]] || [[ "$output" =~ "fixed" ]] || [[ "$output" =~ "cleaned" ]]
 
-    # Verify the file was actually modified
+    # Verify the file was actually modified (oversized pattern removed)
     run cat "$PROJECT_SETTINGS_DIR/settings.local.json"
-    [[ ! "$output" =~ "two hundred characters" ]]
+    [[ ! "$output" =~ "unnecessarily verbose" ]]
 }
 
 @test "mg-settings-check: --fix preserves valid patterns" {
@@ -366,9 +386,10 @@ EOF
     # Add a valid pattern to the file
     run bash -c "echo 'y' | $SCRIPT_PATH --project --fix"
 
-    # Verify enabledTools array is preserved
+    # Verify enabledTools array and permissions structure are preserved
     run cat "$PROJECT_SETTINGS_DIR/settings.local.json"
     [[ "$output" =~ "enabledTools" ]]
+    [[ "$output" =~ "permissions" ]]
 }
 
 @test "mg-settings-check: --fix creates backup before modification (AC-2.4)" {
@@ -436,10 +457,12 @@ EOF
     cd "$TEST_DIR"
     cat > "$PROJECT_SETTINGS_DIR/settings.local.json" <<EOF
 {
-  "disabledSkills": {
-    "patterns": [
+  "permissions": {
+    "allow": [
       "short-pattern"
     ],
+    "deny": [],
+    "ask": [],
     "metadata": {
       "version": "1.0",
       "updated": "2025-01-01"

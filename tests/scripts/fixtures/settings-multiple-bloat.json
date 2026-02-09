@@ -1,9 +1,11 @@
 {
-  "disabledSkills": {
-    "patterns": [
+  "permissions": {
+    "allow": [
       "This is the first oversized permission pattern that exceeds two hundred characters in length and should be detected as bloat by the settings check script because it is unnecessarily verbose and wasteful storage space bloat",
       "Here is another extremely long permission pattern that also exceeds the two hundred character threshold and represents permission bloat that needs to be cleaned up from the settings file for optimal performance and clarity"
-    ]
+    ],
+    "deny": [],
+    "ask": []
   },
   "enabledTools": ["Read", "Write", "Bash"]
 }

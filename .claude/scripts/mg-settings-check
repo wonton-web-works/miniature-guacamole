@@ -1,0 +1,278 @@
+#!/usr/bin/env bash
+# ============================================================================
+# mg-settings-check - Detect and clean permission bloat in settings files
+# ============================================================================
+# Usage: mg-settings-check [--project | --global] [--fix] [--help | -h]
+# Exit 0 = no issues or fix successful, Exit 1 = bloat detected or error
+# ============================================================================
+
+set -euo pipefail
+
+# ============================================================================
+# Help text
+# ============================================================================
+show_help() {
+    cat <<EOF
+Usage: mg-settings-check [--project | --global] [--fix] [--help | -h]
+
+Detect and clean permission bloat in settings.local.json files.
+
+Options:
+  --project       Check only project-level settings (.claude/settings.local.json)
+  --global        Check only global settings (~/.claude/settings.local.json)
+  --fix           Remove oversized patterns with user confirmation
+  -h, --help      Show this help message
+
+If no scope flag is provided, checks both project and global settings.
+
+Detection Rules:
+  - Pattern >200 characters = oversized (reported as bloat)
+  - File >5000 characters = warning (reported as bloat)
+
+Fix Mode:
+  - Displays oversized patterns
+  - Asks for confirmation before removal
+  - Creates backup: settings.local.json.backup-YYYYMMDD-HHMMSS
+  - Uses atomic write (temp file + mv)
+
+Examples:
+  mg-settings-check                    # Check both project and global
+  mg-settings-check --project          # Check only project settings
+  mg-settings-check --global --fix     # Fix global settings
+
+Dependencies:
+  jq - JSON processor (required)
+
+Exit codes:
+  0 - No issues found or fix completed successfully
+  1 - Bloat detected or error occurred
+EOF
+}
+
+# ============================================================================
+# Error handling
+# ============================================================================
+error() {
+    echo "Error: $1" >&2
+    exit 1
+}
+
+# ============================================================================
+# Parse arguments
+# ============================================================================
+CHECK_PROJECT=false
+CHECK_GLOBAL=false
+FIX_MODE=false
+
+if [[ $# -eq 0 ]]; then
+    # Default: check both
+    CHECK_PROJECT=true
+    CHECK_GLOBAL=true
+fi
+
+while [[ $# -gt 0 ]]; do
+    case "$1" in
+        -h|--help)
+            show_help
+            exit 0
+            ;;
+        --project)
+            if [[ "$CHECK_GLOBAL" == "true" ]]; then
+                error "Cannot use both --project and --global flags"
+            fi
+            CHECK_PROJECT=true
+            shift
+            ;;
+        --global)
+            if [[ "$CHECK_PROJECT" == "true" && "$CHECK_GLOBAL" == "false" ]]; then
+                error "Cannot use both --project and --global flags"
+            fi
+            CHECK_GLOBAL=true
+            shift
+            ;;
+        --fix)
+            if [[ "$FIX_MODE" == "true" ]]; then
+                error "Cannot specify --fix multiple times"
+            fi
+            FIX_MODE=true
+            shift
+            ;;
+        "")
+            error "Empty flag provided"
+            ;;
+        *)
+            error "Unknown flag: $1. Usage: mg-settings-check [--project | --global] [--fix] [--help | -h]"
+            ;;
+    esac
+done
+
+# ============================================================================
+# Validate dependencies
+# ============================================================================
+JQ_PATH=$(command -v jq || true)
+if [[ -z "$JQ_PATH" ]]; then
+    error "jq not found in PATH. Install via: brew install jq"
+fi
+
+# ============================================================================
+# Check settings file
+# ============================================================================
+check_settings_file() {
+    local file_path="$1"
+    local scope="$2"  # "project" or "global"
+
+    # Check if file exists
+    if [[ ! -e "$file_path" ]]; then
+        echo "[$scope] Settings file not found (skipped)"
+        return 0
+    fi
+
+    # Check if it's a directory
+    if [[ -d "$file_path" ]]; then
+        echo "Error: $file_path is a directory, not a file" >&2
+        return 1
+    fi
+
+    # Check if readable
+    if [[ ! -r "$file_path" ]]; then
+        echo "Error: Cannot read $file_path (permission denied)" >&2
+        return 1
+    fi
+
+    # Validate JSON
+    if ! "$JQ_PATH" '.' "$file_path" >/dev/null 2>&1; then
+        echo "Error: Invalid or malformed JSON in $file_path" >&2
+        return 1
+    fi
+
+    # Get file size
+    local file_size
+    file_size=$(wc -c < "$file_path" | tr -d ' ')
+
+    # Extract patterns
+    local patterns
+    patterns=$("$JQ_PATH" -r '(.permissions.allow[]? // empty), (.permissions.deny[]? // empty), (.permissions.ask[]? // empty)' "$file_path" 2>/dev/null || true)
+
+    # Check for oversized patterns (>200 chars)
+    local oversized_patterns=()
+    local oversized_count=0
+
+    if [[ -n "$patterns" ]]; then
+        while IFS= read -r pattern; do
+            local pattern_length=${#pattern}
+            if [[ $pattern_length -gt 200 ]]; then
+                oversized_patterns+=("$pattern")
+                oversized_count=$((oversized_count + 1))
+            fi
+        done <<< "$patterns"
+    fi
+
+    # Check file size (>5000 chars)
+    local file_too_large=false
+    if [[ $file_size -gt 5000 ]]; then
+        file_too_large=true
+    fi
+
+    # Report findings
+    local has_issues=false
+
+    if [[ $oversized_count -gt 0 ]] || [[ "$file_too_large" == "true" ]]; then
+        has_issues=true
+
+        echo "[$scope] Bloat detected in $file_path:"
+
+        if [[ $oversized_count -gt 0 ]]; then
+            if [[ $oversized_count -eq 1 ]]; then
+                echo "  - 1 pattern >200 chars (oversized)"
+            elif [[ $oversized_count -eq 2 ]]; then
+                echo "  - 2 patterns >200 chars (oversized)"
+            else
+                echo "  - $oversized_count patterns >200 chars (oversized)"
+            fi
+
+            # Show pattern details
+            for pattern in "${oversized_patterns[@]}"; do
+                local pattern_length=${#pattern}
+                echo "    - Pattern: ${pattern:0:50}... (${pattern_length} chars)"
+            done
+        fi
+
+        if [[ "$file_too_large" == "true" ]]; then
+            echo "  - file size too large: ${file_size} chars (>5K)"
+        elif [[ $file_size -ge 4997 ]]; then
+            # Show file size when approaching threshold
+            echo "  - file size: ${file_size} chars (approaching 5K limit)"
+        fi
+
+        # Fix mode
+        if [[ "$FIX_MODE" == "true" ]]; then
+            if [[ $oversized_count -eq 0 ]]; then
+                echo "[$scope] No oversized patterns to fix"
+                return 0
+            fi
+
+            # Ask for confirmation
+            echo ""
+            echo "Remove these $oversized_count pattern(s)? (y/n): "
+            read -r response
+
+            if [[ "$response" != "y" && "$response" != "Y" ]]; then
+                echo "Fix cancelled"
+                return 1
+            fi
+
+            # Create backup
+            local timestamp
+            timestamp=$(date +"%Y%m%d-%H%M%S")
+            local backup_path="${file_path}.backup-${timestamp}"
+            cp "$file_path" "$backup_path"
+            echo "[$scope] Backup created: $backup_path"
+
+            # Remove oversized patterns
+            local temp_file
+            temp_file=$(mktemp)
+
+            # Filter out oversized patterns
+            "$JQ_PATH" '
+                .permissions.allow |= map(select(length <= 200)) |
+                .permissions.deny |= map(select(length <= 200)) |
+                .permissions.ask |= map(select(length <= 200))
+            ' "$file_path" > "$temp_file"
+
+            # Atomic write
+            mv "$temp_file" "$file_path"
+
+            echo "[$scope] Removed $oversized_count oversized pattern(s)"
+            echo "[$scope] Settings cleaned successfully"
+            return 0
+        fi
+
+        return 1
+    else
+        echo "[$scope] No issues found - settings are clean"
+        return 0
+    fi
+}
+
+# ============================================================================
+# Main
+# ============================================================================
+overall_exit_code=0
+
+# Check project settings
+if [[ "$CHECK_PROJECT" == "true" ]]; then
+    PROJECT_SETTINGS=".claude/settings.local.json"
+    if ! check_settings_file "$PROJECT_SETTINGS" "project"; then
+        overall_exit_code=1
+    fi
+fi
+
+# Check global settings
+if [[ "$CHECK_GLOBAL" == "true" ]]; then
+    GLOBAL_SETTINGS="$HOME/.claude/settings.local.json"
+    if ! check_settings_file "$GLOBAL_SETTINGS" "global"; then
+        overall_exit_code=1
+    fi
+fi
+
+exit $overall_exit_code

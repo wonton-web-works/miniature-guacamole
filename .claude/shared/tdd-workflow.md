@@ -73,6 +73,9 @@ Detailed reference for the Test-Driven Development workflow. This is the authori
 - [ ] No regressions
 - [ ] Visual regression check (if UI)
 
+**Verification Script Pattern:**
+For complex verification checks, verification scripts MUST be written via Write tool to `/tmp/mg-verify-*.sh`, then executed with Bash tool. This prevents settings.local.json permission pattern bloat from inline bash heredocs.
+
 **Gate:** `qa_approved`
 
 ### Step 4: Code Review (Staff Engineer)

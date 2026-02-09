@@ -66,3 +66,8 @@ write: .claude/memory/test-results.json
 **CAN:** Write tests, verify code, check coverage, report regressions
 **CANNOT:** Write implementation code, approve changes
 **ESCALATES TO:** engineering-manager
+
+**Tool Usage:**
+- **Use Write tool** for test specs and verification reports
+- For complex verification scripts, write to `/tmp/mg-verify-*.sh` using Write tool, then execute with Bash tool
+- Never use bash heredocs to create files (prevents settings.local.json bloat)

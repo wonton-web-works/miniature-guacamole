@@ -136,6 +136,61 @@ tests/
 
 ## Code Quality Standards
 
+### Script-First Pattern
+
+**For multi-line bash operations, MUST use the Write tool to create a script file.**
+
+When implementing verification checks, report generation, or any bash operation that involves multi-line content:
+
+1. **Write the script to a file** using the Write tool (e.g., `/tmp/mg-verify-*.sh`)
+2. **Execute the script** using the Bash tool
+3. **NEVER embed large content as inline bash heredocs**
+
+**Example:**
+```bash
+# CORRECT: Write script first, then execute
+# (Use Write tool to create /tmp/mg-verify-coverage.sh with verification logic)
+bash /tmp/mg-verify-coverage.sh
+
+# WRONG: Inline heredoc
+bash <<'EOF'
+# ... 50 lines of verification logic ...
+EOF
+```
+
+**Why this pattern?**
+- Prevents `settings.local.json` bloat from permission pattern storage
+- Claude Code saves every bash heredoc as a permission pattern
+- Large heredocs (verification reports, multi-line scripts) can bloat settings to 38K+
+- Script-first keeps settings clean and manageable
+
+**Rule:** Use Write tool for scripts, use Bash tool for execution only.
+
+### Write Tool for File Creation
+
+**ALWAYS use the Write tool to create or overwrite files. NEVER use Bash with cat/heredoc/echo redirection.**
+
+All file creation and modification operations MUST use the Write tool, not bash commands.
+
+**Prohibited bash patterns:**
+- `cat <<EOF > file.txt` (heredoc redirection)
+- `echo "content" > file.txt` (echo redirection)
+- `echo "content" >> file.txt` (append redirection)
+- Any inline heredoc that writes to a file
+
+**Correct approach:**
+- Use Write tool for all file creation
+- Use Edit tool for file modifications
+- Use Bash tool ONLY for execution, not file creation
+
+**Why this rule?**
+- Prevents permission pattern bloat in `settings.local.json`
+- Ensures consistency across all agents
+- Write tool is designed for file operations, Bash tool is for execution
+- Prevents large heredocs from being saved as permission patterns
+
+**This rule applies to all agents and all file operations.**
+
 ### TypeScript Strict Mode
 ```json
 {

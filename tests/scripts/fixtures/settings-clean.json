@@ -1,9 +1,11 @@
 {
-  "disabledSkills": {
-    "patterns": [
+  "permissions": {
+    "allow": [
       "test-skill",
       "another-skill"
-    ]
+    ],
+    "deny": [],
+    "ask": []
   },
   "enabledTools": ["Read", "Write", "Bash"]
 }

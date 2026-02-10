@@ -53,20 +53,25 @@ npm run test:coverage
 ### Project Structure
 
 ```
-.claude/
-├── skills/       # Workflow and team slash commands
-├── agents/       # Subagent definitions
-├── shared/       # Shared protocols
-└── memory/       # Runtime state (created dynamically)
-
 src/
-├── memory/       # Shared memory TypeScript layer
-├── returns/      # Structured return envelopes
-└── supervisor/   # Depth/loop monitoring
+├── framework/     # Framework source (agents, skills, shared, scripts, hooks)
+├── installer/     # Install, uninstall, web-install, mg-init, mg-migrate
+├── memory/        # Shared memory TypeScript layer
+├── audit/         # Audit logging TypeScript layer
+├── returns/       # Structured return envelopes
+└── supervisor/    # Depth/loop monitoring
+
+.claude/           # Dev environment (symlinks → src/framework/)
+├── agents → ../src/framework/agents
+├── skills → ../src/framework/skills
+├── shared → ../src/framework/shared
+├── scripts → ../src/framework/scripts
+└── memory/        # Runtime state (gitignored)
 
 tests/
-├── unit/         # Unit tests for individual modules
-└── integration/  # Integration tests for workflows
+├── unit/          # Unit tests for individual modules
+├── integration/   # Integration tests for workflows
+└── scripts/       # BATS tests for mg-* scripts
 ```
 
 ## Coding Standards
@@ -204,18 +209,18 @@ Closes #123
 
 1. **Create skill definition:**
    ```bash
-   mkdir -p .claude/skills/<agent-name>
-   # Create .claude/skills/<agent-name>/SKILL.md
+   mkdir -p src/framework/skills/<agent-name>
+   # Create src/framework/skills/<agent-name>/SKILL.md
    ```
 
 2. **Create subagent definition (if IC):**
    ```bash
-   mkdir -p .claude/agents/<agent-name>
-   # Create .claude/agents/<agent-name>/agent.md
+   mkdir -p src/framework/agents/<agent-name>
+   # Create src/framework/agents/<agent-name>/agent.md
    ```
 
 3. **Update delegation hierarchy:**
-   - Edit `.claude/shared/handoff-protocol.md`
+   - Edit `src/framework/shared/handoff-protocol.md`
    - Update delegation authority matrix
 
 4. **Add tests:**
@@ -226,15 +231,15 @@ Closes #123
 
 5. **Update documentation:**
    - Add agent to README.md agent roster
-   - Add to `.claude/README.md`
+   - Add to `src/framework/CLAUDE.md`
    - Update architecture diagrams
 
 ### Adding a New Workflow
 
 1. **Create workflow skill:**
    ```bash
-   mkdir -p .claude/skills/<workflow-name>
-   # Create .claude/skills/<workflow-name>/SKILL.md
+   mkdir -p src/framework/skills/<workflow-name>
+   # Create src/framework/skills/<workflow-name>/SKILL.md
    ```
 
 2. **Define workflow steps:**
@@ -256,7 +261,7 @@ Closes #123
 ### Modifying the Delegation Hierarchy
 
 1. **Update handoff protocol:**
-   - Edit `.claude/shared/handoff-protocol.md`
+   - Edit `src/framework/shared/handoff-protocol.md`
    - Update delegation authority matrix
    - Document new delegation patterns
 

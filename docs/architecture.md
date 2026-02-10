@@ -2,7 +2,7 @@
 
 ## Overview
 
-miniature-guacamole simulates a complete product development organization within Claude Code. It provides 20 specialized agents organized in a realistic corporate hierarchy, enabling structured delegation and disciplined development workflows.
+miniature-guacamole simulates a complete product development organization within Claude Code. It provides 19 specialized agents organized in a realistic corporate hierarchy, enabling structured delegation and disciplined development workflows.
 
 ## Agent Hierarchy
 
@@ -85,62 +85,61 @@ The system prevents circular delegation:
 ### Directory Structure
 
 ```
-.claude/
-├── skills/                      # Workflow and team slash commands
-│   ├── feature-assessment/
-│   ├── technical-assessment/
-│   ├── security-review/
-│   ├── accessibility-review/
-│   ├── design-review/
-│   ├── code-review/
-│   ├── implement/
-│   ├── leadership-team/
-│   ├── product-team/
-│   ├── engineering-team/
-│   ├── design-team/
-│   └── docs-team/
+miniature-guacamole/
+├── src/
+│   ├── framework/                  # Framework source
+│   │   ├── agents/                 # 19 specialized agent roles
+│   │   ├── skills/                 # 16 team collaboration skills
+│   │   ├── shared/                 # 6 protocol documents
+│   │   ├── scripts/                # 11 mg-* utility commands
+│   │   ├── hooks/                  # Safety and initialization hooks
+│   │   ├── settings.json           # Default project permissions
+│   │   ├── CLAUDE.md               # Framework documentation template
+│   │   ├── team-config.yaml        # Team configuration
+│   │   └── team-config.json        # Team configuration (JSON)
+│   │
+│   ├── installer/                  # Installation and migration scripts
+│   │   ├── install.sh              # Project-local installer
+│   │   ├── uninstall.sh            # Clean uninstaller
+│   │   ├── web-install.sh          # One-liner web installer
+│   │   ├── mg-init                 # Hybrid cache + GitHub installer
+│   │   └── mg-migrate              # Version migration tool
+│   │
+│   ├── memory/                     # Shared memory TypeScript layer
+│   │   ├── config.ts
+│   │   ├── types.ts
+│   │   ├── write.ts
+│   │   ├── read.ts
+│   │   ├── query.ts
+│   │   ├── validate.ts
+│   │   ├── locking.ts
+│   │   ├── backup.ts
+│   │   └── errors.ts
+│   │
+│   ├── audit/                      # Audit logging TypeScript layer
+│   ├── returns/                    # Structured return envelopes
+│   └── supervisor/                 # Depth/loop monitoring
 │
-├── agents/                      # Subagent definitions (for Task tool)
-│   ├── ceo/
-│   ├── cto/
-│   ├── dev/
-│   ├── qa/
-│   ├── design/
-│   ├── security-engineer/
-│   ├── technical-writer/
-│   └── supervisor/
+├── .claude/                        # Dev environment (symlinks to src/framework/)
+│   ├── agents → ../src/framework/agents
+│   ├── skills → ../src/framework/skills
+│   ├── shared → ../src/framework/shared
+│   ├── scripts → ../src/framework/scripts
+│   ├── hooks → ../src/framework/hooks
+│   ├── settings.json → ../src/framework/settings.json
+│   ├── CLAUDE.md → ../src/framework/CLAUDE.md
+│   ├── memory/                     # Local agent state (gitignored)
+│   └── settings.local.json         # Local overrides (gitignored)
 │
-├── shared/                      # Shared protocols
-│   ├── handoff-protocol.md     # Delegation specification
-│   ├── development-workflow.md # TDD/BDD workflow
-│   └── engineering-principles.md
-│
-└── memory/                      # Shared state (created at runtime)
-    ├── shared.json
-    ├── ws-1.json
-    └── backups/
-
-src/
-├── memory/                      # Shared memory TypeScript layer
-│   ├── config.ts               # Configuration
-│   ├── types.ts                # TypeScript interfaces
-│   ├── write.ts                # Write operations
-│   ├── read.ts                 # Read operations
-│   ├── query.ts                # Query operations
-│   ├── validate.ts             # Format validation
-│   ├── locking.ts              # File locking
-│   ├── backup.ts               # Backup/recovery
-│   └── errors.ts               # Error handling
-│
-├── returns/                     # Structured return envelopes
-│   ├── types.ts
-│   └── validate.ts
-│
-└── supervisor/                  # Depth/loop monitoring
-    ├── depth.ts
-    ├── loops.ts
-    ├── escalation.ts
-    └── control.ts
+├── build.sh                        # Unified build: src/ → dist/
+├── install.sh                      # Root convenience wrapper
+├── tests/                          # Test suites
+├── dashboard/                      # Analytics dashboard
+├── daemon/                         # Background processes
+├── docs/                           # VitePress documentation site
+└── .github/workflows/
+    ├── ci.yml                      # PR checks + build verification
+    └── release.yml                 # v*.*.* tag → GitHub release
 ```
 
 ## Component Flow
@@ -240,12 +239,11 @@ const entries = await queryMemory({
 
 ```
 .claude/memory/
-├── shared.json              # Primary shared state
-├── ws-1.json               # Workstream-specific state
-├── ws-2.json
-└── backups/                # Automatic backups
-    ├── shared.json.2026-02-04T10:00:00Z.bak
-    └── shared.json.2026-02-04T11:00:00Z.bak
+├── workstream-{id}-state.json     # Workstream status tracking
+├── tasks-{role}.json              # Task queues per agent role
+├── agent-{name}-decisions.json    # Agent decision records
+├── handoffs-{from}-{to}.json      # Agent-to-agent handoffs
+└── decisions.json                 # Architecture decisions
 ```
 
 ### Features
@@ -294,7 +292,7 @@ handoff_response:
     confidence: "high" | "medium" | "low"
 ```
 
-See [Handoff Protocol Documentation](https://github.com/RivermarkResearch/miniature-guacamole/blob/main/.claude/shared/handoff-protocol.md) for complete specification.
+See [Handoff Protocol Documentation](https://github.com/RivermarkResearch/miniature-guacamole/blob/main/src/framework/shared/handoff-protocol.md) for complete specification.
 
 ## Git Workstream Strategy
 
@@ -373,21 +371,21 @@ The system is designed to be extended:
 
 ### Adding a New Agent
 
-1. Create `SKILL.md` in `.claude/skills/<agent-name>/`
-2. If IC agent, also create `agent.md` in `.claude/agents/<agent-name>/`
+1. Create `SKILL.md` in `src/framework/skills/<agent-name>/`
+2. If IC agent, also create `agent.md` in `src/framework/agents/<agent-name>/`
 3. Update hierarchy documentation
 4. Add tests for delegation patterns
 
 ### Adding a New Workflow
 
-1. Create `.claude/skills/<workflow-name>/SKILL.md`
+1. Create `src/framework/skills/<workflow-name>/SKILL.md`
 2. Define workflow steps and agent spawning logic
 3. Document memory protocol (read/write paths)
 4. Add examples to documentation
 
 ### Modifying Hierarchy
 
-1. Update `.claude/shared/handoff-protocol.md`
+1. Update `src/framework/shared/handoff-protocol.md`
 2. Update relevant SKILL.md files
 3. Test delegation chains work correctly
 4. Update architecture diagrams
@@ -439,8 +437,8 @@ steps:
 **To create a release**:
 
 ```bash
-git tag v1.0.1
-git push origin v1.0.1
+git tag v3.0.1
+git push origin v3.0.1
 # CI automatically builds and publishes to GitHub releases
 ```
 
@@ -448,18 +446,18 @@ git push origin v1.0.1
 
 **mg-init** is a hybrid installer:
 
-1. Check local cache: `~/.cache/miniature-guacamole/v1.0.0.tar.gz`
+1. Check local cache: `~/.cache/miniature-guacamole/v3.0.0.tar.gz`
 2. If cache miss → fetch from GitHub releases API
 3. Download tarball, cache it, extract to temp
 4. Run bundled `install.sh` against target project
 
 **Flags**:
-- `--version v1.2.3` - Specific version (default: latest)
+- `--version v3.1.0` - Specific version (default: latest)
 - `--offline` - Cache only, no network
 - `--force` - Force re-initialization
 
 **Example**:
 
 ```bash
-mg-init --version v1.0.0 /path/to/project
+mg-init --version v3.0.0 /path/to/project
 ```

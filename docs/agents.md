@@ -1,6 +1,6 @@
 # Agent Reference
 
-This page provides detailed specifications for all 20 agents in the system, organized by organizational level.
+This page provides detailed specifications for all 19 agents in the system, organized by organizational level.
 
 ## Executive Level
 
@@ -194,6 +194,7 @@ IC agents perform hands-on implementation work. They use sonnet or haiku models 
 | **Data Engineer** | `/data-engineer` | sonnet | Data pipelines and analytics | Dev |
 | **API Designer** | `/api-designer` | sonnet | API specifications and documentation | Dev, Technical Writer |
 | **Technical Writer** | `/technical-writer` | sonnet | Documentation and guides | Dev, API Designer |
+| **Copywriter** | `/copywriter` | sonnet | Natural, human-sounding copy for marketing and user-facing content | Dev, Design |
 
 ### Senior Fullstack Engineer (Dev)
 
@@ -364,6 +365,27 @@ IC agents perform hands-on implementation work. They use sonnet or haiku models 
 /technical-writer Update README with examples
 ```
 
+### Copywriter
+
+**Responsibilities:**
+- Write natural, human-sounding marketing copy
+- Create narration, web content, and scripts
+- Ensure authentic voice in user-facing prose
+- Collaborate with design and product teams
+
+**Consultation:**
+- Can consult Dev for technical details (peer consultation)
+- Can consult Design for visual context (peer consultation)
+
+**Tool Access:** Read, Glob, Grep, Edit, Write
+
+**Example Usage:**
+```
+/copywriter Write landing page copy for the new feature
+/copywriter Create onboarding email sequence
+/copywriter Draft release announcement
+```
+
 ## Operations Level
 
 Operations agents handle deployment and infrastructure concerns.
@@ -385,7 +407,7 @@ Operations agents handle deployment and infrastructure concerns.
 **Example Usage:**
 ```
 /deployment-engineer Merge feature/ws-1-login
-/deployment-engineer Tag release v1.2.0
+/deployment-engineer Tag release v3.0.0
 /deployment-engineer Clean up merged branches
 ```
 
@@ -432,6 +454,7 @@ System agents provide monitoring and coordination functions.
 | Data Engineer | ✅ | ✅ | ✅ | ✅ | ✅ |
 | API Designer | ✅ | ✅ | ✅ | ✅ | ✅ |
 | Technical Writer | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Copywriter | ✅ | ✅ | ✅ | ✅ | ✅ |
 | Deployment Engineer | ✅ | ✅ | ✅ | ✅ | ✅ |
 | Supervisor | ✅ | ✅ | ✅ | - | - |
 

@@ -203,10 +203,11 @@ The shared memory layer stores agent state in `.claude/memory/`:
 
 ```
 .claude/memory/
-├── shared.json              # Primary shared state
-├── ws-1.json               # Workstream-specific state
-├── ws-2.json
-└── backups/                # Automatic backups
+├── workstream-{id}-state.json     # Workstream status tracking
+├── tasks-{role}.json              # Task queues per agent role
+├── agent-{name}-decisions.json    # Agent decision records
+├── handoffs-{from}-{to}.json      # Agent-to-agent handoffs
+└── decisions.json                 # Architecture decisions
 ```
 
 ### Audit Logging
@@ -255,5 +256,5 @@ chmod -R 755 src/
 ## Support
 
 - [Report Issues](https://github.com/RivermarkResearch/miniature-guacamole/issues)
-- [View Documentation](https://github.com/RivermarkResearch/miniature-guacamole/blob/main/.claude/README.md)
+- [View Documentation](https://rivermarkresearch.github.io/miniature-guacamole/)
 - [Read Contributing Guide](/contributing)

@@ -208,7 +208,7 @@ Each workstream must pass through multiple quality gates:
 
 ## Workflow Skills
 
-The system provides 7 workflow skills for common development tasks.
+The system provides 16 workflow skills for common development tasks.
 
 ### 1. Feature Assessment
 
@@ -376,6 +376,51 @@ The system provides 7 workflow skills for common development tasks.
 # - Code reviewed
 # - Ready for leadership approval
 ```
+
+### 8. Leadership Team
+
+**Command:** `/leadership-team`
+**Purpose:** Strategic decisions, executive reviews, code review approvals
+
+### 9. Engineering Team
+
+**Command:** `/engineering-team`
+**Purpose:** Coordinated TDD/BDD development cycle
+
+### 10. Product Team
+
+**Command:** `/product-team`
+**Purpose:** Product definition, user stories, design specs
+
+### 11. Design Team
+
+**Command:** `/design-team`
+**Purpose:** UI/UX design with visual regression review
+
+### 12. Docs Team
+
+**Command:** `/docs-team`
+**Purpose:** Documentation and API spec generation
+
+### 13. Content Team
+
+**Command:** `/content-team`
+**Purpose:** Brand-aligned copywriting for marketing and user-facing content
+
+### 14. Init Project
+
+**Command:** `/init-project`
+**Purpose:** Initialize project memory structure and context files
+
+### 15. Add Project Context
+
+**Command:** `/add-project-context`
+**Purpose:** Add project-specific context to CLAUDE.md
+
+### 16. Frontend Design
+
+**Command:** `/frontend-design`
+**Purpose:** Create distinctive, production-grade frontend interfaces
 
 ## Git Branching Strategy
 

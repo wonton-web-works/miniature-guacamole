@@ -1,0 +1,204 @@
+#!/usr/bin/env bash
+# ============================================================================
+# mg-help - Command index and usage for miniature-guacamole scripts
+# ============================================================================
+# Usage: mg-help [command-name]
+# Exit 0 = success, Exit 1 = error
+# ============================================================================
+
+set -euo pipefail
+
+# ============================================================================
+# Script location validation (security hardening)
+# ============================================================================
+# Prevent sourcing - must be executed directly
+if [[ "${BASH_SOURCE[0]}" != "$0" ]]; then
+    echo "Error: This script must be executed, not sourced" >&2
+    return 1
+fi
+
+# Resolve symlinks and get canonical script directory
+SCRIPTS_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+# Validate script is in a trusted .claude/scripts/ directory
+case "$SCRIPTS_DIR" in
+    */.claude/scripts) ;; # Project-local or global - OK
+    *) echo "Error: Script must run from a .claude/scripts/ directory, not $SCRIPTS_DIR" >&2; exit 1 ;;
+esac
+
+# ============================================================================
+# Help text
+# ============================================================================
+show_help() {
+    cat <<EOF
+Usage: mg-help [command-name]
+
+Display help for miniature-guacamole (mg-*) commands.
+
+Arguments:
+  [command-name]  Optional: show detailed help for specific command
+
+Options:
+  -h, --help      Show this help message
+
+Examples:
+  mg-help                    List all available mg-* commands
+  mg-help mg-memory-read     Show help for mg-memory-read
+  mg-help mg-memory-write    Show help for mg-memory-write
+
+Available Commands:
+  Run 'mg-help' with no arguments to see all available commands.
+
+Location:
+  Scripts are in the .claude/scripts/ directory
+
+Dependencies:
+  jq - JSON processor (required by memory commands)
+
+Exit codes:
+  0 - Success
+  1 - Error (unknown command, invalid arguments, etc.)
+EOF
+}
+
+# ============================================================================
+# Error handling
+# ============================================================================
+error() {
+    echo "Error: $1" >&2
+    exit 1
+}
+
+# ============================================================================
+# List all mg-* commands
+# ============================================================================
+list_commands() {
+    cat <<EOF
+miniature-guacamole Script Commands
+====================================
+
+Available mg-* commands:
+
+EOF
+
+    # Find all mg-* scripts in scripts directory, sort alphabetically
+    if [[ -d "$SCRIPTS_DIR" ]]; then
+        local found_any=false
+
+        # Use a sorted list (disable shellcheck warning about ls)
+        # shellcheck disable=SC2012
+        while IFS= read -r script; do
+            if [[ -x "$script" ]]; then
+                found_any=true
+                local cmd_name
+                cmd_name=$(basename "$script")
+
+                # Get one-line description from the script
+                case "$cmd_name" in
+                    mg-memory-read)
+                        printf "  %-20s - %s\n" "$cmd_name" "Read and pretty-print JSON memory files"
+                        ;;
+                    mg-memory-write)
+                        printf "  %-20s - %s\n" "$cmd_name" "Atomically update JSON memory files with backup"
+                        ;;
+                    mg-help)
+                        printf "  %-20s - %s\n" "$cmd_name" "Show help for mg-* commands"
+                        ;;
+                    *)
+                        printf "  %-20s - %s\n" "$cmd_name" "miniature-guacamole script"
+                        ;;
+                esac
+            fi
+        done < <(ls "$SCRIPTS_DIR"/mg-* 2>/dev/null | sort)
+
+        if [[ "$found_any" == "false" ]]; then
+            echo "  (No mg-* commands found)"
+        fi
+    else
+        echo "  (Scripts directory not found: $SCRIPTS_DIR)"
+    fi
+
+    cat <<EOF
+
+Usage:
+  mg-help [COMMAND]         Show detailed help for a specific command
+  COMMAND --help            Show help for any mg-* command directly
+
+Memory Protocol:
+  These commands work with JSON files in .claude/memory directories.
+  Memory files include workstream state, task queues, and handoffs.
+
+Features:
+  - mg-memory-read: Read JSON files with validation and pretty-printing
+  - mg-memory-write: Update JSON with jq expressions, creates .bak backups
+  - All commands support --help flag for detailed usage
+
+Dependencies:
+  jq - JSON processor (install via: brew install jq)
+
+Examples:
+  mg-memory-read .claude/memory/workstream-WS-1-state.json
+  mg-memory-write tasks.json '.status = "completed"'
+  mg-help mg-memory-read
+
+For detailed help on any command, run:
+  <command> --help
+
+EOF
+}
+
+# ============================================================================
+# Show help for specific command
+# ============================================================================
+show_command_help() {
+    local cmd_name="$1"
+    local cmd_path="$SCRIPTS_DIR/$cmd_name"
+
+    # Validate command exists
+    if [[ ! -f "$cmd_path" ]]; then
+        error "Command not found: $cmd_name"
+    fi
+
+    # Validate command is executable
+    if [[ ! -x "$cmd_path" ]]; then
+        error "Command exists but is not executable: $cmd_name"
+    fi
+
+    # Execute the command with --help
+    "$cmd_path" --help
+}
+
+# ============================================================================
+# Main
+# ============================================================================
+
+# Check for help flags
+if [[ "${1:-}" == "-h" ]] || [[ "${1:-}" == "--help" ]]; then
+    show_help
+    exit 0
+fi
+
+# Check for too many arguments
+if [[ $# -gt 1 ]]; then
+    error "Too many arguments. Usage: mg-help [command-name]"
+fi
+
+# Check for invalid flags
+if [[ $# -eq 1 ]] && [[ "$1" == --* ]] && [[ "$1" != "--help" ]]; then
+    error "Invalid flag: $1. Usage: mg-help [command-name]"
+fi
+
+# Check for empty string argument
+if [[ $# -eq 1 ]] && [[ -z "$1" ]]; then
+    error "Empty command name. Usage: mg-help [command-name]"
+fi
+
+# If no arguments, list all commands
+if [[ $# -eq 0 ]]; then
+    list_commands
+    exit 0
+fi
+
+# Show help for specific command
+show_command_help "$1"
+exit 0

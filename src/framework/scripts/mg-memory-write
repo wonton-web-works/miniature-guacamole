@@ -1,0 +1,178 @@
+#!/usr/bin/env bash
+# ============================================================================
+# mg-memory-write - Atomic JSON updates with backup
+# ============================================================================
+# Usage: mg-memory-write <file.json> '<jq expression>'
+# Exit 0 = success, Exit 1 = error
+# ============================================================================
+
+set -euo pipefail
+
+# ============================================================================
+# Help text
+# ============================================================================
+show_help() {
+    cat <<EOF
+Usage: mg-memory-write <file.json> '<jq expression>'
+
+Atomically update JSON memory files with automatic .bak backup.
+
+Arguments:
+  <file.json>       Path to JSON file to update
+  <jq expression>   jq expression to apply (must produce valid JSON object/array)
+
+Options:
+  -h, --help        Show this help message
+
+Examples:
+  mg-memory-write workstream.json '.status = "completed"'
+  mg-memory-write tasks.json '.tests.passing = 15'
+  mg-memory-write state.json '.status = "done" | .phase = "verified"'
+
+Features:
+  - Atomic updates (write to temp file, then move)
+  - Automatic .bak backup of original file
+  - Pretty-printed output (2-space indentation)
+  - Validates result is valid JSON object or array
+
+Dependencies:
+  jq - JSON processor (required)
+
+Exit codes:
+  0 - Success
+  1 - Error (file not found, invalid JSON, permission denied, etc.)
+EOF
+}
+
+# ============================================================================
+# Error handling
+# ============================================================================
+error() {
+    echo "Error: $1" >&2
+    exit 1
+}
+
+# ============================================================================
+# Main
+# ============================================================================
+
+# Check for help flags
+if [[ "${1:-}" == "-h" ]] || [[ "${1:-}" == "--help" ]]; then
+    show_help
+    exit 0
+fi
+
+# Validate argument count
+if [[ $# -eq 0 ]]; then
+    error "No arguments provided. Usage: mg-memory-write <file.json> '<jq expression>'"
+fi
+
+if [[ $# -eq 1 ]]; then
+    error "Missing jq expression. Usage: mg-memory-write <file.json> '<jq expression>'"
+fi
+
+if [[ $# -gt 2 ]]; then
+    error "Too many arguments. Usage: mg-memory-write <file.json> '<jq expression>'"
+fi
+
+FILE_PATH="$1"
+JQ_EXPRESSION="$2"
+
+# Locate jq using portable command detection
+JQ_PATH=$(command -v jq)
+if [[ -z "$JQ_PATH" ]]; then
+    error "jq not found in PATH. Install via: brew install jq"
+fi
+
+# Check if file exists
+if [[ ! -e "$FILE_PATH" ]]; then
+    error "File not found: $FILE_PATH"
+fi
+
+# Resolve symlinks to get the real file path
+if [[ -L "$FILE_PATH" ]]; then
+    # Follow symlink to real file
+    REAL_PATH=$(readlink -f "$FILE_PATH" 2>/dev/null || realpath "$FILE_PATH" 2>/dev/null || echo "")
+    if [[ -z "$REAL_PATH" ]] || [[ ! -e "$REAL_PATH" ]]; then
+        error "Symlink target does not exist: $FILE_PATH"
+    fi
+    FILE_PATH="$REAL_PATH"
+fi
+
+# Check if it's a directory
+if [[ -d "$FILE_PATH" ]]; then
+    error "Path is a directory, not a file: $FILE_PATH"
+fi
+
+# Check if file is readable
+if [[ ! -r "$FILE_PATH" ]]; then
+    error "File cannot be read (permission denied): $FILE_PATH"
+fi
+
+# Check if file is writable
+if [[ ! -w "$FILE_PATH" ]]; then
+    error "File cannot be written (permission denied): $FILE_PATH"
+fi
+
+# Get directory of the file
+FILE_DIR="$(dirname "$FILE_PATH")"
+
+# Check if directory is writable (needed for backup and temp file)
+if [[ ! -w "$FILE_DIR" ]]; then
+    error "Directory is not writable (cannot create backup): $FILE_DIR"
+fi
+
+# Create backup file
+BACKUP_PATH="${FILE_PATH}.bak"
+if ! cp "$FILE_PATH" "$BACKUP_PATH" 2>/dev/null; then
+    error "Failed to create backup file: $BACKUP_PATH"
+fi
+
+# Create temp file for atomic write
+TEMP_FILE=$(mktemp "${FILE_PATH}.tmp.XXXXXX")
+ERROR_FILE=$(mktemp "${FILE_PATH}.err.XXXXXX")
+
+# Apply jq transformation
+if ! "$JQ_PATH" "$JQ_EXPRESSION" "$FILE_PATH" > "$TEMP_FILE" 2>"$ERROR_FILE"; then
+    ERROR_MSG=$(cat "$ERROR_FILE" 2>/dev/null || echo "")
+    rm -f "$TEMP_FILE" "$ERROR_FILE"
+
+    # Determine if it's a parse error or expression error
+    if [[ "$ERROR_MSG" =~ "parse error" ]]; then
+        error "Invalid JSON in file: parse error"
+    else
+        error "Invalid jq expression or JSON processing error"
+    fi
+fi
+
+rm -f "$ERROR_FILE"
+
+# Validate that the result is not empty
+if [[ ! -s "$TEMP_FILE" ]]; then
+    rm -f "$TEMP_FILE"
+    error "jq expression produced empty output (invalid result)"
+fi
+
+# Validate that result is valid JSON object or array (not a bare string/number)
+RESULT_TYPE=$("$JQ_PATH" -r 'type' "$TEMP_FILE" 2>/dev/null || echo "error")
+if [[ "$RESULT_TYPE" != "object" ]] && [[ "$RESULT_TYPE" != "array" ]]; then
+    rm -f "$TEMP_FILE"
+    error "jq expression must produce a JSON object or array, not a $RESULT_TYPE"
+fi
+
+# Pretty-print the result
+if ! "$JQ_PATH" '.' "$TEMP_FILE" > "${TEMP_FILE}.pretty" 2>/dev/null; then
+    rm -f "$TEMP_FILE" "${TEMP_FILE}.pretty"
+    error "Failed to pretty-print result"
+fi
+
+# Atomic move (replace original file)
+if ! mv "${TEMP_FILE}.pretty" "$FILE_PATH" 2>/dev/null; then
+    rm -f "$TEMP_FILE" "${TEMP_FILE}.pretty"
+    error "Failed to update file (atomic move failed)"
+fi
+
+# Clean up temp file if it still exists
+rm -f "$TEMP_FILE"
+
+exit 0

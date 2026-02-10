@@ -1,0 +1,126 @@
+#!/usr/bin/env bash
+# ============================================================================
+# mg-git-summary - Formatted commit log for status reports
+# ============================================================================
+# Usage: mg-git-summary [--since <ref-or-date>]
+# Exit 0 = success, Exit 1 = error
+# ============================================================================
+
+set -euo pipefail
+
+# ============================================================================
+# Help text
+# ============================================================================
+show_help() {
+    cat <<EOF
+Usage: mg-git-summary [--since <ref-or-date>]
+
+Produce a formatted commit log suitable for status reports.
+
+Options:
+  --since <ref>   Show commits since date or git ref (e.g., "2026-01-01", commit hash)
+  -h, --help      Show this help message
+
+Examples:
+  mg-git-summary
+  mg-git-summary --since "2026-02-01"
+  mg-git-summary --since "3 days ago"
+  mg-git-summary --since abc1234
+
+Output:
+  Formatted commit log with hash, author, date, and message.
+
+Exit codes:
+  0 - Success
+  1 - Error (not a git repo, invalid arguments, etc.)
+EOF
+}
+
+# ============================================================================
+# Error handling
+# ============================================================================
+error() {
+    echo "Error: $1" >&2
+    exit 1
+}
+
+# ============================================================================
+# Main
+# ============================================================================
+
+# Parse arguments
+SINCE_REF=""
+POSITIONAL_ARGS=()
+
+while [[ $# -gt 0 ]]; do
+    case "$1" in
+        -h|--help)
+            show_help
+            exit 0
+            ;;
+        --since)
+            if [[ $# -lt 2 ]]; then
+                error "Missing value for --since flag"
+            fi
+            SINCE_REF="$2"
+            shift 2
+            ;;
+        --*)
+            error "Unknown flag: $1. Usage: mg-git-summary [--since <ref>]"
+            ;;
+        *)
+            POSITIONAL_ARGS+=("$1")
+            shift
+            ;;
+    esac
+done
+
+# Check for extra positional arguments
+if [[ ${#POSITIONAL_ARGS[@]} -gt 0 ]]; then
+    error "Too many arguments. Usage: mg-git-summary [--since <ref>]"
+fi
+
+# Check if we're in a git repository
+if ! git rev-parse --is-inside-work-tree > /dev/null 2>&1; then
+    error "Not a git repository. Run this command inside a git working tree."
+fi
+
+# Build git log command
+GIT_LOG_ARGS=(
+    "log"
+    "--format=%h  %an  %ad  %s"
+    "--date=short"
+)
+
+if [[ -n "$SINCE_REF" ]]; then
+    # Determine if the ref is a valid commit hash/ref or treat as date
+    if git rev-parse --verify "$SINCE_REF" > /dev/null 2>&1; then
+        # It's a valid git ref - show commits after it
+        GIT_LOG_ARGS+=("${SINCE_REF}..HEAD")
+    else
+        # Treat as a date for --since
+        GIT_LOG_ARGS+=("--since=$SINCE_REF")
+    fi
+fi
+
+# Execute git log
+OUTPUT=$(git "${GIT_LOG_ARGS[@]}" 2>&1) || true
+
+# Format the output as a status report
+if [[ -z "$OUTPUT" ]]; then
+    echo "No commits found."
+    exit 0
+fi
+
+echo "Git Commit Summary"
+echo "==================="
+echo ""
+printf "%-9s  %-20s  %-12s  %s\n" "Hash" "Author" "Date" "Message"
+printf "%-9s  %-20s  %-12s  %s\n" "-------" "--------------------" "----------" "-------"
+echo "$OUTPUT" | while IFS= read -r line; do
+    echo "$line"
+done
+echo ""
+echo "Total commits: $(echo "$OUTPUT" | wc -l | tr -d ' ')"
+
+exit 0

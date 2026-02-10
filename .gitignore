@@ -49,3 +49,10 @@ docs/.vitepress/dist/
 # Claude memory (agent state - project-specific)
 **/*memory/
 .claude/memory/
+
+# Claude local-only files (symlinks are tracked, these are not)
+.claude/settings.local.json
+.claude/agent-memory/
+.claude/agent-memory-local/
+.claude/README.md
+.claude/vitest.config.ts

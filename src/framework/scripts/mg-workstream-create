@@ -1,0 +1,166 @@
+#!/usr/bin/env bash
+# ============================================================================
+# mg-workstream-create - Scaffold a new workstream state file from template
+# ============================================================================
+# Usage: mg-workstream-create <ws-id> <title>
+# Exit 0 = success, Exit 1 = error
+# ============================================================================
+
+set -euo pipefail
+
+# ============================================================================
+# Help text
+# ============================================================================
+show_help() {
+    cat <<EOF
+Usage: mg-workstream-create <ws-id> <title>
+
+Create a new workstream state file from template in .claude/memory/.
+
+Arguments:
+  <ws-id>       Workstream identifier (e.g., WS-42, WS-SCRIPTS-1)
+  <title>       Human-readable workstream title
+
+Options:
+  -h, --help    Show this help message
+
+Examples:
+  mg-workstream-create WS-42 "User Authentication Feature"
+  mg-workstream-create WS-SCRIPTS-1 "Script Infrastructure"
+
+Template:
+  Creates a workstream state file with:
+  - status: pending
+  - phase: planning
+  - gate_status: not_started
+  - Empty acceptance_criteria, dependencies, blockers
+  - Zero test counts and coverage
+  - Current date as created_at
+
+Output:
+  .claude/memory/workstream-{ws-id}-state.json
+
+Dependencies:
+  jq - JSON processor (required)
+
+Exit codes:
+  0 - Success (workstream created)
+  1 - Error (already exists, missing directory, etc.)
+EOF
+}
+
+# ============================================================================
+# Error handling
+# ============================================================================
+error() {
+    echo "Error: $1" >&2
+    exit 1
+}
+
+# ============================================================================
+# Main
+# ============================================================================
+
+# Check for help flags
+if [[ "${1:-}" == "-h" ]] || [[ "${1:-}" == "--help" ]]; then
+    show_help
+    exit 0
+fi
+
+# Check for invalid flags
+if [[ $# -ge 1 ]] && [[ "$1" == --* ]] && [[ "$1" != "--help" ]]; then
+    error "Invalid flag: $1. Usage: mg-workstream-create <ws-id> <title>"
+fi
+
+# Validate argument count
+if [[ $# -eq 0 ]]; then
+    error "No arguments provided. Usage: mg-workstream-create <ws-id> <title>"
+fi
+
+if [[ $# -eq 1 ]]; then
+    error "Missing title. Usage: mg-workstream-create <ws-id> <title>"
+fi
+
+if [[ $# -gt 2 ]]; then
+    error "Too many arguments. Usage: mg-workstream-create <ws-id> <title>"
+fi
+
+WS_ID="$1"
+TITLE="$2"
+
+# Check for empty arguments
+if [[ -z "$WS_ID" ]]; then
+    error "Empty workstream ID. Usage: mg-workstream-create <ws-id> <title>"
+fi
+
+if [[ -z "$TITLE" ]]; then
+    error "Empty title. Usage: mg-workstream-create <ws-id> <title>"
+fi
+
+# Locate jq using portable command detection
+JQ_PATH=$(command -v jq)
+if [[ -z "$JQ_PATH" ]]; then
+    error "jq not found in PATH. Install via: brew install jq"
+fi
+
+# Check for .claude/memory directory
+MEMORY_DIR=".claude/memory"
+if [[ ! -d "$MEMORY_DIR" ]]; then
+    error "No .claude/memory directory found in current directory"
+fi
+
+# Check if directory is writable
+if [[ ! -w "$MEMORY_DIR" ]]; then
+    error "Directory is not writable (permission denied): $MEMORY_DIR"
+fi
+
+# Construct state file path
+STATE_FILE="$MEMORY_DIR/workstream-${WS_ID}-state.json"
+
+# Check if workstream already exists
+if [[ -e "$STATE_FILE" ]]; then
+    error "Workstream already exists: $WS_ID ($STATE_FILE)"
+fi
+
+# Get current date
+CREATED_AT=$(date +%Y-%m-%d)
+
+# Create the template JSON using jq for proper escaping
+TEMPLATE=$("$JQ_PATH" -n \
+    --arg ws_id "$WS_ID" \
+    --arg name "$TITLE" \
+    --arg created_at "$CREATED_AT" \
+    '{
+        workstream_id: $ws_id,
+        name: $name,
+        status: "pending",
+        phase: "planning",
+        agent_id: "unassigned",
+        created_at: $created_at,
+        acceptance_criteria: [],
+        technical_approach: {
+            scope: "",
+            files: [],
+            pattern: ""
+        },
+        gate_status: "not_started",
+        delegated_to: null,
+        tests: {
+            total: 0,
+            passing: 0,
+            failing: 0
+        },
+        coverage: 0,
+        dependencies: [],
+        blocked_reason: null,
+        blockers: []
+    }')
+
+# Write the template to the state file
+if ! echo "$TEMPLATE" > "$STATE_FILE" 2>/dev/null; then
+    error "Failed to write state file: $STATE_FILE"
+fi
+
+echo "Created workstream: $WS_ID ($STATE_FILE)"
+
+exit 0

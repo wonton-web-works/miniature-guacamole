@@ -11,8 +11,18 @@ setup() {
     # Temporary test directory (acts as fake project root)
     TEST_DIR="$(mktemp -d)"
 
-    # Expected script location
-    SCRIPT_PATH="$HOME/.claude/scripts/mg-gate-check"
+    # Resolve project root (tests/scripts/ → project root)
+    PROJECT_ROOT="$(cd "$(dirname "$BATS_TEST_FILENAME")/../.." && pwd)"
+
+    # Create temporary .claude/scripts directory for testing
+    TEST_CLAUDE_DIR="$TEST_DIR/.claude/scripts"
+    mkdir -p "$TEST_CLAUDE_DIR"
+
+    # Copy all mg-* scripts from project to test directory
+    cp "$PROJECT_ROOT"/src/framework/scripts/mg-* "$TEST_CLAUDE_DIR/"
+    chmod +x "$TEST_CLAUDE_DIR"/mg-*
+
+    SCRIPT_PATH="$TEST_CLAUDE_DIR/mg-gate-check"
 
     # Save original directory
     ORIG_DIR="$(pwd)"

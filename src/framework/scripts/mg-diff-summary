@@ -1,0 +1,173 @@
+#!/usr/bin/env bash
+# ============================================================================
+# mg-diff-summary - Show files changed, lines added/removed, scope summary
+# ============================================================================
+# Usage: mg-diff-summary [base-branch]
+# Exit 0 = success, Exit 1 = error
+# ============================================================================
+
+set -euo pipefail
+
+# ============================================================================
+# Help text
+# ============================================================================
+show_help() {
+    cat <<EOF
+Usage: mg-diff-summary [base-branch]
+
+Show files changed, lines added/removed, and scope summary compared to a base branch.
+
+Arguments:
+  [base-branch]   Base branch to compare against (default: main)
+
+Options:
+  -h, --help      Show this help message
+
+Output:
+  - Files changed with line counts
+  - Lines added and removed
+  - Scope summary (file categories by directory)
+
+Examples:
+  mg-diff-summary
+  mg-diff-summary main
+  mg-diff-summary develop
+
+Exit codes:
+  0 - Success
+  1 - Error (not a git repo, invalid branch, etc.)
+EOF
+}
+
+# ============================================================================
+# Error handling
+# ============================================================================
+error() {
+    echo "Error: $1" >&2
+    exit 1
+}
+
+# ============================================================================
+# Main
+# ============================================================================
+
+BASE_BRANCH=""
+POSITIONAL_ARGS=()
+
+# Parse arguments
+while [[ $# -gt 0 ]]; do
+    case "$1" in
+        -h|--help)
+            show_help
+            exit 0
+            ;;
+        --*)
+            error "Unknown flag: $1. Usage: mg-diff-summary [base-branch]"
+            ;;
+        *)
+            POSITIONAL_ARGS+=("$1")
+            shift
+            ;;
+    esac
+done
+
+# Validate argument count
+if [[ ${#POSITIONAL_ARGS[@]} -gt 1 ]]; then
+    error "Too many arguments. Usage: mg-diff-summary [base-branch]"
+fi
+
+# Check if we're in a git repository (must happen before branch detection)
+if ! git rev-parse --is-inside-work-tree > /dev/null 2>&1; then
+    error "Not a git repository. Run this command inside a git working tree."
+fi
+
+# Set base branch
+if [[ ${#POSITIONAL_ARGS[@]} -eq 1 ]]; then
+    BASE_BRANCH="${POSITIONAL_ARGS[0]}"
+else
+    # Default to main, fall back to master
+    if git rev-parse --verify main > /dev/null 2>&1; then
+        BASE_BRANCH="main"
+    elif git rev-parse --verify master > /dev/null 2>&1; then
+        BASE_BRANCH="master"
+    else
+        BASE_BRANCH="main"
+    fi
+fi
+
+# Check if base branch exists
+if ! git rev-parse --verify "$BASE_BRANCH" > /dev/null 2>&1; then
+    error "Branch not found: $BASE_BRANCH"
+fi
+
+# Get diff stat
+DIFF_STAT=$(git diff --stat "$BASE_BRANCH"...HEAD 2>/dev/null || git diff --stat "$BASE_BRANCH" HEAD 2>/dev/null || echo "")
+
+# Get numstat for precise counts
+DIFF_NUMSTAT=$(git diff --numstat "$BASE_BRANCH"...HEAD 2>/dev/null || git diff --numstat "$BASE_BRANCH" HEAD 2>/dev/null || echo "")
+
+# Get list of changed files with status (A/M/D/R)
+DIFF_NAME_STATUS=$(git diff --name-status "$BASE_BRANCH"...HEAD 2>/dev/null || git diff --name-status "$BASE_BRANCH" HEAD 2>/dev/null || echo "")
+
+# Calculate totals
+TOTAL_ADDED=0
+TOTAL_REMOVED=0
+FILE_COUNT=0
+
+if [[ -n "$DIFF_NUMSTAT" ]]; then
+    while IFS=$'\t' read -r added removed file; do
+        if [[ "$added" != "-" ]]; then
+            TOTAL_ADDED=$((TOTAL_ADDED + added))
+        fi
+        if [[ "$removed" != "-" ]]; then
+            TOTAL_REMOVED=$((TOTAL_REMOVED + removed))
+        fi
+        FILE_COUNT=$((FILE_COUNT + 1))
+    done <<< "$DIFF_NUMSTAT"
+fi
+
+# Build scope summary (group files by top-level directory)
+declare -A SCOPE_COUNTS
+SCOPE_HAS_ENTRIES=false
+if [[ -n "$DIFF_NAME_STATUS" ]]; then
+    while IFS=$'\t' read -r status file rest; do
+        # Handle renames (R100\toldname\tnewname)
+        if [[ "$status" =~ ^R ]]; then
+            file="$rest"
+        fi
+        # Get top-level directory
+        if [[ "$file" == */* ]]; then
+            dir=$(echo "$file" | cut -d'/' -f1)
+        else
+            dir="(root)"
+        fi
+        SCOPE_COUNTS["$dir"]=$(( ${SCOPE_COUNTS["$dir"]:-0} + 1 ))
+        SCOPE_HAS_ENTRIES=true
+    done <<< "$DIFF_NAME_STATUS"
+fi
+
+# Output
+echo "Diff Summary (vs $BASE_BRANCH)"
+echo "================================"
+echo ""
+echo "Files changed: $FILE_COUNT"
+echo "Lines added:   +$TOTAL_ADDED"
+echo "Lines removed: -$TOTAL_REMOVED"
+echo ""
+
+# Scope summary
+if [[ "$SCOPE_HAS_ENTRIES" == "true" ]]; then
+    echo "Scope:"
+    for dir in $(echo "${!SCOPE_COUNTS[@]}" | tr ' ' '\n' | sort); do
+        printf "  %-20s %d file(s)\n" "$dir/" "${SCOPE_COUNTS[$dir]}"
+    done
+    echo ""
+fi
+
+# File details
+if [[ -n "$DIFF_STAT" ]]; then
+    echo "Details:"
+    echo "$DIFF_STAT"
+fi
+
+exit 0

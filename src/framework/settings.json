@@ -59,5 +59,27 @@
       "Bash(mkfs)*",
       "Bash(> /dev/)*"
     ]
+  },
+  "hooks": {
+    "TeammateIdle": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": ".claude/hooks/teammate-idle.sh"
+          }
+        ]
+      }
+    ],
+    "TaskCompleted": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": ".claude/hooks/task-completed.sh"
+          }
+        ]
+      }
+    ]
   }
 }

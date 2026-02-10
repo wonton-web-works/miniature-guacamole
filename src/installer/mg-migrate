@@ -1,0 +1,1031 @@
+#!/usr/bin/env bash
+# ============================================================================
+# mg-migrate - Migrate miniature-guacamole from v1.x to v2.x
+# ============================================================================
+# Migrates from global ~/.claude/ installation to project-local .claude/
+#
+# Usage: mg-migrate [OPTIONS] [PROJECT_DIR]
+#
+# Options:
+#   --dry-run            Show what would happen without making changes
+#   --no-cleanup         Install project-local but don't clean up global
+#   --force              Skip confirmation prompts
+#   --backup-dir PATH    Custom backup directory (default: ~/.claude/.mg-backup-TIMESTAMP/)
+#   --help               Show this help message
+#
+# Arguments:
+#   PROJECT_DIR          Target project directory (default: current directory)
+#
+# Description:
+#   Migrates miniature-guacamole from v1.x (global ~/.claude/) to v2.x (project-local).
+#
+#   Phase 1: Detection & Inventory
+#     - Detect global MG installation in ~/.claude/
+#     - Check for MG agents, skills, protocols, scripts, hooks
+#     - Report what was found
+#
+#   Phase 2: Project-Local Installation
+#     - Copy MG components from ~/.claude/ to <project>/.claude/
+#     - Create MG_INSTALL.json with source="migration"
+#     - Create MG_PROJECT marker
+#     - Create .claude/memory/ with .gitignore
+#
+#   Phase 3: Settings Migration
+#     - Extract MG-specific settings from ~/.claude/settings.json
+#     - Create project-local .claude/settings.json with only MG settings
+#
+#   Phase 4: CLAUDE.md Migration
+#     - Extract MG content from ~/.claude/CLAUDE.md
+#     - Create project-local .claude/CLAUDE.md with bounded markers
+#
+#   Phase 5: Global Cleanup (Interactive)
+#     - Show what will be removed from ~/.claude/
+#     - Ask for confirmation before each category
+#     - Remove MG components from global installation
+#     - Create backup of everything before removal
+#
+# Exit codes:
+#   0 - Success
+#   1 - Error
+#   2 - Nothing to migrate
+
+set -euo pipefail
+
+# Security hardening - prevent sourcing
+if [[ "${BASH_SOURCE[0]}" != "$0" ]]; then
+    echo "Error: This script must be executed, not sourced" >&2
+    return 1
+fi
+
+# Colors for output
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+BLUE='\033[0;34m'
+CYAN='\033[0;36m'
+NC='\033[0m' # No Color
+
+# Configuration
+GLOBAL_CLAUDE_DIR="$HOME/.claude"
+DRY_RUN=false
+NO_CLEANUP=false
+FORCE=false
+BACKUP_DIR=""
+PROJECT_DIR="$PWD"
+
+# Known MG components
+MG_AGENTS=(
+    "api-designer" "ceo" "copywriter" "cto" "data-engineer"
+    "deployment-engineer" "design" "devops-engineer" "dev"
+    "engineering-director" "engineering-manager" "product-manager"
+    "product-owner" "qa" "security-engineer" "staff-engineer"
+    "supervisor" "technical-writer"
+)
+
+MG_SKILLS=(
+    "accessibility-review" "add-project-context" "agent-loading-test"
+    "code-review" "content-team" "design-review" "design-team"
+    "docs-team" "engineering-team" "feature-assessment" "implement"
+    "init-project" "leadership-team" "product-team" "security-review"
+    "technical-assessment"
+)
+
+MG_SHARED=(
+    "development-workflow.md" "engineering-principles.md"
+    "handoff-protocol.md" "memory-protocol.md" "tdd-workflow.md"
+    "visual-formatting.md" "script-invocation-protocol.md"
+)
+
+MG_SCRIPTS=(
+    "mg-memory-read" "mg-memory-write" "mg-workstream-status"
+    "mg-workstream-create" "mg-workstream-transition" "mg-gate-check"
+    "mg-git-summary" "mg-diff-summary" "mg-help" "mg-settings-check"
+)
+
+MG_HOOKS=(
+    "project-init-check.sh" "safety-check.sh"
+)
+
+# Parse arguments
+while [[ $# -gt 0 ]]; do
+    case "$1" in
+        --dry-run)
+            DRY_RUN=true
+            shift
+            ;;
+        --no-cleanup)
+            NO_CLEANUP=true
+            shift
+            ;;
+        --force)
+            FORCE=true
+            shift
+            ;;
+        --backup-dir)
+            BACKUP_DIR="$2"
+            shift 2
+            ;;
+        --help)
+            sed -n '/^# mg-migrate/,/^$/p' "$0" | sed 's/^# \?//'
+            exit 0
+            ;;
+        -*)
+            echo -e "${RED}Error: Unknown option: $1${NC}" >&2
+            echo "Run 'mg-migrate --help' for usage information." >&2
+            exit 1
+            ;;
+        *)
+            PROJECT_DIR="$1"
+            shift
+            ;;
+    esac
+done
+
+# Resolve absolute path
+PROJECT_DIR="$(cd "$PROJECT_DIR" 2>/dev/null && pwd)" || {
+    echo -e "${RED}Error: Project directory does not exist: $PROJECT_DIR${NC}" >&2
+    exit 1
+}
+
+PROJECT_CLAUDE_DIR="$PROJECT_DIR/.claude"
+
+# Set default backup directory
+if [[ -z "$BACKUP_DIR" ]]; then
+    BACKUP_DIR="$GLOBAL_CLAUDE_DIR/.mg-backup-$(date +%Y%m%d-%H%M%S)"
+fi
+
+# ============================================================================
+# Phase 1: Detection & Inventory
+# ============================================================================
+
+echo ""
+echo -e "${BLUE}╔══════════════════════════════════════════════════════════════╗${NC}"
+echo -e "${BLUE}║${NC}  ${CYAN}miniature-guacamole${NC} - Migration Tool (v1.x → v2.x)       ${BLUE}║${NC}"
+echo -e "${BLUE}╚══════════════════════════════════════════════════════════════╝${NC}"
+echo ""
+
+if [[ "$DRY_RUN" == "true" ]]; then
+    echo -e "${YELLOW}DRY RUN MODE - No changes will be made${NC}"
+    echo ""
+fi
+
+echo -e "${GREEN}Phase 1: Detection & Inventory${NC}"
+echo ""
+
+# Check if global installation exists
+if [[ ! -d "$GLOBAL_CLAUDE_DIR" ]]; then
+    echo -e "${RED}Error: No ~/.claude/ directory found${NC}"
+    echo "Nothing to migrate."
+    exit 2
+fi
+
+# Count MG components
+FOUND_AGENTS=0
+FOUND_SKILLS=0
+FOUND_SHARED=0
+FOUND_SCRIPTS=0
+FOUND_HOOKS=0
+
+echo "Scanning ~/.claude/ for miniature-guacamole components..."
+echo ""
+
+# Scan agents
+if [[ -d "$GLOBAL_CLAUDE_DIR/agents" ]]; then
+    for agent in "${MG_AGENTS[@]}"; do
+        if [[ -d "$GLOBAL_CLAUDE_DIR/agents/$agent" ]]; then
+            ((FOUND_AGENTS++))
+        fi
+    done
+fi
+
+# Scan skills
+if [[ -d "$GLOBAL_CLAUDE_DIR/skills" ]]; then
+    for skill in "${MG_SKILLS[@]}"; do
+        if [[ -d "$GLOBAL_CLAUDE_DIR/skills/$skill" ]]; then
+            ((FOUND_SKILLS++))
+        fi
+    done
+fi
+
+# Scan shared protocols
+if [[ -d "$GLOBAL_CLAUDE_DIR/shared" ]]; then
+    for shared in "${MG_SHARED[@]}"; do
+        if [[ -f "$GLOBAL_CLAUDE_DIR/shared/$shared" ]]; then
+            ((FOUND_SHARED++))
+        fi
+    done
+fi
+
+# Scan scripts
+if [[ -d "$GLOBAL_CLAUDE_DIR/scripts" ]]; then
+    for script in "${MG_SCRIPTS[@]}"; do
+        if [[ -f "$GLOBAL_CLAUDE_DIR/scripts/$script" ]]; then
+            ((FOUND_SCRIPTS++))
+        fi
+    done
+fi
+
+# Scan hooks
+if [[ -d "$GLOBAL_CLAUDE_DIR/hooks" ]]; then
+    for hook in "${MG_HOOKS[@]}"; do
+        if [[ -f "$GLOBAL_CLAUDE_DIR/hooks/$hook" ]]; then
+            ((FOUND_HOOKS++))
+        fi
+    done
+fi
+
+# Report findings
+echo -e "${CYAN}Found miniature-guacamole components:${NC}"
+echo -e "  ${GREEN}✓${NC} Agents:    $FOUND_AGENTS/${#MG_AGENTS[@]}"
+echo -e "  ${GREEN}✓${NC} Skills:    $FOUND_SKILLS/${#MG_SKILLS[@]}"
+echo -e "  ${GREEN}✓${NC} Protocols: $FOUND_SHARED/${#MG_SHARED[@]}"
+echo -e "  ${GREEN}✓${NC} Scripts:   $FOUND_SCRIPTS/${#MG_SCRIPTS[@]}"
+echo -e "  ${GREEN}✓${NC} Hooks:     $FOUND_HOOKS/${#MG_HOOKS[@]}"
+
+TOTAL_FOUND=$((FOUND_AGENTS + FOUND_SKILLS + FOUND_SHARED + FOUND_SCRIPTS + FOUND_HOOKS))
+
+if [[ $TOTAL_FOUND -eq 0 ]]; then
+    echo ""
+    echo -e "${YELLOW}No miniature-guacamole components found in ~/.claude/${NC}"
+    echo "Nothing to migrate."
+    exit 2
+fi
+
+# Check settings.json
+HAS_MG_SETTINGS=false
+if [[ -f "$GLOBAL_CLAUDE_DIR/settings.json" ]]; then
+    if grep -q "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS\|project-init-check\.sh\|teammateMode" "$GLOBAL_CLAUDE_DIR/settings.json" 2>/dev/null; then
+        HAS_MG_SETTINGS=true
+        echo -e "  ${GREEN}✓${NC} Settings:  MG configuration found"
+    fi
+fi
+
+# Check CLAUDE.md
+HAS_MG_CLAUDE_MD=false
+if [[ -f "$GLOBAL_CLAUDE_DIR/CLAUDE.md" ]]; then
+    if grep -q "miniature-guacamole" "$GLOBAL_CLAUDE_DIR/CLAUDE.md" 2>/dev/null; then
+        HAS_MG_CLAUDE_MD=true
+        echo -e "  ${GREEN}✓${NC} CLAUDE.md: MG content found"
+    fi
+fi
+
+echo ""
+echo -e "${CYAN}Target project:${NC} $PROJECT_DIR"
+echo ""
+
+# ============================================================================
+# Phase 2: Project-Local Installation
+# ============================================================================
+
+echo -e "${GREEN}Phase 2: Project-Local Installation${NC}"
+echo ""
+
+if [[ "$DRY_RUN" == "false" ]]; then
+    # Create .claude directory structure
+    mkdir -p "$PROJECT_CLAUDE_DIR"/{agents,skills,shared,hooks,scripts,memory}
+fi
+
+# Copy agents
+if [[ $FOUND_AGENTS -gt 0 ]]; then
+    echo "Copying agents..."
+    for agent in "${MG_AGENTS[@]}"; do
+        if [[ -d "$GLOBAL_CLAUDE_DIR/agents/$agent" ]]; then
+            echo -e "  ${GREEN}✓${NC} $agent"
+            if [[ "$DRY_RUN" == "false" ]]; then
+                cp -r "$GLOBAL_CLAUDE_DIR/agents/$agent" "$PROJECT_CLAUDE_DIR/agents/"
+            fi
+        fi
+    done
+fi
+
+# Copy skills
+if [[ $FOUND_SKILLS -gt 0 ]]; then
+    echo "Copying skills..."
+    for skill in "${MG_SKILLS[@]}"; do
+        if [[ -d "$GLOBAL_CLAUDE_DIR/skills/$skill" ]]; then
+            echo -e "  ${GREEN}✓${NC} $skill"
+            if [[ "$DRY_RUN" == "false" ]]; then
+                cp -r "$GLOBAL_CLAUDE_DIR/skills/$skill" "$PROJECT_CLAUDE_DIR/skills/"
+            fi
+        fi
+    done
+fi
+
+# Copy shared protocols
+if [[ $FOUND_SHARED -gt 0 ]]; then
+    echo "Copying shared protocols..."
+    for shared in "${MG_SHARED[@]}"; do
+        if [[ -f "$GLOBAL_CLAUDE_DIR/shared/$shared" ]]; then
+            echo -e "  ${GREEN}✓${NC} $shared"
+            if [[ "$DRY_RUN" == "false" ]]; then
+                cp "$GLOBAL_CLAUDE_DIR/shared/$shared" "$PROJECT_CLAUDE_DIR/shared/"
+            fi
+        fi
+    done
+fi
+
+# Copy scripts
+if [[ $FOUND_SCRIPTS -gt 0 ]]; then
+    echo "Copying scripts..."
+    for script in "${MG_SCRIPTS[@]}"; do
+        if [[ -f "$GLOBAL_CLAUDE_DIR/scripts/$script" ]]; then
+            echo -e "  ${GREEN}✓${NC} $script"
+            if [[ "$DRY_RUN" == "false" ]]; then
+                cp "$GLOBAL_CLAUDE_DIR/scripts/$script" "$PROJECT_CLAUDE_DIR/scripts/"
+                chmod +x "$PROJECT_CLAUDE_DIR/scripts/$script"
+            fi
+        fi
+    done
+fi
+
+# Copy hooks
+if [[ $FOUND_HOOKS -gt 0 ]]; then
+    echo "Copying hooks..."
+    for hook in "${MG_HOOKS[@]}"; do
+        if [[ -f "$GLOBAL_CLAUDE_DIR/hooks/$hook" ]]; then
+            echo -e "  ${GREEN}✓${NC} $hook"
+            if [[ "$DRY_RUN" == "false" ]]; then
+                cp "$GLOBAL_CLAUDE_DIR/hooks/$hook" "$PROJECT_CLAUDE_DIR/hooks/"
+                chmod +x "$PROJECT_CLAUDE_DIR/hooks/$hook"
+            fi
+        fi
+    done
+fi
+
+# Copy team-config.yaml if present
+if [[ -f "$GLOBAL_CLAUDE_DIR/team-config.yaml" ]]; then
+    echo "Copying team-config.yaml..."
+    echo -e "  ${GREEN}✓${NC} team-config.yaml"
+    if [[ "$DRY_RUN" == "false" ]]; then
+        cp "$GLOBAL_CLAUDE_DIR/team-config.yaml" "$PROJECT_CLAUDE_DIR/"
+    fi
+fi
+
+# Create MG_INSTALL.json
+echo "Creating MG_INSTALL.json..."
+if [[ "$DRY_RUN" == "false" ]]; then
+    cat > "$PROJECT_CLAUDE_DIR/MG_INSTALL.json" <<'INSTALL_JSON'
+{
+  "source": "migration",
+  "migrated_from": "global",
+  "migrated_at": "TIMESTAMP_PLACEHOLDER",
+  "version": "2.0.0",
+  "components": {
+    "agents": AGENTS_COUNT,
+    "skills": SKILLS_COUNT,
+    "protocols": SHARED_COUNT,
+    "scripts": SCRIPTS_COUNT,
+    "hooks": HOOKS_COUNT
+  }
+}
+INSTALL_JSON
+
+    # Replace placeholders
+    sed -i.bak \
+        -e "s/TIMESTAMP_PLACEHOLDER/$(date -u +"%Y-%m-%dT%H:%M:%SZ")/" \
+        -e "s/AGENTS_COUNT/$FOUND_AGENTS/" \
+        -e "s/SKILLS_COUNT/$FOUND_SKILLS/" \
+        -e "s/SHARED_COUNT/$FOUND_SHARED/" \
+        -e "s/SCRIPTS_COUNT/$FOUND_SCRIPTS/" \
+        -e "s/HOOKS_COUNT/$FOUND_HOOKS/" \
+        "$PROJECT_CLAUDE_DIR/MG_INSTALL.json"
+    rm "$PROJECT_CLAUDE_DIR/MG_INSTALL.json.bak"
+fi
+echo -e "  ${GREEN}✓${NC} MG_INSTALL.json"
+
+# Create MG_PROJECT marker
+echo "Creating MG_PROJECT marker..."
+if [[ "$DRY_RUN" == "false" ]]; then
+    cat > "$PROJECT_CLAUDE_DIR/MG_PROJECT" <<MARKER
+This directory contains miniature-guacamole framework files.
+
+Version: 2.0.0
+Installed: $(date -u +"%Y-%m-%dT%H:%M:%SZ")
+Source: migration from global installation
+MARKER
+fi
+echo -e "  ${GREEN}✓${NC} MG_PROJECT"
+
+# Create memory directory with .gitignore
+echo "Creating memory directory..."
+if [[ "$DRY_RUN" == "false" ]]; then
+    mkdir -p "$PROJECT_CLAUDE_DIR/memory"
+    cat > "$PROJECT_CLAUDE_DIR/memory/.gitignore" <<'GITIGNORE'
+# Memory files are project-local and should not be committed
+*.json
+!.gitignore
+
+# Exception: Some template files may be committed
+# Uncomment if needed:
+# !decisions.json
+# !workstream-*.json
+GITIGNORE
+fi
+echo -e "  ${GREEN}✓${NC} memory/.gitignore"
+
+echo ""
+
+# ============================================================================
+# Phase 3: Settings Migration
+# ============================================================================
+
+echo -e "${GREEN}Phase 3: Settings Migration${NC}"
+echo ""
+
+if [[ "$HAS_MG_SETTINGS" == "true" ]]; then
+    echo "Extracting MG settings from ~/.claude/settings.json..."
+
+    if [[ "$DRY_RUN" == "false" ]]; then
+        python3 <<'SETTINGS_MIGRATION'
+import json
+import os
+import sys
+
+global_settings_path = os.path.join(os.environ.get('HOME', os.path.expanduser('~')), '.claude', 'settings.json')
+project_settings_path = os.path.join(os.environ['PROJECT_CLAUDE_DIR'], 'settings.json')
+
+try:
+    # Read global settings
+    with open(global_settings_path, 'r') as f:
+        global_settings = json.load(f)
+
+    # Extract MG-specific settings
+    mg_settings = {}
+
+    # Extract permissions (if any MG-specific paths)
+    if 'permissions' in global_settings:
+        mg_settings['permissions'] = {
+            'allow': [],
+            'deny': []
+        }
+        for allow in global_settings.get('permissions', {}).get('allow', []):
+            if '.claude' in allow or 'mg-' in allow:
+                mg_settings['permissions']['allow'].append(allow)
+
+        if mg_settings['permissions']['allow']:
+            # Also preserve deny list if we have MG permissions
+            mg_settings['permissions']['deny'] = global_settings['permissions'].get('deny', [])
+        else:
+            # No MG-specific allows, remove empty permissions
+            del mg_settings['permissions']
+
+    # Extract env (CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS)
+    if 'env' in global_settings:
+        mg_env = {}
+        for key, value in global_settings['env'].items():
+            if 'CLAUDE_CODE' in key or 'AGENT' in key:
+                mg_env[key] = value
+        if mg_env:
+            mg_settings['env'] = mg_env
+
+    # Extract teammateMode
+    if 'teammateMode' in global_settings:
+        mg_settings['teammateMode'] = global_settings['teammateMode']
+
+    # Extract hooks (SessionStart, TeammateIdle, TaskCompleted, etc.)
+    if 'hooks' in global_settings:
+        mg_hooks = {}
+        for hook_type, hook_configs in global_settings['hooks'].items():
+            for config in hook_configs:
+                for hook in config.get('hooks', []):
+                    command = hook.get('command', '')
+                    if 'project-init-check.sh' in command or 'safety-check.sh' in command or '.claude/hooks' in command:
+                        if hook_type not in mg_hooks:
+                            mg_hooks[hook_type] = []
+                        mg_hooks[hook_type].append(config)
+                        break
+
+        if mg_hooks:
+            mg_settings['hooks'] = mg_hooks
+
+    # Write project-local settings
+    with open(project_settings_path, 'w') as f:
+        json.dump(mg_settings, f, indent=2)
+
+    print(f"  ✓ Extracted MG settings to {os.path.basename(project_settings_path)}")
+    sys.exit(0)
+
+except Exception as e:
+    print(f"  ✗ Error extracting settings: {e}", file=sys.stderr)
+    sys.exit(1)
+SETTINGS_MIGRATION
+
+        if [[ $? -eq 0 ]]; then
+            echo -e "  ${GREEN}✓${NC} settings.json created"
+        else
+            echo -e "  ${RED}✗${NC} Failed to extract settings"
+        fi
+    else
+        echo -e "  ${YELLOW}[DRY RUN]${NC} Would extract MG settings"
+    fi
+else
+    echo "No MG settings found in ~/.claude/settings.json"
+fi
+
+echo ""
+
+# ============================================================================
+# Phase 4: CLAUDE.md Migration
+# ============================================================================
+
+echo -e "${GREEN}Phase 4: CLAUDE.md Migration${NC}"
+echo ""
+
+if [[ "$HAS_MG_CLAUDE_MD" == "true" ]]; then
+    echo "Extracting MG content from ~/.claude/CLAUDE.md..."
+
+    if [[ "$DRY_RUN" == "false" ]]; then
+        # Create project-local CLAUDE.md with bounded markers
+        cat > "$PROJECT_CLAUDE_DIR/CLAUDE.md" <<'CLAUDE_MD_HEADER'
+# Project Context
+
+<!-- BEGIN MINIATURE-GUACAMOLE -->
+This project uses the **miniature-guacamole** framework - a product development team simulation system for Claude Code.
+
+## Framework Overview
+
+miniature-guacamole provides:
+- **18 Specialized Agents** - Engineering Manager, Product Manager, QA, Design, DevOps, and more
+- **13 Team Skills** - /leadership-team, /engineering-team, /code-review, and others
+- **Shared Protocols** - TDD workflow, memory protocol, handoff protocol
+- **Memory System** - Project-local memory in `.claude/memory/`
+
+## Quick Start
+
+### Use Team Skills
+
+```
+/leadership-team review WS-42
+/engineering-team implement new-feature
+/code-review check PR-123
+```
+
+### Spawn Agents
+
+```python
+Task(subagent_type="qa", prompt="Create test specs for login feature")
+Task(subagent_type="dev", prompt="Implement authentication")
+```
+
+### Script Utilities
+
+The framework includes 9 mg-* commands for memory operations:
+
+```bash
+mg-memory-read .claude/memory/tasks-dev.json
+mg-workstream-status WS-42
+mg-gate-check
+mg-help <command>
+```
+
+## Memory Protocol
+
+Agents use shared memory in `.claude/memory/`:
+
+- **tasks-{role}.json** - Task queues for each agent
+- **handoffs-{from}-{to}.json** - Agent-to-agent handoffs
+- **workstream-{id}-state.json** - Workstream status tracking
+- **decisions.json** - Architecture and design decisions
+
+All memory is **project-local** and never shared between clients or projects.
+
+## Documentation
+
+- **Agents**: See `.claude/agents/{agent-name}/agent.md`
+- **Skills**: See `.claude/skills/{skill-name}/skill.md`
+- **Protocols**: See `.claude/shared/{protocol-name}.md`
+- **Framework**: [miniature-guacamole](https://github.com/yourusername/miniature-guacamole)
+
+## Data Isolation
+
+miniature-guacamole is **NDA-safe**:
+- Agents/skills are role definitions (no project data)
+- Memory is project-local (`.claude/memory/`)
+- No data crosses between clients or projects
+
+<!-- END MINIATURE-GUACAMOLE -->
+
+---
+
+## Project-Specific Context
+
+Add your project-specific context below this line.
+The miniature-guacamole framework will not modify content outside the bounded markers above.
+
+CLAUDE_MD_HEADER
+
+        echo -e "  ${GREEN}✓${NC} CLAUDE.md created with MG documentation"
+    else
+        echo -e "  ${YELLOW}[DRY RUN]${NC} Would create CLAUDE.md with MG content"
+    fi
+else
+    echo "No MG content found in ~/.claude/CLAUDE.md"
+    if [[ "$DRY_RUN" == "false" ]]; then
+        # Create minimal CLAUDE.md
+        cat > "$PROJECT_CLAUDE_DIR/CLAUDE.md" <<'MINIMAL_CLAUDE_MD'
+# Project Context
+
+This project uses miniature-guacamole framework. See `.claude/agents/` and `.claude/skills/` for documentation.
+
+MINIMAL_CLAUDE_MD
+        echo -e "  ${GREEN}✓${NC} Created minimal CLAUDE.md"
+    fi
+fi
+
+echo ""
+
+# ============================================================================
+# Phase 5: Global Cleanup (Interactive)
+# ============================================================================
+
+if [[ "$NO_CLEANUP" == "true" ]]; then
+    echo -e "${YELLOW}Skipping global cleanup (--no-cleanup specified)${NC}"
+    echo ""
+    echo -e "${GREEN}╔══════════════════════════════════════════════════════════════╗${NC}"
+    echo -e "${GREEN}║${NC}  Migration complete!                                         ${GREEN}║${NC}"
+    echo -e "${GREEN}╚══════════════════════════════════════════════════════════════╝${NC}"
+    echo ""
+    echo "Project-local installation: $PROJECT_CLAUDE_DIR"
+    echo ""
+    echo -e "${YELLOW}Manual cleanup required:${NC}"
+    echo "  Run without --no-cleanup to remove global MG components"
+    echo ""
+    exit 0
+fi
+
+echo -e "${GREEN}Phase 5: Global Cleanup${NC}"
+echo ""
+
+if [[ "$DRY_RUN" == "true" ]]; then
+    echo -e "${YELLOW}[DRY RUN]${NC} Would remove the following from ~/.claude/:"
+    echo ""
+else
+    echo "The following will be removed from ~/.claude/:"
+    echo ""
+fi
+
+# Show what will be removed
+if [[ $FOUND_AGENTS -gt 0 ]]; then
+    echo -e "${CYAN}Agents ($FOUND_AGENTS):${NC}"
+    for agent in "${MG_AGENTS[@]}"; do
+        if [[ -d "$GLOBAL_CLAUDE_DIR/agents/$agent" ]]; then
+            echo "  - $agent"
+        fi
+    done
+    echo ""
+fi
+
+if [[ $FOUND_SKILLS -gt 0 ]]; then
+    echo -e "${CYAN}Skills ($FOUND_SKILLS):${NC}"
+    for skill in "${MG_SKILLS[@]}"; do
+        if [[ -d "$GLOBAL_CLAUDE_DIR/skills/$skill" ]]; then
+            echo "  - $skill"
+        fi
+    done
+    echo ""
+fi
+
+if [[ $FOUND_SHARED -gt 0 ]]; then
+    echo -e "${CYAN}Protocols ($FOUND_SHARED):${NC}"
+    for shared in "${MG_SHARED[@]}"; do
+        if [[ -f "$GLOBAL_CLAUDE_DIR/shared/$shared" ]]; then
+            echo "  - $shared"
+        fi
+    done
+    echo ""
+fi
+
+if [[ $FOUND_SCRIPTS -gt 0 ]]; then
+    echo -e "${CYAN}Scripts ($FOUND_SCRIPTS):${NC}"
+    for script in "${MG_SCRIPTS[@]}"; do
+        if [[ -f "$GLOBAL_CLAUDE_DIR/scripts/$script" ]]; then
+            echo "  - $script"
+        fi
+    done
+    echo ""
+fi
+
+if [[ $FOUND_HOOKS -gt 0 ]]; then
+    echo -e "${CYAN}Hooks ($FOUND_HOOKS):${NC}"
+    for hook in "${MG_HOOKS[@]}"; do
+        if [[ -f "$GLOBAL_CLAUDE_DIR/hooks/$hook" ]]; then
+            echo "  - $hook"
+        fi
+    done
+    echo ""
+fi
+
+if [[ "$HAS_MG_SETTINGS" == "true" ]]; then
+    echo -e "${CYAN}Settings:${NC}"
+    echo "  - MG entries in settings.json (hooks, env, teammateMode)"
+    echo ""
+fi
+
+if [[ "$HAS_MG_CLAUDE_MD" == "true" ]]; then
+    echo -e "${CYAN}CLAUDE.md:${NC}"
+    echo "  - MG content from CLAUDE.md"
+    echo ""
+fi
+
+if [[ -f "$GLOBAL_CLAUDE_DIR/team-config.yaml" ]]; then
+    echo -e "${CYAN}Configuration:${NC}"
+    echo "  - team-config.yaml"
+    echo ""
+fi
+
+echo -e "${YELLOW}Backup will be created at:${NC}"
+echo "  $BACKUP_DIR"
+echo ""
+
+# Confirm before proceeding
+if [[ "$FORCE" == "false" ]] && [[ "$DRY_RUN" == "false" ]]; then
+    read -p "$(echo -e "${YELLOW}Proceed with cleanup? [y/N]:${NC} ")" -n 1 -r
+    echo
+    if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+        echo ""
+        echo "Cleanup cancelled."
+        echo ""
+        echo -e "${GREEN}╔══════════════════════════════════════════════════════════════╗${NC}"
+        echo -e "${GREEN}║${NC}  Migration complete (no cleanup)                             ${GREEN}║${NC}"
+        echo -e "${GREEN}╚══════════════════════════════════════════════════════════════╝${NC}"
+        echo ""
+        echo "Project-local installation: $PROJECT_CLAUDE_DIR"
+        echo ""
+        echo -e "${YELLOW}Manual cleanup required:${NC}"
+        echo "  Run with --force to skip confirmation"
+        echo ""
+        exit 0
+    fi
+fi
+
+if [[ "$DRY_RUN" == "false" ]]; then
+    # Create backup directory
+    echo "Creating backup..."
+    mkdir -p "$BACKUP_DIR"
+
+    # Backup everything before removal
+    if [[ $FOUND_AGENTS -gt 0 ]]; then
+        mkdir -p "$BACKUP_DIR/agents"
+        for agent in "${MG_AGENTS[@]}"; do
+            if [[ -d "$GLOBAL_CLAUDE_DIR/agents/$agent" ]]; then
+                cp -r "$GLOBAL_CLAUDE_DIR/agents/$agent" "$BACKUP_DIR/agents/"
+            fi
+        done
+    fi
+
+    if [[ $FOUND_SKILLS -gt 0 ]]; then
+        mkdir -p "$BACKUP_DIR/skills"
+        for skill in "${MG_SKILLS[@]}"; do
+            if [[ -d "$GLOBAL_CLAUDE_DIR/skills/$skill" ]]; then
+                cp -r "$GLOBAL_CLAUDE_DIR/skills/$skill" "$BACKUP_DIR/skills/"
+            fi
+        done
+    fi
+
+    if [[ $FOUND_SHARED -gt 0 ]]; then
+        mkdir -p "$BACKUP_DIR/shared"
+        for shared in "${MG_SHARED[@]}"; do
+            if [[ -f "$GLOBAL_CLAUDE_DIR/shared/$shared" ]]; then
+                cp "$GLOBAL_CLAUDE_DIR/shared/$shared" "$BACKUP_DIR/shared/"
+            fi
+        done
+    fi
+
+    if [[ $FOUND_SCRIPTS -gt 0 ]]; then
+        mkdir -p "$BACKUP_DIR/scripts"
+        for script in "${MG_SCRIPTS[@]}"; do
+            if [[ -f "$GLOBAL_CLAUDE_DIR/scripts/$script" ]]; then
+                cp "$GLOBAL_CLAUDE_DIR/scripts/$script" "$BACKUP_DIR/scripts/"
+            fi
+        done
+    fi
+
+    if [[ $FOUND_HOOKS -gt 0 ]]; then
+        mkdir -p "$BACKUP_DIR/hooks"
+        for hook in "${MG_HOOKS[@]}"; do
+            if [[ -f "$GLOBAL_CLAUDE_DIR/hooks/$hook" ]]; then
+                cp "$GLOBAL_CLAUDE_DIR/hooks/$hook" "$BACKUP_DIR/hooks/"
+            fi
+        done
+    fi
+
+    if [[ -f "$GLOBAL_CLAUDE_DIR/settings.json" ]]; then
+        cp "$GLOBAL_CLAUDE_DIR/settings.json" "$BACKUP_DIR/"
+    fi
+
+    if [[ -f "$GLOBAL_CLAUDE_DIR/CLAUDE.md" ]]; then
+        cp "$GLOBAL_CLAUDE_DIR/CLAUDE.md" "$BACKUP_DIR/"
+    fi
+
+    if [[ -f "$GLOBAL_CLAUDE_DIR/team-config.yaml" ]]; then
+        cp "$GLOBAL_CLAUDE_DIR/team-config.yaml" "$BACKUP_DIR/"
+    fi
+
+    echo -e "  ${GREEN}✓${NC} Backup created at $BACKUP_DIR"
+    echo ""
+
+    # Remove agents
+    if [[ $FOUND_AGENTS -gt 0 ]]; then
+        echo "Removing agents..."
+        for agent in "${MG_AGENTS[@]}"; do
+            if [[ -d "$GLOBAL_CLAUDE_DIR/agents/$agent" ]]; then
+                rm -rf "$GLOBAL_CLAUDE_DIR/agents/$agent"
+                echo -e "  ${GREEN}✓${NC} Removed $agent"
+            fi
+        done
+    fi
+
+    # Remove skills
+    if [[ $FOUND_SKILLS -gt 0 ]]; then
+        echo "Removing skills..."
+        for skill in "${MG_SKILLS[@]}"; do
+            if [[ -d "$GLOBAL_CLAUDE_DIR/skills/$skill" ]]; then
+                rm -rf "$GLOBAL_CLAUDE_DIR/skills/$skill"
+                echo -e "  ${GREEN}✓${NC} Removed $skill"
+            fi
+        done
+    fi
+
+    # Remove shared protocols
+    if [[ $FOUND_SHARED -gt 0 ]]; then
+        echo "Removing shared protocols..."
+        for shared in "${MG_SHARED[@]}"; do
+            if [[ -f "$GLOBAL_CLAUDE_DIR/shared/$shared" ]]; then
+                rm "$GLOBAL_CLAUDE_DIR/shared/$shared"
+                echo -e "  ${GREEN}✓${NC} Removed $shared"
+            fi
+        done
+    fi
+
+    # Remove scripts
+    if [[ $FOUND_SCRIPTS -gt 0 ]]; then
+        echo "Removing scripts..."
+        for script in "${MG_SCRIPTS[@]}"; do
+            if [[ -f "$GLOBAL_CLAUDE_DIR/scripts/$script" ]]; then
+                rm "$GLOBAL_CLAUDE_DIR/scripts/$script"
+                echo -e "  ${GREEN}✓${NC} Removed $script"
+            fi
+        done
+    fi
+
+    # Remove hooks
+    if [[ $FOUND_HOOKS -gt 0 ]]; then
+        echo "Removing hooks..."
+        for hook in "${MG_HOOKS[@]}"; do
+            if [[ -f "$GLOBAL_CLAUDE_DIR/hooks/$hook" ]]; then
+                rm "$GLOBAL_CLAUDE_DIR/hooks/$hook"
+                echo -e "  ${GREEN}✓${NC} Removed $hook"
+            fi
+        done
+    fi
+
+    # Remove team-config.yaml
+    if [[ -f "$GLOBAL_CLAUDE_DIR/team-config.yaml" ]]; then
+        echo "Removing team-config.yaml..."
+        rm "$GLOBAL_CLAUDE_DIR/team-config.yaml"
+        echo -e "  ${GREEN}✓${NC} Removed team-config.yaml"
+    fi
+
+    # Clean up settings.json
+    if [[ "$HAS_MG_SETTINGS" == "true" ]]; then
+        echo "Cleaning up settings.json..."
+        python3 <<'SETTINGS_CLEANUP'
+import json
+import os
+import sys
+
+global_settings_path = os.path.join(os.environ.get('HOME', os.path.expanduser('~')), '.claude', 'settings.json')
+
+try:
+    # Read global settings
+    with open(global_settings_path, 'r') as f:
+        settings = json.load(f)
+
+    # Remove MG-specific settings
+    modified = False
+
+    # Remove hooks
+    if 'hooks' in settings:
+        for hook_type in list(settings['hooks'].keys()):
+            settings['hooks'][hook_type] = [
+                config for config in settings['hooks'][hook_type]
+                if not any('project-init-check.sh' in hook.get('command', '') or
+                          'safety-check.sh' in hook.get('command', '') or
+                          '.claude/hooks' in hook.get('command', '')
+                          for hook in config.get('hooks', []))
+            ]
+            if not settings['hooks'][hook_type]:
+                del settings['hooks'][hook_type]
+                modified = True
+
+        if not settings['hooks']:
+            del settings['hooks']
+            modified = True
+
+    # Remove env vars
+    if 'env' in settings:
+        for key in list(settings['env'].keys()):
+            if 'CLAUDE_CODE' in key or 'AGENT' in key:
+                del settings['env'][key]
+                modified = True
+
+        if not settings['env']:
+            del settings['env']
+            modified = True
+
+    # Remove teammateMode if present
+    if 'teammateMode' in settings:
+        del settings['teammateMode']
+        modified = True
+
+    # Remove MG-specific permissions
+    if 'permissions' in settings and 'allow' in settings['permissions']:
+        original_count = len(settings['permissions']['allow'])
+        settings['permissions']['allow'] = [
+            allow for allow in settings['permissions']['allow']
+            if '.claude' not in allow and 'mg-' not in allow
+        ]
+        if len(settings['permissions']['allow']) < original_count:
+            modified = True
+
+        if not settings['permissions']['allow']:
+            if 'deny' not in settings['permissions'] or not settings['permissions']['deny']:
+                del settings['permissions']
+                modified = True
+
+    if modified:
+        # Write cleaned settings
+        with open(global_settings_path, 'w') as f:
+            json.dump(settings, f, indent=2)
+        print("  ✓ Removed MG entries from settings.json")
+    else:
+        print("  - No MG entries found in settings.json")
+
+    sys.exit(0)
+
+except Exception as e:
+    print(f"  ✗ Error cleaning settings: {e}", file=sys.stderr)
+    sys.exit(1)
+SETTINGS_CLEANUP
+
+    fi
+
+    # Clean up CLAUDE.md
+    if [[ "$HAS_MG_CLAUDE_MD" == "true" ]]; then
+        echo "Cleaning up CLAUDE.md..."
+        # Remove MG content (lines containing "miniature-guacamole")
+        # For safety, we'll just create a backup and let users manually edit
+        if grep -q "miniature-guacamole" "$GLOBAL_CLAUDE_DIR/CLAUDE.md"; then
+            echo -e "  ${YELLOW}⚠${NC} CLAUDE.md contains MG content"
+            echo -e "      Manual review recommended: $GLOBAL_CLAUDE_DIR/CLAUDE.md"
+            echo -e "      Backup available at: $BACKUP_DIR/CLAUDE.md"
+        fi
+    fi
+
+    echo ""
+fi
+
+# ============================================================================
+# Summary
+# ============================================================================
+
+echo ""
+echo -e "${GREEN}╔══════════════════════════════════════════════════════════════╗${NC}"
+echo -e "${GREEN}║${NC}  Migration complete!                                         ${GREEN}║${NC}"
+echo -e "${GREEN}╚══════════════════════════════════════════════════════════════╝${NC}"
+echo ""
+
+if [[ "$DRY_RUN" == "true" ]]; then
+    echo -e "${YELLOW}DRY RUN - No changes were made${NC}"
+    echo ""
+    echo "Run without --dry-run to perform the migration."
+    echo ""
+    exit 0
+fi
+
+echo -e "${CYAN}Migrated components:${NC}"
+echo "  - Agents:    $FOUND_AGENTS"
+echo "  - Skills:    $FOUND_SKILLS"
+echo "  - Protocols: $FOUND_SHARED"
+echo "  - Scripts:   $FOUND_SCRIPTS"
+echo "  - Hooks:     $FOUND_HOOKS"
+echo ""
+
+echo -e "${CYAN}Project-local installation:${NC}"
+echo "  $PROJECT_CLAUDE_DIR"
+echo ""
+
+if [[ "$NO_CLEANUP" == "false" ]]; then
+    echo -e "${CYAN}Backup created:${NC}"
+    echo "  $BACKUP_DIR"
+    echo ""
+fi
+
+echo -e "${GREEN}Next steps:${NC}"
+echo "  1. Review project-local installation: cd $PROJECT_DIR/.claude"
+echo "  2. Update any absolute paths in scripts/hooks if needed"
+echo "  3. Test the framework: /init-project (if needed)"
+echo "  4. Remove backup when satisfied: rm -rf $BACKUP_DIR"
+echo ""
+
+exit 0

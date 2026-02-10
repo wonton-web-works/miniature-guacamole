@@ -1,0 +1,150 @@
+#!/usr/bin/env bash
+# ============================================================================
+# mg-workstream-transition - Validate and apply state machine transitions
+# ============================================================================
+# Usage: mg-workstream-transition <ws-id> <new-status>
+# State: pending -> in_progress -> qa_review -> code_review -> approved -> merged
+# Exit 0 = success, Exit 1 = error
+# ============================================================================
+
+set -euo pipefail
+
+# ============================================================================
+# Script location validation (security hardening)
+# ============================================================================
+# Prevent sourcing - must be executed directly
+if [[ "${BASH_SOURCE[0]}" != "$0" ]]; then
+    echo "Error: This script must be executed, not sourced" >&2
+    return 1
+fi
+
+# Resolve symlinks and get canonical script directory
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+# Validate script is in a trusted .claude/scripts/ directory
+case "$SCRIPT_DIR" in
+    */.claude/scripts) ;; # Project-local or global - OK
+    *) echo "Error: Script must run from a .claude/scripts/ directory, not $SCRIPT_DIR" >&2; exit 1 ;;
+esac
+
+# Help text
+show_help() {
+    cat <<EOF
+Usage: mg-workstream-transition <ws-id> <new-status>
+
+Validate a state machine transition and update the workstream atomically.
+
+Arguments:
+  <ws-id>         Workstream identifier (e.g., WS-42, WS-SCRIPTS-1)
+  <new-status>    Target status to transition to
+
+Options:
+  -h, --help      Show this help message
+
+Valid States:
+  pending       -> in_progress
+  in_progress   -> qa_review
+  qa_review     -> code_review
+  code_review   -> approved
+  approved      -> merged
+
+Examples:
+  mg-workstream-transition WS-42 in_progress
+  mg-workstream-transition WS-SCRIPTS-1 qa_review
+
+Features:
+  - Validates transitions against state machine rules
+  - Atomic updates via mg-memory-write (creates .bak backup)
+  - Rejects invalid, backward, and skip transitions
+
+Dependencies:
+  jq - JSON processor (required)
+  mg-memory-write - For atomic file updates
+
+Exit codes:
+  0 - Success (transition applied)
+  1 - Error (invalid transition, file not found, etc.)
+EOF
+}
+
+# Error handling
+error() { echo "Error: $1" >&2; exit 1; }
+
+# State machine
+VALID_STATES=("pending" "in_progress" "qa_review" "code_review" "approved" "merged")
+
+is_valid_state() {
+    local state="$1"
+    for s in "${VALID_STATES[@]}"; do
+        [[ "$s" == "$state" ]] && return 0
+    done
+    return 1
+}
+
+get_next_state() {
+    case "$1" in
+        pending)      echo "in_progress" ;;
+        in_progress)  echo "qa_review" ;;
+        qa_review)    echo "code_review" ;;
+        code_review)  echo "approved" ;;
+        approved)     echo "merged" ;;
+        *)            echo "" ;;
+    esac
+}
+
+# Main
+if [[ "${1:-}" == "-h" ]] || [[ "${1:-}" == "--help" ]]; then
+    show_help
+    exit 0
+fi
+
+# Validate arguments
+[[ $# -eq 0 ]] && error "No arguments provided. Usage: mg-workstream-transition <ws-id> <new-status>"
+[[ $# -eq 1 ]] && error "Missing new status. Usage: mg-workstream-transition <ws-id> <new-status>"
+[[ $# -gt 2 ]] && error "Too many arguments. Usage: mg-workstream-transition <ws-id> <new-status>"
+
+WS_ID="$1"
+NEW_STATUS="$2"
+
+[[ -z "$WS_ID" ]] && error "Empty workstream ID. Usage: mg-workstream-transition <ws-id> <new-status>"
+[[ -z "$NEW_STATUS" ]] && error "Empty status. Usage: mg-workstream-transition <ws-id> <new-status>"
+
+# Validate new status is a known state
+is_valid_state "$NEW_STATUS" || error "Invalid status '$NEW_STATUS'. Valid states: ${VALID_STATES[*]}"
+
+# Locate dependencies
+JQ_PATH=$(command -v jq)
+[[ -z "$JQ_PATH" ]] && error "jq not found in PATH. Install via: brew install jq"
+
+MG_WRITE="$SCRIPT_DIR/mg-memory-write"
+[[ ! -x "$MG_WRITE" ]] && error "mg-memory-write not found at $MG_WRITE"
+
+# Check for .claude/memory directory and state file
+MEMORY_DIR=".claude/memory"
+[[ ! -d "$MEMORY_DIR" ]] && error "No .claude/memory directory found in current directory"
+
+STATE_FILE="$MEMORY_DIR/workstream-${WS_ID}-state.json"
+[[ ! -e "$STATE_FILE" ]] && error "Workstream not found: $WS_ID (no file: $STATE_FILE)"
+[[ ! -r "$STATE_FILE" ]] && error "File cannot be read (permission denied): $STATE_FILE"
+
+# Validate JSON
+RESULT_TYPE=$("$JQ_PATH" -r 'type' "$STATE_FILE" 2>/dev/null || echo "error")
+[[ "$RESULT_TYPE" != "object" ]] && [[ "$RESULT_TYPE" != "array" ]] && error "Invalid JSON in state file: $STATE_FILE"
+
+# Get current status and validate
+CURRENT_STATUS=$("$JQ_PATH" -r '.status // "unknown"' "$STATE_FILE")
+is_valid_state "$CURRENT_STATUS" || error "Current status '$CURRENT_STATUS' in state file is not a valid state"
+[[ "$CURRENT_STATUS" == "$NEW_STATUS" ]] && error "Cannot transition: workstream is already in '$CURRENT_STATUS' state"
+[[ "$CURRENT_STATUS" == "merged" ]] && error "Cannot transition: workstream is already merged (terminal state)"
+
+# Validate the transition
+EXPECTED_NEXT=$(get_next_state "$CURRENT_STATUS")
+[[ "$NEW_STATUS" != "$EXPECTED_NEXT" ]] && error "Invalid transition: '$CURRENT_STATUS' -> '$NEW_STATUS'. Valid next state: '$EXPECTED_NEXT'"
+
+# Apply the transition atomically using mg-memory-write
+"$MG_WRITE" "$STATE_FILE" ".status = \"$NEW_STATUS\""
+WRITE_EXIT=$?
+[[ $WRITE_EXIT -ne 0 ]] && error "Failed to update state file"
+
+echo "Transition: $CURRENT_STATUS -> $NEW_STATUS (workstream: $WS_ID)"
+exit 0

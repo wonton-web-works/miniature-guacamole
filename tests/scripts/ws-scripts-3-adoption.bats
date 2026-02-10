@@ -450,7 +450,18 @@ EOF
 
 @test "WS-SCRIPTS-3 (golden): mg-help lists all 9 mg-* scripts" {
     # Verify mg-help discovers and lists all scripts
-    local mg_help="$HOME/.claude/scripts/mg-help"
+    local project_root="$(cd "$(dirname "$BATS_TEST_FILENAME")/../.." && pwd)"
+
+    # Create temporary .claude/scripts directory
+    local test_dir="$(mktemp -d)"
+    local test_scripts="$test_dir/.claude/scripts"
+    mkdir -p "$test_scripts"
+
+    # Copy all scripts to test directory
+    cp "$project_root"/src/framework/scripts/mg-* "$test_scripts/"
+    chmod +x "$test_scripts"/mg-*
+
+    local mg_help="$test_scripts/mg-help"
 
     [ -f "$mg_help" ]
     [ -x "$mg_help" ]
@@ -463,11 +474,25 @@ EOF
     for script in "${EXPECTED_SCRIPTS[@]}"; do
         [[ "$output" =~ "$script" ]]
     done
+
+    # Cleanup
+    rm -rf "$test_dir"
 }
 
 @test "WS-SCRIPTS-3 (golden): mg-help shows script descriptions" {
     # mg-help should show one-line descriptions for each script
-    local mg_help="$HOME/.claude/scripts/mg-help"
+    local project_root="$(cd "$(dirname "$BATS_TEST_FILENAME")/../.." && pwd)"
+
+    # Create temporary .claude/scripts directory
+    local test_dir="$(mktemp -d)"
+    local test_scripts="$test_dir/.claude/scripts"
+    mkdir -p "$test_scripts"
+
+    # Copy all scripts to test directory
+    cp "$project_root"/src/framework/scripts/mg-* "$test_scripts/"
+    chmod +x "$test_scripts"/mg-*
+
+    local mg_help="$test_scripts/mg-help"
 
     [ -f "$mg_help" ]
     [ -x "$mg_help" ]
@@ -479,11 +504,15 @@ EOF
     [[ "$output" =~ "Read and pretty-print JSON memory files" ]]
     [[ "$output" =~ "Atomically update JSON memory files" ]]
     [[ "$output" =~ "Show help for mg-* commands" ]]
+
+    # Cleanup
+    rm -rf "$test_dir"
 }
 
-@test "WS-SCRIPTS-3 (golden): all 9 scripts exist in ~/.claude/scripts" {
+@test "WS-SCRIPTS-3 (golden): all 9 scripts exist in src/framework/scripts" {
     # Verify complete installation
-    local scripts_dir="$HOME/.claude/scripts"
+    local project_root="$(cd "$(dirname "$BATS_TEST_FILENAME")/../.." && pwd)"
+    local scripts_dir="$project_root/src/framework/scripts"
 
     [ -d "$scripts_dir" ]
 
@@ -497,7 +526,8 @@ EOF
 
 @test "WS-SCRIPTS-3 (golden): all 9 scripts are executable" {
     # Verify permissions
-    local scripts_dir="$HOME/.claude/scripts"
+    local project_root="$(cd "$(dirname "$BATS_TEST_FILENAME")/../.." && pwd)"
+    local scripts_dir="$project_root/src/framework/scripts"
 
     [ -d "$scripts_dir" ]
 
@@ -617,7 +647,18 @@ EOF
 
 @test "WS-SCRIPTS-3 (integration): agent spawned with artifact bundle can discover scripts via mg-help" {
     # Verify agent can discover available tools
-    local mg_help="$HOME/.claude/scripts/mg-help"
+    local project_root="$(cd "$(dirname "$BATS_TEST_FILENAME")/../.." && pwd)"
+
+    # Create temporary .claude/scripts directory
+    local test_dir="$(mktemp -d)"
+    local test_scripts="$test_dir/.claude/scripts"
+    mkdir -p "$test_scripts"
+
+    # Copy all scripts to test directory
+    cp "$project_root"/src/framework/scripts/mg-* "$test_scripts/"
+    chmod +x "$test_scripts"/mg-*
+
+    local mg_help="$test_scripts/mg-help"
 
     [ -f "$mg_help" ]
     [ -x "$mg_help" ]
@@ -635,4 +676,7 @@ EOF
     done
 
     [ "$count" -eq 9 ]
+
+    # Cleanup
+    rm -rf "$test_dir"
 }

@@ -8,13 +8,30 @@
 
 # Setup and teardown
 setup() {
-    # Expected script location
-    SCRIPT_PATH="$HOME/.claude/scripts/mg-help"
-    SCRIPTS_DIR="$HOME/.claude/scripts"
+    # Resolve project root (tests/scripts/ → project root)
+    PROJECT_ROOT="$(cd "$(dirname "$BATS_TEST_FILENAME")/../.." && pwd)"
+
+    # Create temporary .claude/scripts directory for testing
+    TEST_CLAUDE_DIR="$(mktemp -d)/.claude/scripts"
+    mkdir -p "$TEST_CLAUDE_DIR"
+
+    # Copy all mg-* scripts from project to test directory
+    cp "$PROJECT_ROOT"/src/framework/scripts/mg-* "$TEST_CLAUDE_DIR/"
+    chmod +x "$TEST_CLAUDE_DIR"/mg-*
+
+    SCRIPT_PATH="$TEST_CLAUDE_DIR/mg-help"
+    SCRIPTS_DIR="$TEST_CLAUDE_DIR"
 
     # Skip if BATS not installed
     if ! command -v bats &> /dev/null; then
         skip "BATS not installed. Install via: brew install bats-core"
+    fi
+}
+
+teardown() {
+    # Clean up test directory
+    if [[ -n "$TEST_CLAUDE_DIR" && -d "$TEST_CLAUDE_DIR" ]]; then
+        rm -rf "$(dirname "$(dirname "$TEST_CLAUDE_DIR")")"
     fi
 }
 

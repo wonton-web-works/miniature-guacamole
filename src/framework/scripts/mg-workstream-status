@@ -1,0 +1,176 @@
+#!/usr/bin/env bash
+# ============================================================================
+# mg-workstream-status - Display formatted workstream state
+# ============================================================================
+# Usage: mg-workstream-status <ws-id>
+# Exit 0 = success, Exit 1 = error
+# ============================================================================
+
+set -euo pipefail
+
+# ============================================================================
+# Help text
+# ============================================================================
+show_help() {
+    cat <<EOF
+Usage: mg-workstream-status <ws-id>
+
+Display formatted state, gate, phase, and blockers for a workstream.
+
+Arguments:
+  <ws-id>       Workstream identifier (e.g., WS-42, WS-SCRIPTS-1)
+
+Options:
+  -h, --help    Show this help message
+
+Examples:
+  mg-workstream-status WS-42
+  mg-workstream-status WS-SCRIPTS-1
+
+Output:
+  Formatted workstream state including:
+  - Workstream ID and name
+  - Status and phase
+  - Gate status
+  - Test results and coverage
+  - Blockers (if any)
+  - Dependencies (if any)
+
+Dependencies:
+  jq - JSON processor (required)
+  mg-memory-read - For reading state files
+
+Exit codes:
+  0 - Success
+  1 - Error (workstream not found, invalid JSON, etc.)
+EOF
+}
+
+# ============================================================================
+# Error handling
+# ============================================================================
+error() {
+    echo "Error: $1" >&2
+    exit 1
+}
+
+# ============================================================================
+# Main
+# ============================================================================
+
+# Check for help flags
+if [[ "${1:-}" == "-h" ]] || [[ "${1:-}" == "--help" ]]; then
+    show_help
+    exit 0
+fi
+
+# Check for invalid flags
+if [[ $# -ge 1 ]] && [[ "$1" == --* ]] && [[ "$1" != "--help" ]]; then
+    error "Invalid flag: $1. Usage: mg-workstream-status <ws-id>"
+fi
+
+# Validate argument count
+if [[ $# -eq 0 ]]; then
+    error "No workstream ID specified. Usage: mg-workstream-status <ws-id>"
+fi
+
+if [[ $# -gt 1 ]]; then
+    error "Too many arguments. Usage: mg-workstream-status <ws-id>"
+fi
+
+WS_ID="$1"
+
+# Check for empty argument
+if [[ -z "$WS_ID" ]]; then
+    error "Empty workstream ID. Usage: mg-workstream-status <ws-id>"
+fi
+
+# Locate jq using portable command detection
+JQ_PATH=$(command -v jq)
+if [[ -z "$JQ_PATH" ]]; then
+    error "jq not found in PATH. Install via: brew install jq"
+fi
+
+# Check for .claude/memory directory
+MEMORY_DIR=".claude/memory"
+if [[ ! -d "$MEMORY_DIR" ]]; then
+    error "No .claude/memory directory found in current directory"
+fi
+
+# Construct state file path
+STATE_FILE="$MEMORY_DIR/workstream-${WS_ID}-state.json"
+
+# Check if state file exists
+if [[ ! -e "$STATE_FILE" ]]; then
+    error "Workstream not found: $WS_ID (no file: $STATE_FILE)"
+fi
+
+# Check if it's a directory
+if [[ -d "$STATE_FILE" ]]; then
+    error "Path is a directory, not a file: $STATE_FILE"
+fi
+
+# Check if file is readable
+if [[ ! -r "$STATE_FILE" ]]; then
+    error "File cannot be read (permission denied): $STATE_FILE"
+fi
+
+# Parse and validate JSON
+JSON_DATA=$("$JQ_PATH" '.' "$STATE_FILE" 2>&1) || true
+# Check if jq produced valid output by testing type
+RESULT_TYPE=$("$JQ_PATH" -r 'type' "$STATE_FILE" 2>/dev/null || echo "error")
+if [[ "$RESULT_TYPE" != "object" ]] && [[ "$RESULT_TYPE" != "array" ]]; then
+    error "Invalid JSON in state file: $STATE_FILE"
+fi
+
+# Extract fields with defaults for missing fields
+ws_id=$("$JQ_PATH" -r '.workstream_id // "unknown"' "$STATE_FILE")
+ws_name=$("$JQ_PATH" -r '.name // "unnamed"' "$STATE_FILE")
+ws_status=$("$JQ_PATH" -r '.status // "unknown"' "$STATE_FILE")
+ws_phase=$("$JQ_PATH" -r '.phase // "unknown"' "$STATE_FILE")
+ws_gate=$("$JQ_PATH" -r '.gate_status // "unknown"' "$STATE_FILE")
+ws_agent=$("$JQ_PATH" -r '.agent_id // "unassigned"' "$STATE_FILE")
+ws_created=$("$JQ_PATH" -r '.created_at // "unknown"' "$STATE_FILE")
+ws_coverage=$("$JQ_PATH" -r '.coverage // 0' "$STATE_FILE")
+ws_tests_total=$("$JQ_PATH" -r '.tests.total // 0' "$STATE_FILE")
+ws_tests_passing=$("$JQ_PATH" -r '.tests.passing // 0' "$STATE_FILE")
+ws_tests_failing=$("$JQ_PATH" -r '.tests.failing // 0' "$STATE_FILE")
+
+# Format output
+cat <<EOF
+====================================
+Workstream: $ws_id
+====================================
+Name:        $ws_name
+Status:      $ws_status
+Phase:       $ws_phase
+Gate:        $ws_gate
+Agent:       $ws_agent
+Created:     $ws_created
+
+Tests:       $ws_tests_passing/$ws_tests_total passing ($ws_tests_failing failing)
+Coverage:    ${ws_coverage}%
+EOF
+
+# Show blockers if present
+blockers_count=$("$JQ_PATH" -r 'if .blockers then (.blockers | length) else 0 end' "$STATE_FILE")
+if [[ "$blockers_count" -gt 0 ]]; then
+    echo ""
+    echo "Blockers:"
+    "$JQ_PATH" -r '.blockers[] | "  - " + .' "$STATE_FILE"
+else
+    echo ""
+    echo "Blockers:    None"
+fi
+
+# Show dependencies if present
+deps_count=$("$JQ_PATH" -r 'if .dependencies then (.dependencies | length) else 0 end' "$STATE_FILE")
+if [[ "$deps_count" -gt 0 ]]; then
+    echo ""
+    echo "Dependencies:"
+    "$JQ_PATH" -r '.dependencies[] | "  - " + .' "$STATE_FILE"
+fi
+
+echo "===================================="
+
+exit 0

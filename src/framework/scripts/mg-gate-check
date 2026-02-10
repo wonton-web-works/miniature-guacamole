@@ -1,0 +1,161 @@
+#!/usr/bin/env bash
+# mg-gate-check - Mechanical Gate 4A checks with structured JSON output
+# Usage: mg-gate-check | Exit 0 = all pass, Exit 1 = any fail
+set -euo pipefail
+
+show_help() {
+    cat <<EOF
+Usage: mg-gate-check
+
+Run mechanical Gate 4A checks and output structured JSON results.
+
+Gates: tests (vitest), tsc (TypeScript), eslint, file_scope
+
+Options:
+  -h, --help   Show this help message
+
+Output:
+  Structured JSON with pass/fail per gate and typed failure info.
+  Failure types: test_failure, coverage_gap, type_error, lint_violation, file_scope_violation
+
+Examples:
+  mg-gate-check
+  mg-gate-check | jq '.overall'
+
+Exit codes:
+  0 - All gates pass
+  1 - One or more gates fail (or error)
+EOF
+}
+
+error() { echo "Error: $1" >&2; exit 1; }
+
+sanitize_detail() {
+    echo "$1" | sed 's/\x1b\[[0-9;]*[a-zA-Z]//g' | tr -d '\000-\011\013-\037' | tr '\n' ' ' | head -c 500
+}
+
+# Parse arguments
+while [[ $# -gt 0 ]]; do
+    case "$1" in
+        -h|--help) show_help; exit 0 ;;
+        --*) error "Unknown flag: $1. Usage: mg-gate-check" ;;
+        *) error "Too many arguments. Usage: mg-gate-check" ;;
+    esac
+done
+
+[[ -f "package.json" ]] || error "No package.json found. Run mg-gate-check from the project root."
+
+JQ_PATH=$(command -v jq || echo "")
+[[ -n "$JQ_PATH" ]] || error "jq not found in PATH. Install via: brew install jq"
+
+OVERALL="pass"
+TIMESTAMP=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+TESTS_STATUS="skip"; TESTS_TYPE=""; TESTS_DETAIL=""
+TSC_STATUS="skip"; TSC_TYPE=""; TSC_DETAIL=""
+ESLINT_STATUS="skip"; ESLINT_TYPE=""; ESLINT_DETAIL=""
+FSCOPE_STATUS="skip"; FSCOPE_TYPE=""; FSCOPE_DETAIL=""
+
+# Gate: tests (vitest)
+if command -v npx > /dev/null 2>&1; then
+    TESTS_OUTPUT=$(npx vitest run --reporter=default 2>&1) || TESTS_EXIT=$?
+    TESTS_EXIT=${TESTS_EXIT:-0}
+    if [[ $TESTS_EXIT -eq 0 ]]; then
+        TESTS_STATUS="pass"
+    else
+        TESTS_STATUS="fail"; TESTS_TYPE="test_failure"
+        TESTS_DETAIL=$(sanitize_detail "$(echo "$TESTS_OUTPUT" | tail -5)")
+        OVERALL="fail"
+    fi
+else
+    TESTS_DETAIL="npx not available"
+fi
+
+# Gate: tsc (TypeScript)
+if command -v npx > /dev/null 2>&1 && [[ -f "tsconfig.json" ]]; then
+    TSC_OUTPUT=$(npx tsc --noEmit 2>&1) || TSC_EXIT=$?
+    TSC_EXIT=${TSC_EXIT:-0}
+    if [[ $TSC_EXIT -eq 0 ]]; then
+        TSC_STATUS="pass"
+    else
+        TSC_STATUS="fail"; TSC_TYPE="type_error"
+        TSC_DETAIL=$(sanitize_detail "$(echo "$TSC_OUTPUT" | head -10)")
+        OVERALL="fail"
+    fi
+else
+    TSC_DETAIL="tsc or tsconfig.json not available"
+fi
+
+# Gate: eslint
+if command -v npx > /dev/null 2>&1; then
+    ESLINT_CFG=false
+    for f in .eslintrc .eslintrc.js .eslintrc.json .eslintrc.yml .eslintrc.yaml eslint.config.js eslint.config.mjs eslint.config.ts; do
+        [[ -f "$f" ]] && ESLINT_CFG=true && break
+    done
+    if [[ "$ESLINT_CFG" == "true" ]]; then
+        ESLINT_OUTPUT=$(npx eslint . 2>&1) || ESLINT_EXIT=$?
+        ESLINT_EXIT=${ESLINT_EXIT:-0}
+        if [[ $ESLINT_EXIT -eq 0 ]]; then
+            ESLINT_STATUS="pass"
+        else
+            ESLINT_STATUS="fail"; ESLINT_TYPE="lint_violation"
+            ESLINT_DETAIL=$(sanitize_detail "$(echo "$ESLINT_OUTPUT" | head -10)")
+            OVERALL="fail"
+        fi
+    else
+        ESLINT_DETAIL="No eslint config found"
+    fi
+else
+    ESLINT_DETAIL="npx not available"
+fi
+
+# Gate: file_scope
+if git rev-parse --is-inside-work-tree > /dev/null 2>&1; then
+    BASE_BRANCH=""
+    git rev-parse --verify main > /dev/null 2>&1 && BASE_BRANCH="main"
+    [[ -z "$BASE_BRANCH" ]] && git rev-parse --verify master > /dev/null 2>&1 && BASE_BRANCH="master"
+    if [[ -n "$BASE_BRANCH" ]]; then
+        CHANGED=$(git diff --name-only "$BASE_BRANCH"...HEAD 2>/dev/null || echo "")
+        if [[ -n "$CHANGED" ]]; then
+            NEW_DIRS=""
+            while IFS= read -r file; do
+                DIR=$(echo "$file" | cut -d'/' -f1)
+                [[ "$DIR" != "$file" ]] && ! git ls-tree -d --name-only "$BASE_BRANCH" "$DIR" > /dev/null 2>&1 && NEW_DIRS="$NEW_DIRS $DIR"
+            done <<< "$CHANGED"
+            if [[ -n "$NEW_DIRS" ]]; then
+                FSCOPE_STATUS="fail"; FSCOPE_TYPE="file_scope_violation"
+                FSCOPE_DETAIL="New directories detected:$NEW_DIRS"; OVERALL="fail"
+            else
+                FSCOPE_STATUS="pass"
+            fi
+        else
+            FSCOPE_STATUS="pass"; FSCOPE_DETAIL="No changed files"
+        fi
+    else
+        FSCOPE_DETAIL="No main/master branch found"
+    fi
+else
+    FSCOPE_DETAIL="Not a git repository"
+fi
+
+# Build JSON output using jq for safe string escaping
+build_gate_json() {
+    local s="$1" t="${2:-}" d="${3:-}"
+    local json
+    json=$("$JQ_PATH" -n --arg s "$s" '{status: $s}')
+    [[ -n "$t" ]] && json=$(echo "$json" | "$JQ_PATH" --arg t "$t" '. + {type: $t}')
+    [[ -n "$d" ]] && json=$(echo "$json" | "$JQ_PATH" --arg d "$d" '. + {detail: $d}')
+    echo "$json"
+}
+
+TESTS_JSON=$(build_gate_json "$TESTS_STATUS" "$TESTS_TYPE" "$TESTS_DETAIL")
+TSC_JSON=$(build_gate_json "$TSC_STATUS" "$TSC_TYPE" "$TSC_DETAIL")
+ESLINT_JSON=$(build_gate_json "$ESLINT_STATUS" "$ESLINT_TYPE" "$ESLINT_DETAIL")
+FSCOPE_JSON=$(build_gate_json "$FSCOPE_STATUS" "$FSCOPE_TYPE" "$FSCOPE_DETAIL")
+
+"$JQ_PATH" -n \
+    --arg overall "$OVERALL" --arg timestamp "$TIMESTAMP" \
+    --argjson tests "$TESTS_JSON" --argjson tsc "$TSC_JSON" \
+    --argjson eslint "$ESLINT_JSON" --argjson file_scope "$FSCOPE_JSON" \
+    '{overall: $overall, timestamp: $timestamp, gates: {tests: $tests, tsc: $tsc, eslint: $eslint, file_scope: $file_scope}}'
+
+[[ "$OVERALL" == "pass" ]] && exit 0 || exit 1

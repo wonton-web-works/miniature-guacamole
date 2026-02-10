@@ -1,0 +1,119 @@
+#!/usr/bin/env bash
+# ============================================================================
+# mg-memory-read - Read and pretty-print JSON memory files
+# ============================================================================
+# Usage: mg-memory-read <file.json>
+# Exit 0 = success, Exit 1 = error
+# ============================================================================
+
+set -euo pipefail
+
+# ============================================================================
+# Help text
+# ============================================================================
+show_help() {
+    cat <<EOF
+Usage: mg-memory-read <file.json>
+
+Read and pretty-print JSON memory files from .claude/memory directory.
+
+Arguments:
+  <file.json>   Path to JSON file to read
+
+Options:
+  -h, --help    Show this help message
+
+Examples:
+  mg-memory-read .claude/memory/workstream-WS-1-state.json
+  mg-memory-read /path/to/tasks-dev.json
+
+Output:
+  Pretty-printed JSON to stdout
+
+Dependencies:
+  jq - JSON processor (required)
+
+Exit codes:
+  0 - Success
+  1 - Error (file not found, invalid JSON, etc.)
+EOF
+}
+
+# ============================================================================
+# Error handling
+# ============================================================================
+error() {
+    echo "Error: $1" >&2
+    exit 1
+}
+
+# ============================================================================
+# Main
+# ============================================================================
+
+# Check for help flags
+if [[ "${1:-}" == "-h" ]] || [[ "${1:-}" == "--help" ]]; then
+    show_help
+    exit 0
+fi
+
+# Validate argument count
+if [[ $# -eq 0 ]]; then
+    error "No file specified. Usage: mg-memory-read <file.json>"
+fi
+
+if [[ $# -gt 1 ]]; then
+    error "Too many arguments. Usage: mg-memory-read <file.json>"
+fi
+
+FILE_PATH="$1"
+
+# Locate jq using portable command detection
+JQ_PATH=$(command -v jq)
+if [[ -z "$JQ_PATH" ]]; then
+    error "jq not found in PATH. Install via: brew install jq"
+fi
+
+# Check if file exists
+if [[ ! -e "$FILE_PATH" ]]; then
+    error "File not found: $FILE_PATH"
+fi
+
+# Check if it's a directory
+if [[ -d "$FILE_PATH" ]]; then
+    error "Path is a directory, not a file: $FILE_PATH"
+fi
+
+# Validate file extension
+if [[ ! "$FILE_PATH" =~ \.json$ ]]; then
+    error "File must have .json extension"
+fi
+
+# Check if file is readable
+if [[ ! -r "$FILE_PATH" ]]; then
+    error "File cannot be read (permission denied): $FILE_PATH"
+fi
+
+# Check for null bytes (use tr to detect them)
+# shellcheck disable=SC2094
+if tr -d '\0' < "$FILE_PATH" | cmp -s - "$FILE_PATH"; then
+    : # No null bytes found
+else
+    error "File contains null bytes and cannot be processed"
+fi
+
+# Read and pretty-print JSON using jq
+# Capture both stdout and stderr; use if-not to prevent set -e from exiting
+if ! OUTPUT=$("$JQ_PATH" '.' "$FILE_PATH" 2>&1); then
+    # jq failed — check if error message contains parse error
+    if [[ "$OUTPUT" =~ "parse error" ]]; then
+        echo "Error: Invalid JSON: parse error in file: $FILE_PATH" >&2
+    else
+        echo "Error: Invalid JSON in file: $FILE_PATH" >&2
+    fi
+    exit 1
+fi
+
+# Output the pretty-printed JSON
+echo "$OUTPUT"
+exit 0

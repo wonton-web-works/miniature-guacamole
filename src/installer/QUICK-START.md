@@ -10,7 +10,7 @@ cd /path/to/your/project
 
 ### Web Install
 ```bash
-curl -fsSL https://example.com/web-install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/RivermarkResearch/miniature-guacamole/main/web-install.sh | bash
 ```
 
 ### Config Cache + mg-init

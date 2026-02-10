@@ -1,9 +1,9 @@
 # Product Development Team Agent System
 
-> A product development organization with 12 specialized AI agents, 3 composite teams, and a disciplined TDD/BDD development workflow with Git workstreams.
+> A product development organization with 19 specialized AI agents, 16 collaborative skills, and a disciplined TDD/BDD development workflow with Git workstreams.
 
-**Version:** 1.3.0
-**Last Updated:** 2026-02-04
+**Version:** 1.0.0
+**Last Updated:** 2026-02-10
 **Status:** Active
 
 ---
@@ -24,75 +24,66 @@
 
 ## Installation
 
-### Option 1: Clone into your project (Recommended)
+This `.claude/` directory is installed into your project by the miniature-guacamole installer.
 
-Clone this repository and the `.claude` directory will be automatically recognized by Claude Code when you run it from this directory:
+### Installation Methods
 
+**Recommended: Use the installer**
 ```bash
+# Install from GitHub release
+curl -o- https://raw.githubusercontent.com/RivermarkResearch/miniature-guacamole/main/install.sh | bash -s -- /path/to/your-project
+
+# Or clone and install locally
 git clone https://github.com/RivermarkResearch/miniature-guacamole.git
 cd miniature-guacamole
-claude  # Start Claude Code - agents will be available
+./install.sh /path/to/your-project
 ```
 
-### Option 2: Copy to an existing project
+### What Gets Installed
 
-Copy the `.claude` directory to the root of any existing project:
-
-```bash
-cp -r /path/to/miniature-guacamole/.claude /path/to/your-project/
-cd /path/to/your-project
-claude  # Agents now available in this project
-```
-
-### Option 3: Install globally (User-level)
-
-To make these agents available across all projects, copy to your home directory:
-
-```bash
-# Copy skills to user-level location
-cp -r /path/to/miniature-guacamole/.claude/skills/* ~/.claude/skills/
-
-# Copy agents to user-level location
-cp -r /path/to/miniature-guacamole/.claude/agents/* ~/.claude/agents/
-
-# Copy shared protocols
-mkdir -p ~/.claude/shared
-cp -r /path/to/miniature-guacamole/.claude/shared/* ~/.claude/shared/
-```
+- **agents/** - 19 specialized agent roles
+- **skills/** - 16 team collaboration workflows (all with mg- prefix)
+- **shared/** - 6 protocol documents
+- **scripts/** - 11 mg-* utility commands
+- **hooks/** - Project initialization and safety checks
+- **memory/** - Agent memory directory (gitignored)
+- **settings.json** - Project-level permissions
+- **CLAUDE.md** - Framework documentation
 
 ### Verify Installation
 
-After installation, start Claude Code and verify agents are available:
+After installation, start Claude Code and verify:
 
 ```bash
+cd /path/to/your-project
 claude
-# Then type: /ceo
-# You should see the CEO agent respond
-```
 
-List available skills:
-```
-/help
+# Test a skill
+/mg-leadership-team
+
+# Test a script
+.claude/scripts/mg-help
 ```
 
 ### Requirements
 
 - [Claude Code CLI](https://claude.ai/code) installed and authenticated
-- Git (for cloning)
+- Git (for workstreams and version control)
+- Bash (for utility scripts)
 
 ---
 
 ## Overview
 
-This agent system simulates a complete product development organization within Claude Code. It provides 11 specialized agents organized in a realistic corporate hierarchy, enabling:
+This agent system simulates a complete product development organization within Claude Code. It provides 19 specialized agents organized in a realistic corporate hierarchy, enabling:
 
 - **Strategic Planning** - Executive agents (CEO, CTO) for high-level decisions
 - **Product Management** - Product Owner and Product Manager for requirements and backlog
 - **Engineering Leadership** - Engineering Director, Engineering Manager, and Staff Engineer for technical direction
 - **Design Direction** - Art Director for visual and brand guidance
-- **Implementation** - Developer, QA, and Designer ICs for hands-on work
+- **Implementation** - Developer, QA, Designer, DevOps, Security, Data, and Documentation ICs for hands-on work
 
-The system supports structured delegation between agents with depth tracking and loop prevention, allowing complex workflows to be orchestrated across the team.
+The system supports structured delegation between agents with depth tracking and loop prevention, allowing complex workflows to be orchestrated across the team. All workflows are project-local with complete data isolation.
 
 ### Key Features
 
@@ -110,20 +101,30 @@ The system supports structured delegation between agents with depth tracking and
 
 ### Initialize Your Project
 
-Before using agents and teams, initialize your project structure:
+After installation, initialize your project memory structure:
 
-```
-/init-project
+```bash
+.claude/scripts/mg-init
 ```
 
 This creates:
 - `.claude/memory/` - Agent task queues, decisions, and handoffs
-- `.claude/CLAUDE.md` - Project-specific context
-- `.gitignore` - Excludes memory files from version control
+- Updates `.gitignore` - Excludes memory files from version control
 
-### Invoking an Agent
+### Invoking a Skill
 
-Use slash commands to invoke any agent:
+Use slash commands to invoke collaborative workflows:
+
+```
+/mg-leadership-team Evaluate whether we should build vs buy for payments
+/mg-build Execute workstream WS-1: Add login endpoint
+/mg-code-review Review PR-123
+/mg-design Create mockups for dashboard redesign
+```
+
+### Invoking an Agent Directly
+
+You can also invoke individual agents:
 
 ```
 /ceo Review the Q4 product strategy
@@ -131,42 +132,39 @@ Use slash commands to invoke any agent:
 /dev Implement the user authentication feature
 ```
 
-### Invoking a Team
-
-Use team commands for coordinated multi-perspective collaboration:
-
-```
-/leadership-team Evaluate whether we should build vs buy for payments
-/product-team Define the requirements for user onboarding
-/engineering-team Break down and implement the authentication feature
-```
-
 ### Basic Workflow Example
 
-1. **Start with leadership** - Invoke a leadership agent with a high-level task:
+1. **Plan the work**:
    ```
-   /product-owner Define requirements for the new checkout flow
+   /mg-leadership-team Build a user authentication system
    ```
+   Output: Executive Review + Workstreams (WS-1, WS-2, etc.)
 
-2. **Delegate to ICs** - Leadership agents can delegate implementation work:
+2. **Execute a workstream**:
    ```
-   The Product Owner can delegate to Product Manager, who delegates to dev/qa/design
+   /mg-build Execute workstream WS-1: Add login endpoint
    ```
+   This runs: QA writes tests → Dev implements → QA verifies → Staff Eng reviews
 
-3. **Consult peers** - ICs can consult with each other:
+3. **Leadership reviews**:
    ```
-   Developer consults QA for testing guidance
-   Designer consults Developer for implementation feasibility
+   /mg-leadership-team Review workstream WS-1 on branch feature/ws-1-login
+   ```
+   Output: APPROVED or REQUEST CHANGES
+
+4. **Merge** (after approval):
+   ```
+   /deployment-engineer Merge feature/ws-1-login
    ```
 
 ### Passing Arguments
 
-All agents accept arguments after the slash command:
+All skills and agents accept arguments after the slash command:
 
 ```
+/mg-build Execute workstream WS-1
+/mg-code-review Review PR-123
 /engineering-manager Assign the authentication epic to the team
-/qa Test the login flow for edge cases
-/design Create mockups for the dashboard redesign
 ```
 
 ---
@@ -179,19 +177,19 @@ The system uses a **TDD/BDD cyclical workflow** with Git workstreams. See `.clau
 
 ```
 ┌─────────────────┐
-│ /leadership-    │  ← Executive Review + Workstream Plan
+│ /mg-leadership- │  ← Executive Review + Workstream Plan
 │     team        │
 └────────┬────────┘
          │
          ▼
 ┌─────────────────┐
-│ /engineering-   │  ← TDD Cycle: Tests → Code → Verify → Review
-│     team        │
+│ /mg-build       │  ← TDD Cycle: Tests → Code → Verify → Review
+│                 │
 └────────┬────────┘
          │
          ▼
 ┌─────────────────┐
-│ /leadership-    │  ← Code Review: APPROVE or REQUEST CHANGES
+│ /mg-leadership- │  ← Code Review: APPROVE or REQUEST CHANGES
 │     team        │
 └────────┬────────┘
          │
@@ -202,7 +200,7 @@ The system uses a **TDD/BDD cyclical workflow** with Git workstreams. See `.clau
 │APPROVE│  │REQUEST CHANGES│
 └───┬───┘  └──────┬───────┘
     │             │
-    ▼             │ (back to engineering-team)
+    ▼             │ (back to mg-build)
 ┌─────────────────┐
 │ /deployment-    │  ← Merge to main
 │   engineer      │
@@ -213,25 +211,25 @@ The system uses a **TDD/BDD cyclical workflow** with Git workstreams. See `.clau
 
 1. **Plan the work:**
    ```
-   /leadership-team Build a user authentication system
+   /mg-leadership-team Build a user authentication system
    ```
    Output: Executive Review + Workstreams (WS-1, WS-2, etc.)
 
 2. **Execute a workstream:**
    ```
-   /engineering-team execute workstream WS-1: Add login endpoint
+   /mg-build Execute workstream WS-1: Add login endpoint
    ```
    This runs: QA writes tests → Dev implements → QA verifies → Staff Eng reviews
 
 3. **Leadership reviews:**
    ```
-   /leadership-team review workstream WS-1 on branch feature/ws-1-login
+   /mg-leadership-team Review workstream WS-1 on branch feature/ws-1-login
    ```
    Output: APPROVED or REQUEST CHANGES
 
 4. **Merge (after approval):**
    ```
-   /deployment-engineer merge feature/ws-1-login
+   /deployment-engineer Merge feature/ws-1-login
    ```
 
 ---
@@ -263,21 +261,41 @@ The system uses a **TDD/BDD cyclical workflow** with Git workstreams. See `.clau
 | **Senior Fullstack Engineer** | `/dev` | sonnet | Implements with TDD, DRY, config-over-composition, 99% coverage | QA, Design |
 | **QA Engineer** | `/qa` | sonnet | TDD/BDD tests, Playwright E2E, visual regression screenshots | Dev, Design |
 | **UI/UX Designer** | `/design` | sonnet | Creates wireframes, mockups, and interaction designs | Dev, QA |
+| **Technical Writer** | `/technical-writer` | sonnet | User guides, tutorials, and end-user documentation | Dev, QA |
+| **Docs Writer** | `/docs-writer` | sonnet | Technical documentation and API references | Dev, QA |
+| **DevOps Engineer** | `/devops` | sonnet | Infrastructure automation and deployment pipelines | Dev, Security |
+| **Security Engineer** | `/security-engineer` | sonnet | Security audits, vulnerability scanning, threat modeling | Dev, DevOps |
+| **Data Engineer** | `/data-engineer` | sonnet | Data pipelines, analytics infrastructure, ETL workflows | Dev, QA |
 
 ### Operations Level
 
 | Agent | Slash Command | Model | Role |
 |-------|---------------|-------|------|
 | **Deployment Engineer** | `/deployment-engineer` | sonnet | Handles merges and releases after leadership approval |
+| **Supervisor** | `/supervisor` | haiku | Monitors depth limits, detects loops, triggers escalations |
 
-### Composite Teams
+### Available Skills (16 Total)
 
-| Team | Slash Command | Model | Members | Purpose |
-|------|---------------|-------|---------|---------|
-| **Leadership Team** | `/leadership-team` | opus | CEO, CTO, Engineering Director | Strategic decisions, executive reviews, code review approvals |
-| **Product Team** | `/product-team` | sonnet | Product Owner, Product Manager, Designer | Product definition, requirements, UX specifications |
-| **Engineering Team** | `/engineering-team` | sonnet | Engineering Manager, Staff Engineer, Dev, QA | TDD/BDD development cycle with 99% coverage |
-| **Design Team** | `/design-team` | sonnet | Art Director, Designer | UI/UX design with visual regression and `/frontend-design` |
+All skills use the `mg-` prefix for consistency:
+
+| Skill | Slash Command | Purpose |
+|-------|---------------|---------|
+| **Accessibility Review** | `/mg-accessibility-review` | WCAG compliance and inclusive design workflow |
+| **Add Context** | `/mg-add-context` | Cross-project context references |
+| **Assess** | `/mg-assess` | Product assessment and discovery |
+| **Assess Tech** | `/mg-assess-tech` | Technical feasibility analysis |
+| **Build** | `/mg-build` | TDD/BDD development cycle from tests to production |
+| **Code Review** | `/mg-code-review` | Implementation quality review workflow |
+| **Debug** | `/mg-debug` | Structured debugging workflow |
+| **Design** | `/mg-design` | Visual design and frontend implementation |
+| **Design Review** | `/mg-design-review` | Visual quality and UX assessment workflow |
+| **Document** | `/mg-document` | Documentation generation and review |
+| **Init** | `/mg-init` | Project initialization for agent collaboration |
+| **Leadership Team** | `/mg-leadership-team` | Executive collaboration and strategic decisions |
+| **Refactor** | `/mg-refactor` | TDD-safe refactoring workflow |
+| **Security Review** | `/mg-security-review` | Security audits and vulnerability assessments |
+| **Spec** | `/mg-spec` | Product definition and requirements |
+| **Write** | `/mg-write` | Brand-aligned copywriting workflow |
 
 ### Tool Access by Agent
 
@@ -636,10 +654,7 @@ handoff_response:
 
 | Version | Date | Changes |
 |---------|------|---------|
-| 1.3.0 | 2026-02-04 | Added design-team, upgraded dev to Senior Fullstack Engineer, QA with Playwright visual regression, engineering principles (TDD, DRY, config-over-composition, 99% coverage) |
-| 1.2.0 | 2026-02-04 | Added TDD/BDD workflow, Git workstreams, deployment-engineer, updated QA/dev agents |
-| 1.1.0 | 2026-02-04 | Added composite team skills (leadership-team, product-team, engineering-team) |
-| 1.0.0 | 2026-02-04 | Initial documentation |
+| 1.0.0 | 2026-02-10 | **Project-Local Architecture** - Each project has own `.claude/` directory. 19 agents, 16 mg-prefixed skills. Complete data isolation. TDD/BDD workflow with Git workstreams. 99% coverage requirement. |
 
 ---
 

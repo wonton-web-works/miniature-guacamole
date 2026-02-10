@@ -167,7 +167,7 @@ The installer creates a `.claude/` directory in your project with:
 - **agents/** - 19 specialized agent roles
 - **skills/** - 16 team collaboration workflows
 - **shared/** - 6 protocol documents
-- **scripts/** - 10 mg-* utility commands
+- **scripts/** - 11 mg-* utility commands
 - **hooks/** - Project initialization and safety checks
 - **memory/** - Agent memory directory (gitignored)
 - **settings.json** - Project-level permissions
@@ -338,7 +338,7 @@ See [docs/audit-logging.md](docs/audit-logging.md) for full documentation, confi
 
 ## Architecture
 
-### v3.x: Project-Local Architecture
+### Project-Local Architecture
 
 Each project has its own `.claude/` directory:
 
@@ -368,7 +368,7 @@ your-project/
     │   ├── tdd-workflow.md
     │   └── visual-formatting.md
     │
-    ├── scripts/                     # 9 mg-* utilities
+    ├── scripts/                     # 11 mg-* utilities
     │   ├── mg-memory-read
     │   ├── mg-memory-write
     │   ├── mg-workstream-status
@@ -430,7 +430,7 @@ miniature-guacamole/
 │   │   ├── skills/         # 16 skill definitions
 │   │   ├── shared/         # 6 protocol docs
 │   │   ├── hooks/          # Hook scripts
-│   │   ├── scripts/        # 10 mg-* utilities
+│   │   ├── scripts/        # 11 mg-* utilities
 │   │   ├── settings.json
 │   │   ├── CLAUDE.md
 │   │   └── team-config.*
@@ -609,7 +609,7 @@ See [src/memory/README.md](src/memory/README.md) for full documentation.
 │APPROVE│  │REQUEST CHANGES│
 └───┬───┘  └──────┬───────┘
     │             │
-    ▼             │ (back to engineering-team)
+    ▼             │ (back to mg-build)
 ┌─────────────────┐
 │ /deployment-    │  ← Merge to main
 │   engineer      │
@@ -752,23 +752,23 @@ Test Files  2 passed (2)
 - **Unit Tests** (18 tests) - Memory layer functions
 - **Integration Tests** (31 tests) - Cross-agent communication
 - **E2E Tests** (Playwright) - Workflow automation
-- **Project-Local Tests** (60+ tests) - v3.x installation and migration
+- **Project-Local Tests** (60+ tests) - v1.0.0 installation and migration
 
 See [tests/README.md](tests/README.md) for detailed testing documentation.
 
 ---
 
-## Migration from v1.x
+## Migration from Legacy Global Installation
 
-### What Changed in v3.x
+### What Changed in v1.0.0
 
-**v1.x (Global Installation)**
+**Legacy (Global Installation)**
 - Agents, skills, protocols installed to `~/.claude/`
 - Shared between all projects
 - Global settings.json affected all projects
 - Single framework version system-wide
 
-**v3.x (Project-Local Installation)**
+**v1.0.0 (Project-Local Installation)**
 - Each project has its own `.claude/` directory
 - Complete data isolation
 - Per-project settings.json
@@ -776,7 +776,7 @@ See [tests/README.md](tests/README.md) for detailed testing documentation.
 
 ### Migration Steps
 
-1. **Backup your v1.x installation**
+1. **Backup your legacy installation**
    ```bash
    cp -r ~/.claude ~/.claude-v1-backup
    ```
@@ -812,10 +812,10 @@ See [tests/README.md](tests/README.md) for detailed testing documentation.
 
 ### Coexistence Mode
 
-You can run both v1.x and v3.x installations simultaneously:
+You can run both legacy and v1.0.0 installations simultaneously:
 
-- **v1.x projects**: Continue using global `~/.claude/`
-- **v3.x projects**: Use project-local `.claude/`
+- **Legacy projects**: Continue using global `~/.claude/`
+- **v1.0.0 projects**: Use project-local `.claude/`
 
 The migration tool's `--no-cleanup` flag preserves the global installation:
 
@@ -888,22 +888,16 @@ MIT
 
 ## Changelog
 
-| Version | Date | Changes |
-|---------|------|---------|
-| 3.0.0 | 2026-02-09 | **Project-Local Architecture** - Each project has own `.claude/` directory. Config cache at `~/.claude/.mg-configs/`. Migration tool `mg-migrate` for v1.x users. New install methods: local, web, config cache. Script utilities in `.claude/scripts/`. Complete data isolation. |
-| 1.3.0 | 2026-02-04 | Added design-team, docs-team, 7 workflow skills, shared memory layer (99% coverage), supervisor system |
-| 1.2.0 | 2026-02-04 | Added TDD/BDD workflow, Git workstreams, deployment-engineer |
-| 1.1.0 | 2026-02-04 | Added composite team skills (leadership-team, product-team, engineering-team) |
-| 1.0.0 | 2026-02-04 | Initial release with 11 agents and delegation system |
+**Version 1.0.0** (2026-02-10)
 
-### v3.0.0 Breaking Changes
+**Project-Local Architecture** - Each project has own `.claude/` directory with:
+- 19 specialized agents
+- 16 mg-prefixed skills
+- 11 utility scripts
+- Complete data isolation
+- TDD/BDD workflow with Git workstreams
 
-- **Global installation no longer supported** - Use `mg-migrate` to convert existing v1.x installations
-- **~/.claude/ is now config cache only** - Projects use `.claude/` in their own directory
-- **/init-project skill removed** - Replaced by `install.sh` and `mg-init` utilities
-- **Script invocation changed** - Scripts now in `.claude/scripts/` instead of `~/.claude/scripts/`
-
-See [Migration from v1.x](#migration-from-v1x) for upgrade guide.
+See [CHANGELOG.md](CHANGELOG.md) for complete version history.
 
 ---
 

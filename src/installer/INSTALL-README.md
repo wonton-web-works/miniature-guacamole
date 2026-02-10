@@ -54,14 +54,14 @@ cd /path/to/your/project
 Download and install from GitHub releases:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/USER/REPO/main/web-install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/RivermarkResearch/miniature-guacamole/main/web-install.sh | bash
 ```
 
 Or with options:
 
 ```bash
 # Download the script first
-curl -fsSL https://raw.githubusercontent.com/USER/REPO/main/web-install.sh -o mg-web-install.sh
+curl -fsSL https://raw.githubusercontent.com/RivermarkResearch/miniature-guacamole/main/web-install.sh -o mg-web-install.sh
 chmod +x mg-web-install.sh
 
 # Install with options
@@ -93,7 +93,7 @@ The installer creates the following structure in `.claude/`:
 
 ```
 .claude/
-├── agents/           # 18 specialized agent roles
+├── agents/           # 19 specialized agent roles
 ├── skills/           # Team collaboration skills
 ├── shared/           # Development protocols
 ├── scripts/          # mg-* utility commands
@@ -180,9 +180,9 @@ Example output:
   "source_path": "/path/to/dist/miniature-guacamole",
   "install_method": "install.sh",
   "components": {
-    "agents": 18,
-    "skills": 14,
-    "scripts": 10,
+    "agents": 19,
+    "skills": 16,
+    "scripts": 11,
     "shared": 6,
     "hooks": 1
   }
@@ -350,7 +350,7 @@ After installation:
 - **Documentation:** See `.claude/shared/` for protocol documents
 - **Agent Definitions:** See `.claude/agents/{agent-name}/agent.md`
 - **Skill Definitions:** See `.claude/skills/{skill-name}/skill.md`
-- **GitHub:** https://github.com/USER/REPO (update with actual URL)
+- **GitHub:** https://github.com/RivermarkResearch/miniature-guacamole
 
 ## License
 

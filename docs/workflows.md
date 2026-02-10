@@ -8,19 +8,19 @@ The system follows a disciplined test-driven development (TDD) and behavior-driv
 
 ```
 ┌─────────────────┐
-│ /leadership-    │  ← Executive Review + Workstream Plan
+│ /mg-leadership- │  ← Executive Review + Workstream Plan
 │     team        │
 └────────┬────────┘
          │
          ▼
 ┌─────────────────┐
-│ /engineering-   │  ← TDD Cycle: Tests → Code → Verify → Review
-│     team        │
+│ /mg-build       │  ← TDD Cycle: Tests → Code → Verify → Review
+│                 │
 └────────┬────────┘
          │
          ▼
 ┌─────────────────┐
-│ /leadership-    │  ← Code Review: APPROVE or REQUEST CHANGES
+│ /mg-leadership- │  ← Code Review: APPROVE or REQUEST CHANGES
 │     team        │
 └────────┬────────┘
          │
@@ -31,7 +31,7 @@ The system follows a disciplined test-driven development (TDD) and behavior-driv
 │APPROVE│  │REQUEST CHANGES│
 └───┬───┘  └──────┬───────┘
     │             │
-    ▼             │ (back to engineering-team)
+    ▼             │ (back to mg-build)
 ┌─────────────────┐
 │ /deployment-    │  ← Merge to main
 │   engineer      │
@@ -150,7 +150,7 @@ A workstream is a discrete unit of work that can be completed independently:
 Use the leadership team to break down initiatives into workstreams:
 
 ```
-/leadership-team Build user authentication system
+/mg-leadership-team Build user authentication system
 
 # Output: Executive Review + Workstream Plan
 # - WS-1: Login endpoint
@@ -161,10 +161,10 @@ Use the leadership team to break down initiatives into workstreams:
 
 ### Executing Workstreams
 
-Use the engineering team to execute a workstream:
+Use the build skill to execute a workstream:
 
 ```
-/engineering-team Execute WS-1: Login endpoint
+/mg-build Execute WS-1: Login endpoint
 
 # Runs the full 4-step cycle:
 # 1. PM + QA write tests
@@ -212,7 +212,7 @@ The system provides 16 workflow skills for common development tasks.
 
 ### 1. Feature Assessment
 
-**Command:** `/feature-assessment`
+**Command:** `/mg-assess`
 
 **Purpose:** Interactive feature evaluation with product and technical perspectives
 
@@ -225,7 +225,7 @@ The system provides 16 workflow skills for common development tasks.
 
 **Example:**
 ```
-/feature-assessment Add two-factor authentication
+/mg-assess Add two-factor authentication
 
 # Agent asks:
 # - What problem does this solve?
@@ -240,7 +240,7 @@ The system provides 16 workflow skills for common development tasks.
 
 ### 2. Technical Assessment
 
-**Command:** `/technical-assessment`
+**Command:** `/mg-assess-tech`
 
 **Purpose:** Architecture planning and technical feasibility analysis
 
@@ -252,7 +252,7 @@ The system provides 16 workflow skills for common development tasks.
 
 **Example:**
 ```
-/technical-assessment Real-time chat feature
+/mg-assess-tech Real-time chat feature
 
 # Output:
 # - Architecture recommendation
@@ -263,7 +263,7 @@ The system provides 16 workflow skills for common development tasks.
 
 ### 3. Security Review
 
-**Command:** `/security-review`
+**Command:** `/mg-security-review`
 
 **Purpose:** OWASP Top 10, authentication, data protection checks
 
@@ -275,7 +275,7 @@ The system provides 16 workflow skills for common development tasks.
 
 **Example:**
 ```
-/security-review src/auth/
+/mg-security-review src/auth/
 
 # Output:
 # - OWASP compliance report
@@ -286,7 +286,7 @@ The system provides 16 workflow skills for common development tasks.
 
 ### 4. Accessibility Review
 
-**Command:** `/accessibility-review`
+**Command:** `/mg-accessibility-review`
 
 **Purpose:** WCAG 2.1 AA compliance verification
 
@@ -298,7 +298,7 @@ The system provides 16 workflow skills for common development tasks.
 
 **Example:**
 ```
-/accessibility-review src/components/LoginForm
+/mg-accessibility-review src/components/LoginForm
 
 # Output:
 # - WCAG compliance status
@@ -309,7 +309,7 @@ The system provides 16 workflow skills for common development tasks.
 
 ### 5. Design Review
 
-**Command:** `/design-review`
+**Command:** `/mg-design-review`
 
 **Purpose:** UI/UX evaluation and design system compliance
 
@@ -321,7 +321,7 @@ The system provides 16 workflow skills for common development tasks.
 
 **Example:**
 ```
-/design-review designs/checkout-flow.figma
+/mg-design-review designs/checkout-flow.figma
 
 # Output:
 # - Design system compliance
@@ -332,7 +332,7 @@ The system provides 16 workflow skills for common development tasks.
 
 ### 6. Code Review
 
-**Command:** `/code-review`
+**Command:** `/mg-code-review`
 
 **Purpose:** Technical quality, security, and standards verification
 
@@ -344,7 +344,7 @@ The system provides 16 workflow skills for common development tasks.
 
 **Example:**
 ```
-/code-review src/features/auth/
+/mg-code-review src/features/auth/
 
 # Output:
 # - Code quality score
@@ -353,9 +353,9 @@ The system provides 16 workflow skills for common development tasks.
 # - Standards compliance
 ```
 
-### 7. Implementation
+### 7. Build (Implementation)
 
-**Command:** `/implement`
+**Command:** `/mg-build`
 
 **Purpose:** Execute full TDD cycle from tests to production-ready code
 
@@ -367,7 +367,7 @@ The system provides 16 workflow skills for common development tasks.
 
 **Example:**
 ```
-/implement Add user registration endpoint
+/mg-build Add user registration endpoint
 
 # Runs full cycle:
 # - Tests written
@@ -379,48 +379,48 @@ The system provides 16 workflow skills for common development tasks.
 
 ### 8. Leadership Team
 
-**Command:** `/leadership-team`
+**Command:** `/mg-leadership-team`
 **Purpose:** Strategic decisions, executive reviews, code review approvals
 
-### 9. Engineering Team
+### 9. Product Team
 
-**Command:** `/engineering-team`
-**Purpose:** Coordinated TDD/BDD development cycle
-
-### 10. Product Team
-
-**Command:** `/product-team`
+**Command:** `/mg-spec`
 **Purpose:** Product definition, user stories, design specs
 
-### 11. Design Team
+### 10. Design Team
 
-**Command:** `/design-team`
+**Command:** `/mg-design`
 **Purpose:** UI/UX design with visual regression review
 
-### 12. Docs Team
+### 11. Docs Team
 
-**Command:** `/docs-team`
+**Command:** `/mg-document`
 **Purpose:** Documentation and API spec generation
 
-### 13. Content Team
+### 12. Content Team
 
-**Command:** `/content-team`
+**Command:** `/mg-write`
 **Purpose:** Brand-aligned copywriting for marketing and user-facing content
 
-### 14. Init Project
+### 13. Init Project
 
-**Command:** `/init-project`
+**Command:** `/mg-init`
 **Purpose:** Initialize project memory structure and context files
 
-### 15. Add Project Context
+### 14. Add Project Context
 
-**Command:** `/add-project-context`
+**Command:** `/mg-add-context`
 **Purpose:** Add project-specific context to CLAUDE.md
 
-### 16. Frontend Design
+### 15. Debug
 
-**Command:** `/frontend-design`
-**Purpose:** Create distinctive, production-grade frontend interfaces
+**Command:** `/mg-debug`
+**Purpose:** Root cause analysis and systematic debugging
+
+### 16. Refactor
+
+**Command:** `/mg-refactor`
+**Purpose:** Systematic code refactoring with quality improvements
 
 ## Git Branching Strategy
 
@@ -464,7 +464,7 @@ Let's walk through a complete workflow from feature idea to production.
 ### 1. Assess the Feature
 
 ```
-User: /feature-assessment Add user authentication
+User: /mg-assess Add user authentication
 
 Feature Assessment Agent:
 - Asks clarifying questions
@@ -475,7 +475,7 @@ Feature Assessment Agent:
 ### 2. Plan the Work
 
 ```
-User: /leadership-team Build user authentication
+User: /mg-leadership-team Build user authentication
 
 Leadership Team:
 Executive Review:
@@ -493,9 +493,9 @@ Workstream Plan:
 ### 3. Execute First Workstream
 
 ```
-User: /implement WS-1: Login endpoint
+User: /mg-build WS-1: Login endpoint
 
-Implementation Skill:
+Build Skill:
 Step 1: QA writes tests
 - POST /api/login endpoint
 - Validates email/password
@@ -524,7 +524,7 @@ Ready for leadership review!
 ### 4. Leadership Review
 
 ```
-User: /leadership-team Review WS-1 on branch feature/ws-1-login
+User: /mg-leadership-team Review WS-1 on branch feature/ws-1-login
 
 Leadership Team:
 CEO Review:
@@ -565,7 +565,7 @@ Continue with WS-2, WS-3, and WS-4 using the same process.
 
 ## Role Responsibilities in Workflow
 
-### /leadership-team
+### /mg-leadership-team
 **When:** Start of initiative, Code review before merge
 **Does:**
 - Creates Executive Review (CEO, CTO, Eng Dir perspectives)
@@ -573,7 +573,7 @@ Continue with WS-2, WS-3, and WS-4 using the same process.
 - Conducts final code review before merge
 - APPROVES or REQUESTS CHANGES
 
-### /engineering-team
+### /mg-build
 **When:** Executing a workstream
 **Does:**
 - Coordinates PM, QA, Dev, Staff Eng

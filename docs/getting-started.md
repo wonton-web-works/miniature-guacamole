@@ -92,7 +92,7 @@ ls .claude/skills/
 ### Example 1: Assess a New Feature
 
 ```
-/feature-assessment Add user authentication system
+/mg-assess Add user authentication system
 ```
 
 The feature assessment skill will:
@@ -105,7 +105,7 @@ The feature assessment skill will:
 ### Example 2: Execute a Workstream
 
 ```
-/leadership-team Build a user authentication system
+/mg-leadership-team Build a user authentication system
 ```
 
 Leadership team creates executive review and workstream plan:
@@ -116,7 +116,7 @@ Leadership team creates executive review and workstream plan:
 Then execute the first workstream:
 
 ```
-/engineering-team Execute WS-1: Add login endpoint
+/mg-build Execute WS-1: Add login endpoint
 ```
 
 This runs the full TDD cycle:
@@ -130,7 +130,7 @@ This runs the full TDD cycle:
 After implementation, request leadership review:
 
 ```
-/leadership-team Review WS-1 on branch feature/ws-1-login
+/mg-leadership-team Review WS-1 on branch feature/ws-1-login
 ```
 
 Leadership team (CEO, CTO, Engineering Director) reviews and provides:
@@ -173,19 +173,19 @@ Use team commands for coordinated multi-perspective collaboration:
 
 ```bash
 # Leadership perspective
-/leadership-team Evaluate build vs buy for payment processing
+/mg-leadership-team Evaluate build vs buy for payment processing
 
 # Product perspective
-/product-team Define requirements for user onboarding flow
+/mg-spec Define requirements for user onboarding flow
 
 # Engineering perspective
-/engineering-team Break down and implement authentication feature
+/mg-build Break down and implement authentication feature
 
 # Design perspective
-/design-team Create design system for the new dashboard
+/mg-design Create design system for the new dashboard
 
 # Documentation perspective
-/docs-team Document the API endpoints and write user guides
+/mg-document Document the API endpoints and write user guides
 ```
 
 ## Next Steps

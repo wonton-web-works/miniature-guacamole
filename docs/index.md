@@ -41,19 +41,19 @@ features:
 
 ### Assess Features
 ```
-/feature-assessment Add two-factor authentication
+/mg-assess Add two-factor authentication
 ```
 Interactive evaluation with product and technical perspectives, spawns expert agents to provide GO/NO-GO recommendations.
 
 ### Execute Workstreams
 ```
-/engineering-team Execute WS-1: Add login endpoint
+/mg-build Execute WS-1: Add login endpoint
 ```
 Runs full TDD cycle: QA writes tests → Dev implements → QA verifies → Staff Engineer reviews.
 
 ### Review and Deploy
 ```
-/leadership-team Review WS-1 on branch feature/ws-1-login
+/mg-leadership-team Review WS-1 on branch feature/ws-1-login
 /deployment-engineer Merge feature/ws-1-login
 ```
 Executive approval gates ensure quality before production deployment.

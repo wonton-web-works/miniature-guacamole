@@ -28,7 +28,7 @@
 
 ### Go Live
 - [ ] Set repository visibility to Public
-- [ ] Create GitHub release v1.3.0
+- [ ] Create GitHub release v1.0.0
 - [ ] Verify docs site deploys: https://RivermarkResearch.github.io/miniature-guacamole/
 - [ ] Update repository description on GitHub
 

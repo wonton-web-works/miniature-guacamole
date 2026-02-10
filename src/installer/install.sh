@@ -256,6 +256,7 @@ log_info "Configuring settings.json..."
 
 SETTINGS_FILE="$CLAUDE_TARGET_DIR/settings.json"
 SOURCE_SETTINGS="$CLAUDE_SOURCE_DIR/settings.json"
+export SETTINGS_FILE SOURCE_SETTINGS
 
 if [[ -f "$SETTINGS_FILE" ]]; then
     # Backup existing settings

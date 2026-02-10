@@ -33,7 +33,6 @@ const ALL_SKILLS = [
   'design-review',
   'code-review',
   'implement',
-  'agent-loading-test'
 ] as const;
 
 const SKILLS_DIR = path.resolve(__dirname, '../../.claude/skills');

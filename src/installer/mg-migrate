@@ -83,7 +83,7 @@ MG_AGENTS=(
 )
 
 MG_SKILLS=(
-    "accessibility-review" "add-project-context" "agent-loading-test"
+    "accessibility-review" "add-project-context"
     "code-review" "content-team" "design-review" "design-team"
     "docs-team" "engineering-team" "feature-assessment" "implement"
     "init-project" "leadership-team" "product-team" "security-review"

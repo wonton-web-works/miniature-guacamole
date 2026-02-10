@@ -56,3 +56,5 @@ docs/.vitepress/dist/
 .claude/agent-memory-local/
 .claude/README.md
 .claude/vitest.config.ts
+
+**/*brodie*

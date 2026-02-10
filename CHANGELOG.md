@@ -9,10 +9,11 @@ Versioning follows [Semantic Versioning](https://semver.org/): MAJOR.MINOR.PATCH
 
 ---
 
-## [4.0.0] - 2026-02-10 — Action-Based Skills
+## [1.0.0] - 2026-02-10 — Initial Release
 
-All skills renamed with `mg-` prefix for brand coherence and action-oriented UX.
-Hard cutover — old skill names removed, no backwards compatibility aliases.
+The first public release of miniature-guacamole. Action-based skill system with
+`mg-` prefix, 16 skills, 19 agents, project-local architecture, and mechanical
+quality gates.
 
 ### Added
 - **mg-debug skill** — Structured debugging workflow (Reproduce → Investigate → Fix → Verify)
@@ -57,7 +58,15 @@ Hard cutover — old skill names removed, no backwards compatibility aliases.
 
 ---
 
-## [3.1.0] - 2026-02-09 — Unified Installation
+## Pre-Release History
+
+The following versions were used internally during development. They are
+documented here for historical reference and are not part of the public
+release series.
+
+---
+
+## [3.1.0-pre] - 2026-02-09 — Unified Installation
 
 Introduces `mg-util`, the unified command-line interface for managing
 miniature-guacamole installations across projects.
@@ -89,7 +98,7 @@ miniature-guacamole installations across projects.
 
 ---
 
-## [3.0.0] - 2026-02-09 — Production Architecture
+## [3.0.0-pre] - 2026-02-09 — Production Architecture
 
 The framework graduates from a monolithic `.claude/` directory to a proper
 source-build-install pipeline with CI/CD, mechanical quality gates, and
@@ -130,7 +139,7 @@ permission hygiene tooling.
 
 ---
 
-## [2.0.0] - 2026-02-08 — Operations Infrastructure
+## [2.0.0-pre] - 2026-02-08 — Operations Infrastructure
 
 The framework becomes self-distributing and self-monitoring. Script utilities
 replace fragile inline JSON manipulation, installation becomes automated,
@@ -162,7 +171,7 @@ and cost tracking gets cross-project aggregation.
 
 ---
 
-## [1.5.0] - 2026-02-07/08 — Teams & Dashboard
+## [1.5.0-pre] - 2026-02-07/08 — Teams & Dashboard
 
 Agent Teams support enables multi-agent collaboration within Claude Code's
 native team infrastructure. The React dashboard reaches feature-complete
@@ -190,7 +199,7 @@ with real-time integration.
 
 ---
 
-## [1.4.0] - 2026-02-06 — Open Source Readiness
+## [1.4.0-pre] - 2026-02-06 — Open Source Readiness
 
 Repository sanitized and documented for public release. Governance model
 established, CI/CD pipeline added, and launch readiness validated.
@@ -211,7 +220,7 @@ established, CI/CD pipeline added, and launch readiness validated.
 
 ---
 
-## [1.3.0] - 2026-02-05 — Observability & Optimization
+## [1.3.0-pre] - 2026-02-05 — Observability & Optimization
 
 Memory management hardened, model usage optimized with Sonnet+escalation,
 per-workstream cost tracking added, and the dashboard foundation laid.
@@ -241,7 +250,7 @@ per-workstream cost tracking added, and the dashboard foundation laid.
 
 ---
 
-## [1.2.0] - 2026-02-04 (evening) — Visual Generation
+## [1.2.0-pre] - 2026-02-04 (evening) — Visual Generation
 
 Visual artifact pipeline from generation through art director approval
 to Git LFS storage. Comprehensive audit logging documented.
@@ -269,7 +278,7 @@ to Git LFS storage. Comprehensive audit logging documented.
 
 ---
 
-## [1.1.0] - 2026-02-04 (afternoon) — Skills & Visual Standards
+## [1.1.0-pre] - 2026-02-04 (afternoon) — Skills & Visual Standards
 
 The framework expands from 5 to 13 skills, gains visual output standards,
 and adds token usage auditing.
@@ -296,7 +305,7 @@ and adds token usage auditing.
 
 ---
 
-## [1.0.0] - 2026-02-04 (morning) — Genesis
+## [1.0.0-pre] - 2026-02-04 (morning) — Genesis
 
 The initial release of miniature-guacamole. A product development team
 simulation with 18 specialized agents, shared memory, and structured
@@ -340,13 +349,18 @@ communication protocols.
 
 | Version | Date       | Codename               | Key Milestone                              |
 |---------|------------|------------------------|--------------------------------------------|
-| 1.0.0   | 2026-02-04 | Genesis                | 18 agents, shared memory, 6 skills         |
-| 1.1.0   | 2026-02-04 | Skills & Visual        | +7 skills (13 total), visual standards      |
-| 1.2.0   | 2026-02-04 | Visual Generation      | Puppeteer engine, art director workflow     |
-| 1.3.0   | 2026-02-05 | Observability          | Memory hygiene, model optimization, dashboard|
-| 1.4.0   | 2026-02-06 | Open Source Ready      | OSS prep, copywriter agent, CI/CD          |
-| 1.5.0   | 2026-02-07 | Teams & Dashboard      | Agent teams, full dashboard, daemon system  |
-| 2.0.0   | 2026-02-08 | Operations             | 9 mg-* scripts, global distribution, cost tracking |
-| 3.0.0   | 2026-02-09 | Production Architecture| src/build/install pipeline, CAD, permission hygiene |
-| 3.1.0   | 2026-02-09 | Unified Installation   | mg-util command, init/audit shipped, 284 tests      |
-| 4.0.0   | 2026-02-10 | Action-Based Skills    | 16 mg-prefixed skills, mg-build merge, mg-debug/refactor |
+| **1.0.0** | **2026-02-10** | **Initial Release** | **16 mg-prefixed skills, 19 agents, project-local architecture** |
+
+### Pre-Release Versions
+
+| Version | Date       | Codename               | Key Milestone                              |
+|---------|------------|------------------------|--------------------------------------------|
+| 1.0.0-pre | 2026-02-04 | Genesis              | 18 agents, shared memory, 6 skills         |
+| 1.1.0-pre | 2026-02-04 | Skills & Visual      | +7 skills (13 total), visual standards      |
+| 1.2.0-pre | 2026-02-04 | Visual Generation    | Puppeteer engine, art director workflow     |
+| 1.3.0-pre | 2026-02-05 | Observability        | Memory hygiene, model optimization, dashboard|
+| 1.4.0-pre | 2026-02-06 | Open Source Ready    | OSS prep, copywriter agent, CI/CD          |
+| 1.5.0-pre | 2026-02-07 | Teams & Dashboard    | Agent teams, full dashboard, daemon system  |
+| 2.0.0-pre | 2026-02-08 | Operations           | 9 mg-* scripts, global distribution, cost tracking |
+| 3.0.0-pre | 2026-02-09 | Production Architecture| src/build/install pipeline, CAD, permission hygiene |
+| 3.1.0-pre | 2026-02-09 | Unified Installation | mg-util command, init/audit shipped, 284 tests      |

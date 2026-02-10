@@ -2,13 +2,13 @@
 
 > A complete AI-powered product development organization for Claude Code with workflow automation, specialized agents, and project-local architecture.
 
-**Version:** 4.0.0
+**Version:** 1.0.0
 **Status:** Production Ready
 **License:** MIT
 
 ---
 
-## What's New in v4.0.0
+## What's New in v1.0.0
 
 **Action-Based Skill System** (February 2026):
 - All 16 skills renamed with `mg-` prefix for brand coherence
@@ -17,7 +17,7 @@
 - Hard cutover — old skill names no longer work
 - Spawn cap of 6 agents enforced on all skills
 
-**Breaking Changes from v3.x**:
+**Breaking Changes from pre-release**:
 - All skill names changed (e.g. `/leadership-team` → `/mg-leadership-team`, `/code-review` → `/mg-code-review`)
 - `/engineering-team` and `/implement` removed, replaced by `/mg-build`
 - No backwards compatibility aliases — update all references

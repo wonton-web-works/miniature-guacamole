@@ -6,7 +6,7 @@ Detailed reference for the shared memory system. Agents should use the compact Y
 
 | Pattern | Purpose | Written By |
 |---------|---------|------------|
-| `workstream-{id}-state.json` | Phase, progress, blockers | engineering-team |
+| `workstream-{id}-state.json` | Phase, progress, blockers | mg-build |
 | `agent-{name}-decisions.json` | Agent outputs and decisions | Each agent |
 | `tasks-{agent_id}.json` | Task queue for agent | Orchestrators |
 | `escalations.json` | Issues needing attention | Any agent |
@@ -60,7 +60,7 @@ const requirements = leadership.data?.acceptance_criteria;
 ```typescript
 // Document when moving between phases
 await writeMemory({
-  agent_id: 'engineering-team',
+  agent_id: 'mg-build',
   workstream_id: 'ws-1',
   data: {
     phase_transition: 'test_spec -> implementation',

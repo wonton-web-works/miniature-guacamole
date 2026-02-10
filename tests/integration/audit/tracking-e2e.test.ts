@@ -49,13 +49,13 @@ describe('Integration: Audit Tracking End-to-End', () => {
   });
 
   describe('TRACK-BDD-1: Full audit entry with workstream tagging', () => {
-    it('Given WS-18 workstream with code-review agent, When audit entry created, Then all fields present', () => {
+    it('Given WS-18 workstream with mg-code-review agent, When audit entry created, Then all fields present', () => {
       // Setup: .clauderc with tracking config
       const projectConfig = {
         tracking: {
           enabled: true,
           workstream_id: 'WS-18',
-          agent_name: 'code-review',
+          agent_name: 'mg-code-review',
           feature_name: 'dark-mode',
         }
       };
@@ -100,7 +100,7 @@ describe('Integration: Audit Tracking End-to-End', () => {
       // Verify all fields
       expect(taggedEntry.schema_version).toBe('1.0');
       expect(taggedEntry.workstream_id).toBe('WS-18');
-      expect(taggedEntry.agent_name).toBe('code-review');
+      expect(taggedEntry.agent_name).toBe('mg-code-review');
       expect(taggedEntry.feature_name).toBe('dark-mode');
       expect(taggedEntry.model).toBe('claude-opus-4-5-20251101');
       expect(taggedEntry.input_tokens).toBe(1234);
@@ -222,7 +222,7 @@ describe('Integration: Audit Tracking End-to-End', () => {
       const tracking_ws18 = createTrackingFields({
         schema_version: '1.0',
         workstream_id: 'WS-18',
-        agent_name: 'code-review',
+        agent_name: 'mg-code-review',
       });
 
       const tracking_none = createTrackingFields({
@@ -253,7 +253,7 @@ describe('Integration: Audit Tracking End-to-End', () => {
 
       // Tagged entry has values
       expect(taggedEntry.workstream_id).toBe('WS-18');
-      expect(taggedEntry.agent_name).toBe('code-review');
+      expect(taggedEntry.agent_name).toBe('mg-code-review');
 
       // Untagged entry has nulls
       expect(untaggedEntry.workstream_id).toBeNull();

@@ -13,8 +13,8 @@ const SKILLS_DIR = path.join(__dirname, '../../.claude/skills');
 const AGENTS_DIR = path.join(__dirname, '../../.claude/agents');
 
 describe('Documentation Team - WS-5', () => {
-  describe('docs-team SKILL.md', () => {
-    const skillPath = path.join(SKILLS_DIR, 'docs-team', 'SKILL.md');
+  describe('mg-document SKILL.md', () => {
+    const skillPath = path.join(SKILLS_DIR, 'mg-document', 'SKILL.md');
 
     it('should exist', () => {
       expect(fs.existsSync(skillPath)).toBe(true);
@@ -23,7 +23,7 @@ describe('Documentation Team - WS-5', () => {
     it('should have frontmatter with name', () => {
       const content = fs.readFileSync(skillPath, 'utf-8');
       expect(content).toMatch(/^---$/m);
-      expect(content).toMatch(/name:\s+docs-team/);
+      expect(content).toMatch(/name:\s+mg-document/);
     });
 
     it('should have frontmatter with description', () => {

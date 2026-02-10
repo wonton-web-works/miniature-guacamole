@@ -88,16 +88,16 @@ describe('audit/tracking/validation - validateWorkstreamId()', () => {
 
 describe('audit/tracking/validation - validateAgentName()', () => {
   describe('Given valid agent names', () => {
-    it('When validating "code-review", Then returns true', () => {
-      expect(validateAgentName('code-review')).toBe(true);
+    it('When validating "mg-code-review", Then returns true', () => {
+      expect(validateAgentName('mg-code-review')).toBe(true);
     });
 
     it('When validating "qa", Then returns true', () => {
       expect(validateAgentName('qa')).toBe(true);
     });
 
-    it('When validating "design-review", Then returns true', () => {
-      expect(validateAgentName('design-review')).toBe(true);
+    it('When validating "mg-design-review", Then returns true', () => {
+      expect(validateAgentName('mg-design-review')).toBe(true);
     });
 
     it('When validating "test-qa", Then returns true', () => {
@@ -110,8 +110,8 @@ describe('audit/tracking/validation - validateAgentName()', () => {
   });
 
   describe('Given invalid agent names (TRACK-EDGE-2)', () => {
-    it('When validating "code-review@2" (special char), Then returns false', () => {
-      expect(validateAgentName('code-review@2')).toBe(false);
+    it('When validating "mg-code-review@2" (special char), Then returns false', () => {
+      expect(validateAgentName('mg-code-review@2')).toBe(false);
     });
 
     it('When validating "Code-Review" (uppercase), Then returns false', () => {
@@ -126,12 +126,12 @@ describe('audit/tracking/validation - validateAgentName()', () => {
       expect(validateAgentName('code_review')).toBe(false);
     });
 
-    it('When validating "-code-review" (leading dash), Then returns false', () => {
-      expect(validateAgentName('-code-review')).toBe(false);
+    it('When validating "-mg-code-review" (leading dash), Then returns false', () => {
+      expect(validateAgentName('-mg-code-review')).toBe(false);
     });
 
-    it('When validating "code-review-" (trailing dash), Then returns false', () => {
-      expect(validateAgentName('code-review-')).toBe(false);
+    it('When validating "mg-code-review-" (trailing dash), Then returns false', () => {
+      expect(validateAgentName('mg-code-review-')).toBe(false);
     });
 
     it('When validating "code--review" (double dash), Then returns false', () => {
@@ -187,7 +187,7 @@ describe('audit/tracking/validation - Pattern exports', () => {
 
   it('AGENT_NAME_PATTERN matches lowercase-with-dashes format', () => {
     expect(AGENT_NAME_PATTERN).toBeInstanceOf(RegExp);
-    expect(AGENT_NAME_PATTERN.test('code-review')).toBe(true);
+    expect(AGENT_NAME_PATTERN.test('mg-code-review')).toBe(true);
     expect(AGENT_NAME_PATTERN.test('CODE')).toBe(false);
   });
 });

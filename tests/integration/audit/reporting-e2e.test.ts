@@ -55,7 +55,7 @@ describe('audit/reporting E2E - Workstream Summary Report', () => {
           duration_ms: 2000,
           schema_version: '1.0',
           workstream_id: 'WS-19',
-          agent_name: 'design-review',
+          agent_name: 'mg-design-review',
           feature_name: null,
         },
         {
@@ -70,7 +70,7 @@ describe('audit/reporting E2E - Workstream Summary Report', () => {
           duration_ms: 1000,
           schema_version: '1.0',
           workstream_id: 'WS-18',
-          agent_name: 'code-review',
+          agent_name: 'mg-code-review',
           feature_name: null,
         },
         {
@@ -132,7 +132,7 @@ describe('audit/reporting E2E - Workstream Summary Report', () => {
           duration_ms: 1000,
           schema_version: '1.0',
           workstream_id: 'WS-18',
-          agent_name: 'code-review',
+          agent_name: 'mg-code-review',
           feature_name: null,
         },
       ];
@@ -180,7 +180,7 @@ describe('audit/reporting E2E - Workstream Summary Report', () => {
           duration_ms: 1000,
           schema_version: '1.0',
           workstream_id: 'WS-18',
-          agent_name: 'code-review',
+          agent_name: 'mg-code-review',
           feature_name: null,
         },
         {
@@ -210,7 +210,7 @@ describe('audit/reporting E2E - Workstream Summary Report', () => {
           duration_ms: 500,
           schema_version: '1.0',
           workstream_id: 'WS-19',
-          agent_name: 'design-review',
+          agent_name: 'mg-design-review',
           feature_name: null,
         },
       ];
@@ -260,7 +260,7 @@ describe('audit/reporting E2E - Workstream Summary Report', () => {
           duration_ms: 1000,
           schema_version: '1.0',
           workstream_id: 'WS-18',
-          agent_name: 'code-review',
+          agent_name: 'mg-code-review',
           feature_name: null,
         },
         {
@@ -315,7 +315,7 @@ describe('audit/reporting E2E - Workstream Summary Report', () => {
           duration_ms: 1000,
           schema_version: '1.0',
           workstream_id: 'WS-18',
-          agent_name: 'code-review',
+          agent_name: 'mg-code-review',
           feature_name: null,
         },
       ];
@@ -377,7 +377,7 @@ describe('audit/reporting E2E - Workstream Summary Report', () => {
           duration_ms: 1000,
           schema_version: '1.0',
           workstream_id: 'WS-18',
-          agent_name: 'code-review',
+          agent_name: 'mg-code-review',
           feature_name: null,
         },
         {
@@ -449,7 +449,7 @@ describe('audit/reporting E2E - Agent Breakdown Report', () => {
           duration_ms: 2000,
           schema_version: '1.0',
           workstream_id: 'WS-18',
-          agent_name: 'code-review',
+          agent_name: 'mg-code-review',
           feature_name: null,
         },
         {
@@ -479,7 +479,7 @@ describe('audit/reporting E2E - Agent Breakdown Report', () => {
           duration_ms: 800,
           schema_version: '1.0',
           workstream_id: 'WS-18',
-          agent_name: 'design-review',
+          agent_name: 'mg-design-review',
           feature_name: null,
         },
       ];
@@ -498,9 +498,9 @@ describe('audit/reporting E2E - Agent Breakdown Report', () => {
         // AC-3.4: Agents grouped within workstreams
         expect(parsed).toHaveLength(3);
         //
-        const codeReview = parsed.find((r: any) => r.agent_name === 'code-review');
+        const codeReview = parsed.find((r: any) => r.agent_name === 'mg-code-review');
         const qa = parsed.find((r: any) => r.agent_name === 'qa');
-        const designReview = parsed.find((r: any) => r.agent_name === 'design-review');
+        const designReview = parsed.find((r: any) => r.agent_name === 'mg-design-review');
         //
         expect(codeReview.workstream_id).toBe('WS-18');
         expect(codeReview.total_tokens).toBe(5000); // 3000 + 2000
@@ -511,9 +511,9 @@ describe('audit/reporting E2E - Agent Breakdown Report', () => {
         expect(designReview.total_tokens).toBe(1200); // 800 + 400
         //
         // AC-3.8: Sorted by cost descending
-        expect(parsed[0].agent_name).toBe('code-review'); // $0.025
+        expect(parsed[0].agent_name).toBe('mg-code-review'); // $0.025
         expect(parsed[1].agent_name).toBe('qa'); // $0.012
-        expect(parsed[2].agent_name).toBe('design-review'); // $0.005
+        expect(parsed[2].agent_name).toBe('mg-design-review'); // $0.005
     });
 
     it('When filtering by workstream, Then shows only that workstream (AC-3.7)', () => {
@@ -530,7 +530,7 @@ describe('audit/reporting E2E - Agent Breakdown Report', () => {
           duration_ms: 1000,
           schema_version: '1.0',
           workstream_id: 'WS-18',
-          agent_name: 'code-review',
+          agent_name: 'mg-code-review',
           feature_name: null,
         },
         {
@@ -545,7 +545,7 @@ describe('audit/reporting E2E - Agent Breakdown Report', () => {
           duration_ms: 2000,
           schema_version: '1.0',
           workstream_id: 'WS-19',
-          agent_name: 'code-review',
+          agent_name: 'mg-code-review',
           feature_name: null,
         },
       ];
@@ -565,7 +565,7 @@ describe('audit/reporting E2E - Agent Breakdown Report', () => {
         // Should only show WS-18 agents
         expect(parsed).toHaveLength(1);
         expect(parsed[0].workstream_id).toBe('WS-18');
-        expect(parsed[0].agent_name).toBe('code-review');
+        expect(parsed[0].agent_name).toBe('mg-code-review');
         expect(parsed[0].total_cost_usd).toBe(0.015);
     });
   });
@@ -585,7 +585,7 @@ describe('audit/reporting E2E - Agent Breakdown Report', () => {
           duration_ms: 1000,
           schema_version: '1.0',
           workstream_id: 'WS-18',
-          agent_name: 'code-review',
+          agent_name: 'mg-code-review',
           feature_name: null,
           success: true, // Merged
         },
@@ -601,7 +601,7 @@ describe('audit/reporting E2E - Agent Breakdown Report', () => {
           duration_ms: 1000,
           schema_version: '1.0',
           workstream_id: 'WS-18',
-          agent_name: 'code-review',
+          agent_name: 'mg-code-review',
           feature_name: null,
           success: true, // Merged
         },
@@ -617,7 +617,7 @@ describe('audit/reporting E2E - Agent Breakdown Report', () => {
           duration_ms: 1000,
           schema_version: '1.0',
           workstream_id: 'WS-18',
-          agent_name: 'code-review',
+          agent_name: 'mg-code-review',
           feature_name: null,
           success: false, // Not merged
         },
@@ -633,7 +633,7 @@ describe('audit/reporting E2E - Agent Breakdown Report', () => {
         });
         //
         const parsed = JSON.parse(result);
-        const codeReview = parsed.find((r: any) => r.agent_name === 'code-review');
+        const codeReview = parsed.find((r: any) => r.agent_name === 'mg-code-review');
         //
         expect(codeReview.request_count).toBe(3);
         expect(codeReview.success_count).toBe(2); // 2 merged, 1 not
@@ -654,7 +654,7 @@ describe('audit/reporting E2E - Agent Breakdown Report', () => {
           duration_ms: 1000,
           schema_version: '1.0',
           workstream_id: 'WS-18',
-          agent_name: 'design-review',
+          agent_name: 'mg-design-review',
           feature_name: null,
           No success field (not applicable for design agents)
         },
@@ -670,7 +670,7 @@ describe('audit/reporting E2E - Agent Breakdown Report', () => {
         });
         //
         const parsed = JSON.parse(result);
-        const designReview = parsed.find((r: any) => r.agent_name === 'design-review');
+        const designReview = parsed.find((r: any) => r.agent_name === 'mg-design-review');
         //
         expect(designReview.request_count).toBe(1);
         expect(designReview.success_count).toBeNull();
@@ -691,7 +691,7 @@ describe('audit/reporting E2E - Agent Breakdown Report', () => {
           duration_ms: 1000,
           schema_version: '1.0',
           workstream_id: 'WS-18',
-          agent_name: 'code-review',
+          agent_name: 'mg-code-review',
           feature_name: null,
           success: true,
         },
@@ -707,7 +707,7 @@ describe('audit/reporting E2E - Agent Breakdown Report', () => {
           duration_ms: 2000,
           schema_version: '1.0',
           workstream_id: 'WS-18',
-          agent_name: 'design-review',
+          agent_name: 'mg-design-review',
           feature_name: null,
           No success field
         },
@@ -724,8 +724,8 @@ describe('audit/reporting E2E - Agent Breakdown Report', () => {
         //
         const parsed = JSON.parse(result);
         //
-        const codeReview = parsed.find((r: any) => r.agent_name === 'code-review');
-        const designReview = parsed.find((r: any) => r.agent_name === 'design-review');
+        const codeReview = parsed.find((r: any) => r.agent_name === 'mg-code-review');
+        const designReview = parsed.find((r: any) => r.agent_name === 'mg-design-review');
         //
         expect(codeReview.success_rate).toBe(100);
         expect(designReview.success_rate).toBeNull();
@@ -763,7 +763,7 @@ describe('audit/reporting E2E - CSV Output', () => {
           duration_ms: 1000,
           schema_version: '1.0',
           workstream_id: 'WS-18',
-          agent_name: 'code-review',
+          agent_name: 'mg-code-review',
           feature_name: null,
         },
       ];
@@ -800,7 +800,7 @@ describe('audit/reporting E2E - CSV Output', () => {
           duration_ms: 1000,
           schema_version: '1.0',
           workstream_id: 'WS-18',
-          agent_name: 'code-review',
+          agent_name: 'mg-code-review',
           feature_name: null,
           success: true,
         },
@@ -842,7 +842,7 @@ describe('audit/reporting E2E - Error Handling', () => {
     it('When log contains invalid JSON, Then skips and continues', () => {
       const logContent = `
 invalid json line
-{"timestamp": "2026-02-04T10:00:00.000Z", "session_id": "session-1", "model": "claude-opus-4-5-20251101", "input_tokens": 1000, "output_tokens": 500, "cache_creation_tokens": 0, "cache_read_tokens": 0, "total_cost_usd": 0.015, "duration_ms": 1000, "schema_version": "1.0", "workstream_id": "WS-18", "agent_name": "code-review", "feature_name": null}
+{"timestamp": "2026-02-04T10:00:00.000Z", "session_id": "session-1", "model": "claude-opus-4-5-20251101", "input_tokens": 1000, "output_tokens": 500, "cache_creation_tokens": 0, "cache_read_tokens": 0, "total_cost_usd": 0.015, "duration_ms": 1000, "schema_version": "1.0", "workstream_id": "WS-18", "agent_name": "mg-code-review", "feature_name": null}
 another invalid line
       `.trim();
 

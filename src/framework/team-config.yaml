@@ -304,7 +304,7 @@ agents:
 # Team Compositions (for workflow skills)
 # ----------------------------------------------------------------------------
 # These define which agents participate in team-level skills like
-# /leadership-team, /engineering-team, etc.
+# /mg-leadership-team, /mg-build, etc.
 
 teams:
   leadership-team:

@@ -53,7 +53,7 @@ describe('Phase 2: Implementation Validation', () => {
       total_cost_usd: 0.015,
       duration_ms: 1000,
       workstream_id: 'WS-18',
-      agent_name: 'code-review',
+      agent_name: 'mg-code-review',
     });
 
     const result = parseAuditLogLine(line);
@@ -74,7 +74,7 @@ describe('Phase 2: Implementation Validation', () => {
         total_cost_usd: 0.015,
         duration_ms: 1000,
         workstream_id: 'WS-18',
-        agent_name: 'code-review',
+        agent_name: 'mg-code-review',
       },
     ];
 
@@ -168,7 +168,7 @@ describe('Phase 2: Implementation Validation', () => {
         total_cost_usd: 0.015,
         duration_ms: 1000,
         workstream_id: 'WS-18',
-        agent_name: 'code-review',
+        agent_name: 'mg-code-review',
       },
     ];
 

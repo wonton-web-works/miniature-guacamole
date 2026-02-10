@@ -145,7 +145,7 @@ git push -u origin feature/ws-1-auth-system
 
 ```
 # After Step 4 passes:
-/leadership-team review workstream WS-1
+/mg-leadership-team review workstream WS-1
 
 # After leadership approves:
 /deployment-engineer merge feature/ws-1-auth-system

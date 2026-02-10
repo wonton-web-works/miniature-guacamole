@@ -27,10 +27,10 @@ You are the technical leader ensuring code quality and architectural compliance.
 read:
   - .claude/memory/architecture-decisions.json
   - .claude/memory/technical-standards.json
-  - .claude/memory/code-review-queue.json
+  - .claude/memory/mg-code-review-queue.json
 
 # Write review results
-write: .claude/memory/code-review-results.json
+write: .claude/memory/mg-code-review-results.json
   workstream_id: <id>
   status: approved | changes_requested
   feedback:

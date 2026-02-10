@@ -36,14 +36,14 @@ describe('audit/reporting/reader - parseAuditLogLine()', () => {
         duration_ms: 1000,
         schema_version: '1.0',
         workstream_id: 'WS-18',
-        agent_name: 'code-review',
+        agent_name: 'mg-code-review',
         feature_name: null,
       });
 
       const result = parseAuditLogLine(line);
       expect(result).toBeDefined();
       expect(result!.workstream_id).toBe('WS-18');
-      expect(result!.agent_name).toBe('code-review');
+      expect(result!.agent_name).toBe('mg-code-review');
       expect(result!.total_cost_usd).toBe(0.015);
     });
 
@@ -135,7 +135,7 @@ describe('audit/reporting/reader - readAuditLog()', () => {
           duration_ms: 1000,
           schema_version: '1.0',
           workstream_id: 'WS-18',
-          agent_name: 'code-review',
+          agent_name: 'mg-code-review',
           feature_name: null,
         },
         {
@@ -150,7 +150,7 @@ describe('audit/reporting/reader - readAuditLog()', () => {
           duration_ms: 2000,
           schema_version: '1.0',
           workstream_id: 'WS-19',
-          agent_name: 'design-review',
+          agent_name: 'mg-design-review',
           feature_name: null,
         },
       ];
@@ -177,7 +177,7 @@ describe('audit/reporting/reader - readAuditLog()', () => {
         duration_ms: 1000,
         schema_version: '1.0',
         workstream_id: 'WS-18',
-        agent_name: 'code-review',
+        agent_name: 'mg-code-review',
         feature_name: null,
       };
 
@@ -207,7 +207,7 @@ ${JSON.stringify(entry)}
         duration_ms: 1000,
         schema_version: '1.0',
         workstream_id: 'WS-18',
-        agent_name: 'code-review',
+        agent_name: 'mg-code-review',
         feature_name: null,
       };
 
@@ -259,7 +259,7 @@ another invalid line
           duration_ms: 1000,
           schema_version: '1.0',
           workstream_id: `WS-${i % 5}`,
-          agent_name: 'code-review',
+          agent_name: 'mg-code-review',
           feature_name: null,
         }));
 
@@ -285,7 +285,7 @@ another invalid line
         duration_ms: 1000,
         schema_version: '1.0',
         workstream_id: 'WS-18',
-        agent_name: 'code-review',
+        agent_name: 'mg-code-review',
         feature_name: null,
       };
 

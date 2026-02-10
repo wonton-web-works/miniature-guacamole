@@ -49,7 +49,7 @@ For composite teams:
 │  📊 DELEGATION CHAIN                                        │
 ├─────────────────────────────────────────────────────────────┤
 │                                                             │
-│  [USER] ──▶ [leadership-team] ──▶ [engineering-team]       │
+│  [USER] ──▶ [mg-leadership-team] ──▶ [mg-build]       │
 │                                          │                  │
 │                                          ├──▶ [qa] ✅       │
 │                                          └──▶ [dev] 🔄      │
@@ -93,7 +93,7 @@ Three styles available based on context:
 
 ### Style 1: Live Activity Feed (for Teams)
 
-Use this for team skills (engineering-team, leadership-team, design-team):
+Use this for team skills (mg-build, mg-leadership-team, mg-design):
 
 ```
 ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
@@ -102,17 +102,17 @@ Use this for team skills (engineering-team, leadership-team, design-team):
 ┃                                                              ┃
 ┃  13:45:01  >> SPAWN   qa (sonnet)                           ┃
 ┃            |  Task: Write test specifications                ┃
-┃            |  Parent: engineering-team                       ┃
+┃            |  Parent: mg-build                       ┃
 ┃            |  Depth: 2/3                                     ┃
 ┃                                                              ┃
-┃  13:45:32  << RETURN  qa -> engineering-team                ┃
+┃  13:45:32  << RETURN  qa -> mg-build                ┃
 ┃            |  Status: completed                              ┃
 ┃            |  Result: 28 tests created                       ┃
 ┃            |  Duration: 31s                                  ┃
 ┃                                                              ┃
 ┃  13:45:33  >> SPAWN   dev (sonnet)                          ┃
 ┃            |  Task: Implement to pass tests                  ┃
-┃            |  Parent: engineering-team                       ┃
+┃            |  Parent: mg-build                       ┃
 ┃            |  Depth: 2/3                                     ┃
 ┃                                                              ┃
 ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛

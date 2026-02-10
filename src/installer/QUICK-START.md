@@ -65,9 +65,9 @@ cat .claude/MG_INSTALL.json
 
 ### Skills (Use in Chat)
 ```
-/leadership-team review WS-42
-/engineering-team implement feature X
-/code-review check PR-123
+/mg-leadership-team review WS-42
+/mg-build implement feature X
+/mg-code-review check PR-123
 ```
 
 ### Scripts (Use in Terminal)

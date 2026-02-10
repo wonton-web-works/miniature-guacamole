@@ -9,7 +9,7 @@
 #   - .claude/memory/ directory exists (required for agent memory protocol)
 #   - .claude/rules/ directory exists (project-specific context per DEC-INIT-003)
 #
-# If checks fail, suggests running /init-project to set up the project.
+# If checks fail, suggests running /mg-init to set up the project.
 # Per DEC-INIT-002: Hook does NOT auto-scaffold, only detects and suggests.
 # ============================================================================
 
@@ -93,7 +93,7 @@ if $memory_exists; then
     exit 0
 fi
 
-# If memory missing, show warning and suggest /init-project
+# If memory missing, show warning and suggest /mg-init
 echo ""
 echo -e "${YELLOW}╔══════════════════════════════════════════════════════════════╗${NC}"
 echo -e "${YELLOW}║${NC}  miniature-guacamole Project Initialization Check          ${YELLOW}║${NC}"
@@ -108,7 +108,7 @@ echo ""
 
 echo ""
 echo -e "${BLUE}To initialize this project, run:${NC}"
-echo -e "  ${GREEN}/init-project${NC}"
+echo -e "  ${GREEN}/mg-init${NC}"
 echo ""
 echo "This will:"
 echo "  • Create .claude/memory/ with .gitignore (project-local agent state)"

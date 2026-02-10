@@ -40,7 +40,7 @@ NC='\033[0m' # No Color
 
 # Configuration
 CACHE_DIR="$HOME/.cache/miniature-guacamole"
-GITHUB_REPO="RivermarkResearch/miniature-guacamole"
+GITHUB_REPO="bywonton/miniature-guacamole"
 GITHUB_API="https://api.github.com/repos/$GITHUB_REPO"
 VERSION="latest"
 FORCE=false
@@ -91,6 +91,14 @@ echo ""
 # Create cache directory
 mkdir -p "$CACHE_DIR"
 
+# Resolve GitHub auth token (needed for private repos)
+AUTH_HEADER=""
+if command -v gh &>/dev/null; then
+    GH_TOKEN=$(gh auth token 2>/dev/null) && AUTH_HEADER="Authorization: token $GH_TOKEN"
+elif [[ -n "${GITHUB_TOKEN:-}" ]]; then
+    AUTH_HEADER="Authorization: token $GITHUB_TOKEN"
+fi
+
 # Function to resolve latest version
 resolve_latest_version() {
     if [[ "$OFFLINE" == "true" ]]; then
@@ -102,7 +110,7 @@ resolve_latest_version() {
     echo -e "${BLUE}Fetching latest version from GitHub...${NC}"
 
     local response
-    response=$(curl -s "$GITHUB_API/releases/latest") || {
+    response=$(curl -s ${AUTH_HEADER:+-H "$AUTH_HEADER"} "$GITHUB_API/releases/latest") || {
         echo -e "${RED}Error: Failed to fetch latest release from GitHub${NC}" >&2
         exit 1
     }
@@ -132,7 +140,7 @@ get_tarball_url() {
     echo -e "${BLUE}Fetching release information for $version...${NC}"
 
     local response
-    response=$(curl -s "$GITHUB_API/releases/tags/$version") || {
+    response=$(curl -s ${AUTH_HEADER:+-H "$AUTH_HEADER"} "$GITHUB_API/releases/tags/$version") || {
         echo -e "${RED}Error: Failed to fetch release $version from GitHub${NC}" >&2
         exit 1
     }
@@ -160,7 +168,7 @@ download_and_cache() {
     echo -e "${BLUE}Downloading $version from GitHub...${NC}"
 
     # Download with progress bar
-    curl -L -o "$cache_file.tmp" --progress-bar "$tarball_url" || {
+    curl -L ${AUTH_HEADER:+-H "$AUTH_HEADER"} -o "$cache_file.tmp" --progress-bar "$tarball_url" || {
         echo -e "${RED}Error: Failed to download tarball${NC}" >&2
         rm -f "$cache_file.tmp"
         exit 1

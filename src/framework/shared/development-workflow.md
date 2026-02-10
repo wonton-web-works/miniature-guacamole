@@ -18,7 +18,7 @@ This document defines the cyclical TDD/BDD development workflow used by the Prod
             │
             ▼
 ┌───────────────────────┐
-│   /leadership-team    │  ◄── Planning Phase
+│   /mg-leadership-team │  ◄── Planning Phase
 │   Executive Review    │
 │   + Workstream Plan   │
 └───────────┬───────────┘
@@ -59,7 +59,7 @@ This document defines the cyclical TDD/BDD development workflow used by the Prod
               │
               ▼
 ┌───────────────────────┐
-│   /leadership-team    │  ◄── Code Review Phase
+│   /mg-leadership-team │  ◄── Code Review Phase
 │   Code Review         │
 └───────────┬───────────┘
             │
@@ -89,7 +89,7 @@ This document defines the cyclical TDD/BDD development workflow used by the Prod
 
 ## Role Responsibilities
 
-### /leadership-team
+### /mg-leadership-team
 **When:** Start of initiative, Code review before merge
 **Does:**
 1. Creates Executive Review (CEO, CTO, Eng Dir perspectives)
@@ -99,7 +99,7 @@ This document defines the cyclical TDD/BDD development workflow used by the Prod
 
 **Output:** Executive Review + Workstream Plan OR Code Review Decision
 
-### /engineering-team
+### /mg-build
 **When:** Executing a workstream
 **Does:**
 1. Coordinates PM, QA, Dev, Staff Eng
@@ -183,17 +183,17 @@ chore: Merge WS-X: [description]           # Merge
 
 ### Start a new initiative
 ```
-/leadership-team [describe the initiative]
+/mg-leadership-team [describe the initiative]
 ```
 
 ### Execute a workstream
 ```
-/engineering-team execute workstream WS-1: [description from leadership plan]
+/mg-build execute workstream WS-1: [description from leadership plan]
 ```
 
 ### Request code review
 ```
-/leadership-team review workstream WS-1 on branch feature/ws-1-[name]
+/mg-leadership-team review workstream WS-1 on branch feature/ws-1-[name]
 ```
 
 ### Merge after approval
@@ -205,11 +205,11 @@ chore: Merge WS-X: [description]           # Merge
 
 | From | To | Trigger | Handoff |
 |------|-----|---------|---------|
-| User | leadership-team | New initiative | Describe initiative |
-| leadership-team | engineering-team | Workstream defined | `/engineering-team execute WS-X` |
-| engineering-team | leadership-team | Workstream complete | `/leadership-team review WS-X` |
-| leadership-team | deployment-engineer | Approved | `/deployment-engineer merge` |
-| leadership-team | engineering-team | Rejected | Specific feedback |
+| User | mg-leadership-team | New initiative | Describe initiative |
+| mg-leadership-team | mg-build | Workstream defined | `/mg-build execute WS-X` |
+| mg-build | mg-leadership-team | Workstream complete | `/mg-leadership-team review WS-X` |
+| mg-leadership-team | deployment-engineer | Approved | `/deployment-engineer merge` |
+| mg-leadership-team | mg-build | Rejected | Specific feedback |
 
 ## Quality Gates
 

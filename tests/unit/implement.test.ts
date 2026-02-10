@@ -12,8 +12,8 @@ import * as path from 'path';
 const SKILLS_DIR = path.join(__dirname, '../../.claude/skills');
 
 describe('Implement Skill - WS-14', () => {
-  describe('implement SKILL.md', () => {
-    const skillPath = path.join(SKILLS_DIR, 'implement', 'SKILL.md');
+  describe('mg-build SKILL.md', () => {
+    const skillPath = path.join(SKILLS_DIR, 'mg-build', 'SKILL.md');
 
     it('should exist', () => {
       expect(fs.existsSync(skillPath)).toBe(true);
@@ -22,7 +22,7 @@ describe('Implement Skill - WS-14', () => {
     it('should have frontmatter with name', () => {
       const content = fs.readFileSync(skillPath, 'utf-8');
       expect(content).toMatch(/^---$/m);
-      expect(content).toMatch(/name:\s+implement/);
+      expect(content).toMatch(/name:\s+mg-build/);
     });
 
     it('should have frontmatter with description', () => {
@@ -92,7 +92,7 @@ describe('Implement Skill - WS-14', () => {
   });
 
   describe('Constitution - TDD Principles', () => {
-    const skillPath = path.join(SKILLS_DIR, 'implement', 'SKILL.md');
+    const skillPath = path.join(SKILLS_DIR, 'mg-build', 'SKILL.md');
 
     it('should emphasize tests before code', () => {
       const content = fs.readFileSync(skillPath, 'utf-8');
@@ -111,7 +111,7 @@ describe('Implement Skill - WS-14', () => {
   });
 
   describe('TDD Cycle Structure', () => {
-    const skillPath = path.join(SKILLS_DIR, 'implement', 'SKILL.md');
+    const skillPath = path.join(SKILLS_DIR, 'mg-build', 'SKILL.md');
 
     it('should define step 1 as QA writes tests', () => {
       const content = fs.readFileSync(skillPath, 'utf-8');
@@ -135,7 +135,7 @@ describe('Implement Skill - WS-14', () => {
   });
 
   describe('Spawn Pattern', () => {
-    const skillPath = path.join(SKILLS_DIR, 'implement', 'SKILL.md');
+    const skillPath = path.join(SKILLS_DIR, 'mg-build', 'SKILL.md');
 
     it('should include qa spawn pattern', () => {
       const content = fs.readFileSync(skillPath, 'utf-8');
@@ -154,7 +154,7 @@ describe('Implement Skill - WS-14', () => {
   });
 
   describe('Boundaries Integrity', () => {
-    const skillPath = path.join(SKILLS_DIR, 'implement', 'SKILL.md');
+    const skillPath = path.join(SKILLS_DIR, 'mg-build', 'SKILL.md');
 
     it('All boundary fields should have content', () => {
       const content = fs.readFileSync(skillPath, 'utf-8');
@@ -211,7 +211,7 @@ describe('Implement Skill - WS-14', () => {
   });
 
   describe('Memory Protocol Integration', () => {
-    const skillPath = path.join(SKILLS_DIR, 'implement', 'SKILL.md');
+    const skillPath = path.join(SKILLS_DIR, 'mg-build', 'SKILL.md');
 
     it('should read from workstream state', () => {
       const content = fs.readFileSync(skillPath, 'utf-8');

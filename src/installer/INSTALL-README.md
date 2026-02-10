@@ -341,7 +341,7 @@ After installation:
    ```
 
 5. **Start Using:**
-   - Use skills: `/leadership-team`, `/engineering-team`, etc.
+   - Use skills: `/mg-leadership-team`, `/mg-build`, etc.
    - Spawn agents: `Task(subagent_type="qa", prompt="...")`
    - Run scripts: `mg-memory-read`, `mg-workstream-status`, etc.
 

@@ -381,7 +381,7 @@ describe('audit/reporting/formats - formatAgentBreakdown()', () => {
   const agentData: AgentBreakdown[] = [
     {
       workstream_id: 'WS-18',
-      agent_name: 'code-review',
+      agent_name: 'mg-code-review',
       request_count: 5,
       total_tokens: 7500,
       total_cost_usd: 0.025,
@@ -403,7 +403,7 @@ describe('audit/reporting/formats - formatAgentBreakdown()', () => {
     },
     {
       workstream_id: 'WS-18',
-      agent_name: 'design-review',
+      agent_name: 'mg-design-review',
       request_count: 3,
       total_tokens: 2000,
       total_cost_usd: 0.005,
@@ -433,7 +433,7 @@ describe('audit/reporting/formats - formatAgentBreakdown()', () => {
 
     it('When formatting success_rate, Then shows percentage or N/A', () => {
       const result = formatAgentBreakdown(agentData, OutputFormat.TABLE);
-        expect(result).toContain('80.00%'); // code-review success rate
+        expect(result).toContain('80.00%'); // mg-code-review success rate
         expect(result).toMatch(/N\/A|null|-/); // qa success rate (null)
     });
   });
@@ -470,7 +470,7 @@ describe('audit/reporting/formats - formatAgentBreakdown()', () => {
       const unsortedAgentData: AgentBreakdown[] = [
         {
           workstream_id: 'WS-18',
-          agent_name: 'design-review',
+          agent_name: 'mg-design-review',
           request_count: 3,
           total_tokens: 2000,
           total_cost_usd: 0.005,
@@ -479,7 +479,7 @@ describe('audit/reporting/formats - formatAgentBreakdown()', () => {
         },
         {
           workstream_id: 'WS-18',
-          agent_name: 'code-review',
+          agent_name: 'mg-code-review',
           request_count: 5,
           total_tokens: 7500,
           total_cost_usd: 0.025,
@@ -499,9 +499,9 @@ describe('audit/reporting/formats - formatAgentBreakdown()', () => {
 
       const result = formatAgentBreakdown(unsortedAgentData, OutputFormat.JSON);
         const parsed = JSON.parse(result);
-        expect(parsed[0].agent_name).toBe('code-review'); // 0.025
+        expect(parsed[0].agent_name).toBe('mg-code-review'); // 0.025
         expect(parsed[1].agent_name).toBe('qa'); // 0.012
-        expect(parsed[2].agent_name).toBe('design-review'); // 0.005
+        expect(parsed[2].agent_name).toBe('mg-design-review'); // 0.005
     });
   });
 });

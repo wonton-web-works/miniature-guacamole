@@ -69,7 +69,7 @@ describe('audit/reporting/aggregation - aggregateByWorkstream()', () => {
     duration_ms: 1000,
     schema_version: '1.0',
     workstream_id: 'WS-18',
-    agent_name: 'code-review',
+    agent_name: 'mg-code-review',
     feature_name: null,
   };
 
@@ -101,7 +101,7 @@ describe('audit/reporting/aggregation - aggregateByWorkstream()', () => {
     duration_ms: 500,
     schema_version: '1.0',
     workstream_id: 'WS-19',
-    agent_name: 'design-review',
+    agent_name: 'mg-design-review',
     feature_name: null,
   };
 
@@ -234,7 +234,7 @@ describe('audit/reporting/aggregation - filterByDateRange()', () => {
     duration_ms: 1000,
     schema_version: '1.0',
     workstream_id: 'WS-18',
-    agent_name: 'code-review',
+    agent_name: 'mg-code-review',
     feature_name: null,
   };
 
@@ -266,7 +266,7 @@ describe('audit/reporting/aggregation - filterByDateRange()', () => {
     duration_ms: 500,
     schema_version: '1.0',
     workstream_id: 'WS-19',
-    agent_name: 'design-review',
+    agent_name: 'mg-design-review',
     feature_name: null,
   };
 
@@ -425,7 +425,7 @@ describe('audit/reporting/aggregation - aggregateByAgent()', () => {
     duration_ms: 1000,
     schema_version: '1.0',
     workstream_id: 'WS-18',
-    agent_name: 'code-review',
+    agent_name: 'mg-code-review',
     feature_name: null,
   };
 
@@ -457,7 +457,7 @@ describe('audit/reporting/aggregation - aggregateByAgent()', () => {
     duration_ms: 500,
     schema_version: '1.0',
     workstream_id: 'WS-18',
-    agent_name: 'design-review',
+    agent_name: 'mg-design-review',
     feature_name: null,
   };
 
@@ -468,7 +468,7 @@ describe('audit/reporting/aggregation - aggregateByAgent()', () => {
       const result = aggregateByAgent(entries);
         expect(result).toHaveLength(3);
         //
-        const codeReview = result.find(r => r.agent_name === 'code-review');
+        const codeReview = result.find(r => r.agent_name === 'mg-code-review');
         expect(codeReview).toBeDefined();
         expect(codeReview!.workstream_id).toBe('WS-18');
         expect(codeReview!.total_tokens).toBe(1500); // input + output
@@ -507,8 +507,8 @@ describe('audit/reporting/aggregation - aggregateByAgent()', () => {
         //
         expect(ws18Agent).toBeDefined();
         expect(ws19Agent).toBeDefined();
-        expect(ws18Agent!.agent_name).toBe('code-review');
-        expect(ws19Agent!.agent_name).toBe('code-review');
+        expect(ws18Agent!.agent_name).toBe('mg-code-review');
+        expect(ws19Agent!.agent_name).toBe('mg-code-review');
     });
   });
 
@@ -613,7 +613,7 @@ describe('audit/reporting/aggregation - edge cases', () => {
         duration_ms: 10000,
         schema_version: '1.0',
         workstream_id: 'WS-18',
-        agent_name: 'code-review',
+        agent_name: 'mg-code-review',
         feature_name: null,
       };
 
@@ -639,7 +639,7 @@ describe('audit/reporting/aggregation - edge cases', () => {
         duration_ms: 100,
         schema_version: '1.0',
         workstream_id: 'WS-18',
-        agent_name: 'code-review',
+        agent_name: 'mg-code-review',
         feature_name: null,
       };
 
@@ -668,7 +668,7 @@ describe('audit/reporting/aggregation - WS-AUDIT-1 enhanced fields', () => {
     duration_ms: 1500,
     schema_version: '1.0',
     workstream_id: 'WS-18',
-    agent_name: 'code-review',
+    agent_name: 'mg-code-review',
     feature_name: null,
   };
 

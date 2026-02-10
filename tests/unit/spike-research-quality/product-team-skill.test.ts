@@ -11,10 +11,10 @@ import * as fs from 'fs';
 import * as path from 'path';
 
 describe('Product Team Skill - External Dependency Policy (AC-2)', () => {
-  const skillPath = path.join(process.cwd(), '.claude/skills/product-team/SKILL.md');
+  const skillPath = path.join(process.cwd(), '.claude/skills/mg-spec/SKILL.md');
   let skillContent: string;
 
-  it('should have product-team SKILL.md file', () => {
+  it('should have mg-spec SKILL.md file', () => {
     expect(fs.existsSync(skillPath)).toBe(true);
   });
 
@@ -56,7 +56,7 @@ describe('Product Team Skill - External Dependency Policy (AC-2)', () => {
 
     it('should show workflow flow: Product steps -> Gate -> Engineering handoff', () => {
       const workflowSection = skillContent.match(/Workflow.*?(?=\#\#)/is)?.[0] || '';
-      expect(workflowSection).toMatch(/Write to memory.*Hand off.*engineering-team/is);
+      expect(workflowSection).toMatch(/Write to memory.*Hand off.*mg-build/is);
     });
   });
 

@@ -113,4 +113,4 @@ Can consult (fire-and-forget, no spawn):
 
 **CAN:** Write all documentation types, generate examples, update existing docs, add inline comments
 **CANNOT:** Write production code (only documentation), skip documentation for features
-**ESCALATES TO:** docs-team (documentation standards), engineering-manager (scope questions)
+**ESCALATES TO:** mg-document (documentation standards), engineering-manager (scope questions)

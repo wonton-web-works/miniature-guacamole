@@ -75,13 +75,13 @@ Use code blocks to show structure, tables for comparisons:
 ### Delegation Table
 | Need | Action |
 |------|--------|
-| Security review | Spawn `security-review` |
-| Implementation | Invoke `/engineering-team` |
+| Security review | Spawn `mg-security-review` |
+| Implementation | Invoke `/mg-build` |
 ```
 
 ## Skill Type Specific Guidance
 
-### Team Skills (leadership-team, engineering-team, product-team, design-team, docs-team)
+### Team Skills (mg-leadership-team, mg-build, mg-spec, mg-design, mg-document, mg-write)
 
 **Pattern**: Strategic assessment → Decision → Delegation
 
@@ -99,7 +99,7 @@ Use code blocks to show structure, tables for comparisons:
 {Recommended skill or action}
 ```
 
-### Review Skills (security-review, accessibility-review, design-review, code-review)
+### Review Skills (mg-security-review, mg-accessibility-review, mg-design-review, mg-code-review)
 
 **Pattern**: Quality gates → Findings by severity → Recommendations
 
@@ -130,7 +130,7 @@ Use code blocks to show structure, tables for comparisons:
 {Next step or skill to invoke}
 ```
 
-### Assessment Skills (feature-assessment, technical-assessment)
+### Assessment Skills (mg-assess, mg-assess-tech)
 
 **Pattern**: Analysis → Risk evaluation → Recommendation
 
@@ -153,7 +153,7 @@ Use code blocks to show structure, tables for comparisons:
 {Recommended next step}
 ```
 
-### Implementation Skills (implement)
+### Implementation Skills (mg-build)
 
 **Pattern**: Progress tracking → Status → Blockers → Next action
 
@@ -181,7 +181,7 @@ Coverage: {percent}%
 
 ## Examples
 
-### Example: Team Skill Output (leadership-team)
+### Example: Team Skill Output (mg-leadership-team)
 
 ```markdown
 ## Executive Review: User Authentication Feature
@@ -200,10 +200,10 @@ APPROVED FOR DEVELOPMENT
 - WS-103: Admin user management UI - Full CRUD for user accounts
 
 ### Next Action
-Recommend `/engineering-team` to execute workstreams
+Recommend `/mg-build` to execute workstreams
 ```
 
-### Example: Review Skill Output (security-review)
+### Example: Review Skill Output (mg-security-review)
 
 ```markdown
 ## Security Review: Payment Processing Module
@@ -237,7 +237,7 @@ Recommend `/engineering-team` to execute workstreams
 Return to dev for fixes, re-review after changes applied
 ```
 
-### Example: Assessment Skill Output (feature-assessment)
+### Example: Assessment Skill Output (mg-assess)
 
 ```markdown
 ## Feature Assessment: Real-time Collaboration
@@ -263,7 +263,7 @@ GO - with phased rollout
 - WS-204: Presence indicators - User cursors and selections visible
 
 ### Next Action
-Present to leadership-team for strategic approval and resource allocation
+Present to mg-leadership-team for strategic approval and resource allocation
 ```
 
 ## ASCII Visual Progress Patterns
@@ -351,7 +351,7 @@ Progress: [████████░░░░░░░░] 50% (Step 2/4)
 
 ### When to Use ASCII Visuals
 
-- **Always**: Show TDD cycle progress during `/engineering-team` execution
+- **Always**: Show TDD cycle progress during `/mg-build` execution
 - **Always**: Show dashboard when multiple workstreams active
 - **Optional**: Show delegation flow when spawning multiple agents
 - **Optional**: Show multi-lens diagram during feature assessments

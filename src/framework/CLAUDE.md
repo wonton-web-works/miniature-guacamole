@@ -7,7 +7,7 @@ You have the **miniature-guacamole** framework installed - a product development
 miniature-guacamole transforms Claude Code into a complete product development team with specialized agents and collaborative skills:
 
 - **18 Specialized Agents** - Engineering Manager, Product Manager, QA, Design, DevOps, and more
-- **13 Team Skills** - /leadership-team, /engineering-team, /code-review, and others
+- **16 Skills** - /mg-leadership-team, /mg-build, /mg-code-review, and others
 - **Shared Protocols** - TDD workflow, memory protocol, handoff protocol for coordination
 - **NDA-Safe Architecture** - Project memory stays local, agents/skills are shared role definitions
 
@@ -16,7 +16,7 @@ miniature-guacamole transforms Claude Code into a complete product development t
 ### Installed Globally (~/.claude/)
 
 - **agents/** - 18 specialized roles (dev, qa, product-manager, etc.)
-- **skills/** - 13 collaborative workflows (leadership-team, engineering-team, etc.)
+- **skills/** - 16 collaborative workflows (mg-leadership-team, mg-build, etc.)
 - **shared/** - 6 protocol documents (TDD, memory, handoff, visual formatting, etc.)
 - **team-config.yaml** - Framework configuration
 - **settings.json** - Permissions and hooks
@@ -34,7 +34,7 @@ miniature-guacamole transforms Claude Code into a complete product development t
 When you start working in a new project directory, initialize it with:
 
 ```
-/init-project
+/mg-init
 ```
 
 This creates the required `.claude/memory/` structure and project-specific context file.
@@ -44,9 +44,9 @@ This creates the required `.claude/memory/` structure and project-specific conte
 Invoke collaborative workflows:
 
 ```
-/leadership-team review WS-42
-/engineering-team implement new-feature
-/code-review check PR-123
+/mg-leadership-team review WS-42
+/mg-build implement new-feature
+/mg-code-review check PR-123
 ```
 
 ### Spawn Agents Directly
@@ -100,7 +100,7 @@ miniature-guacamole is **NDA-safe**:
 
 ## Next Steps
 
-1. Run `/init-project` in your project directories
+1. Run `/mg-init` in your project directories
 2. Explore agents: `ls ~/.claude/agents/` and read their AGENT.md files
 3. Try skills: `ls ~/.claude/skills/` and read their SKILL.md files
 4. Read protocols: `ls ~/.claude/shared/` for coordination guidelines

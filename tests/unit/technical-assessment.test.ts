@@ -12,8 +12,8 @@ import * as path from 'path';
 const SKILLS_DIR = path.join(__dirname, '../../.claude/skills');
 
 describe('Technical Assessment - WS-9', () => {
-  describe('technical-assessment SKILL.md', () => {
-    const skillPath = path.join(SKILLS_DIR, 'technical-assessment', 'SKILL.md');
+  describe('mg-assess-tech SKILL.md', () => {
+    const skillPath = path.join(SKILLS_DIR, 'mg-assess-tech', 'SKILL.md');
 
     it('should exist', () => {
       expect(fs.existsSync(skillPath)).toBe(true);
@@ -22,7 +22,7 @@ describe('Technical Assessment - WS-9', () => {
     it('should have frontmatter with name', () => {
       const content = fs.readFileSync(skillPath, 'utf-8');
       expect(content).toMatch(/^---$/m);
-      expect(content).toMatch(/name:\s+technical-assessment/);
+      expect(content).toMatch(/name:\s+mg-assess-tech/);
     });
 
     it('should have frontmatter with description', () => {
@@ -118,7 +118,7 @@ describe('Technical Assessment - WS-9', () => {
   });
 
   describe('Boundaries Integrity', () => {
-    const skillPath = path.join(SKILLS_DIR, 'technical-assessment', 'SKILL.md');
+    const skillPath = path.join(SKILLS_DIR, 'mg-assess-tech', 'SKILL.md');
 
     it('All boundary fields should have content', () => {
       const content = fs.readFileSync(skillPath, 'utf-8');

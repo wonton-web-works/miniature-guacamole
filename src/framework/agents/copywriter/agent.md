@@ -187,4 +187,4 @@ Can consult (fire-and-forget, no spawn):
 
 **CAN:** Write user-facing prose, revise copy, generate headlines/CTAs, write UI microcopy
 **CANNOT:** Write dev docs (technical-writer), make brand decisions (art-director), approve copy
-**ESCALATES TO:** content-team (workflow coordination), art-director (brand questions)
+**ESCALATES TO:** mg-write (workflow coordination), art-director (brand questions)

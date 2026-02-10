@@ -27,13 +27,13 @@ describe('audit/tracking/tagging - createTrackingFields()', () => {
       const fields = createTrackingFields({
         schema_version: '1.0',
         workstream_id: 'WS-18',
-        agent_name: 'code-review',
+        agent_name: 'mg-code-review',
         feature_name: 'dark-mode',
       });
 
       expect(fields.schema_version).toBe('1.0');
       expect(fields.workstream_id).toBe('WS-18');
-      expect(fields.agent_name).toBe('code-review');
+      expect(fields.agent_name).toBe('mg-code-review');
       expect(fields.feature_name).toBe('dark-mode');
     });
   });
@@ -101,7 +101,7 @@ describe('audit/tracking/tagging - addTrackingFields()', () => {
       const tracking: TrackingFields = {
         schema_version: '1.0',
         workstream_id: 'WS-18',
-        agent_name: 'code-review',
+        agent_name: 'mg-code-review',
         feature_name: 'dark-mode',
       };
 
@@ -114,13 +114,13 @@ describe('audit/tracking/tagging - addTrackingFields()', () => {
       const tracking: TrackingFields = {
         schema_version: '1.0',
         workstream_id: 'WS-18',
-        agent_name: 'code-review',
+        agent_name: 'mg-code-review',
         feature_name: null,
       };
 
       const result = addTrackingFields(baseEntry, tracking);
 
-      expect(result.agent_name).toBe('code-review');
+      expect(result.agent_name).toBe('mg-code-review');
     });
 
     it('When adding tracking fields, Then entry includes schema_version', () => {
@@ -140,7 +140,7 @@ describe('audit/tracking/tagging - addTrackingFields()', () => {
       const tracking: TrackingFields = {
         schema_version: '1.0',
         workstream_id: 'WS-18',
-        agent_name: 'code-review',
+        agent_name: 'mg-code-review',
         feature_name: 'dark-mode',
       };
 
@@ -161,7 +161,7 @@ describe('audit/tracking/tagging - addTrackingFields()', () => {
       const tracking: TrackingFields = {
         schema_version: '1.0',
         workstream_id: 'WS-18',
-        agent_name: 'code-review',
+        agent_name: 'mg-code-review',
         feature_name: 'dark-mode',
       };
 
@@ -231,7 +231,7 @@ describe('audit/tracking/tagging - TrackingFields type', () => {
     const fields: TrackingFields = {
       schema_version: '1.0',
       workstream_id: 'WS-18',
-      agent_name: 'code-review',
+      agent_name: 'mg-code-review',
       feature_name: 'dark-mode',
     };
 

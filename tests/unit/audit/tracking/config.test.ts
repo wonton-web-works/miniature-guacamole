@@ -97,7 +97,7 @@ describe('audit/tracking/config - loadTrackingConfig()', () => {
       const projectConfig = {
         tracking: {
           enabled: true,
-          agent_name: 'code-review'
+          agent_name: 'mg-code-review'
         }
       };
 
@@ -108,7 +108,7 @@ describe('audit/tracking/config - loadTrackingConfig()', () => {
 
       const config = loadTrackingConfig();
 
-      expect(config.agent_name).toBe('code-review');
+      expect(config.agent_name).toBe('mg-code-review');
     });
 
     it('When .clauderc has feature_name, Then uses that value', () => {
@@ -264,14 +264,14 @@ describe('audit/tracking/config - detectAgentName()', () => {
       expect(agentName).toBe('qa');
     });
 
-    it('When script is src/agents/code-review.ts, Then detects "code-review"', () => {
-      const agentName = detectAgentName('/path/to/src/agents/code-review.ts');
-      expect(agentName).toBe('code-review');
+    it('When script is src/agents/mg-code-review.ts, Then detects "mg-code-review"', () => {
+      const agentName = detectAgentName('/path/to/src/agents/mg-code-review.ts');
+      expect(agentName).toBe('mg-code-review');
     });
 
-    it('When script is src/agents/design-review.js, Then detects "design-review"', () => {
-      const agentName = detectAgentName('/path/to/src/agents/design-review.js');
-      expect(agentName).toBe('design-review');
+    it('When script is src/agents/mg-design-review.js, Then detects "mg-design-review"', () => {
+      const agentName = detectAgentName('/path/to/src/agents/mg-design-review.js');
+      expect(agentName).toBe('mg-design-review');
     });
   });
 

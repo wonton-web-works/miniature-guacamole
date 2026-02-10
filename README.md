@@ -47,7 +47,7 @@
 
 This is a **Claude Code skill system** that provides a complete product development organization within your IDE. It includes:
 
-- **16 Collaborative Skills** - From feature assessment to implementation
+- **16 Skills** - From feature assessment to implementation
 - **19 Specialized Agents** - Specialized roles from CEO to QA
 - **Shared Memory Layer** - Cross-agent state management with 99% test coverage
 - **Supervisor System** - Monitors depth limits and prevents infinite loops
@@ -116,14 +116,14 @@ claude
 
 ### 4. Use a Workflow
 ```
-/feature-assessment Build a user authentication system
+/mg-assess Build a user authentication system
 ```
 
 The workflow will guide you through feature evaluation, spawn expert agents (Product Owner, Product Manager, CTO), and provide a structured recommendation with next steps.
 
 ### 5. Execute with a Team
 ```
-/engineering-team Execute WS-1: Add login endpoint
+/mg-build Execute WS-1: Add login endpoint
 ```
 
 The team runs the full TDD cycle: QA writes tests → Dev implements → QA verifies → Staff Engineer reviews.
@@ -212,17 +212,17 @@ In Claude Code:
 
 | Workflow | Slash Command | Purpose |
 |----------|---------------|---------|
-| **Feature Assessment** | `/feature-assessment` | Interactive feature evaluation with product/technical perspectives |
-| **Technical Assessment** | `/technical-assessment` | Architecture planning and feasibility analysis |
-| **Security Review** | `/security-review` | OWASP Top 10, authentication, data protection checks |
-| **Accessibility Review** | `/accessibility-review` | WCAG 2.1 AA compliance verification |
-| **Design Review** | `/design-review` | UI/UX evaluation and design system compliance |
-| **Code Review** | `/code-review` | Technical quality, security, standards verification |
-| **Implementation** | `/implement` | Execute TDD cycle: tests → code → verify → review |
+| **Feature Assessment** | `/mg-assess` | Interactive feature evaluation with product/technical perspectives |
+| **Technical Assessment** | `/mg-assess-tech` | Architecture planning and feasibility analysis |
+| **Security Review** | `/mg-security-review` | OWASP Top 10, authentication, data protection checks |
+| **Accessibility Review** | `/mg-accessibility-review` | WCAG 2.1 AA compliance verification |
+| **Design Review** | `/mg-design-review` | UI/UX evaluation and design system compliance |
+| **Code Review** | `/mg-code-review` | Technical quality, security, standards verification |
+| **Implementation** | `/mg-build` | Execute TDD cycle: tests → code → verify → review |
 
 ### Workflow Example
 ```
-/feature-assessment Add two-factor authentication
+/mg-assess Add two-factor authentication
 
 # Agent asks clarifying questions, then spawns:
 # - product-owner for strategic fit
@@ -238,15 +238,15 @@ In Claude Code:
 
 | Team | Slash Command | Members | Purpose |
 |------|---------------|---------|---------|
-| **Leadership Team** | `/leadership-team` | CEO, CTO, Engineering Director | Strategic decisions, executive reviews, code approvals |
-| **Product Team** | `/product-team` | Product Owner, Product Manager, Designer | Product definition, requirements, UX specifications |
-| **Engineering Team** | `/engineering-team` | Engineering Manager, Staff Engineer, Dev, QA | TDD/BDD development with 99% coverage |
-| **Design Team** | `/design-team` | Art Director, Designer | UI/UX design and visual standards |
-| **Docs Team** | `/docs-team` | Technical Writer, API Designer | Documentation and API specs |
+| **Leadership Team** | `/mg-leadership-team` | CEO, CTO, Engineering Director | Strategic decisions, executive reviews, code approvals |
+| **Product Team** | `/mg-spec` | Product Owner, Product Manager, Designer | Product definition, requirements, UX specifications |
+| **Engineering Team** | `/mg-build` | Engineering Manager, Staff Engineer, Dev, QA | TDD/BDD development with 99% coverage |
+| **Design Team** | `/mg-design` | Art Director, Designer | UI/UX design and visual standards |
+| **Docs Team** | `/mg-document` | Technical Writer, API Designer | Documentation and API specs |
 
 ### Team Example
 ```
-/leadership-team Review WS-1 on branch feature/ws-1-login
+/mg-leadership-team Review WS-1 on branch feature/ws-1-login
 
 # CEO: Business alignment check
 # CTO: Technical quality review
@@ -354,10 +354,10 @@ your-project/
     │   └── ...
     │
     ├── skills/                      # 16 collaborative workflows
-    │   ├── feature-assessment/
-    │   ├── technical-assessment/
-    │   ├── leadership-team/
-    │   ├── engineering-team/
+    │   ├── mg-assess/
+    │   ├── mg-assess-tech/
+    │   ├── mg-leadership-team/
+    │   ├── mg-build/
     │   └── ...
     │
     ├── shared/                      # 6 protocol documents
@@ -586,19 +586,19 @@ See [src/memory/README.md](src/memory/README.md) for full documentation.
 ### The TDD/BDD Cycle
 ```
 ┌─────────────────┐
-│ /leadership-    │  ← Executive Review + Workstream Plan
+│ /mg-leadership- │  ← Executive Review + Workstream Plan
 │     team        │
 └────────┬────────┘
          │
          ▼
 ┌─────────────────┐
-│ /engineering-   │  ← TDD Cycle: Tests → Code → Verify → Review
-│     team        │
+│ /mg-build       │  ← TDD Cycle: Tests → Code → Verify → Review
+│                 │
 └────────┬────────┘
          │
          ▼
 ┌─────────────────┐
-│ /leadership-    │  ← Code Review: APPROVE or REQUEST CHANGES
+│ /mg-leadership- │  ← Code Review: APPROVE or REQUEST CHANGES
 │     team        │
 └────────┬────────┘
          │
@@ -620,19 +620,19 @@ See [src/memory/README.md](src/memory/README.md) for full documentation.
 
 **1. Plan the work**
 ```
-/leadership-team Build a user authentication system
+/mg-leadership-team Build a user authentication system
 ```
 Output: Executive Review + Workstreams (WS-1, WS-2, etc.)
 
 **2. Execute a workstream**
 ```
-/engineering-team Execute workstream WS-1: Add login endpoint
+/mg-build Execute workstream WS-1: Add login endpoint
 ```
 This runs: QA writes tests → Dev implements → QA verifies → Staff Eng reviews
 
 **3. Leadership reviews**
 ```
-/leadership-team Review workstream WS-1 on branch feature/ws-1-login
+/mg-leadership-team Review workstream WS-1 on branch feature/ws-1-login
 ```
 Output: APPROVED or REQUEST CHANGES
 
@@ -647,7 +647,7 @@ Output: APPROVED or REQUEST CHANGES
 
 ### Example 1: Feature Assessment
 ```
-User: /feature-assessment Add two-factor authentication
+User: /mg-assess Add two-factor authentication
 
 Agent: [Asks clarifying questions]
 - What problem does this solve?
@@ -669,23 +669,23 @@ Output:
 ### Recommendation: GO
 
 ### Next Steps
-- [ ] /technical-assessment for architecture planning
-- [ ] /design-review for UX planning
-- [ ] Assign to /product-team for detailed spec
+- [ ] /mg-assess-tech for architecture planning
+- [ ] /mg-design-review for UX planning
+- [ ] Assign to /mg-spec for detailed spec
 ```
 
 ### Example 2: Full Implementation Cycle
 ```
-User: /leadership-team Build user authentication
+User: /mg-leadership-team Build user authentication
 
 Leadership: [Creates workstreams]
 - WS-1: Login endpoint
 - WS-2: Password hashing
 - WS-3: Session management
 
-User: /implement WS-1
+User: /mg-build WS-1
 
-Implement Skill:
+Build Skill:
 1. Spawns qa → writes failing tests
 2. Spawns dev → implements code to pass tests
 3. Spawns qa → verifies all tests pass + 99% coverage
@@ -693,7 +693,7 @@ Implement Skill:
 
 Output: Ready for leadership review
 
-User: /leadership-team Review WS-1 on branch feature/ws-1-login
+User: /mg-leadership-team Review WS-1 on branch feature/ws-1-login
 
 Leadership: APPROVED
 

@@ -78,7 +78,7 @@ Copy `.claude/skills/` to your project for workflow commands:
 
 ```
 /new-feature - Full product development workflow
-/code-review - Code review process
+/mg-code-review - Code review process
 ```
 
 ## How Agents Communicate

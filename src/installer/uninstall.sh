@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # ============================================================================
-# miniature-guacamole uninstaller (v2.x)
+# miniature-guacamole uninstaller (v3.x)
 # ============================================================================
 # Removes miniature-guacamole framework from a project's .claude/ directory.
 # Preserves user data by default (memory/, user content in CLAUDE.md).
@@ -33,7 +33,7 @@ FORCE=false
 
 usage() {
     cat <<EOF
-miniature-guacamole uninstaller (v2.x)
+miniature-guacamole uninstaller (v3.x)
 
 Usage: $0 [OPTIONS] [PROJECT_DIR]
 

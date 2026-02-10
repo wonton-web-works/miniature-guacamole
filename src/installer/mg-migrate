@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # ============================================================================
-# mg-migrate - Migrate miniature-guacamole from v1.x to v2.x
+# mg-migrate - Migrate miniature-guacamole from v1.x/v2.x to v3.x
 # ============================================================================
 # Migrates from global ~/.claude/ installation to project-local .claude/
 #
@@ -17,7 +17,7 @@
 #   PROJECT_DIR          Target project directory (default: current directory)
 #
 # Description:
-#   Migrates miniature-guacamole from v1.x (global ~/.claude/) to v2.x (project-local).
+#   Migrates miniature-guacamole from v1.x/v2.x (global ~/.claude/) to v3.x (project-local).
 #
 #   Phase 1: Detection & Inventory
 #     - Detect global MG installation in ~/.claude/
@@ -160,7 +160,7 @@ fi
 
 echo ""
 echo -e "${BLUE}╔══════════════════════════════════════════════════════════════╗${NC}"
-echo -e "${BLUE}║${NC}  ${CYAN}miniature-guacamole${NC} - Migration Tool (v1.x → v2.x)       ${BLUE}║${NC}"
+echo -e "${BLUE}║${NC}  ${CYAN}miniature-guacamole${NC} - Migration Tool (v1.x/v2.x → v3.x)       ${BLUE}║${NC}"
 echo -e "${BLUE}╚══════════════════════════════════════════════════════════════╝${NC}"
 echo ""
 
@@ -369,7 +369,7 @@ if [[ "$DRY_RUN" == "false" ]]; then
   "source": "migration",
   "migrated_from": "global",
   "migrated_at": "TIMESTAMP_PLACEHOLDER",
-  "version": "2.0.0",
+  "version": "3.0.0",
   "components": {
     "agents": AGENTS_COUNT,
     "skills": SKILLS_COUNT,
@@ -399,7 +399,7 @@ if [[ "$DRY_RUN" == "false" ]]; then
     cat > "$PROJECT_CLAUDE_DIR/MG_PROJECT" <<MARKER
 This directory contains miniature-guacamole framework files.
 
-Version: 2.0.0
+Version: 3.0.0
 Installed: $(date -u +"%Y-%m-%dT%H:%M:%SZ")
 Source: migration from global installation
 MARKER

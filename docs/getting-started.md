@@ -10,67 +10,82 @@ Before installing miniature-guacamole, ensure you have:
 
 ## Installation
 
-Choose the installation method that best fits your needs.
+miniature-guacamole uses project-local installation. Each project gets its own `.claude/` directory with the framework files.
 
-### Option 1: Clone into Project (Recommended)
-
-Clone this repository and the `.claude` directory will be automatically recognized by Claude Code:
+### Method 1: Install from Source
 
 ```bash
+# Clone the repository
 git clone https://github.com/RivermarkResearch/miniature-guacamole.git
 cd miniature-guacamole
-npm install  # Install shared memory dependencies
-claude      # Start Claude Code - agents will be available
+
+# Build the distribution
+./build.sh
+
+# Install to your project
+dist/miniature-guacamole/install.sh /path/to/your-project
 ```
 
-### Option 2: Add to Existing Project
-
-Copy the `.claude` directory to the root of any existing project:
+### Method 2: Install from GitHub Release
 
 ```bash
-cp -r /path/to/miniature-guacamole/.claude /path/to/your-project/
-cp -r /path/to/miniature-guacamole/src /path/to/your-project/
+# Download and extract
+curl -fsSL https://github.com/RivermarkResearch/miniature-guacamole/releases/latest/download/miniature-guacamole.tar.gz | tar -xz
+cd miniature-guacamole
+
+# Install to your project
+./install.sh /path/to/your-project
+```
+
+### Method 3: Web Install (One-liner)
+
+```bash
 cd /path/to/your-project
-npm install  # Install dependencies
-claude      # Agents now available in this project
+curl -fsSL https://raw.githubusercontent.com/RivermarkResearch/miniature-guacamole/main/src/installer/web-install.sh | bash
 ```
 
-### Option 3: Install Globally (User-level)
+### What Gets Installed
 
-To make these agents available across all projects:
+Installation creates `.claude/` in your project:
+
+```
+your-project/
+└── .claude/
+    ├── agents/           # 19 specialized roles
+    ├── skills/           # 16 collaboration workflows
+    ├── shared/           # Protocol documents
+    ├── scripts/          # mg-* utilities
+    ├── hooks/            # Safety and initialization
+    ├── memory/           # Agent state (gitignored)
+    ├── settings.json     # Project permissions
+    └── CLAUDE.md         # Framework docs
+```
+
+## Verifying Installation
 
 ```bash
-# Copy skills to user-level location
-cp -r /path/to/miniature-guacamole/.claude/skills/* ~/.claude/skills/
+# Check installed version
+cat .claude/MG_INSTALL.json
 
-# Copy agents to user-level location
-cp -r /path/to/miniature-guacamole/.claude/agents/* ~/.claude/agents/
+# List available agents
+ls .claude/agents/
 
-# Copy shared protocols
-mkdir -p ~/.claude/shared
-cp -r /path/to/miniature-guacamole/.claude/shared/* ~/.claude/shared/
+# List available skills
+ls .claude/skills/
 
-# Copy shared memory layer
-mkdir -p ~/.claude/src
-cp -r /path/to/miniature-guacamole/src/* ~/.claude/src/
+# Test a script
+.claude/scripts/mg-help
 ```
 
-## Verify Installation
-
-After installation, start Claude Code and verify agents are available:
+## Uninstalling
 
 ```bash
-claude
-# Then type: /ceo
-# You should see the CEO agent respond
-```
+# Remove framework, preserve memory
+/path/to/miniature-guacamole/dist/miniature-guacamole/uninstall.sh
 
-List available skills:
+# Remove everything (DESTRUCTIVE)
+/path/to/miniature-guacamole/dist/miniature-guacamole/uninstall.sh --purge
 ```
-/help
-```
-
-You should see all available agents and workflow skills listed.
 
 ## Quick Start Examples
 

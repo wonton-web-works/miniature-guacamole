@@ -4,7 +4,7 @@ layout: home
 hero:
   name: miniature-guacamole
   text: AI-Powered Product Development
-  tagline: A complete product development organization for Claude Code with 20 specialized agents, TDD workflows, and shared memory state management.
+  tagline: A complete product development organization for Claude Code with 19 specialized agents, TDD workflows, project-local architecture, and CI release automation.
   actions:
     - theme: brand
       text: Get Started
@@ -15,7 +15,7 @@ hero:
 
 features:
   - icon: 🤖
-    title: 20 Specialized Agents
+    title: 19 Specialized Agents
     details: Complete organizational hierarchy from CEO to individual contributors with clear delegation patterns and bounded depth control.
   - icon: 🔄
     title: TDD/BDD Workflows
@@ -27,11 +27,14 @@ features:
     title: Git Workstreams
     details: Each feature in its own branch with structured merge process and executive review gates before production.
   - icon: 🎯
-    title: 7 Workflow Skills
+    title: 16 Team Skills
     details: From feature assessment to implementation, security review to accessibility checks - coordinated multi-agent workflows.
   - icon: 🔒
     title: Loop Prevention
     details: Automatic detection of circular delegation with depth limits and supervisor monitoring to prevent infinite chains.
+  - icon: 📦
+    title: Unified Build System
+    details: Single build.sh creates distribution archives. CI automatically publishes releases to GitHub on version tags.
 ---
 
 ## What You Can Do
@@ -59,7 +62,7 @@ Executive approval gates ensure quality before production deployment.
 
 - [Installation Guide](/getting-started) - Get up and running in 5 minutes
 - [Architecture Overview](/architecture) - Understand the agent hierarchy and delegation model
-- [Agent Reference](/agents) - Detailed specifications for all 20 agents
+- [Agent Reference](/agents) - Detailed specifications for all 19 agents
 - [Workflow Guide](/workflows) - TDD/BDD cycle and workstream management
 - [Contributing](/contributing) - How to extend the system
 

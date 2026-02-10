@@ -1,6 +1,6 @@
 {
   "name": "miniature-guacamole",
-  "version": "2.0.0",
+  "version": "3.0.0",
   "channel": "stable",
   "released_at": "2026-02-09T00:00:00Z",
   "description": "Product Development Team agent system for Claude Code"

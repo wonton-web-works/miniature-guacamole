@@ -393,3 +393,73 @@ The system is designed to be extended:
 4. Update architecture diagrams
 
 See [Contributing Guide](/contributing) for detailed instructions.
+
+## Build and Release
+
+### Build Pipeline
+
+The unified build script consolidates all source:
+
+```bash
+./build.sh
+# Outputs:
+#   dist/miniature-guacamole/          - Extracted distribution
+#   dist/miniature-guacamole.tar.gz    - Tarball (for releases)
+#   dist/miniature-guacamole.zip       - Zip archive
+```
+
+**Build process**:
+1. Clean `dist/`
+2. Copy `src/framework/` → `dist/miniature-guacamole/.claude/`
+3. Copy `src/installer/` → `dist/miniature-guacamole/`
+4. Generate `VERSION.json` (version, git sha, build date)
+5. Create tar.gz and zip archives
+
+### CI/CD Release Workflow
+
+Automated releases on version tags:
+
+```yaml
+# .github/workflows/release.yml
+on:
+  push:
+    tags: ['v*.*.*']
+
+steps:
+  - Checkout code
+  - Install dependencies (npm ci)
+  - Type check (tsc --noEmit)
+  - Run tests (npm test)
+  - Build distribution (./build.sh)
+  - Create GitHub release
+  - Attach miniature-guacamole.tar.gz
+  - Attach miniature-guacamole.zip
+```
+
+**To create a release**:
+
+```bash
+git tag v1.0.1
+git push origin v1.0.1
+# CI automatically builds and publishes to GitHub releases
+```
+
+### Installation System
+
+**mg-init** is a hybrid installer:
+
+1. Check local cache: `~/.cache/miniature-guacamole/v1.0.0.tar.gz`
+2. If cache miss → fetch from GitHub releases API
+3. Download tarball, cache it, extract to temp
+4. Run bundled `install.sh` against target project
+
+**Flags**:
+- `--version v1.2.3` - Specific version (default: latest)
+- `--offline` - Cache only, no network
+- `--force` - Force re-initialization
+
+**Example**:
+
+```bash
+mg-init --version v1.0.0 /path/to/project
+```

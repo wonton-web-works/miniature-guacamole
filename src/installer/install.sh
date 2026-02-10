@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # ============================================================================
-# miniature-guacamole project-local installer (v2.x)
+# miniature-guacamole project-local installer (v3.x)
 # ============================================================================
 # Installs miniature-guacamole framework files to a project's .claude/ directory.
 # NEVER modifies ~/.claude/ (except optionally ~/.claude/.mg-configs/).
@@ -36,7 +36,7 @@ INSTALL_CONFIG_CACHE=false
 
 usage() {
     cat <<EOF
-miniature-guacamole installer (v2.x)
+miniature-guacamole installer (v3.x)
 
 Usage: $0 [OPTIONS] [PROJECT_DIR]
 
@@ -134,7 +134,7 @@ MG_PROJECT_MARKER="$CLAUDE_TARGET_DIR/MG_PROJECT"
 
 echo ""
 echo -e "${BLUE}╔══════════════════════════════════════════════════════════════╗${NC}"
-echo -e "${BLUE}║${NC}  ${GREEN}miniature-guacamole${NC} v2.x - Project-Local Installer      ${BLUE}║${NC}"
+echo -e "${BLUE}║${NC}  ${GREEN}miniature-guacamole${NC} v3.x - Project-Local Installer      ${BLUE}║${NC}"
 echo -e "${BLUE}╚══════════════════════════════════════════════════════════════╝${NC}"
 echo ""
 
@@ -430,9 +430,9 @@ echo ""
 log_info "Creating installation metadata..."
 
 # Read version from source if available
-VERSION="2.0.0"
+VERSION="3.0.0"
 if [[ -f "$SCRIPT_DIR/VERSION.json" ]]; then
-    VERSION=$(python3 -c "import json, sys; print(json.load(open('$SCRIPT_DIR/VERSION.json')).get('version', '2.0.0'))" 2>/dev/null || echo "2.0.0")
+    VERSION=$(python3 -c "import json, sys; print(json.load(open('$SCRIPT_DIR/VERSION.json')).get('version', '3.0.0'))" 2>/dev/null || echo "3.0.0")
 fi
 
 # Determine install timestamp

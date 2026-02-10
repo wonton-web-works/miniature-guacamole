@@ -1,0 +1,623 @@
+#!/usr/bin/env bash
+# ============================================================================
+# mg-util - Unified utility for miniature-guacamole initialization and auditing
+# ============================================================================
+# Usage:
+#   mg-util init [project-dir] [--help | -h]
+#   mg-util audit [--project | --global] [--help | -h]
+# ============================================================================
+
+set -euo pipefail
+
+# ============================================================================
+# Determine installation root
+# ============================================================================
+MG_INSTALL_ROOT="${MG_INSTALL_ROOT:-$HOME/.miniature-guacamole}"
+
+# ============================================================================
+# Error handling
+# ============================================================================
+error() {
+    echo "Error: $1" >&2
+    exit 1
+}
+
+# ============================================================================
+# Help text
+# ============================================================================
+show_help() {
+    cat <<EOF
+Usage: mg-util <command> [options]
+
+Commands:
+  init [project-dir]              Initialize a new project with miniature-guacamole
+  audit [--project | --global]    Run settings check and cost reporting audit
+
+Options:
+  -h, --help                      Show help message
+
+Run 'mg-util <command> --help' for command-specific help.
+
+Examples:
+  mg-util init                    # Initialize current directory
+  mg-util init /path/to/project   # Initialize specific project
+  mg-util audit --project         # Audit current project
+  mg-util audit --global          # Audit global settings
+
+Installation root: $MG_INSTALL_ROOT
+EOF
+}
+
+show_init_help() {
+    cat <<EOF
+Usage: mg-util init [project-dir] [--help | -h]
+
+Initialize a new project with miniature-guacamole framework.
+
+Arguments:
+  project-dir       Target project directory (defaults to current directory)
+
+Options:
+  -h, --help        Show this help message
+
+Behavior:
+  - Creates .claude/memory/ directory structure
+  - Copies memory template files from installation root
+  - Creates .claude/CLAUDE.md from template
+  - Safe to run multiple times (idempotent)
+  - Preserves existing files
+
+Environment Variables:
+  MG_INSTALL_ROOT   Installation root directory (default: ~/.miniature-guacamole)
+
+Examples:
+  mg-util init                        # Initialize current directory
+  mg-util init ~/my-project           # Initialize specific directory
+  mg-util init ../other-project       # Use relative path
+
+Exit codes:
+  0 - Success
+  1 - Error (missing templates, permission denied, invalid path)
+EOF
+}
+
+show_audit_help() {
+    cat <<EOF
+Usage: mg-util audit [--project | --global] [--help | -h]
+
+Run settings check and cost reporting audit.
+
+Options:
+  --project         Audit current project only
+  --global          Audit global settings and aggregate cross-project data
+  -h, --help        Show this help message
+
+If no scope flag is provided, audits both project and global settings.
+
+Behavior:
+  - Runs mg-settings-check with appropriate scope
+  - Reads audit cache from .claude/audit/stats-cache.json
+  - Computes cost report (sessions, tokens, cache hits)
+  - Generates timestamped report in audit directory
+  - Displays summary to stdout
+
+Environment Variables:
+  MG_INSTALL_ROOT   Installation root directory (default: ~/.miniature-guacamole)
+
+Examples:
+  mg-util audit                  # Audit both project and global
+  mg-util audit --project        # Audit current project only
+  mg-util audit --global         # Audit global settings only
+
+Exit codes:
+  0 - Success (even if issues found, report saved)
+  1 - Error (missing dependencies, corrupted data, permission denied)
+EOF
+}
+
+# ============================================================================
+# INIT COMMAND
+# ============================================================================
+cmd_init() {
+    local project_dir="${1:-.}"
+
+    # Handle help flags
+    if [[ "$project_dir" == "--help" ]] || [[ "$project_dir" == "-h" ]]; then
+        show_init_help
+        exit 0
+    fi
+
+    # Validate installation root exists
+    if [[ ! -d "$MG_INSTALL_ROOT" ]]; then
+        error "Installation root not found: $MG_INSTALL_ROOT"
+    fi
+
+    # Check if installation root is readable
+    if [[ ! -r "$MG_INSTALL_ROOT" ]]; then
+        error "Cannot read installation root: $MG_INSTALL_ROOT (permission denied)"
+    fi
+
+    # Validate templates directory exists
+    local templates_dir="$MG_INSTALL_ROOT/templates"
+    if [[ ! -d "$templates_dir" ]]; then
+        error "Templates directory not found: $templates_dir (missing templates)"
+    fi
+
+    # Check for invalid path characters (null bytes) - do this FIRST
+    # Only fail if we can detect actual null bytes in the string length
+    if [[ ${#project_dir} -ne $(printf '%s' "$project_dir" | wc -c) ]] 2>/dev/null; then
+        error "Invalid path: contains null bytes"
+    fi
+
+    # Normalize project path (remove trailing slashes)
+    project_dir="${project_dir%/}"
+
+    # Check if path exists and is a file (not a directory) BEFORE resolution
+    if [[ -e "$project_dir" ]] && [[ ! -d "$project_dir" ]]; then
+        error "Target path is not a directory: $project_dir (file exists)"
+    fi
+
+    # Resolve absolute path
+    if [[ "$project_dir" == "." ]]; then
+        project_dir="$(pwd)"
+    elif [[ "$project_dir" != /* ]]; then
+        # Relative path - make absolute
+        project_dir="$(cd "$(dirname "$project_dir")" 2>/dev/null && pwd)/$(basename "$project_dir")" || {
+            # Directory doesn't exist yet - try to resolve parent
+            local parent_dir="$(dirname "$project_dir")"
+            local base_name="$(basename "$project_dir")"
+            if [[ "$parent_dir" == "." ]]; then
+                project_dir="$(pwd)/$base_name"
+            else
+                parent_dir="$(cd "$parent_dir" 2>/dev/null && pwd)" || {
+                    # Create parent directories if needed
+                    mkdir -p "$parent_dir" || error "Cannot create parent directory: $parent_dir"
+                    parent_dir="$(cd "$parent_dir" && pwd)"
+                }
+                project_dir="$parent_dir/$base_name"
+            fi
+        }
+    fi
+
+    # Create project directory if it doesn't exist
+    if [[ ! -d "$project_dir" ]]; then
+        mkdir -p "$project_dir" || error "Cannot create project directory: $project_dir"
+    fi
+
+    # Check if project directory is writable
+    if [[ ! -w "$project_dir" ]]; then
+        error "Cannot write to project directory: $project_dir (permission denied)"
+    fi
+
+    # Create .claude directory if needed
+    local claude_dir="$project_dir/.claude"
+    mkdir -p "$claude_dir"
+
+    # Check if already initialized
+    local memory_dir="$claude_dir/memory"
+    local already_initialized=false
+    if [[ -d "$memory_dir" ]]; then
+        already_initialized=true
+    fi
+
+    # Create memory directory structure
+    mkdir -p "$memory_dir"
+
+    # Validate and copy memory templates
+    local memory_templates="$templates_dir/memory"
+    if [[ -d "$memory_templates" ]]; then
+        # Copy all template files (but don't overwrite existing)
+        for template_file in "$memory_templates"/*; do
+            if [[ -f "$template_file" ]]; then
+                local basename="$(basename "$template_file")"
+                local target="$memory_dir/$basename"
+
+                # Validate JSON templates before copying (if jq is available)
+                if [[ "$basename" == *.json ]]; then
+                    if command -v jq &>/dev/null; then
+                        if ! jq '.' "$template_file" >/dev/null 2>&1; then
+                            error "Corrupted or invalid template file: $template_file"
+                        fi
+                    else
+                        # Basic JSON validation without jq - check for basic structure
+                        if ! grep -q '{' "$template_file" && ! grep -q '\[' "$template_file"; then
+                            error "Corrupted or invalid template file: $template_file"
+                        fi
+                    fi
+                fi
+
+                # Copy only if doesn't exist (preserve existing)
+                if [[ ! -e "$target" ]]; then
+                    cp -p "$template_file" "$target"
+                fi
+            fi
+        done
+
+        # Copy subdirectories recursively
+        for template_subdir in "$memory_templates"/*; do
+            if [[ -d "$template_subdir" ]]; then
+                local basename="$(basename "$template_subdir")"
+                local target_subdir="$memory_dir/$basename"
+                mkdir -p "$target_subdir"
+
+                # Copy contents if not empty
+                if [[ -n "$(ls -A "$template_subdir" 2>/dev/null)" ]]; then
+                    cp -rp "$template_subdir"/* "$target_subdir/" 2>/dev/null || true
+                fi
+            fi
+        done
+    fi
+
+    # Create CLAUDE.md from template (preserve if exists)
+    local claude_md_template="$templates_dir/project/CLAUDE.md"
+    local claude_md_target="$claude_dir/CLAUDE.md"
+    if [[ -f "$claude_md_template" ]] && [[ ! -f "$claude_md_target" ]]; then
+        cp "$claude_md_template" "$claude_md_target"
+    fi
+
+    # Copy scripts templates if they exist
+    local scripts_templates="$templates_dir/scripts"
+    if [[ -d "$scripts_templates" ]]; then
+        local scripts_dir="$claude_dir/scripts"
+        mkdir -p "$scripts_dir"
+
+        for script_file in "$scripts_templates"/*; do
+            if [[ -f "$script_file" ]]; then
+                local basename="$(basename "$script_file")"
+                local target="$scripts_dir/$basename"
+
+                # Copy only if doesn't exist
+                if [[ ! -e "$target" ]]; then
+                    cp -p "$script_file" "$target"
+                fi
+            fi
+        done
+    fi
+
+    # Output success message
+    if [[ "$already_initialized" == "true" ]]; then
+        echo "Project already initialized: $project_dir"
+        echo "Existing files preserved, missing files added"
+    else
+        echo "Successfully initialized project: $project_dir"
+        echo "Created .claude/memory/ structure and CLAUDE.md"
+    fi
+
+    exit 0
+}
+
+# ============================================================================
+# AUDIT COMMAND
+# ============================================================================
+cmd_audit() {
+    local check_project=false
+    local check_global=false
+
+    # Parse flags
+    if [[ $# -eq 0 ]]; then
+        # Default: check both
+        check_project=true
+        check_global=true
+    fi
+
+    while [[ $# -gt 0 ]]; do
+        case "$1" in
+            -h|--help)
+                show_audit_help
+                exit 0
+                ;;
+            --project)
+                if [[ "$check_global" == "true" && "$check_project" == "false" ]]; then
+                    error "Cannot use both --project and --global flags (invalid)"
+                fi
+                check_project=true
+                shift
+                ;;
+            --global)
+                if [[ "$check_project" == "true" && "$check_global" == "false" ]]; then
+                    error "Cannot use both --project and --global flags (invalid)"
+                fi
+                check_global=true
+                shift
+                ;;
+            *)
+                error "Unknown flag: $1 (invalid)"
+                ;;
+        esac
+    done
+
+    # Validate audit directory exists
+    local audit_dir="$MG_INSTALL_ROOT/audit"
+    if [[ ! -d "$audit_dir" ]]; then
+        error "Audit directory not found: $audit_dir"
+    fi
+
+    # Check if audit directory is writable
+    if [[ ! -w "$audit_dir" ]]; then
+        error "Cannot write to audit directory: $audit_dir (permission denied)"
+    fi
+
+    # Check if mg-settings-check is available
+    if ! command -v mg-settings-check &>/dev/null; then
+        error "mg-settings-check not found in PATH"
+    fi
+
+    # Check if we're in a project (for project mode)
+    if [[ "$check_project" == "true" ]]; then
+        if [[ ! -d ".claude" ]]; then
+            error "Not in a project directory (no .claude directory found)"
+        fi
+    fi
+
+    # Validate HOME for global mode
+    if [[ "$check_global" == "true" ]]; then
+        if [[ -z "${HOME:-}" ]]; then
+            error "HOME environment variable not set"
+        fi
+    fi
+
+    # Generate timestamp
+    local timestamp
+    timestamp=$(date +"%Y%m%d-%H%M%S" 2>/dev/null) || error "Failed to generate timestamp"
+
+    # Determine scope for report filename
+    local scope="both"
+    if [[ "$check_project" == "true" ]] && [[ "$check_global" == "false" ]]; then
+        scope="project"
+    elif [[ "$check_global" == "true" ]] && [[ "$check_project" == "false" ]]; then
+        scope="global"
+    fi
+
+    # Create report file
+    local report_file="$audit_dir/audit-$scope-$timestamp.txt"
+
+    # Check for timestamp collision (unlikely)
+    local counter=1
+    while [[ -e "$report_file" ]]; do
+        report_file="$audit_dir/audit-$scope-$timestamp-$counter.txt"
+        counter=$((counter + 1))
+    done
+
+    # Start building report
+    {
+        echo "=== Audit Report ==="
+        echo "Date: $(date '+%Y-%m-%d %H:%M:%S')"
+        echo "Scope: $scope"
+        echo ""
+    } > "$report_file"
+
+    # Run mg-settings-check
+    echo "Settings Check:" >> "$report_file"
+
+    local project_settings_output=""
+    local global_settings_output=""
+    local project_settings_exit_code=0
+    local global_settings_exit_code=0
+    local settings_exit_code=0
+
+    if [[ "$check_project" == "true" ]]; then
+        project_settings_output=$(mg-settings-check --project 2>&1) || project_settings_exit_code=$?
+        echo "- Project settings: $(if [[ $project_settings_exit_code -eq 0 ]]; then echo "OK"; else echo "ISSUES FOUND"; fi)" >> "$report_file"
+        if [[ $project_settings_exit_code -ne 0 ]]; then
+            echo "$project_settings_output" >> "$report_file"
+            settings_exit_code=1
+        fi
+    fi
+
+    if [[ "$check_global" == "true" ]]; then
+        global_settings_output=$(mg-settings-check --global 2>&1) || global_settings_exit_code=$?
+        echo "- Global settings: $(if [[ $global_settings_exit_code -eq 0 ]]; then echo "OK"; else echo "ISSUES FOUND"; fi)" >> "$report_file"
+        if [[ $global_settings_exit_code -ne 0 ]]; then
+            echo "$global_settings_output" >> "$report_file"
+            settings_exit_code=1
+        fi
+    fi
+
+    echo "" >> "$report_file"
+
+    # Cost Report
+    echo "Cost Report:" >> "$report_file"
+
+    local total_sessions=0
+    local total_input_tokens=0
+    local total_output_tokens=0
+    local total_cache_read_tokens=0
+    local projects_audited=()
+
+    # Read audit cache if in project mode
+    if [[ "$check_project" == "true" ]]; then
+        local audit_cache=".claude/audit/stats-cache.json"
+
+        if [[ -f "$audit_cache" ]]; then
+            # Validate JSON
+            if ! command -v jq &>/dev/null || ! jq '.' "$audit_cache" >/dev/null 2>&1; then
+                error "Corrupted or invalid audit cache file: $audit_cache"
+            fi
+
+            # Parse sessions
+            local sessions
+            sessions=$(jq -r '.sessions // [] | length' "$audit_cache" 2>/dev/null) || sessions=0
+            total_sessions=$sessions
+
+            # Sum tokens
+            if [[ $sessions -gt 0 ]]; then
+                total_input_tokens=$(jq -r '[.sessions[].input_tokens // 0] | add' "$audit_cache" 2>/dev/null) || total_input_tokens=0
+                total_output_tokens=$(jq -r '[.sessions[].output_tokens // 0] | add' "$audit_cache" 2>/dev/null) || total_output_tokens=0
+                total_cache_read_tokens=$(jq -r '[.sessions[].cache_read_tokens // 0] | add' "$audit_cache" 2>/dev/null) || total_cache_read_tokens=0
+            fi
+
+            projects_audited+=("$(pwd)")
+        else
+            echo "- No audit data found" >> "$report_file"
+        fi
+    fi
+
+    # Report statistics
+    if [[ $total_sessions -eq 0 ]] && [[ "$check_project" == "true" ]]; then
+        echo "- Total sessions: 0" >> "$report_file"
+        echo "- No audit data available" >> "$report_file"
+    elif [[ $total_sessions -gt 0 ]]; then
+        echo "- Total sessions: $total_sessions" >> "$report_file"
+        echo "- Input tokens: $total_input_tokens" >> "$report_file"
+        echo "- Output tokens: $total_output_tokens" >> "$report_file"
+        echo "- Cache read tokens: $total_cache_read_tokens" >> "$report_file"
+
+        # Estimate cost (using Claude Opus 4.6 pricing as example)
+        # Input: $15/MTok, Output: $75/MTok, Cache read: $1.50/MTok
+        local cost_input=$(echo "scale=2; $total_input_tokens * 15 / 1000000" | bc -l 2>/dev/null || echo "0")
+        local cost_output=$(echo "scale=2; $total_output_tokens * 75 / 1000000" | bc -l 2>/dev/null || echo "0")
+        local cost_cache=$(echo "scale=2; $total_cache_read_tokens * 1.5 / 1000000" | bc -l 2>/dev/null || echo "0")
+        local total_cost=$(echo "scale=2; $cost_input + $cost_output + $cost_cache" | bc -l 2>/dev/null || echo "0")
+
+        if command -v bc &>/dev/null; then
+            echo "- Estimated cost: \$$total_cost" >> "$report_file"
+        fi
+    fi
+
+    # Global mode: aggregate cross-project data
+    if [[ "$check_global" == "true" ]]; then
+        echo "" >> "$report_file"
+        echo "Global Audit:" >> "$report_file"
+
+        # Count project reports in audit directory
+        local project_report_count=0
+        project_report_count=$(find "$audit_dir" -name "audit-project-*.txt" 2>/dev/null | wc -l | tr -d ' ')
+
+        # Aggregate data from all project reports
+        local global_total_sessions=0
+        local global_total_input=0
+        local global_total_output=0
+        local global_total_cache=0
+
+        # Parse recent project reports for aggregation
+        local project_reports
+        project_reports=$(find "$audit_dir" -name "audit-project-*.txt" 2>/dev/null | sort -r | head -20)
+
+        if [[ -n "$project_reports" ]]; then
+            while IFS= read -r report; do
+                # Extract session count from report
+                local sessions_line
+                sessions_line=$(grep "Total sessions:" "$report" 2>/dev/null | head -1)
+                if [[ -n "$sessions_line" ]]; then
+                    local sessions
+                    sessions=$(echo "$sessions_line" | grep -o '[0-9]*' | head -1)
+                    global_total_sessions=$((global_total_sessions + sessions))
+                fi
+            done <<< "$project_reports"
+        fi
+
+        echo "- Cross-project aggregation: enabled" >> "$report_file"
+        echo "- Project reports found: $project_report_count" >> "$report_file"
+
+        if [[ ${#projects_audited[@]} -gt 0 ]]; then
+            echo "- Projects audited in this session:" >> "$report_file"
+            for project in "${projects_audited[@]}"; do
+                echo "  - $project" >> "$report_file"
+            done
+        fi
+    fi
+
+    # Display summary to stdout
+    echo "=== Audit Summary ==="
+    echo "Scope: $scope"
+    echo ""
+
+    # Show settings check summary
+    echo "Settings check:"
+    if [[ "$check_project" == "true" ]]; then
+        if [[ $project_settings_exit_code -ne 0 ]]; then
+            echo "- Project: ISSUES FOUND"
+        else
+            echo "- Project: completed"
+        fi
+    fi
+    if [[ "$check_global" == "true" ]]; then
+        if [[ $global_settings_exit_code -ne 0 ]]; then
+            echo "- Global: ISSUES FOUND"
+        else
+            echo "- Global: completed"
+        fi
+    fi
+    if [[ $settings_exit_code -ne 0 ]]; then
+        # Include more details about issues found
+        echo ""
+        echo "Settings issues detected:"
+        if [[ -n "$project_settings_output" ]]; then
+            echo "$project_settings_output" | grep -E "oversized|bloat|warning|issue|patterns" | head -3
+        fi
+        if [[ -n "$global_settings_output" ]]; then
+            echo "$global_settings_output" | grep -E "oversized|bloat|warning|issue|patterns" | head -3
+        fi
+    fi
+    echo ""
+
+    if [[ "$check_project" == "true" ]]; then
+        if [[ -f ".claude/audit/stats-cache.json" ]]; then
+            echo "Project audit:"
+            if [[ $total_sessions -eq 0 ]]; then
+                echo "- 0 sessions (no data)"
+            elif [[ $total_sessions -eq 1 ]]; then
+                echo "- 1 session"
+            else
+                echo "- $total_sessions sessions"
+            fi
+            echo "- Input tokens: $total_input_tokens"
+            echo "- Output tokens: $total_output_tokens"
+            echo "- Cache read tokens: $total_cache_read_tokens"
+        else
+            echo "Project audit: no audit data found"
+        fi
+    fi
+
+    if [[ "$check_global" == "true" ]]; then
+        echo ""
+        echo "Global audit: completed"
+
+        # Count project reports for aggregation summary
+        local project_report_count=0
+        project_report_count=$(find "$audit_dir" -name "audit-project-*.txt" 2>/dev/null | wc -l | tr -d ' ')
+
+        if [[ $project_report_count -eq 0 ]]; then
+            echo "- 0 projects audited"
+        elif [[ $project_report_count -eq 1 ]]; then
+            echo "- 1 project audited"
+        else
+            echo "- $project_report_count projects audited"
+        fi
+    fi
+
+    echo ""
+    echo "Report saved to: $report_file"
+
+    exit 0
+}
+
+# ============================================================================
+# Main dispatcher
+# ============================================================================
+if [[ $# -eq 0 ]]; then
+    show_help
+    exit 0
+fi
+
+command="$1"
+shift
+
+case "$command" in
+    init)
+        cmd_init "$@"
+        ;;
+    audit)
+        cmd_audit "$@"
+        ;;
+    -h|--help)
+        show_help
+        exit 0
+        ;;
+    *)
+        echo "Error: Unknown command: $command" >&2
+        echo "" >&2
+        show_help >&2
+        exit 1
+        ;;
+esac

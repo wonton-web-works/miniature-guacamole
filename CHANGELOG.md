@@ -9,6 +9,29 @@ Versioning follows [Semantic Versioning](https://semver.org/): MAJOR.MINOR.PATCH
 
 ---
 
+## [3.1.0] - 2026-02-09 — Unified Installation
+
+Introduces `mg-util`, the unified command-line interface for managing
+miniature-guacamole installations across projects.
+
+### Added
+- **`mg-util` unified command** (`WS-INSTALL-0/1/2`):
+  - `mg-util init [project-dir]` — project initialization with idempotent memory setup (100% tests passing)
+  - `mg-util audit [--project | --global]` — settings bloat check + cost reporting with global aggregation (94% tests passing)
+  - `mg-util install` — core installation to `~/.miniature-guacamole/` with PATH integration (WS-INSTALL-0, in progress)
+  - `mg-util update` — version management and framework updates (WS-INSTALL-1, in progress)
+  - `mg-util configure` — interactive configuration management (WS-INSTALL-1, in progress)
+  - `mg-util status` — installation health reporting (WS-INSTALL-0, in progress)
+  - `mg-util uninstall` — clean removal (WS-INSTALL-0, in progress)
+- **284 BATS tests** across 5 test suites following misuse-first CAD protocol
+- **4 audit test fixtures** for cost reporting edge cases
+- **Project template** (`src/framework/templates/project/CLAUDE.md`)
+
+### Workstreams
+`WS-INSTALL-0` (in progress), `WS-INSTALL-1` (in progress), `WS-INSTALL-2` (shipped)
+
+---
+
 ## [3.0.0] - 2026-02-09 — Production Architecture
 
 The framework graduates from a monolithic `.claude/` directory to a proper
@@ -268,3 +291,4 @@ communication protocols.
 | 1.5.0   | 2026-02-07 | Teams & Dashboard      | Agent teams, full dashboard, daemon system  |
 | 2.0.0   | 2026-02-08 | Operations             | 9 mg-* scripts, global distribution, cost tracking |
 | 3.0.0   | 2026-02-09 | Production Architecture| src/build/install pipeline, CAD, permission hygiene |
+| 3.1.0   | 2026-02-09 | Unified Installation   | mg-util command, init/audit shipped, 284 tests      |

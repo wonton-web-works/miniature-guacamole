@@ -18,17 +18,26 @@ miniature-guacamole installations across projects.
 - **`mg-util` unified command** (`WS-INSTALL-0/1/2`):
   - `mg-util init [project-dir]` — project initialization with idempotent memory setup (100% tests passing)
   - `mg-util audit [--project | --global]` — settings bloat check + cost reporting with global aggregation (94% tests passing)
-  - `mg-util install` — core installation to `~/.miniature-guacamole/` with PATH integration (WS-INSTALL-0, in progress)
-  - `mg-util update` — version management and framework updates (WS-INSTALL-1, in progress)
-  - `mg-util configure` — interactive configuration management (WS-INSTALL-1, in progress)
-  - `mg-util status` — installation health reporting (WS-INSTALL-0, in progress)
-  - `mg-util uninstall` — clean removal (WS-INSTALL-0, in progress)
-- **284 BATS tests** across 5 test suites following misuse-first CAD protocol
+  - `mg-util install` — core installation to `~/.miniature-guacamole/` with PATH integration (100% tests passing)
+  - `mg-util update` — version management, project tracking, memory preservation (100% tests passing)
+  - `mg-util configure` — interactive configuration with YAML management (100% tests passing)
+  - `mg-util status` — installation health with broken symlink detection (100% tests passing)
+  - `mg-util uninstall` — clean removal with confirmation (100% tests passing)
+- **266 BATS tests** across 5 test suites, 263 passing (99%)
 - **4 audit test fixtures** for cost reporting edge cases
 - **Project template** (`src/framework/templates/project/CLAUDE.md`)
 
+### Fixed (v3.1.1)
+- Bash arithmetic trap: `(( count++ ))` returns exit 1 under `set -e` when count=0
+- Source directory validation (readable, writable, exists checks)
+- Broken symlink detection in `mg-util status`
+- `--source` flag for local directory updates
+- `--dry-run` mode for update preview
+- Project memory preservation during `mg-util update`
+- Config file YAML validation and backup before modification
+
 ### Workstreams
-`WS-INSTALL-0` (in progress), `WS-INSTALL-1` (in progress), `WS-INSTALL-2` (shipped)
+`WS-INSTALL-0` (shipped), `WS-INSTALL-1` (shipped), `WS-INSTALL-2` (shipped)
 
 ---
 

@@ -9,6 +9,54 @@ Versioning follows [Semantic Versioning](https://semver.org/): MAJOR.MINOR.PATCH
 
 ---
 
+## [4.0.0] - 2026-02-10 — Action-Based Skills
+
+All skills renamed with `mg-` prefix for brand coherence and action-oriented UX.
+Hard cutover — old skill names removed, no backwards compatibility aliases.
+
+### Added
+- **mg-debug skill** — Structured debugging workflow (Reproduce → Investigate → Fix → Verify)
+- **mg-refactor skill** — TDD-safe refactoring (Characterize → Refactor → Verify → Review)
+- **Spawn cap enforcement** — All 16 skills enforce a maximum of 6 agent spawns per invocation
+
+### Changed
+- **All 14 existing skills renamed** with `mg-` prefix (ADR-SKILL-02):
+  - `/leadership-team` → `/mg-leadership-team`
+  - `/engineering-team` + `/implement` → `/mg-build` (merged, ADR-SKILL-06)
+  - `/product-team` → `/mg-spec`
+  - `/design-team` → `/mg-design`
+  - `/docs-team` → `/mg-document`
+  - `/content-team` → `/mg-write`
+  - `/feature-assessment` → `/mg-assess`
+  - `/technical-assessment` → `/mg-assess-tech`
+  - `/code-review` → `/mg-code-review`
+  - `/design-review` → `/mg-design-review`
+  - `/security-review` → `/mg-security-review`
+  - `/accessibility-review` → `/mg-accessibility-review`
+  - `/init-project` → `/mg-init`
+  - `/add-project-context` → `/mg-add-context`
+- **80+ files updated** — shared protocols, agent files, installer, README, CLAUDE.md, 48 test files
+- **MG_SKILLS array** updated to 16 mg-prefixed entries
+
+### Removed
+- `/engineering-team` skill (merged into `/mg-build`)
+- `/implement` skill (merged into `/mg-build`)
+- All old skill directory names (hard cutover, ADR-SKILL-03)
+
+### Architecture Decisions
+- ADR-SKILL-01: Prompt-only implementation (SKILL.md changes only)
+- ADR-SKILL-02: `mg-` prefix on all skills
+- ADR-SKILL-03: Hard cutover, no backwards compatibility
+- ADR-SKILL-04: Prompt-based chaining
+- ADR-SKILL-05: Spawn cap of 6 per skill
+- ADR-SKILL-06: engineering-team + implement → mg-build
+- ADR-SKILL-07: mg-debug + mg-refactor added; mg-deploy + mg-qa deferred
+
+### Workstreams
+`WS-SKILLS-0..8`
+
+---
+
 ## [3.1.0] - 2026-02-09 — Unified Installation
 
 Introduces `mg-util`, the unified command-line interface for managing
@@ -301,3 +349,4 @@ communication protocols.
 | 2.0.0   | 2026-02-08 | Operations             | 9 mg-* scripts, global distribution, cost tracking |
 | 3.0.0   | 2026-02-09 | Production Architecture| src/build/install pipeline, CAD, permission hygiene |
 | 3.1.0   | 2026-02-09 | Unified Installation   | mg-util command, init/audit shipped, 284 tests      |
+| 4.0.0   | 2026-02-10 | Action-Based Skills    | 16 mg-prefixed skills, mg-build merge, mg-debug/refactor |

@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # ============================================================================
-# miniature-guacamole project-local installer (v3.x)
+# miniature-guacamole project-local installer (v4.x)
 # ============================================================================
 # Installs miniature-guacamole framework files to a project's .claude/ directory.
 # NEVER modifies ~/.claude/ (except optionally ~/.claude/.mg-configs/).
@@ -36,7 +36,7 @@ INSTALL_CONFIG_CACHE=false
 
 usage() {
     cat <<EOF
-miniature-guacamole installer (v3.x)
+miniature-guacamole installer (v4.x)
 
 Usage: $0 [OPTIONS] [PROJECT_DIR]
 

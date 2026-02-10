@@ -2,25 +2,25 @@
 
 > A complete AI-powered product development organization for Claude Code with workflow automation, specialized agents, and project-local architecture.
 
-**Version:** 3.0.0
+**Version:** 4.0.0
 **Status:** Production Ready
 **License:** MIT
 
 ---
 
-## What's New in v3.0.0
+## What's New in v4.0.0
 
-**Repository Restructure** (February 2026):
-- All source consolidated under `/src` (framework in `src/framework/`, installer in `src/installer/`)
-- Unified `build.sh` creates distribution archives
-- CI/CD pipeline publishes to GitHub releases on version tags
-- `mg-init` hybrid installer (local cache + GitHub fallback)
+**Action-Based Skill System** (February 2026):
+- All 16 skills renamed with `mg-` prefix for brand coherence
+- `/engineering-team` + `/implement` merged into single `/mg-build` skill
+- 2 new skills: `/mg-debug` (structured debugging) and `/mg-refactor` (TDD-safe refactoring)
+- Hard cutover — old skill names no longer work
+- Spawn cap of 6 agents enforced on all skills
 
-**Breaking Changes from v1.x**:
-- Framework source moved from `.claude/` to `src/framework/` (dev-facing only)
-- Build scripts consolidated into single `build.sh`
-- Installation now via `dist/miniature-guacamole/install.sh`
-- Template-based initialization replaced with release-based `mg-init`
+**Breaking Changes from v3.x**:
+- All skill names changed (e.g. `/leadership-team` → `/mg-leadership-team`, `/code-review` → `/mg-code-review`)
+- `/engineering-team` and `/implement` removed, replaced by `/mg-build`
+- No backwards compatibility aliases — update all references
 
 ---
 

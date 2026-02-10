@@ -65,7 +65,7 @@ Arguments:
 
 Examples:
   $0                                  # Install latest to current directory
-  $0 --version v3.0.0                # Install specific version
+  $0 --version v4.0.0                # Install specific version
   $0 /path/to/project                # Install to specific project
   $0 --force --config-cache          # Force re-install with config cache
 

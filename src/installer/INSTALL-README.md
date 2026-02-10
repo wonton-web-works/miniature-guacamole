@@ -1,10 +1,10 @@
 # miniature-guacamole Installation Guide
 
-This directory contains the miniature-guacamole v3.x distribution with project-local installation.
+This directory contains the miniature-guacamole v4.x distribution with project-local installation.
 
 ## Overview
 
-miniature-guacamole v3.x uses **project-local installation** - all framework files are installed to your project's `.claude/` directory, not to `~/.claude/`. This provides:
+miniature-guacamole v4.x uses **project-local installation** - all framework files are installed to your project's `.claude/` directory, not to `~/.claude/`. This provides:
 
 - Complete data isolation between projects
 - No global configuration changes
@@ -65,7 +65,7 @@ curl -fsSL https://raw.githubusercontent.com/USER/REPO/main/web-install.sh -o mg
 chmod +x mg-web-install.sh
 
 # Install with options
-./mg-web-install.sh --version v3.0.0 /path/to/project
+./mg-web-install.sh --version v4.0.0 /path/to/project
 ```
 
 **Options:**
@@ -173,7 +173,7 @@ Example output:
 ```json
 {
   "framework": "miniature-guacamole",
-  "version": "3.0.0",
+  "version": "4.0.0",
   "installed_at": "2026-02-09T12:00:00Z",
   "updated_at": "2026-02-09T12:00:00Z",
   "source": "local-build",
@@ -303,7 +303,7 @@ If you have v1.x installed globally at `~/.claude/`:
    rm ~/.claude/agents ~/.claude/skills ~/.claude/shared
    ```
 
-3. Install v3.x project-locally:
+3. Install v4.x project-locally:
    ```bash
    cd /path/to/your/project
    /path/to/dist/miniature-guacamole/install.sh

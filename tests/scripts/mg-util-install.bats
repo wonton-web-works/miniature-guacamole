@@ -90,12 +90,11 @@ teardown() {
     chmod 000 "$SOURCE_DIR/.claude"
 
     run "$SCRIPT_PATH" install "$SOURCE_DIR"
-    STATUS=$?
 
     # Cleanup before assertion
     chmod 755 "$SOURCE_DIR/.claude"
 
-    [ "$STATUS" -eq 1 ]
+    [ "$status" -eq 1 ]
 }
 
 @test "mg-util install: invalid source structure (missing .claude/)" {
@@ -121,13 +120,12 @@ teardown() {
     mkdir -p "/tmp/mg-util-test-source-$$/.claude"/{agents,skills,shared,scripts,hooks}
 
     run "$SCRIPT_PATH" install "/tmp/mg-util-test-source-$$"
-    STATUS=$?
 
     # Cleanup
     chmod 755 "$TEST_HOME"
     rm -rf "/tmp/mg-util-test-source-$$"
 
-    [ "$STATUS" -eq 1 ]
+    [ "$status" -eq 1 ]
 }
 
 @test "mg-util status: no installation exists" {
@@ -625,7 +623,7 @@ teardown() {
 
     run "$SCRIPT_PATH" install "$SOURCE_DIR"
     [ "$status" -eq 0 ]
-    [[ "$output" =~ "\.miniature-guacamole" ]]
+    [[ "$output" =~ \.miniature-guacamole ]]
 }
 
 @test "mg-util status: shows installation health" {

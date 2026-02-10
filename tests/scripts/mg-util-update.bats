@@ -216,19 +216,27 @@ teardown() {
 }
 
 @test "mg-util update: empty project directory during update" {
+    # Create minimal installation structure
+    mkdir -p "$TEST_MG_HOME/install"
+    echo '{"version":"2.0.0"}' > "$TEST_MG_HOME/install/VERSION.json"
+
     # No projects installed, just framework update
-    run "$SCRIPT_PATH" update
+    run "$SCRIPT_PATH" update --version v3.0.0
     [ "$status" -eq 0 ]
     [[ "$output" =~ "updated" ]] || [[ "$output" =~ "complete" ]]
 }
 
 @test "mg-util update: single project with memory preserved" {
+    # Create minimal installation structure
+    mkdir -p "$TEST_MG_HOME/install"
+    echo '{"version":"2.0.0"}' > "$TEST_MG_HOME/install/VERSION.json"
+
     # Create project with memory
     mkdir -p "$TEST_PROJECT_DIR/.claude/memory"
     echo '{"tasks":[]}' > "$TEST_PROJECT_DIR/.claude/memory/tasks-qa.json"
     echo '{"framework":"miniature-guacamole"}' > "$TEST_PROJECT_DIR/.claude/MG_INSTALL.json"
 
-    run "$SCRIPT_PATH" update
+    run "$SCRIPT_PATH" update --version v3.0.0
     [ "$status" -eq 0 ]
 
     # Verify memory preserved
@@ -237,13 +245,17 @@ teardown() {
 }
 
 @test "mg-util update: multiple projects tracked" {
+    # Create minimal installation structure
+    mkdir -p "$TEST_MG_HOME/install"
+    echo '{"version":"2.0.0"}' > "$TEST_MG_HOME/install/VERSION.json"
+
     # Create multiple projects
     for i in 1 2 3; do
         mkdir -p "$TEST_DIR/project-$i/.claude/memory"
         echo '{}' > "$TEST_DIR/project-$i/.claude/MG_INSTALL.json"
     done
 
-    run "$SCRIPT_PATH" update
+    run "$SCRIPT_PATH" update --version v3.0.0
     [ "$status" -eq 0 ]
 
     # All projects should be updated

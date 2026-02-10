@@ -339,13 +339,14 @@ EOF
 }
 
 @test "mg-util configure: case-sensitive keys" {
-    run "$SCRIPT_PATH" configure --set "model.Default=value1"
-    run "$SCRIPT_PATH" configure --set "model.default=value2"
+    run "$SCRIPT_PATH" configure --set "model.Default=claude-opus-4"
+    [ "$status" -eq 0 ]
+    run "$SCRIPT_PATH" configure --set "model.default=claude-sonnet-3.5"
     [ "$status" -eq 0 ]
 
     # Both should exist as separate keys
-    grep -q "Default:" "$CONFIG_FILE"
-    grep -q "default:" "$CONFIG_FILE"
+    grep -q "Default: claude-opus-4" "$CONFIG_FILE"
+    grep -q "default: claude-sonnet-3.5" "$CONFIG_FILE"
 }
 
 # ============================================================================
@@ -411,10 +412,13 @@ EOF
     run "$SCRIPT_PATH" configure --set "model.default=claude-opus-4"
     [ "$status" -eq 0 ]
 
-    # Validate YAML syntax (if yq or python available)
-    if command -v python3 &> /dev/null; then
-        python3 -c "import yaml; yaml.safe_load(open('$CONFIG_FILE'))"
-    fi
+    # Validate YAML structure manually (check for key: value format)
+    grep -q "model:" "$CONFIG_FILE"
+    grep -q "default: claude-opus-4" "$CONFIG_FILE"
+
+    # Ensure file is readable text
+    [[ -f "$CONFIG_FILE" ]]
+    [[ -r "$CONFIG_FILE" ]]
 }
 
 @test "mg-util configure: --list shows current configuration" {

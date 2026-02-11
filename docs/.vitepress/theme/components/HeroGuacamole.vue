@@ -4,8 +4,8 @@
       ref="svg"
       class="hero-guacamole-svg"
       aria-hidden="true"
-      viewBox="0 0 1200 800"
-      preserveAspectRatio="xMaxYMid meet"
+      viewBox="0 0 1200 900"
+      preserveAspectRatio="xMidYMax meet"
       xmlns="http://www.w3.org/2000/svg"
     >
       <defs>
@@ -41,18 +41,42 @@
         </filter>
       </defs>
 
-      <!-- Blueprint grid background -->
+      <!-- Blueprint grid background - primary grid -->
       <g class="blueprint-grid" :opacity="isDark ? 0.08 : 0.15">
-        <line v-for="i in 25" :key="`h-${i}`"
+        <line v-for="i in 29" :key="`h-${i}`"
               :x1="0" :y1="i * 32" :x2="1200" :y2="i * 32"
               stroke="#2E8B8B" stroke-width="0.5" stroke-dasharray="4,4" />
         <line v-for="i in 38" :key="`v-${i}`"
-              :x1="i * 32" :y1="0" :x2="i * 32" :y2="800"
+              :x1="i * 32" :y1="0" :x2="i * 32" :y2="900"
               stroke="#2E8B8B" stroke-width="0.5" stroke-dasharray="4,4" />
+      </g>
+      <!-- Blueprint grid - finer subdivisions for depth -->
+      <g class="blueprint-grid-fine" :opacity="isDark ? 0.04 : 0.07">
+        <line v-for="i in 56" :key="`hf-${i}`"
+              :x1="0" :y1="i * 16" :x2="1200" :y2="i * 16"
+              stroke="#2E8B8B" stroke-width="0.3" />
+        <line v-for="i in 75" :key="`vf-${i}`"
+              :x1="i * 16" :y1="0" :x2="i * 16" :y2="900"
+              stroke="#2E8B8B" stroke-width="0.3" />
+      </g>
+      <!-- Corner registration marks -->
+      <g :opacity="isDark ? 0.12 : 0.2">
+        <line x1="20" y1="20" x2="60" y2="20" stroke="#2E8B8B" stroke-width="1" />
+        <line x1="20" y1="20" x2="20" y2="60" stroke="#2E8B8B" stroke-width="1" />
+        <line x1="1140" y1="20" x2="1180" y2="20" stroke="#2E8B8B" stroke-width="1" />
+        <line x1="1180" y1="20" x2="1180" y2="60" stroke="#2E8B8B" stroke-width="1" />
+        <line x1="20" y1="840" x2="60" y2="840" stroke="#2E8B8B" stroke-width="1" />
+        <line x1="20" y1="840" x2="20" y2="880" stroke="#2E8B8B" stroke-width="1" />
+        <line x1="1140" y1="840" x2="1180" y2="840" stroke="#2E8B8B" stroke-width="1" />
+        <line x1="1180" y1="840" x2="1180" y2="880" stroke="#2E8B8B" stroke-width="1" />
+        <circle cx="20" cy="20" r="2" fill="#2E8B8B" />
+        <circle cx="1180" cy="20" r="2" fill="#2E8B8B" />
+        <circle cx="20" cy="880" r="2" fill="#2E8B8B" />
+        <circle cx="1180" cy="880" r="2" fill="#2E8B8B" />
       </g>
 
       <!-- Assembly group - right side on desktop, front-facing perspective -->
-      <g :transform="isMobile ? `translate(600, 480) scale(0.9) rotate(${rotation})` : `translate(820, 460) scale(1.3) rotate(${rotation})`" class="assembly-group">
+      <g :transform="isMobile ? `translate(600, 520) scale(0.9) rotate(${rotation})` : `translate(910, 630) scale(1.3) rotate(${rotation})`" class="assembly-group">
 
         <!-- Center alignment guides (crosshair) - behind everything -->
         <g :opacity="annotationOpacity * 0.4">
@@ -310,13 +334,20 @@ const guacDots = Array.from({ length: 30 }, () => ({
   r: 2 + Math.random() * 3,
 }));
 
-// Assembly state
+// Assembly state — boomerang loop:
+// [expanded float] -> [contract] -> [contracted hold] -> [expand] -> repeat
 let assemblyTimer = 0;
-const ASSEMBLY_INTERVAL = 15000; // Every 15 seconds
-const ASSEMBLY_DURATION = 1500;  // 1.5 second assembly
+const TRANSITION_DURATION = 1500;   // 1.5s to contract or expand
+const EXPANDED_HOLD = 14000;        // 14s floating while expanded
+const CONTRACTED_HOLD = 14000;      // 14s holding while contracted
+const FULL_CYCLE = EXPANDED_HOLD + TRANSITION_DURATION + CONTRACTED_HOLD + TRANSITION_DURATION; // 31s total
 
 function checkDarkMode() {
   isDark.value = document.documentElement.classList.contains('dark');
+}
+
+function easeInOut(t: number): number {
+  return t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
 }
 
 function animate() {
@@ -326,33 +357,37 @@ function animate() {
   }
 
   const time = Date.now();
-  const dt = time - assemblyTimer;
+  const dt = (time - assemblyTimer) % FULL_CYCLE;
 
   // Gentle oscillation: ±5° over 12 seconds
   rotation.value = Math.sin((time / 12000) * Math.PI * 2) * 5;
 
-  // Check if we're in assembly mode
-  const isAssembling = dt % ASSEMBLY_INTERVAL < ASSEMBLY_DURATION;
+  // Determine phase within the cycle
+  let blendToCompressed = 0; // 0 = fully expanded, 1 = fully contracted
 
-  if (isAssembling) {
-    // Compress layers together
-    const progress = (dt % ASSEMBLY_INTERVAL) / ASSEMBLY_DURATION;
-    const easeInOut = progress < 0.5
-      ? 2 * progress * progress
-      : 1 - Math.pow(-2 * progress + 2, 2) / 2;
-
-    layerOffsets.value = baseOffsets.map((baseOffset, i) => {
-      const compressed = -80 - (i * 15); // Compress to minimal spacing
-      return baseOffset + (compressed - baseOffset) * easeInOut;
-    });
+  if (dt < EXPANDED_HOLD) {
+    // Phase 1: Expanded, floating
+    blendToCompressed = 0;
+  } else if (dt < EXPANDED_HOLD + TRANSITION_DURATION) {
+    // Phase 2: Contracting
+    const progress = (dt - EXPANDED_HOLD) / TRANSITION_DURATION;
+    blendToCompressed = easeInOut(progress);
+  } else if (dt < EXPANDED_HOLD + TRANSITION_DURATION + CONTRACTED_HOLD) {
+    // Phase 3: Contracted, holding
+    blendToCompressed = 1;
   } else {
-    // Normal floating animation
-    layerOffsets.value = baseOffsets.map((baseOffset, i) => {
-      const { amplitude, period, phase } = floatParams[i];
-      const offset = Math.sin((time / period) * Math.PI * 2 + phase) * amplitude;
-      return baseOffset + offset;
-    });
+    // Phase 4: Expanding back out
+    const progress = (dt - EXPANDED_HOLD - TRANSITION_DURATION - CONTRACTED_HOLD) / TRANSITION_DURATION;
+    blendToCompressed = 1 - easeInOut(progress);
   }
+
+  layerOffsets.value = baseOffsets.map((baseOffset, i) => {
+    const { amplitude, period, phase } = floatParams[i];
+    const floatOffset = Math.sin((time / period) * Math.PI * 2 + phase) * amplitude;
+    const expanded = baseOffset + floatOffset * (1 - blendToCompressed);
+    const compressed = -80 - (i * 15);
+    return expanded + (compressed - baseOffset) * blendToCompressed;
+  });
 
   // Pulse annotation opacity
   annotationOpacity.value = 0.6 + Math.sin((time / 2000) * Math.PI * 2) * 0.2;

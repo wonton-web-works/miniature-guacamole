@@ -439,8 +439,8 @@ steps:
 **To create a release**:
 
 ```bash
-git tag v1.0.0
-git push origin v1.0.0
+git tag v1.0.1
+git push origin v1.0.1
 # CI automatically builds and publishes to GitHub releases
 ```
 

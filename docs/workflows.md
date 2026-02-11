@@ -38,7 +38,7 @@ The system follows a Constraint-Driven Agentic Development (CAD) workflow that e
 └─────────────────┘
 ```
 
-## The CAD Development Cycle
+## CAD Cycle Steps
 
 ### Step 1: Tests (PM + QA)
 

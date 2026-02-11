@@ -144,8 +144,8 @@ function getNetworkCenter(canvasWidth: number, canvasHeight: number) {
   if (canvasWidth >= 960) {
     return { x: canvasWidth * 0.65, y: canvasHeight * 0.48 };
   }
-  // On smaller screens (stacked layout), center it
-  return { x: canvasWidth / 2, y: canvasHeight * 0.48 };
+  // On smaller screens (stacked layout), position lower to avoid text overlap
+  return { x: canvasWidth / 2, y: canvasHeight * 0.7 };
 }
 
 function getNodePosition(node: Node, time: number, canvasWidth: number, canvasHeight: number) {

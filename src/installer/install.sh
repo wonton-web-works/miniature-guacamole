@@ -431,9 +431,9 @@ echo ""
 log_info "Creating installation metadata..."
 
 # Read version from source if available
-VERSION="3.0.0"
+VERSION="1.0.0"
 if [[ -f "$SCRIPT_DIR/VERSION.json" ]]; then
-    VERSION=$(python3 -c "import json, sys; print(json.load(open('$SCRIPT_DIR/VERSION.json')).get('version', '3.0.0'))" 2>/dev/null || echo "3.0.0")
+    VERSION=$(python3 -c "import json, sys; print(json.load(open('$SCRIPT_DIR/VERSION.json')).get('version', '1.0.0'))" 2>/dev/null || echo "1.0.0")
 fi
 
 # Determine install timestamp

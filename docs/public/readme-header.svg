@@ -1,0 +1,80 @@
+<svg width="800" height="200" viewBox="0 0 800 200" xmlns="http://www.w3.org/2000/svg">
+  <!-- README header image: Works on both light and dark GitHub modes -->
+  <defs>
+    <linearGradient id="headerBg" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#2D3B2D;stop-opacity:0.05" />
+      <stop offset="50%" style="stop-color:#4A7C59;stop-opacity:0.08" />
+      <stop offset="100%" style="stop-color:#2D3B2D;stop-opacity:0.05" />
+    </linearGradient>
+    <radialGradient id="pitGradientHeader" cx="50%" cy="50%">
+      <stop offset="0%" style="stop-color:#3A4A3A;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#2D3B2D;stop-opacity:1" />
+    </radialGradient>
+  </defs>
+
+  <!-- Background (subtle, works on light/dark) -->
+  <rect width="800" height="200" fill="url(#headerBg)"/>
+
+  <!-- Logo (left side) -->
+  <g transform="translate(60, 40)">
+    <!-- Avocado flesh -->
+    <path d="M 60 12
+             C 81 12, 99 21, 105 42
+             C 108 54, 108 66, 105 78
+             C 99 99, 81 108, 60 108
+             C 39 108, 21 99, 15 78
+             C 12 66, 12 54, 15 42
+             C 21 21, 39 12, 60 12 Z"
+          fill="#4A7C59"
+          stroke="#3A4A3A"
+          stroke-width="1.5"/>
+
+    <!-- Pit -->
+    <circle cx="60" cy="60" r="21" fill="url(#pitGradientHeader)" stroke="#1A2A1A" stroke-width="1"/>
+
+    <!-- Processor grid -->
+    <g opacity="0.4" stroke="#7C9C7C" stroke-width="0.8">
+      <line x1="51" y1="60" x2="69" y2="60"/>
+      <line x1="60" y1="51" x2="60" y2="69"/>
+      <line x1="54" y1="54" x2="66" y2="66"/>
+      <line x1="66" y1="54" x2="54" y2="66"/>
+    </g>
+
+    <!-- Connection lines -->
+    <g stroke="#3A4A3A" stroke-width="1.2" fill="none" opacity="0.6">
+      <line x1="60" y1="39" x2="60" y2="18"/>
+      <circle cx="60" cy="18" r="2" fill="#2D3B2D"/>
+      <line x1="75" y1="46.8" x2="93" y2="33"/>
+      <circle cx="93" cy="33" r="2" fill="#2D3B2D"/>
+      <line x1="75" y1="73.2" x2="93" y2="87"/>
+      <circle cx="93" cy="87" r="2" fill="#2D3B2D"/>
+      <line x1="60" y1="81" x2="60" y2="102"/>
+      <circle cx="60" cy="102" r="2" fill="#2D3B2D"/>
+      <line x1="45" y1="73.2" x2="27" y2="87"/>
+      <circle cx="27" cy="87" r="2" fill="#2D3B2D"/>
+      <line x1="45" y1="46.8" x2="27" y2="33"/>
+      <circle cx="27" cy="33" r="2" fill="#2D3B2D"/>
+    </g>
+  </g>
+
+  <!-- Text content -->
+  <g>
+    <!-- Wordmark -->
+    <text x="220" y="75" font-family="system-ui, -apple-system, sans-serif" font-size="42" font-weight="700" fill="#2D3B2D" letter-spacing="-0.5">
+      miniature-guacamole
+    </text>
+
+    <!-- Tagline -->
+    <text x="220" y="110" font-family="system-ui, -apple-system, sans-serif" font-size="18" font-weight="400" fill="#4A7C59">
+      Turn Claude Code into a 19-agent product development team
+    </text>
+
+    <!-- Feature highlights -->
+    <g font-family="system-ui, -apple-system, sans-serif" font-size="14" fill="#5A8C69" opacity="0.85">
+      <text x="220" y="145">19 Specialized Agents • 16 Skills • TDD Workflows • NDA-Safe</text>
+    </g>
+  </g>
+
+  <!-- Accent line -->
+  <line x1="220" y1="85" x2="760" y2="85" stroke="#4A7C59" stroke-width="1" opacity="0.3"/>
+</svg>

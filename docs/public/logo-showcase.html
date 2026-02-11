@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>miniature-guacamole Logo Showcase</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      background: linear-gradient(135deg, #FAF9F5 0%, #C8E6D0 50%, #F5F3ED 100%);
+      padding: 40px;
+      min-height: 100vh;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      background: white;
+      border-radius: 16px;
+      padding: 40px;
+      box-shadow: 0 8px 32px rgba(45, 59, 45, 0.1);
+    }
+
+    h1 {
+      color: #2D3B2D;
+      margin-bottom: 10px;
+      font-size: 2.5em;
+      background: linear-gradient(120deg, #4A7C59, #2E8B8B);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .tagline {
+      color: #4A7C59;
+      font-size: 1.2em;
+      margin-bottom: 40px;
+      border-left: 4px solid #4A7C59;
+      padding-left: 16px;
+    }
+
+    .section {
+      margin-bottom: 60px;
+    }
+
+    .section-title {
+      color: #2D3B2D;
+      font-size: 1.5em;
+      margin-bottom: 20px;
+      border-bottom: 2px solid #C8E6D0;
+      padding-bottom: 10px;
+    }
+
+    .logo-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 30px;
+      margin-bottom: 40px;
+    }
+
+    .logo-item {
+      text-align: center;
+      padding: 20px;
+      background: #FAF9F5;
+      border-radius: 8px;
+      border: 1px solid #E8E6DD;
+    }
+
+    .logo-item img {
+      display: block;
+      margin: 0 auto 15px;
+      background: white;
+      padding: 10px;
+      border-radius: 4px;
+    }
+
+    .logo-label {
+      color: #5A6A5A;
+      font-size: 0.9em;
+      font-weight: 600;
+    }
+
+    .color-palette {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 20px;
+    }
+
+    .color-swatch {
+      text-align: center;
+    }
+
+    .swatch {
+      width: 100%;
+      height: 100px;
+      border-radius: 8px;
+      margin-bottom: 10px;
+      border: 2px solid rgba(45, 59, 45, 0.1);
+    }
+
+    .color-name {
+      font-weight: 600;
+      color: #2D3B2D;
+      margin-bottom: 5px;
+    }
+
+    .color-hex {
+      font-family: monospace;
+      font-size: 0.85em;
+      color: #5A6A5A;
+    }
+
+    .usage-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 30px;
+    }
+
+    .usage-card {
+      background: #FAF9F5;
+      padding: 20px;
+      border-radius: 8px;
+      border: 1px solid #E8E6DD;
+    }
+
+    .usage-card h3 {
+      color: #4A7C59;
+      margin-bottom: 15px;
+    }
+
+    .usage-card ul {
+      list-style: none;
+      padding: 0;
+    }
+
+    .usage-card li {
+      padding: 8px 0;
+      color: #3A4A3A;
+      border-bottom: 1px solid #E8E6DD;
+    }
+
+    .usage-card li:last-child {
+      border-bottom: none;
+    }
+
+    .preview-section {
+      display: flex;
+      justify-content: space-between;
+      gap: 30px;
+      margin-top: 30px;
+    }
+
+    .preview-card {
+      flex: 1;
+      background: #FAF9F5;
+      padding: 20px;
+      border-radius: 8px;
+      border: 1px solid #E8E6DD;
+    }
+
+    .dark-preview {
+      background: #1A2A1A;
+      color: #C8E6D0;
+    }
+
+    .dark-preview .section-title {
+      color: #C8E6D0;
+    }
+
+    @media (max-width: 768px) {
+      .usage-grid, .preview-section {
+        grid-template-columns: 1fr;
+        flex-direction: column;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>miniature-guacamole</h1>
+    <p class="tagline">Turn Claude Code into a 19-agent product development team</p>
+
+    <!-- Logo Scale Examples -->
+    <div class="section">
+      <h2 class="section-title">Logo at Different Scales</h2>
+      <div class="logo-grid">
+        <div class="logo-item">
+          <img src="logo.svg" width="16" height="16" alt="16px">
+          <div class="logo-label">16px (Favicon)</div>
+        </div>
+        <div class="logo-item">
+          <img src="logo.svg" width="32" height="32" alt="32px">
+          <div class="logo-label">32px (Small Icon)</div>
+        </div>
+        <div class="logo-item">
+          <img src="logo.svg" width="64" height="64" alt="64px">
+          <div class="logo-label">64px (Navigation)</div>
+        </div>
+        <div class="logo-item">
+          <img src="logo.svg" width="128" height="128" alt="128px">
+          <div class="logo-label">128px (Medium)</div>
+        </div>
+        <div class="logo-item">
+          <img src="logo.svg" width="256" height="256" alt="256px">
+          <div class="logo-label">256px (Large)</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Color Palette -->
+    <div class="section">
+      <h2 class="section-title">Brand Color Palette</h2>
+
+      <h3 style="color: #2D3B2D; margin: 20px 0 10px;">Brand Colors</h3>
+      <div class="color-palette">
+        <div class="color-swatch">
+          <div class="swatch" style="background: #4A7C59;"></div>
+          <div class="color-name">Guac Green</div>
+          <div class="color-hex">#4A7C59</div>
+        </div>
+        <div class="color-swatch">
+          <div class="swatch" style="background: #2D3B2D;"></div>
+          <div class="color-name">Avocado Pit</div>
+          <div class="color-hex">#2D3B2D</div>
+        </div>
+        <div class="color-swatch">
+          <div class="swatch" style="background: #C8E6D0;"></div>
+          <div class="color-name">Lime Wash</div>
+          <div class="color-hex">#C8E6D0</div>
+        </div>
+      </div>
+
+      <h3 style="color: #2D3B2D; margin: 30px 0 10px;">Backgrounds</h3>
+      <div class="color-palette">
+        <div class="color-swatch">
+          <div class="swatch" style="background: #FAF9F5; border: 2px solid #E8E6DD;"></div>
+          <div class="color-name">Chip White</div>
+          <div class="color-hex">#FAF9F5</div>
+        </div>
+        <div class="color-swatch">
+          <div class="swatch" style="background: #F5F3ED; border: 2px solid #E8E6DD;"></div>
+          <div class="color-name">Tortilla</div>
+          <div class="color-hex">#F5F3ED</div>
+        </div>
+        <div class="color-swatch">
+          <div class="swatch" style="background: #E8E6DD;"></div>
+          <div class="color-name">Salt Rim</div>
+          <div class="color-hex">#E8E6DD</div>
+        </div>
+      </div>
+
+      <h3 style="color: #2D3B2D; margin: 30px 0 10px;">Accents</h3>
+      <div class="color-palette">
+        <div class="color-swatch">
+          <div class="swatch" style="background: #C94D3A;"></div>
+          <div class="color-name">Chili Red</div>
+          <div class="color-hex">#C94D3A</div>
+        </div>
+        <div class="color-swatch">
+          <div class="swatch" style="background: #2E8B8B;"></div>
+          <div class="color-name">Cilantro Teal</div>
+          <div class="color-hex">#2E8B8B</div>
+        </div>
+        <div class="color-swatch">
+          <div class="swatch" style="background: #D4FF00;"></div>
+          <div class="color-name">Lime Zest</div>
+          <div class="color-hex">#D4FF00</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Usage Guidelines -->
+    <div class="section">
+      <h2 class="section-title">Usage Guidelines</h2>
+      <div class="usage-grid">
+        <div class="usage-card">
+          <h3>Primary Brand (Guac Green)</h3>
+          <ul>
+            <li>Primary buttons</li>
+            <li>Active navigation</li>
+            <li>Important CTAs</li>
+            <li>Logo flesh area</li>
+            <li>Links (hover state)</li>
+          </ul>
+        </div>
+        <div class="usage-card">
+          <h3>Dark Accent (Avocado Pit)</h3>
+          <ul>
+            <li>Headings</li>
+            <li>Body text (light mode)</li>
+            <li>Logo pit area</li>
+            <li>Connection lines</li>
+            <li>Borders and dividers</li>
+          </ul>
+        </div>
+        <div class="usage-card">
+          <h3>Light Accent (Lime Wash)</h3>
+          <ul>
+            <li>Hero backgrounds</li>
+            <li>Hover states</li>
+            <li>Light mode highlights</li>
+            <li>Dark mode text</li>
+            <li>Subtle accents</li>
+          </ul>
+        </div>
+        <div class="usage-card">
+          <h3>Functional Colors</h3>
+          <ul>
+            <li>Chili Red: Warnings, errors</li>
+            <li>Cilantro Teal: Info, links</li>
+            <li>Lime Zest: Highlights, new</li>
+            <li>Use sparingly for emphasis</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- Light/Dark Preview -->
+    <div class="section">
+      <h2 class="section-title">Light & Dark Mode Preview</h2>
+      <div class="preview-section">
+        <div class="preview-card">
+          <h3 style="color: #2D3B2D;">Light Mode</h3>
+          <img src="logo.svg" width="80" height="80" alt="Logo light" style="margin: 20px 0;">
+          <p style="color: #3A4A3A;">Background: Chip White (#FAF9F5)</p>
+          <p style="color: #3A4A3A;">Text: Avocado Pit (#2D3B2D)</p>
+          <p style="color: #3A4A3A;">Accent: Guac Green (#4A7C59)</p>
+        </div>
+        <div class="preview-card dark-preview">
+          <h3>Dark Mode</h3>
+          <img src="logo.svg" width="80" height="80" alt="Logo dark" style="margin: 20px 0;">
+          <p>Background: Dark BG (#1A2A1A)</p>
+          <p>Text: Lime Wash (#C8E6D0)</p>
+          <p>Accent: Guac Green (#4A7C59)</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Design Concept -->
+    <div class="section">
+      <h2 class="section-title">Design Concept</h2>
+      <p style="color: #3A4A3A; line-height: 1.6; margin-bottom: 15px;">
+        The <strong>"Avocado Chip"</strong> logo concept merges two ideas:
+      </p>
+      <ul style="color: #3A4A3A; line-height: 1.8; margin-left: 20px;">
+        <li><strong>Avocado cross-section:</strong> The miniature-guacamole name and playful nature</li>
+        <li><strong>Microprocessor die:</strong> The AI/technical foundation of the framework</li>
+        <li><strong>Network connections:</strong> Six radiating lines represent the 19-agent system working together</li>
+        <li><strong>Organic + Technical:</strong> Rounded, friendly shapes with precise circuit patterns</li>
+      </ul>
+      <p style="color: #3A4A3A; line-height: 1.6; margin-top: 15px;">
+        The logo works at all sizes—from 16px favicons to large displays—maintaining clarity and brand recognition.
+      </p>
+    </div>
+  </div>
+
+  <script>
+    // Add a subtle animation on load
+    document.addEventListener('DOMContentLoaded', () => {
+      const items = document.querySelectorAll('.logo-item, .color-swatch, .usage-card');
+      items.forEach((item, index) => {
+        setTimeout(() => {
+          item.style.opacity = '0';
+          item.style.transform = 'translateY(20px)';
+          item.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+
+          setTimeout(() => {
+            item.style.opacity = '1';
+            item.style.transform = 'translateY(0)';
+          }, 50);
+        }, index * 50);
+      });
+    });
+  </script>
+</body>
+</html>

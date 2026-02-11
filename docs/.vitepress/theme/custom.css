@@ -1,0 +1,355 @@
+/**
+ * miniature-guacamole Brand Theme
+ *
+ * Color Palette:
+ * - Brand: Guac Green (#4A7C59), Avocado Pit (#2D3B2D), Lime Wash (#C8E6D0)
+ * - Backgrounds: Chip White (#FAF9F5), Tortilla (#F5F3ED), Salt Rim (#E8E6DD)
+ * - Accents: Chili Red (#C94D3A), Cilantro Teal (#2E8B8B), Lime Zest (#D4FF00)
+ */
+
+:root {
+  /* Brand Colors */
+  --mg-guac-green: #4A7C59;
+  --mg-avocado-pit: #2D3B2D;
+  --mg-lime-wash: #C8E6D0;
+
+  /* Backgrounds */
+  --mg-chip-white: #FAF9F5;
+  --mg-tortilla: #F5F3ED;
+  --mg-salt-rim: #E8E6DD;
+
+  /* Accents */
+  --mg-chili-red: #C94D3A;
+  --mg-cilantro-teal: #2E8B8B;
+  --mg-lime-zest: #D4FF00;
+
+  /* Dark Mode Variants */
+  --mg-dark-bg: #1A2A1A;
+  --mg-dark-bg-soft: #243424;
+  --mg-dark-bg-mute: #2D3B2D;
+  --mg-dark-border: #3A4A3A;
+  --mg-dark-text: #C8E6D0;
+  --mg-dark-text-soft: #B8D4B0;
+
+  /* VitePress Color Overrides - Light Mode */
+  --vp-c-brand-1: var(--mg-guac-green);
+  --vp-c-brand-2: #5A8C69;
+  --vp-c-brand-3: #6A9C79;
+  --vp-c-brand-soft: var(--mg-lime-wash);
+
+  --vp-c-bg: var(--mg-chip-white);
+  --vp-c-bg-soft: var(--mg-tortilla);
+  --vp-c-bg-mute: var(--mg-salt-rim);
+  --vp-c-bg-alt: var(--mg-tortilla);
+
+  --vp-c-text-1: var(--mg-avocado-pit);
+  --vp-c-text-2: #3A4A3A;
+  --vp-c-text-3: #5A6A5A;
+
+  --vp-c-accent: var(--mg-cilantro-teal);
+  --vp-c-warning: var(--mg-chili-red);
+
+  /* Button colors */
+  --vp-button-brand-bg: var(--mg-guac-green);
+  --vp-button-brand-hover-bg: #5A8C69;
+  --vp-button-brand-active-bg: #3A6C49;
+  --vp-button-brand-text: var(--mg-chip-white);
+
+  /* Code block colors */
+  --vp-code-bg: var(--mg-tortilla);
+  --vp-code-block-bg: var(--mg-salt-rim);
+
+  /* Custom component colors */
+  --vp-custom-block-tip-bg: rgba(74, 124, 89, 0.1);
+  --vp-custom-block-tip-border: var(--mg-guac-green);
+  --vp-custom-block-warning-bg: rgba(201, 77, 58, 0.1);
+  --vp-custom-block-warning-border: var(--mg-chili-red);
+  --vp-custom-block-info-bg: rgba(46, 139, 139, 0.1);
+  --vp-custom-block-info-border: var(--mg-cilantro-teal);
+}
+
+/* Dark Mode Overrides */
+.dark {
+  --vp-c-brand-1: #6A9C79;
+  --vp-c-brand-2: var(--mg-guac-green);
+  --vp-c-brand-3: #5A8C69;
+  --vp-c-brand-soft: rgba(74, 124, 89, 0.2);
+
+  --vp-c-bg: var(--mg-dark-bg);
+  --vp-c-bg-soft: var(--mg-dark-bg-soft);
+  --vp-c-bg-mute: var(--mg-dark-bg-mute);
+  --vp-c-bg-alt: var(--mg-dark-bg-soft);
+
+  --vp-c-text-1: var(--mg-dark-text);
+  --vp-c-text-2: var(--mg-dark-text-soft);
+  --vp-c-text-3: #8A9A8A;
+
+  --vp-c-border: var(--mg-dark-border);
+  --vp-c-divider: var(--mg-dark-border);
+
+  --vp-button-brand-bg: var(--mg-guac-green);
+  --vp-button-brand-hover-bg: #6A9C79;
+  --vp-button-brand-active-bg: #5A8C69;
+
+  --vp-code-bg: var(--mg-dark-bg-mute);
+  --vp-code-block-bg: var(--mg-dark-bg-soft);
+
+  --vp-custom-block-tip-bg: rgba(106, 156, 121, 0.15);
+  --vp-custom-block-warning-bg: rgba(201, 77, 58, 0.15);
+  --vp-custom-block-info-bg: rgba(46, 139, 139, 0.15);
+}
+
+/* Hero Section Gradient */
+.VPHero {
+  background: linear-gradient(
+    135deg,
+    var(--mg-chip-white) 0%,
+    var(--mg-lime-wash) 50%,
+    var(--mg-tortilla) 100%
+  );
+}
+
+.dark .VPHero {
+  background: linear-gradient(
+    135deg,
+    var(--mg-dark-bg) 0%,
+    var(--mg-dark-bg-soft) 50%,
+    var(--mg-dark-bg-mute) 100%
+  );
+}
+
+/* Hero Title Styling */
+.VPHero .name {
+  color: var(--mg-avocado-pit);
+  background: linear-gradient(
+    120deg,
+    var(--mg-guac-green),
+    var(--mg-cilantro-teal)
+  );
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.dark .VPHero .name {
+  background: linear-gradient(
+    120deg,
+    var(--mg-lime-wash),
+    #8ABAA0
+  );
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Feature Cards */
+.VPFeature {
+  border: 1px solid var(--mg-salt-rim);
+  transition: all 0.3s ease;
+}
+
+.VPFeature:hover {
+  border-color: var(--mg-guac-green);
+  box-shadow: 0 4px 12px rgba(74, 124, 89, 0.15);
+  transform: translateY(-2px);
+}
+
+.dark .VPFeature {
+  border-color: var(--mg-dark-border);
+}
+
+.dark .VPFeature:hover {
+  border-color: var(--mg-guac-green);
+  box-shadow: 0 4px 12px rgba(106, 156, 121, 0.2);
+}
+
+/* Feature Card Icons */
+.VPFeature .icon {
+  color: var(--mg-guac-green);
+}
+
+.dark .VPFeature .icon {
+  color: var(--mg-lime-wash);
+}
+
+/* Links */
+.vp-doc a {
+  color: var(--mg-cilantro-teal);
+  text-decoration-color: rgba(46, 139, 139, 0.3);
+}
+
+.vp-doc a:hover {
+  color: var(--mg-guac-green);
+  text-decoration-color: var(--mg-guac-green);
+}
+
+.dark .vp-doc a {
+  color: #5ABABA;
+  text-decoration-color: rgba(90, 186, 186, 0.3);
+}
+
+.dark .vp-doc a:hover {
+  color: var(--mg-lime-wash);
+  text-decoration-color: var(--mg-lime-wash);
+}
+
+/* Code Blocks */
+.vp-code-group {
+  background: var(--vp-code-block-bg);
+  border: 1px solid var(--mg-salt-rim);
+  border-radius: 8px;
+}
+
+.dark .vp-code-group {
+  border-color: var(--mg-dark-border);
+}
+
+/* Inline Code */
+.vp-doc code {
+  background-color: var(--vp-code-bg);
+  color: var(--mg-avocado-pit);
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 0.9em;
+}
+
+.dark .vp-doc code {
+  background-color: var(--vp-code-bg);
+  color: var(--mg-lime-wash);
+}
+
+/* Custom Blocks (Tips, Warnings, etc.) */
+.vp-doc .custom-block.tip {
+  background-color: var(--vp-custom-block-tip-bg);
+  border-color: var(--vp-custom-block-tip-border);
+}
+
+.vp-doc .custom-block.warning {
+  background-color: var(--vp-custom-block-warning-bg);
+  border-color: var(--vp-custom-block-warning-border);
+}
+
+.vp-doc .custom-block.info {
+  background-color: var(--vp-custom-block-info-bg);
+  border-color: var(--vp-custom-block-info-border);
+}
+
+/* Sidebar Navigation */
+.VPSidebar {
+  background-color: var(--vp-c-bg-soft);
+}
+
+.VPSidebarItem.is-active .text {
+  color: var(--mg-guac-green);
+  font-weight: 600;
+}
+
+.dark .VPSidebarItem.is-active .text {
+  color: var(--mg-lime-wash);
+}
+
+/* Navigation Bar */
+.VPNav {
+  background-color: var(--vp-c-bg);
+  border-bottom: 1px solid var(--mg-salt-rim);
+}
+
+.dark .VPNav {
+  border-bottom-color: var(--mg-dark-border);
+}
+
+/* Search Box */
+.VPLocalSearchBox {
+  border: 1px solid var(--mg-salt-rim);
+}
+
+.dark .VPLocalSearchBox {
+  border-color: var(--mg-dark-border);
+}
+
+/* Tables */
+.vp-doc table {
+  border-color: var(--mg-salt-rim);
+}
+
+.vp-doc th {
+  background-color: var(--mg-tortilla);
+  color: var(--mg-avocado-pit);
+  font-weight: 600;
+}
+
+.vp-doc tr:nth-child(even) {
+  background-color: var(--mg-chip-white);
+}
+
+.dark .vp-doc table {
+  border-color: var(--mg-dark-border);
+}
+
+.dark .vp-doc th {
+  background-color: var(--mg-dark-bg-mute);
+  color: var(--mg-dark-text);
+}
+
+.dark .vp-doc tr:nth-child(even) {
+  background-color: var(--mg-dark-bg-soft);
+}
+
+/* Scrollbar Styling */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--vp-c-bg-soft);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--mg-guac-green);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #5A8C69;
+}
+
+.dark ::-webkit-scrollbar-track {
+  background: var(--mg-dark-bg-soft);
+}
+
+.dark ::-webkit-scrollbar-thumb {
+  background: #5A8C69;
+}
+
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: #6A9C79;
+}
+
+/* Badge Styles */
+.vp-doc .vp-badge {
+  background-color: var(--mg-guac-green);
+  color: var(--mg-chip-white);
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 0.85em;
+  font-weight: 600;
+}
+
+.vp-doc .vp-badge.warning {
+  background-color: var(--mg-chili-red);
+}
+
+.vp-doc .vp-badge.info {
+  background-color: var(--mg-cilantro-teal);
+}
+
+/* Footer */
+.VPFooter {
+  background-color: var(--vp-c-bg-soft);
+  border-top: 1px solid var(--mg-salt-rim);
+}
+
+.dark .VPFooter {
+  border-top-color: var(--mg-dark-border);
+}

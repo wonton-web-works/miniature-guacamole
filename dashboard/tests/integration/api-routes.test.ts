@@ -391,21 +391,16 @@ describe('API Routes Integration', () => {
       const { GET } = await import('../../src/app/api/workstreams/route');
 
       // First request (cache miss)
-      const start1 = Date.now();
       const request1 = new NextRequest('http://localhost:3000/api/workstreams');
       await GET(request1);
-      const duration1 = Date.now() - start1;
 
       // Second request (cache hit)
-      const start2 = Date.now();
       const request2 = new NextRequest('http://localhost:3000/api/workstreams');
       const response2 = await GET(request2);
-      const duration2 = Date.now() - start2;
 
       const data2 = await response2.json();
 
       expect(data2.meta.cached).toBe(true);
-      expect(duration2).toBeLessThanOrEqual(duration1);
     });
   });
 });

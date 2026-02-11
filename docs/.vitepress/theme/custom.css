@@ -99,15 +99,15 @@
   --vp-custom-block-info-bg: rgba(46, 139, 139, 0.15);
 }
 
-/* Hero Section with Network Animation */
+/* Hero Section */
 .VPHero {
   position: relative !important;
   overflow: hidden;
   min-height: 600px;
 }
 
-/* Canvas container escapes its parent and covers entire hero */
-.VPHero .hero-network-anchor {
+/* Guacamole SVG container covers entire hero */
+.VPHero .hero-guacamole-anchor {
   position: absolute !important;
   top: 0;
   left: 0;
@@ -117,9 +117,10 @@
   height: 100% !important;
   overflow: visible;
   z-index: 0;
+  pointer-events: none;
 }
 
-.VPHero .hero-network-canvas {
+.VPHero .hero-guacamole-svg {
   position: absolute !important;
   top: 0;
   left: 0;

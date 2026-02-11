@@ -1,14 +1,14 @@
 <template>
   <Layout>
     <template #home-hero-info-before>
-      <HeroNetwork />
+      <HeroGuacamole />
     </template>
   </Layout>
 </template>
 
 <script setup lang="ts">
 import DefaultTheme from 'vitepress/theme';
-import HeroNetwork from './HeroNetwork.vue';
+import HeroGuacamole from './HeroGuacamole.vue';
 
 const { Layout } = DefaultTheme;
 </script>

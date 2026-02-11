@@ -40,7 +40,7 @@ NC='\033[0m' # No Color
 
 # Configuration
 CACHE_DIR="$HOME/.cache/miniature-guacamole"
-GITHUB_REPO="bywonton/miniature-guacamole"
+GITHUB_REPO="rivermark-research/miniature-guacamole"
 GITHUB_API="https://api.github.com/repos/$GITHUB_REPO"
 VERSION="latest"
 FORCE=false
@@ -107,7 +107,7 @@ resolve_latest_version() {
         exit 1
     fi
 
-    echo -e "${BLUE}Fetching latest version from GitHub...${NC}"
+    echo -e "${BLUE}Fetching latest version from GitHub...${NC}" >&2
 
     local response
     response=$(curl -s ${AUTH_HEADER:+-H "$AUTH_HEADER"} "$GITHUB_API/releases/latest") || {
@@ -137,7 +137,7 @@ get_tarball_url() {
         return 0
     fi
 
-    echo -e "${BLUE}Fetching release information for $version...${NC}"
+    echo -e "${BLUE}Fetching release information for $version...${NC}" >&2
 
     local response
     response=$(curl -s ${AUTH_HEADER:+-H "$AUTH_HEADER"} "$GITHUB_API/releases/tags/$version") || {
@@ -146,7 +146,21 @@ get_tarball_url() {
     }
 
     local tarball_url
-    tarball_url=$(echo "$response" | python3 -c "import sys, json; print(json.load(sys.stdin).get('tarball_url', ''))" 2>/dev/null) || {
+    # Prefer release asset API URL (works for private repos), fall back to source tarball
+    tarball_url=$(echo "$response" | python3 -c "
+import sys, json
+d = json.load(sys.stdin)
+for a in d.get('assets', []):
+    if a['name'] == 'miniature-guacamole.tar.gz':
+        print(a['url'])
+        sys.exit(0)
+# Fallback to source tarball
+url = d.get('tarball_url', '')
+if url:
+    print(url)
+else:
+    sys.exit(1)
+" 2>/dev/null) || {
         echo -e "${RED}Error: Failed to parse GitHub API response${NC}" >&2
         exit 1
     }
@@ -165,10 +179,10 @@ download_and_cache() {
     local tarball_url="$2"
     local cache_file="$CACHE_DIR/$version.tar.gz"
 
-    echo -e "${BLUE}Downloading $version from GitHub...${NC}"
+    echo -e "${BLUE}Downloading $version from GitHub...${NC}" >&2
 
-    # Download with progress bar
-    curl -L ${AUTH_HEADER:+-H "$AUTH_HEADER"} -o "$cache_file.tmp" --progress-bar "$tarball_url" || {
+    # Download with progress bar (Accept header needed for GitHub asset API)
+    curl -L ${AUTH_HEADER:+-H "$AUTH_HEADER"} -H "Accept: application/octet-stream" -o "$cache_file.tmp" --progress-bar "$tarball_url" || {
         echo -e "${RED}Error: Failed to download tarball${NC}" >&2
         rm -f "$cache_file.tmp"
         exit 1
@@ -177,7 +191,7 @@ download_and_cache() {
     # Atomic move
     mv "$cache_file.tmp" "$cache_file"
 
-    echo -e "${GREEN}Cached $version to $cache_file${NC}"
+    echo -e "${GREEN}Cached $version to $cache_file${NC}" >&2
     echo "$cache_file"
 }
 
@@ -190,7 +204,7 @@ extract_tarball() {
         exit 1
     }
 
-    echo -e "${BLUE}Extracting tarball to $temp_dir...${NC}"
+    echo -e "${BLUE}Extracting tarball to $temp_dir...${NC}" >&2
 
     tar -xzf "$cache_file" -C "$temp_dir" --strip-components=1 || {
         echo -e "${RED}Error: Failed to extract tarball${NC}" >&2
@@ -238,12 +252,19 @@ fi
 TEMP_DIR=$(extract_tarball "$CACHE_FILE")
 echo ""
 
-# Verify install.sh exists
-INSTALL_SCRIPT="$TEMP_DIR/dist/miniature-guacamole/install.sh"
+# Verify install.sh exists (check multiple locations)
+INSTALL_SCRIPT=""
+for candidate in \
+    "$TEMP_DIR/dist/miniature-guacamole/install.sh" \
+    "$TEMP_DIR/install.sh"; do
+    if [[ -f "$candidate" ]]; then
+        INSTALL_SCRIPT="$candidate"
+        break
+    fi
+done
 
-if [[ ! -f "$INSTALL_SCRIPT" ]]; then
+if [[ -z "$INSTALL_SCRIPT" ]]; then
     echo -e "${RED}Error: install.sh not found in tarball${NC}" >&2
-    echo "Expected: $INSTALL_SCRIPT" >&2
     echo "Contents of tarball:" >&2
     find "$TEMP_DIR" -type f | head -20 >&2
     rm -rf "$TEMP_DIR"

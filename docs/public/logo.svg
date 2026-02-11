@@ -1,69 +1,132 @@
 <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
-  <!-- Avocado Chip Logo: Cross-section with microprocessor pit -->
+  <!-- Professional Avocado Chip Logo: Organic cross-section with circuit-board pit -->
   <defs>
-    <radialGradient id="pitGradient" cx="50%" cy="50%">
-      <stop offset="0%" style="stop-color:#3A4A3A;stop-opacity:1" />
-      <stop offset="100%" style="stop-color:#2D3B2D;stop-opacity:1" />
+    <!-- Flesh gradient: depth and dimension -->
+    <radialGradient id="fleshGradient" cx="45%" cy="40%">
+      <stop offset="0%" style="stop-color:#C8E6D0;stop-opacity:1" />
+      <stop offset="40%" style="stop-color:#4A7C59;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#3A5549;stop-opacity:1" />
     </radialGradient>
+
+    <!-- Pit gradient: metallic/silicon look -->
+    <radialGradient id="pitGradient" cx="50%" cy="50%">
+      <stop offset="0%" style="stop-color:#3D4D3D;stop-opacity:1" />
+      <stop offset="60%" style="stop-color:#2D3B2D;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#1A2A1A;stop-opacity:1" />
+    </radialGradient>
+
+    <!-- Circuit trace glow -->
+    <filter id="circuitGlow">
+      <feGaussianBlur stdDeviation="0.5" result="coloredBlur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+
+    <!-- Subtle drop shadow -->
+    <filter id="dropShadow">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="2"/>
+      <feOffset dx="0" dy="1" result="offsetblur"/>
+      <feComponentTransfer>
+        <feFuncA type="linear" slope="0.2"/>
+      </feComponentTransfer>
+      <feMerge>
+        <feMergeNode/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
   </defs>
 
-  <!-- Avocado flesh (rounded geometric silhouette) -->
-  <path d="M 100 20
-           C 135 20, 165 35, 175 70
-           C 180 90, 180 110, 175 130
-           C 165 165, 135 180, 100 180
-           C 65 180, 35 165, 25 130
-           C 20 110, 20 90, 25 70
-           C 35 35, 65 20, 100 20 Z"
-        fill="#4A7C59"
-        stroke="#3A4A3A"
-        stroke-width="2"/>
+  <!-- Avocado flesh: organic asymmetric outline with smooth bezier curves -->
+  <path d="M 100 25
+           C 120 25, 140 30, 155 45
+           C 165 55, 172 70, 175 85
+           C 178 100, 178 115, 175 130
+           C 170 150, 160 165, 145 172
+           C 130 178, 115 180, 100 180
+           C 85 180, 70 178, 55 172
+           C 40 165, 30 150, 25 130
+           C 22 115, 22 100, 25 85
+           C 28 70, 35 55, 45 45
+           C 60 30, 80 25, 100 25 Z"
+        fill="url(#fleshGradient)"
+        stroke="#2D3B2D"
+        stroke-width="2"
+        filter="url(#dropShadow)"/>
 
-  <!-- Pit as microprocessor die/node graph hub -->
-  <circle cx="100" cy="100" r="35" fill="url(#pitGradient)" stroke="#1A2A1A" stroke-width="1.5"/>
+  <!-- Inner flesh highlight -->
+  <ellipse cx="85" cy="70" rx="25" ry="20"
+           fill="#C8E6D0"
+           opacity="0.3"
+           transform="rotate(-25 85 70)"/>
 
-  <!-- Processor grid pattern in pit -->
-  <g opacity="0.4" stroke="#7C9C7C" stroke-width="0.8">
-    <line x1="85" y1="100" x2="115" y2="100"/>
-    <line x1="100" y1="85" x2="100" y2="115"/>
-    <line x1="90" y1="90" x2="110" y2="110"/>
-    <line x1="110" y1="90" x2="90" y2="110"/>
+  <!-- Pit: microprocessor die center -->
+  <circle cx="100" cy="100" r="38"
+          fill="url(#pitGradient)"
+          stroke="#1A2A1A"
+          stroke-width="1"/>
+
+  <!-- Precise circuit board traces in pit -->
+  <g opacity="0.6" stroke="#2E8B8B" stroke-width="1" fill="none" filter="url(#circuitGlow)">
+    <!-- Central cross -->
+    <line x1="82" y1="100" x2="118" y2="100"/>
+    <line x1="100" y1="82" x2="100" y2="118"/>
+
+    <!-- Concentric circuit pattern -->
+    <circle cx="100" cy="100" r="12" stroke-width="0.8"/>
+    <circle cx="100" cy="100" r="22" stroke-width="0.8"/>
+
+    <!-- Diagonal traces -->
+    <line x1="88" y1="88" x2="92" y2="92" stroke-width="1.2"/>
+    <line x1="112" y1="88" x2="108" y2="92" stroke-width="1.2"/>
+    <line x1="112" y1="112" x2="108" y2="108" stroke-width="1.2"/>
+    <line x1="88" y1="112" x2="92" y2="108" stroke-width="1.2"/>
+
+    <!-- Corner pads -->
+    <rect x="86" y="86" width="3" height="3" fill="#2E8B8B" opacity="0.8"/>
+    <rect x="111" y="86" width="3" height="3" fill="#2E8B8B" opacity="0.8"/>
+    <rect x="111" y="111" width="3" height="3" fill="#2E8B8B" opacity="0.8"/>
+    <rect x="86" y="111" width="3" height="3" fill="#2E8B8B" opacity="0.8"/>
   </g>
 
-  <!-- Connection nodes radiating from pit to edge (6 connections) -->
-  <g stroke="#3A4A3A" stroke-width="1.5" fill="none" opacity="0.6">
+  <!-- Connection traces: 6 agent network connections -->
+  <g stroke="#3A4A3A" stroke-width="1.5" fill="none" opacity="0.5">
     <!-- Top -->
-    <line x1="100" y1="65" x2="100" y2="30"/>
-    <circle cx="100" cy="30" r="3" fill="#2D3B2D"/>
-
-    <!-- Top-right -->
-    <line x1="125" y1="78" x2="155" y2="55"/>
-    <circle cx="155" cy="55" r="3" fill="#2D3B2D"/>
-
-    <!-- Bottom-right -->
-    <line x1="125" y1="122" x2="155" y2="145"/>
-    <circle cx="155" cy="145" r="3" fill="#2D3B2D"/>
-
+    <line x1="100" y1="62" x2="100" y2="35"/>
+    <!-- Top-right (60°) -->
+    <line x1="126.9" y1="81" x2="150" y2="60"/>
+    <!-- Bottom-right (120°) -->
+    <line x1="126.9" y1="119" x2="150" y2="140"/>
     <!-- Bottom -->
-    <line x1="100" y1="135" x2="100" y2="170"/>
-    <circle cx="100" cy="170" r="3" fill="#2D3B2D"/>
-
-    <!-- Bottom-left -->
-    <line x1="75" y1="122" x2="45" y2="145"/>
-    <circle cx="45" cy="145" r="3" fill="#2D3B2D"/>
-
-    <!-- Top-left -->
-    <line x1="75" y1="78" x2="45" y2="55"/>
-    <circle cx="45" cy="55" r="3" fill="#2D3B2D"/>
+    <line x1="100" y1="138" x2="100" y2="165"/>
+    <!-- Bottom-left (240°) -->
+    <line x1="73.1" y1="119" x2="50" y2="140"/>
+    <!-- Top-left (300°) -->
+    <line x1="73.1" y1="81" x2="50" y2="60"/>
   </g>
 
   <!-- Connection nodes at pit edge -->
-  <g fill="#2D3B2D">
-    <circle cx="100" cy="65" r="2.5"/>
-    <circle cx="125" cy="78" r="2.5"/>
-    <circle cx="125" cy="122" r="2.5"/>
-    <circle cx="100" cy="135" r="2.5"/>
-    <circle cx="75" cy="122" r="2.5"/>
-    <circle cx="75" cy="78" r="2.5"/>
+  <g fill="#2D3B2D" stroke="#1A2A1A" stroke-width="0.5">
+    <circle cx="100" cy="62" r="3"/>
+    <circle cx="126.9" cy="81" r="3"/>
+    <circle cx="126.9" cy="119" r="3"/>
+    <circle cx="100" cy="138" r="3"/>
+    <circle cx="73.1" cy="119" r="3"/>
+    <circle cx="73.1" cy="81" r="3"/>
   </g>
+
+  <!-- External connection nodes -->
+  <g fill="#4A7C59" stroke="#2D3B2D" stroke-width="1.2" opacity="0.9">
+    <circle cx="100" cy="35" r="3.5"/>
+    <circle cx="150" cy="60" r="3.5"/>
+    <circle cx="150" cy="140" r="3.5"/>
+    <circle cx="100" cy="165" r="3.5"/>
+    <circle cx="50" cy="140" r="3.5"/>
+    <circle cx="50" cy="60" r="3.5"/>
+  </g>
+
+  <!-- Central processor indicator dot -->
+  <circle cx="100" cy="100" r="4" fill="#2E8B8B" opacity="0.8"/>
+  <circle cx="100" cy="100" r="2" fill="#C8E6D0" opacity="0.9"/>
 </svg>

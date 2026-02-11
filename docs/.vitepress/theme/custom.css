@@ -99,23 +99,39 @@
   --vp-custom-block-info-bg: rgba(46, 139, 139, 0.15);
 }
 
-/* Hero Section Gradient */
+/* Hero Section with Network Animation */
 .VPHero {
-  background: linear-gradient(
-    135deg,
-    var(--mg-chip-white) 0%,
-    var(--mg-lime-wash) 50%,
-    var(--mg-tortilla) 100%
-  );
+  position: relative !important;
+  overflow: hidden;
+  min-height: 600px;
 }
 
-.dark .VPHero {
-  background: linear-gradient(
-    135deg,
-    var(--mg-dark-bg) 0%,
-    var(--mg-dark-bg-soft) 50%,
-    var(--mg-dark-bg-mute) 100%
-  );
+/* Canvas container escapes its parent and covers entire hero */
+.VPHero .hero-network-anchor {
+  position: absolute !important;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100% !important;
+  height: 100% !important;
+  overflow: visible;
+  z-index: 0;
+}
+
+.VPHero .hero-network-canvas {
+  position: absolute !important;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+
+/* Hero content must stay above network animation */
+.VPHero .container,
+.VPHero .main {
+  position: relative;
+  z-index: 1;
 }
 
 /* Hero Title Styling */
@@ -142,6 +158,26 @@
   background-clip: text;
 }
 
+/* Content Headings - add teal accent for visual interest */
+.vp-doc h2 {
+  color: var(--mg-cilantro-teal);
+  border-bottom: 2px solid rgba(46, 139, 139, 0.2);
+  padding-bottom: 8px;
+}
+
+.dark .vp-doc h2 {
+  color: #5ABABA;
+  border-bottom-color: rgba(90, 186, 186, 0.2);
+}
+
+.vp-doc h3 {
+  color: var(--mg-guac-green);
+}
+
+.dark .vp-doc h3 {
+  color: #8FBC8F;
+}
+
 /* Feature Cards */
 .VPFeature {
   border: 1px solid var(--mg-salt-rim);
@@ -149,8 +185,8 @@
 }
 
 .VPFeature:hover {
-  border-color: var(--mg-guac-green);
-  box-shadow: 0 4px 12px rgba(74, 124, 89, 0.15);
+  border-color: var(--mg-cilantro-teal);
+  box-shadow: 0 4px 16px rgba(46, 139, 139, 0.15);
   transform: translateY(-2px);
 }
 
@@ -159,8 +195,17 @@
 }
 
 .dark .VPFeature:hover {
-  border-color: var(--mg-guac-green);
-  box-shadow: 0 4px 12px rgba(106, 156, 121, 0.2);
+  border-color: var(--mg-cilantro-teal);
+  box-shadow: 0 4px 16px rgba(46, 139, 139, 0.25);
+}
+
+/* Feature Card Title - teal accent */
+.VPFeature .title {
+  color: var(--mg-cilantro-teal) !important;
+}
+
+.dark .VPFeature .title {
+  color: #5ABABA !important;
 }
 
 /* Feature Card Icons */
@@ -204,6 +249,16 @@
   border-color: var(--mg-dark-border);
 }
 
+/* Standalone code blocks - teal left accent */
+.vp-doc div[class*="language-"] {
+  border-left: 3px solid var(--mg-cilantro-teal);
+}
+
+.dark .vp-doc div[class*="language-"] {
+  border-left-color: #5ABABA;
+  background-color: rgba(26, 42, 26, 0.8) !important;
+}
+
 /* Inline Code */
 .vp-doc code {
   background-color: var(--vp-code-bg);
@@ -214,8 +269,8 @@
 }
 
 .dark .vp-doc code {
-  background-color: var(--vp-code-bg);
-  color: var(--mg-lime-wash);
+  background-color: rgba(46, 139, 139, 0.12);
+  color: #5ABABA;
 }
 
 /* Custom Blocks (Tips, Warnings, etc.) */

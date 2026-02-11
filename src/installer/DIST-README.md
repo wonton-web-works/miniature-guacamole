@@ -165,7 +165,7 @@ Removes the `.claude/` directory from your project. Your project files remain un
 
 ## Documentation
 
-- **Framework Repository**: [RivermarkResearch/miniature-guacamole](https://github.com/RivermarkResearch/miniature-guacamole)
+- **Framework Repository**: [rivermark-research/miniature-guacamole](https://github.com/rivermark-research/miniature-guacamole)
 - **Agent Definitions**: `.claude/agents/{agent-name}/AGENT.md`
 - **Skill Definitions**: `.claude/skills/{skill-name}/SKILL.md`
 - **Protocol Documents**: `.claude/shared/{protocol-name}.md`

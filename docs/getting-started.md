@@ -16,7 +16,7 @@ miniature-guacamole uses project-local installation. Each project gets its own `
 
 ```bash
 # Clone the repository
-git clone https://github.com/RivermarkResearch/miniature-guacamole.git
+git clone https://github.com/rivermark-research/miniature-guacamole.git
 cd miniature-guacamole
 
 # Build the distribution
@@ -30,7 +30,7 @@ dist/miniature-guacamole/install.sh /path/to/your-project
 
 ```bash
 # Download and extract
-curl -fsSL https://github.com/RivermarkResearch/miniature-guacamole/releases/latest/download/miniature-guacamole.tar.gz | tar -xz
+curl -fsSL https://github.com/rivermark-research/miniature-guacamole/releases/latest/download/miniature-guacamole.tar.gz | tar -xz
 cd miniature-guacamole
 
 # Install to your project
@@ -41,7 +41,7 @@ cd miniature-guacamole
 
 ```bash
 cd /path/to/your-project
-curl -fsSL https://raw.githubusercontent.com/RivermarkResearch/miniature-guacamole/main/src/installer/web-install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/rivermark-research/miniature-guacamole/main/src/installer/web-install.sh | bash
 ```
 
 ### What Gets Installed
@@ -223,7 +223,7 @@ Add to `~/.claude/config.json`:
 }
 ```
 
-See [docs/audit-logging.md](https://github.com/RivermarkResearch/miniature-guacamole/blob/main/docs/audit-logging.md) for full documentation.
+See [docs/audit-logging.md](https://github.com/rivermark-research/miniature-guacamole/blob/main/docs/audit-logging.md) for full documentation.
 
 ## Troubleshooting
 
@@ -255,6 +255,6 @@ chmod -R 755 src/
 
 ## Support
 
-- [Report Issues](https://github.com/RivermarkResearch/miniature-guacamole/issues)
+- [Report Issues](https://github.com/rivermark-research/miniature-guacamole/issues)
 - [View Documentation](https://rivermarkresearch.github.io/miniature-guacamole/)
 - [Read Contributing Guide](/contributing)

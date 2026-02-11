@@ -16,7 +16,7 @@ export default defineConfig({
       { text: 'Workflows', link: '/workflows' },
       {
         text: 'GitHub',
-        link: 'https://github.com/RivermarkResearch/miniature-guacamole'
+        link: 'https://github.com/rivermark-research/miniature-guacamole'
       }
     ],
 
@@ -46,7 +46,7 @@ export default defineConfig({
     ],
 
     socialLinks: [
-      { icon: 'github', link: 'https://github.com/RivermarkResearch/miniature-guacamole' }
+      { icon: 'github', link: 'https://github.com/rivermark-research/miniature-guacamole' }
     ],
 
     footer: {

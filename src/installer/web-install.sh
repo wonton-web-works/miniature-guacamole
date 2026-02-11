@@ -3,7 +3,7 @@
 # miniature-guacamole web installer
 # ============================================================================
 # Downloads and installs miniature-guacamole from GitHub releases.
-# Usage: curl -fsSL https://raw.githubusercontent.com/RivermarkResearch/miniature-guacamole/main/web-install.sh | bash
+# Usage: curl -fsSL https://raw.githubusercontent.com/rivermark-research/miniature-guacamole/main/web-install.sh | bash
 # ============================================================================
 
 set -euo pipefail
@@ -22,7 +22,7 @@ BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
 # Configuration
-GITHUB_REPO="RivermarkResearch/miniature-guacamole"
+GITHUB_REPO="rivermark-research/miniature-guacamole"
 RELEASE_TAG="latest"  # Can be overridden with --version
 PROJECT_DIR="$PWD"
 FORCE=false

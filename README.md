@@ -95,7 +95,7 @@ Use it to orchestrate complex product development workflows with AI agents that 
 
 ### 1. Build Distribution
 ```bash
-git clone https://github.com/RivermarkResearch/miniature-guacamole.git
+git clone https://github.com/rivermark-research/miniature-guacamole.git
 cd miniature-guacamole
 npm install
 ./scripts/build-dist.sh
@@ -136,7 +136,7 @@ The team runs the full TDD cycle: QA writes tests → Dev implements → QA veri
 
 ```bash
 # Clone the repository
-git clone https://github.com/RivermarkResearch/miniature-guacamole.git
+git clone https://github.com/rivermark-research/miniature-guacamole.git
 cd miniature-guacamole
 
 # Build the distribution
@@ -153,7 +153,7 @@ cd /path/to/your-project
 
 ```bash
 # Download latest release
-curl -fsSL https://github.com/RivermarkResearch/miniature-guacamole/releases/latest/download/miniature-guacamole.tar.gz -o mg.tar.gz
+curl -fsSL https://github.com/rivermark-research/miniature-guacamole/releases/latest/download/miniature-guacamole.tar.gz -o mg.tar.gz
 tar -xzf mg.tar.gz
 cd miniature-guacamole
 
@@ -913,4 +913,4 @@ See [CHANGELOG.md](CHANGELOG.md) for complete version history.
 
 ---
 
-**Built with Claude Code** | [Report Issues](https://github.com/RivermarkResearch/miniature-guacamole/issues) | [Documentation](.claude/README.md)
+**Built with Claude Code** | [Report Issues](https://github.com/rivermark-research/miniature-guacamole/issues) | [Documentation](.claude/README.md)

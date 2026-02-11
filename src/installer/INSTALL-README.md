@@ -54,14 +54,14 @@ cd /path/to/your/project
 Download and install from GitHub releases:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/RivermarkResearch/miniature-guacamole/main/web-install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/rivermark-research/miniature-guacamole/main/web-install.sh | bash
 ```
 
 Or with options:
 
 ```bash
 # Download the script first
-curl -fsSL https://raw.githubusercontent.com/RivermarkResearch/miniature-guacamole/main/web-install.sh -o mg-web-install.sh
+curl -fsSL https://raw.githubusercontent.com/rivermark-research/miniature-guacamole/main/web-install.sh -o mg-web-install.sh
 chmod +x mg-web-install.sh
 
 # Install with options
@@ -350,7 +350,7 @@ After installation:
 - **Documentation:** See `.claude/shared/` for protocol documents
 - **Agent Definitions:** See `.claude/agents/{agent-name}/agent.md`
 - **Skill Definitions:** See `.claude/skills/{skill-name}/skill.md`
-- **GitHub:** https://github.com/RivermarkResearch/miniature-guacamole
+- **GitHub:** https://github.com/rivermark-research/miniature-guacamole
 
 ## License
 

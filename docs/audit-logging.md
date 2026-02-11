@@ -694,7 +694,7 @@ ERROR: Cannot write audit log - disk full
 
 ## Related Documentation
 
-- [README.md](https://github.com/RivermarkResearch/miniature-guacamole/blob/main/README.md#audit-logging) – Quick start for audit logging and feature overview
-- [src/audit/config.ts](https://github.com/RivermarkResearch/miniature-guacamole/blob/main/src/audit/config.ts) – Configuration module with validation rules and defaults
-- [src/audit/format.ts](https://github.com/RivermarkResearch/miniature-guacamole/blob/main/src/audit/format.ts) – Log entry format specifications and validation
+- [README.md](https://github.com/rivermark-research/miniature-guacamole/blob/main/README.md#audit-logging) – Quick start for audit logging and feature overview
+- [src/audit/config.ts](https://github.com/rivermark-research/miniature-guacamole/blob/main/src/audit/config.ts) – Configuration module with validation rules and defaults
+- [src/audit/format.ts](https://github.com/rivermark-research/miniature-guacamole/blob/main/src/audit/format.ts) – Log entry format specifications and validation
 

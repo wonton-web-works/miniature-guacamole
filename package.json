@@ -27,9 +27,9 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/RivermarkResearch/miniature-guacamole.git"
+    "url": "https://github.com/rivermark-research/miniature-guacamole.git"
   },
-  "homepage": "https://RivermarkResearch.github.io/miniature-guacamole",
+  "homepage": "https://rivermark-research.github.io/miniature-guacamole",
   "devDependencies": {
     "@playwright/test": "^1.40.0",
     "@types/node": "^20.0.0",

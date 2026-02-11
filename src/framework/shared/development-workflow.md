@@ -2,7 +2,7 @@
 
 ## Overview
 
-This document defines the cyclical TDD/BDD development workflow used by the Product Development Team.
+This document defines the Constraint-Driven Agentic Development (CAD) workflow used by the Product Development Team. CAD builds on test-first principles (TDD/BDD) with artifact bundling, curated context, and classification-driven gating to optimize agent coordination and context efficiency.
 
 ## The Development Cycle
 
@@ -49,9 +49,20 @@ This document defines the cyclical TDD/BDD development workflow used by the Prod
 │  │          │                                                          │  │
 │  │          ▼                                                          │  │
 │  │   ┌─────────────┐                                                   │  │
-│  │   │   STEP 4    │  Staff Engineer code review                       │  │
-│  │   │   Review    │  Quality, standards, architecture                 │  │
+│  │   │  STEP 3.5   │  Classification: MECHANICAL or ARCHITECTURAL      │  │
+│  │   │ Classify    │  Rules R1-R8, M1-M5, default ARCHITECTURAL       │  │
 │  │   └──────┬──────┘                                                   │  │
+│  │          │                                                          │  │
+│  │          ├──────────────────┬────────────────────┐                 │  │
+│  │          │                  │                    │                 │  │
+│  │          ▼                  ▼                    ▼                 │  │
+│  │   ┌─────────────┐    ┌─────────────┐    ┌─────────────┐          │  │
+│  │   │  STEP 4A    │    │  STEP 4B    │    │ UNCERTAIN   │          │  │
+│  │   │ Mechanical  │    │Architectural│    │→Step 4B     │          │  │
+│  │   │   Gate      │    │   Review    │    └─────────────┘          │  │
+│  │   └──────┬──────┘    └──────┬──────┘                             │  │
+│  │          │                  │                                     │  │
+│  │          └──────────┬───────┘                                     │  │
 │  │          │                                                          │  │
 │  └──────────┼──────────────────────────────────────────────────────────┘  │
 │             │                                                              │
@@ -103,8 +114,10 @@ This document defines the cyclical TDD/BDD development workflow used by the Prod
 **When:** Executing a workstream
 **Does:**
 1. Coordinates PM, QA, Dev, Staff Eng
-2. Runs the TDD cycle
-3. Reports when ready for leadership review
+2. Runs the CAD cycle (test-first with artifact bundles)
+3. Classifies workstream as MECHANICAL or ARCHITECTURAL (Step 3.5)
+4. Routes to appropriate gate (4A or 4B)
+5. Reports when ready for leadership review
 
 **Output:** Completed workstream ready for review
 
@@ -112,7 +125,7 @@ This document defines the cyclical TDD/BDD development workflow used by the Prod
 **When:** First step of each workstream
 **Does:**
 1. PM defines acceptance criteria (BDD: Given/When/Then)
-2. QA writes test files (TDD: failing tests)
+2. QA writes test files with misuse-first test ordering: misuse → boundary → golden path
 3. Commits tests to feature branch
 
 **Output:** Test files that define "done"
@@ -120,10 +133,11 @@ This document defines the cyclical TDD/BDD development workflow used by the Prod
 ### Dev (Step 2)
 **When:** After tests exist
 **Does:**
-1. Runs tests (confirms they fail)
-2. Implements minimum code to pass
-3. Refactors while green
-4. Commits implementation
+1. Receives artifact bundle: INPUTS (context), GATE (success criteria), CONSTRAINTS (standards) - ~12K token budget
+2. Runs tests (confirms they fail)
+3. Implements minimum code to pass
+4. Refactors while green
+5. Commits implementation
 
 **Output:** Code that passes all tests
 
@@ -137,8 +151,19 @@ This document defines the cyclical TDD/BDD development workflow used by the Prod
 
 **Output:** QA Sign-off or Issue List
 
-### Staff Engineer (Step 4)
+### Classification (Step 3.5)
 **When:** After QA sign-off
+**Does:**
+1. Classifies workstream as MECHANICAL or ARCHITECTURAL
+2. Applies classification rules:
+   - **ARCHITECTURAL (R1-R8):** package.json changes, framework files, security-sensitive paths, >5 files + >300 lines (except same-module), new subdirectories, new projects, CI/CD files
+   - **MECHANICAL (M1-M5):** Tests pass + 99% coverage, <200 lines (<500 single-module), modifications only, single src/ directory + tests/, single skill/agent template additions
+3. Conservative bias: UNCERTAIN → default ARCHITECTURAL
+
+**Output:** Classification decision (MECHANICAL → Step 4A, ARCHITECTURAL → Step 4B)
+
+### Staff Engineer (Step 4B - ARCHITECTURAL path)
+**When:** After classification determines ARCHITECTURAL
 **Does:**
 1. Reviews code quality
 2. Checks architecture compliance
@@ -146,6 +171,15 @@ This document defines the cyclical TDD/BDD development workflow used by the Prod
 4. Approves OR requests changes
 
 **Output:** Internal review approval
+
+### Mechanical Gate (Step 4A - MECHANICAL path)
+**When:** After classification determines MECHANICAL
+**Does:**
+1. Runs automated bash gates: test pass verification, coverage check, file count, line count, modification-only check
+2. No agent spawn required
+3. Instant pass/fail decision
+
+**Output:** Automated gate pass (proceed to leadership review)
 
 ### /deployment-engineer
 **When:** After leadership approval
@@ -215,7 +249,7 @@ chore: Merge WS-X: [description]           # Merge
 
 ### Gate 1: Tests Exist
 - [ ] Test files created
-- [ ] Tests cover acceptance criteria
+- [ ] Tests cover acceptance criteria (misuse → boundary → golden path)
 - [ ] Tests are failing (no implementation yet)
 
 ### Gate 2: Tests Pass
@@ -223,14 +257,27 @@ chore: Merge WS-X: [description]           # Merge
 - [ ] No regressions
 
 ### Gate 3: QA Sign-off
-- [ ] Coverage adequate
+- [ ] Coverage adequate (99% for MECHANICAL, varies for ARCHITECTURAL)
 - [ ] Edge cases handled
 - [ ] QA approves
 
-### Gate 4: Internal Review
+### Gate 3.5: Classification
+- [ ] Workstream classified as MECHANICAL or ARCHITECTURAL
+- [ ] Classification rules applied (R1-R8, M1-M5)
+- [ ] Route determined (4A or 4B)
+
+### Gate 4A: Mechanical Gate (MECHANICAL path)
+- [ ] All tests pass
+- [ ] Coverage ≥ 99%
+- [ ] <200 lines total (<500 single-module)
+- [ ] Modifications only (no new files)
+- [ ] Single src/ directory + tests/
+
+### Gate 4B: Internal Review (ARCHITECTURAL path)
 - [ ] Code quality approved
 - [ ] Standards met
 - [ ] Security reviewed
+- [ ] Architecture compliance
 
 ### Gate 5: Leadership Approval
 - [ ] Business requirements met
@@ -241,3 +288,53 @@ chore: Merge WS-X: [description]           # Merge
 - [ ] Leadership approved
 - [ ] No merge conflicts
 - [ ] Branch up to date
+
+## CAD Enhancements
+
+### Artifact Bundles
+
+Task agents (qa, dev) receive pre-computed artifact bundles instead of full memory access:
+
+- **INPUTS:** Relevant context only (3-5 decisions, applicable standards)
+- **GATE:** Success criteria for this workstream
+- **CONSTRAINTS:** Technical standards and patterns to follow
+
+Coordination agents (engineering-manager, cto, staff-engineer) retain full memory access as stateful role simulators.
+
+### Curated Context
+
+The orchestrator (/mg-build) reads all memory files but passes only relevant subsets to task agents:
+
+- **qa:** ~8K token budget
+- **dev:** ~12K token budget
+- **staff-engineer:** Full access (coordination role)
+
+### Classification Rules
+
+**ARCHITECTURAL (R1-R8):**
+- R1: package.json or dependency changes
+- R2: Framework files (.claude/, src/framework/, src/installer/)
+- R3: Security-sensitive paths (auth/, permissions/, credentials/)
+- R4: >5 files modified AND >300 total lines changed (except same-module)
+- R5: New subdirectories created
+- R6: New projects or workspaces added
+- R7: CI/CD configuration changes (.github/, .gitlab-ci.yml)
+- R8: Database schema or migration changes
+
+**MECHANICAL (M1-M5):**
+- M1: All tests pass + coverage ≥ 99%
+- M2: <200 lines total (<500 if single module)
+- M3: Modifications only (no new files)
+- M4: Changes in single src/ directory + corresponding tests/
+- M5: Single skill/agent template addition (no framework changes)
+
+**Conservative Bias:** UNCERTAIN → default to ARCHITECTURAL
+
+### Expected Impact
+
+- **Context Reduction:** 75K → 16K tokens per task agent spawn (79% reduction)
+- **Signal-to-Noise:** 0.56 → 9.0 (16x improvement)
+- **Retrieval Accuracy:** +5-10% from same models
+- **Mechanical Verification:** 60% → 85% automation
+- **Agent Spawn Reduction:** 1 fewer spawn per MECHANICAL workstream
+- **Coverage Requirement:** Stays at 99% (not reduced)

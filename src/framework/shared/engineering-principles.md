@@ -4,7 +4,7 @@ These principles guide all engineering work in this organization.
 
 ## Core Principles
 
-### 1. TDD/BDD First
+### 1. Test-First (CAD)
 **Tests are written BEFORE code.**
 
 - Tests define the contract

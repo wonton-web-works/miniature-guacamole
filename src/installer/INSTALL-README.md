@@ -54,14 +54,14 @@ cd /path/to/your/project
 Download and install from GitHub releases:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/rivermark-research/miniature-guacamole/main/web-install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/rivermark-research/miniature-guacamole/main/src/installer/web-install.sh | bash
 ```
 
 Or with options:
 
 ```bash
 # Download the script first
-curl -fsSL https://raw.githubusercontent.com/rivermark-research/miniature-guacamole/main/web-install.sh -o mg-web-install.sh
+curl -fsSL https://raw.githubusercontent.com/rivermark-research/miniature-guacamole/main/src/installer/web-install.sh -o mg-web-install.sh
 chmod +x mg-web-install.sh
 
 # Install with options
@@ -99,7 +99,6 @@ The installer creates the following structure in `.claude/`:
 ├── scripts/          # mg-* utility commands
 ├── hooks/            # Project initialization hook
 ├── memory/           # Agent memory directory (with .gitignore)
-├── schemas/          # JSON schemas (if present)
 ├── settings.json     # Project-level permissions
 ├── CLAUDE.md         # Framework documentation
 ├── team-config.yaml  # Team configuration

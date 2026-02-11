@@ -13,7 +13,7 @@ Thank you for considering contributing to miniature-guacamole. We welcome contri
 
 1. Fork the repository
 2. Create a feature branch following our naming convention
-3. Write tests first (TDD)
+3. Write tests first (misuse-first ordering)
 4. Implement your changes
 5. Ensure all tests pass with 99% coverage
 6. Submit a pull request
@@ -76,9 +76,9 @@ tests/
 
 ## Coding Standards
 
-### Test-Driven Development (TDD)
+### Constraint-Driven Development (CAD)
 
-We follow strict TDD practices:
+We follow strict test-first practices:
 - **Write tests before code** (RED phase)
 - **Write minimal code to pass tests** (GREEN phase)
 - **Refactor while keeping tests green** (REFACTOR phase)
@@ -341,7 +341,7 @@ Integration tests should:
 
 Example:
 ```typescript
-describe('TDD Workflow', () => {
+describe('CAD Workflow', () => {
   it('should execute complete cycle', async () => {
     // Test QA writes tests
     // Test Dev implements

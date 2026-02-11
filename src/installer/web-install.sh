@@ -3,7 +3,7 @@
 # miniature-guacamole web installer
 # ============================================================================
 # Downloads and installs miniature-guacamole from GitHub releases.
-# Usage: curl -fsSL https://raw.githubusercontent.com/rivermark-research/miniature-guacamole/main/web-install.sh | bash
+# Usage: curl -fsSL https://raw.githubusercontent.com/rivermark-research/miniature-guacamole/main/src/installer/web-install.sh | bash
 # ============================================================================
 
 set -euo pipefail

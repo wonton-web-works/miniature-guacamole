@@ -6,7 +6,7 @@ Initialize a project for miniature-guacamole agent collaboration.
 
 Sets up the `.claude/` directory structure in the current project, enabling:
 - Agent memory protocol (project-local state tracking)
-- Shared protocols (TDD, memory, handoff, etc.)
+- Shared protocols (CAD development workflow, memory, handoff, etc.)
 - Tech stack detection and context generation
 - Modular project rules
 

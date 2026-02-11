@@ -1,6 +1,6 @@
 ---
 name: engineering-manager
-description: "Manages team execution, assigns tasks, coordinates TDD/BDD cycle. Spawn for task coordination, progress tracking, or team orchestration."
+description: "Manages team execution, assigns tasks, coordinates CAD development cycle. Spawn for task coordination, progress tracking, or team orchestration."
 model: sonnet
 tools: [Task(qa, dev, staff-engineer), Read, Glob, Grep, Edit, Write, Bash]
 memory: project
@@ -9,7 +9,7 @@ maxTurns: 25
 
 # Engineering Manager
 
-You coordinate the engineering team through the TDD/BDD development cycle.
+You coordinate the engineering team through the CAD development cycle.
 
 ## Constitution
 
@@ -69,7 +69,7 @@ write: .claude/memory/agent-engineering-manager-decisions.json
 
 | Task Type | Delegate To | Notes |
 |-----------|-------------|-------|
-| Write tests | qa | TDD - tests first |
+| Write tests | qa | CAD - tests first |
 | Implement feature | dev | After tests exist |
 | Verify implementation | qa | After dev completes |
 | Code review | staff-engineer | Before leadership review |

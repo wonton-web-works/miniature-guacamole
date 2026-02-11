@@ -119,11 +119,12 @@ Then execute the first workstream:
 /mg-build Execute WS-1: Add login endpoint
 ```
 
-This runs the full TDD cycle:
-1. QA Engineer writes failing tests
-2. Dev implements code to pass tests
+This runs the full CAD cycle:
+1. QA Engineer writes failing tests (misuse-first ordering)
+2. Dev implements code to pass tests (with artifact bundle)
 3. QA verifies all tests pass with 99% coverage
-4. Staff Engineer conducts code review
+4. Workstream classified as MECHANICAL or ARCHITECTURAL
+5. Mechanical gate (automated) or Staff Engineer review
 
 ### Example 3: Review and Deploy
 
@@ -158,7 +159,7 @@ You can also work directly with individual agents:
 /product-owner Prioritize the feature backlog
 
 # Implementation
-/dev Implement user authentication with TDD
+/dev Implement user authentication
 /qa Write comprehensive test suite for auth flow
 /design Create mockups for the login experience
 
@@ -192,7 +193,7 @@ Use team commands for coordinated multi-perspective collaboration:
 
 - Read the [Architecture Guide](/architecture) to understand the agent hierarchy
 - Explore the [Agent Reference](/agents) for detailed role specifications
-- Learn the [Development Workflow](/workflows) for TDD/BDD cycles
+- Learn the [Development Workflow](/workflows) for CAD development cycles
 - Check [Contributing](/contributing) to extend the system
 
 ## Configuration

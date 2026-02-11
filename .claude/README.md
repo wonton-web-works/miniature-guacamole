@@ -1,6 +1,6 @@
 # Product Development Team Agent System
 
-> A product development organization with 19 specialized AI agents, 16 collaborative skills, and a disciplined TDD/BDD development workflow with Git workstreams.
+> A product development organization with 19 specialized AI agents, 16 collaborative skills, and a constraint-driven agentic development (CAD) workflow with Git workstreams.
 
 **Version:** 1.0.0
 **Last Updated:** 2026-02-10
@@ -87,7 +87,7 @@ The system supports structured delegation between agents with depth tracking and
 
 ### Key Features
 
-- **TDD/BDD Workflow** - Tests written before code, cyclical development process
+- **CAD Workflow** - Constraint-driven agentic development with test-first cycle, misuse-first ordering, mechanical gates, and artifact bundles
 - **Git Workstreams** - Each feature in its own branch with structured merge process
 - **Executive Reviews** - Leadership team approves all work before merge
 - **Hierarchical Delegation** - Work flows naturally from executives to ICs
@@ -171,7 +171,7 @@ All skills and agents accept arguments after the slash command:
 
 ## Development Workflow
 
-The system uses a **TDD/BDD cyclical workflow** with Git workstreams. See `.claude/shared/development-workflow.md` for full details.
+The system uses a **CAD (Constraint-Driven Agentic Development) workflow** with Git workstreams, mechanical gates, and artifact bundles. See `.claude/shared/development-workflow.md` for full details.
 
 ### The Cycle
 
@@ -183,7 +183,7 @@ The system uses a **TDD/BDD cyclical workflow** with Git workstreams. See `.clau
          │
          ▼
 ┌─────────────────┐
-│ /mg-build       │  ← TDD Cycle: Tests → Code → Verify → Review
+│ /mg-build       │  ← CAD Cycle: Tests → Code → Verify → Review
 │                 │
 └────────┬────────┘
          │
@@ -258,8 +258,8 @@ The system uses a **TDD/BDD cyclical workflow** with Git workstreams. See `.clau
 
 | Agent | Slash Command | Model | Role | Can Consult |
 |-------|---------------|-------|------|-------------|
-| **Senior Fullstack Engineer** | `/dev` | sonnet | Implements with TDD, DRY, config-over-composition, 99% coverage | QA, Design |
-| **QA Engineer** | `/qa` | sonnet | TDD/BDD tests, Playwright E2E, visual regression screenshots | Dev, Design |
+| **Senior Fullstack Engineer** | `/dev` | sonnet | Implements test-first with DRY, config-over-composition, 99% coverage | QA, Design |
+| **QA Engineer** | `/qa` | sonnet | Misuse-first test specs, Playwright E2E, visual regression screenshots | Dev, Design |
 | **UI/UX Designer** | `/design` | sonnet | Creates wireframes, mockups, and interaction designs | Dev, QA |
 | **Technical Writer** | `/technical-writer` | sonnet | User guides, tutorials, and end-user documentation | Dev, QA |
 | **Docs Writer** | `/docs-writer` | sonnet | Technical documentation and API references | Dev, QA |
@@ -284,7 +284,7 @@ All skills use the `mg-` prefix for consistency:
 | **Add Context** | `/mg-add-context` | Cross-project context references |
 | **Assess** | `/mg-assess` | Product assessment and discovery |
 | **Assess Tech** | `/mg-assess-tech` | Technical feasibility analysis |
-| **Build** | `/mg-build` | TDD/BDD development cycle from tests to production |
+| **Build** | `/mg-build` | CAD development cycle from tests to production |
 | **Code Review** | `/mg-code-review` | Implementation quality review workflow |
 | **Debug** | `/mg-debug` | Structured debugging workflow |
 | **Design** | `/mg-design` | Visual design and frontend implementation |
@@ -292,7 +292,7 @@ All skills use the `mg-` prefix for consistency:
 | **Document** | `/mg-document` | Documentation generation and review |
 | **Init** | `/mg-init` | Project initialization for agent collaboration |
 | **Leadership Team** | `/mg-leadership-team` | Executive collaboration and strategic decisions |
-| **Refactor** | `/mg-refactor` | TDD-safe refactoring workflow |
+| **Refactor** | `/mg-refactor` | Test-safe refactoring workflow |
 | **Security Review** | `/mg-security-review` | Security audits and vulnerability assessments |
 | **Spec** | `/mg-spec` | Product definition and requirements |
 | **Write** | `/mg-write` | Brand-aligned copywriting workflow |
@@ -654,7 +654,7 @@ handoff_response:
 
 | Version | Date | Changes |
 |---------|------|---------|
-| 1.0.0 | 2026-02-10 | **Project-Local Architecture** - Each project has own `.claude/` directory. 19 agents, 16 mg-prefixed skills. Complete data isolation. TDD/BDD workflow with Git workstreams. 99% coverage requirement. |
+| 1.0.0 | 2026-02-10 | **Project-Local Architecture** - Each project has own `.claude/` directory. 19 agents, 16 mg-prefixed skills. Complete data isolation. CAD workflow with Git workstreams. 99% coverage requirement. |
 
 ---
 

@@ -10,7 +10,7 @@ cd /path/to/your/project
 
 ### Web Install
 ```bash
-curl -fsSL https://raw.githubusercontent.com/rivermark-research/miniature-guacamole/main/web-install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/rivermark-research/miniature-guacamole/main/src/installer/web-install.sh | bash
 ```
 
 ### Config Cache + mg-init
@@ -50,7 +50,7 @@ cat .claude/MG_INSTALL.json
 
 ```
 .claude/
-├── agents/           # 18 specialized roles
+├── agents/           # 19 specialized roles
 ├── skills/           # Team collaboration
 ├── shared/           # Protocols & standards
 ├── scripts/          # mg-* utilities

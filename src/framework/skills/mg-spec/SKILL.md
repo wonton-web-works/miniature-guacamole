@@ -26,7 +26,7 @@ Coordinates product-owner, product-manager, and design for product definition.
 
 ```
 1. Product Owner: Vision, priority, strategic fit
-2. Product Manager: User stories, acceptance criteria, BDD scenarios
+2. Product Manager: User stories, acceptance criteria, acceptance scenarios
 3. Designer: UX requirements, wireframes, accessibility
 4. [GATE] Spike Validation: If external dependencies exist, validate via spike
         ↓

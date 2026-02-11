@@ -13,7 +13,7 @@
 **Action-Based Skill System** (February 2026):
 - All 16 skills renamed with `mg-` prefix for brand coherence
 - `/engineering-team` + `/implement` merged into single `/mg-build` skill
-- 2 new skills: `/mg-debug` (structured debugging) and `/mg-refactor` (TDD-safe refactoring)
+- 2 new skills: `/mg-debug` (structured debugging) and `/mg-refactor` (test-safe refactoring)
 - Hard cutover — old skill names no longer work
 - Spawn cap of 6 agents enforced on all skills
 
@@ -53,7 +53,7 @@ This is a **Claude Code skill system** that provides a complete product developm
 - **Supervisor System** - Monitors depth limits and prevents infinite loops
 - **Structured Return Envelopes** - Type-safe agent communication
 
-Use it to orchestrate complex product development workflows with AI agents that follow TDD/BDD practices, write tests before code, and maintain architectural standards.
+Use it to orchestrate complex product development workflows with AI agents that follow Constraint-Driven Agentic Development (CAD) practices — misuse-first test ordering, artifact bundles for task agents, and classification-driven gating.
 
 ---
 
@@ -66,7 +66,7 @@ Use it to orchestrate complex product development workflows with AI agents that 
 - **Accessibility Review** - WCAG 2.1 AA compliance verification
 - **Design Review** - UI/UX evaluation and design system compliance
 - **Code Review** - Technical quality, security, and standards verification
-- **Implementation** - Full TDD cycle from tests to production-ready code
+- **Implementation** - Full CAD cycle from tests to production-ready code
 
 ### Team Collaboration
 - **Leadership Team** - CEO, CTO, Engineering Director for strategic decisions
@@ -126,7 +126,7 @@ The workflow will guide you through feature evaluation, spawn expert agents (Pro
 /mg-build Execute WS-1: Add login endpoint
 ```
 
-The team runs the full TDD cycle: QA writes tests → Dev implements → QA verifies → Staff Engineer reviews.
+The team runs the full CAD cycle: QA writes tests (misuse-first) → Dev implements (with artifact bundle) → QA verifies → Classify → Review.
 
 ---
 
@@ -218,7 +218,7 @@ In Claude Code:
 | **Accessibility Review** | `/mg-accessibility-review` | WCAG 2.1 AA compliance verification |
 | **Design Review** | `/mg-design-review` | UI/UX evaluation and design system compliance |
 | **Code Review** | `/mg-code-review` | Technical quality, security, standards verification |
-| **Implementation** | `/mg-build` | Execute TDD cycle: tests → code → verify → review |
+| **Implementation** | `/mg-build` | Execute CAD cycle: tests → code → verify → classify → review |
 
 ### Workflow Example
 ```
@@ -240,7 +240,7 @@ In Claude Code:
 |------|---------------|---------|---------|
 | **Leadership Team** | `/mg-leadership-team` | CEO, CTO, Engineering Director | Strategic decisions, executive reviews, code approvals |
 | **Product Team** | `/mg-spec` | Product Owner, Product Manager, Designer | Product definition, requirements, UX specifications |
-| **Engineering Team** | `/mg-build` | Engineering Manager, Staff Engineer, Dev, QA | TDD/BDD development with 99% coverage |
+| **Engineering Team** | `/mg-build` | Engineering Manager, Staff Engineer, Dev, QA | CAD development with 99% coverage |
 | **Design Team** | `/mg-design` | Art Director, Designer | UI/UX design and visual standards |
 | **Docs Team** | `/mg-document` | Technical Writer, API Designer | Documentation and API specs |
 
@@ -278,8 +278,8 @@ In Claude Code:
 ### Individual Contributors (Model: sonnet/haiku)
 | Agent | Slash Command | Role |
 |-------|---------------|------|
-| **Senior Fullstack Engineer** | `/dev` | Implements with TDD, DRY, 99% coverage |
-| **QA Engineer** | `/qa` | TDD/BDD tests, Playwright E2E, visual regression |
+| **Senior Fullstack Engineer** | `/dev` | Implements test-first with DRY, 99% coverage |
+| **QA Engineer** | `/qa` | Misuse-first test specs, Playwright E2E, visual regression |
 | **UI/UX Designer** | `/design` | Creates wireframes, mockups, interactions |
 | **Security Engineer** | `/security-engineer` | Security reviews and threat modeling |
 | **DevOps Engineer** | `/devops-engineer` | Infrastructure and deployment automation |
@@ -583,7 +583,7 @@ See [src/memory/README.md](src/memory/README.md) for full documentation.
 
 ## Development Workflow
 
-### The TDD/BDD Cycle
+### The CAD Cycle
 ```
 ┌─────────────────┐
 │ /mg-leadership- │  ← Executive Review + Workstream Plan
@@ -592,7 +592,7 @@ See [src/memory/README.md](src/memory/README.md) for full documentation.
          │
          ▼
 ┌─────────────────┐
-│ /mg-build       │  ← TDD Cycle: Tests → Code → Verify → Review
+│ /mg-build       │  ← CAD Cycle: Tests → Code → Verify → Classify → Review
 │                 │
 └────────┬────────┘
          │
@@ -628,7 +628,7 @@ Output: Executive Review + Workstreams (WS-1, WS-2, etc.)
 ```
 /mg-build Execute workstream WS-1: Add login endpoint
 ```
-This runs: QA writes tests → Dev implements → QA verifies → Staff Eng reviews
+This runs the CAD cycle: QA writes tests (misuse-first) → Dev implements (with artifact bundle) → QA verifies → Classify → Review
 
 **3. Leadership reviews**
 ```
@@ -872,7 +872,7 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines on how to contribute to th
 4. Update architecture diagrams
 
 ### Code Standards
-- **TDD/BDD** - Tests before code
+- **CAD** - Constraint-driven test-first development
 - **99% coverage** - No exceptions
 - **DRY** - Extract duplication immediately
 - **Config over composition** - Prefer configuration objects
@@ -895,7 +895,7 @@ MIT
 - 16 mg-prefixed skills
 - 11 utility scripts
 - Complete data isolation
-- TDD/BDD workflow with Git workstreams
+- CAD workflow with Git workstreams
 
 See [CHANGELOG.md](CHANGELOG.md) for complete version history.
 

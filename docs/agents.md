@@ -106,7 +106,7 @@ Leadership agents handle tactical planning and team coordination. They use the s
 
 **Responsibilities:**
 - Break down features into user stories
-- Define acceptance criteria (BDD: Given/When/Then)
+- Define acceptance criteria (Given/When/Then)
 - Coordinate cross-functional work
 - Work with QA to define test specifications
 
@@ -127,7 +127,7 @@ Leadership agents handle tactical planning and team coordination. They use the s
 **Responsibilities:**
 - Manage team execution and delivery
 - Assign work to dev and QA
-- Coordinate TDD cycle execution
+- Coordinate CAD cycle execution
 - Report on team progress and blockers
 
 **Delegation Authority:**
@@ -186,8 +186,8 @@ IC agents perform hands-on implementation work. They use sonnet or haiku models 
 
 | Agent | Slash Command | Model | Role | Can Consult |
 |-------|---------------|-------|------|-------------|
-| **Senior Fullstack Engineer** | `/dev` | sonnet | Implements with TDD, DRY, config-over-composition, 99% coverage | QA, Design |
-| **QA Engineer** | `/qa` | sonnet | TDD/BDD tests, Playwright E2E, visual regression screenshots | Dev, Design |
+| **Senior Fullstack Engineer** | `/dev` | sonnet | Implements test-first, DRY, config-over-composition, 99% coverage | QA, Design |
+| **QA Engineer** | `/qa` | sonnet | Misuse-first test specs, Playwright E2E, visual regression screenshots | Dev, Design |
 | **UI/UX Designer** | `/design` | sonnet | Creates wireframes, mockups, and interaction designs | Dev, QA |
 | **Security Engineer** | `/security-engineer` | sonnet | Security reviews and threat modeling | Dev, QA |
 | **DevOps Engineer** | `/devops-engineer` | sonnet | Infrastructure and deployment automation | Dev |
@@ -199,7 +199,7 @@ IC agents perform hands-on implementation work. They use sonnet or haiku models 
 ### Senior Fullstack Engineer (Dev)
 
 **Responsibilities:**
-- Implement features using TDD (test-driven development)
+- Implement features test-first with artifact bundles
 - Follow DRY principle (Don't Repeat Yourself)
 - Use config-over-composition patterns
 - Achieve 99% test coverage
@@ -214,7 +214,7 @@ IC agents perform hands-on implementation work. They use sonnet or haiku models 
 
 **Example Usage:**
 ```
-/dev Implement login endpoint with TDD
+/dev Implement login endpoint
 /dev Refactor authentication service for DRY
 /dev Add input validation to user registration
 ```
@@ -222,8 +222,8 @@ IC agents perform hands-on implementation work. They use sonnet or haiku models 
 ### QA Engineer
 
 **Responsibilities:**
-- Write tests BEFORE implementation (TDD)
-- Define BDD specifications (Given/When/Then)
+- Write tests BEFORE implementation (misuse-first ordering)
+- Define acceptance specifications (Given/When/Then)
 - Implement Playwright E2E tests
 - Capture visual regression screenshots
 - Verify 99% code coverage
@@ -407,7 +407,7 @@ Operations agents handle deployment and infrastructure concerns.
 **Example Usage:**
 ```
 /deployment-engineer Merge feature/ws-1-login
-/deployment-engineer Tag release v3.0.0
+/deployment-engineer Tag release v1.0.0
 /deployment-engineer Clean up merged branches
 ```
 
@@ -466,7 +466,7 @@ Teams provide coordinated multi-agent collaboration.
 |------|---------------|-------|---------|---------|
 | **Leadership Team** | `/mg-leadership-team` | opus | CEO, CTO, Engineering Director | Strategic decisions, executive reviews, code review approvals |
 | **Product Team** | `/mg-spec` | sonnet | Product Owner, Product Manager, Designer | Product definition, requirements, UX specifications |
-| **Build Team** | `/mg-build` | sonnet | Engineering Manager, Staff Engineer, Dev, QA | TDD/BDD development cycle with 99% coverage |
+| **Build Team** | `/mg-build` | sonnet | Engineering Manager, Staff Engineer, Dev, QA | CAD development cycle with 99% coverage |
 | **Design Team** | `/mg-design` | sonnet | Art Director, Designer | UI/UX design with visual regression |
 | **Docs Team** | `/mg-document` | sonnet | Technical Writer, API Designer | Documentation and API specs |
 

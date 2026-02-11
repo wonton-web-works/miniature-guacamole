@@ -1,6 +1,6 @@
 ---
 # Skill: mg-refactor
-# Structured refactoring workflow with TDD safety net
+# Structured refactoring workflow with test safety net
 
 name: mg-refactor
 description: "Refactor it. Execute safe refactoring: characterization tests, restructure code, verify no regressions. Invoke with refactor scope."

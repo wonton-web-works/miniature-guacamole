@@ -1,9 +1,9 @@
 ---
 # Skill: mg-build
-# Orchestrates the TDD/BDD development cycle from tests to production-ready code
+# Orchestrates the CAD development cycle from tests to production-ready code
 
 name: mg-build
-description: "Build it. Execute full TDD cycle: spawn qa for tests, dev for implementation, staff-engineer for review. Invoke with workstream ID."
+description: "Build it. Execute full CAD cycle: spawn qa for tests, dev for implementation, staff-engineer for review. Invoke with workstream ID."
 model: sonnet
 tools: [Read, Glob, Grep, Edit, Write, Task, Bash]
 spawn_cap: 6
@@ -11,7 +11,7 @@ spawn_cap: 6
 
 # mg-build
 
-Coordinates qa, dev, and staff-engineer through the complete TDD/BDD development cycle. This is the primary "build it" skill.
+Coordinates qa, dev, and staff-engineer through the complete CAD development cycle. This is the primary "build it" skill.
 
 ## Constitution
 
@@ -22,7 +22,7 @@ Coordinates qa, dev, and staff-engineer through the complete TDD/BDD development
 5. **Escalate blockers** - Surface issues early to engineering-manager
 6. **Visual standards** - Follow `_shared/output-format.md` for progress reporting
 
-## The TDD Cycle
+## The CAD Cycle
 
 ```
 Step 1: QA writes tests (failing)     → tests_written gate
@@ -61,7 +61,7 @@ write: .claude/memory/workstream-{id}-state.json
 Task:
   subagent_type: qa
   prompt: |
-    Write TDD/BDD tests for workstream {id}.
+    Write misuse-first test specs for workstream {id}.
     Acceptance criteria: {criteria}
     Target: 99% coverage paths identified, failing tests.
 
@@ -71,7 +71,7 @@ Task:
   prompt: |
     Implement workstream {id} to pass tests.
     Test files: {test_files}
-    Principles: TDD, DRY, config-over-composition.
+    Principles: Test-first, DRY, config-over-composition.
     Run Red → Green → Refactor cycle.
 
 # Step 3: Verification
@@ -91,7 +91,7 @@ Task:
 
 ## Output Format
 
-**Always show the TDD pipeline diagram at the start:**
+**Always show the CAD pipeline diagram at the start:**
 
 ```
 ┌─────────┐    ┌─────────┐    ┌─────────┐    ┌─────────┐
@@ -133,6 +133,6 @@ Legend: ✓ = done, ● = active, ○ = pending, × = failed
 
 ## Boundaries
 
-**CAN:** Execute full TDD cycle, spawn qa/dev/staff-engineer, track gates, coordinate handoffs, report progress
+**CAN:** Execute full CAD cycle, spawn qa/dev/staff-engineer, track gates, coordinate handoffs, report progress
 **CANNOT:** Write code without tests, skip tests, merge to main, approve without leadership, skip code review
 **ESCALATES TO:** engineering-manager (blockers), mg-leadership-team (final approval)

@@ -1,6 +1,6 @@
 ---
 name: product-manager
-description: "Manages feature specs and coordination. Spawn for user stories, BDD scenarios, or cross-functional alignment."
+description: "Manages feature specs and coordination. Spawn for user stories, acceptance scenarios, or cross-functional alignment."
 model: sonnet
 tools: [Task(qa, design), Read, Glob, Grep, Edit, Write]
 memory: project

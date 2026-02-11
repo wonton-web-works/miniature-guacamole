@@ -312,10 +312,12 @@ main (protected)
 
 ### Quality Gates
 
-1. **Tests Exist** - Test files created and failing
+1. **Tests Exist** - Test files created and failing (misuse-first ordering)
 2. **Tests Pass** - All tests passing, no regressions
-3. **QA Sign-off** - Coverage adequate, edge cases handled
-4. **Internal Review** - Code quality, standards, security
+3. **QA Sign-off** - Coverage adequate (99%+), edge cases handled
+3.5. **Classification** - Workstream classified as MECHANICAL or ARCHITECTURAL (R1-R8, M1-M5)
+4A. **Mechanical Gate** (MECHANICAL) - Automated bash verification: tests pass, 99% coverage, <200 lines
+4B. **Staff Engineer Review** (ARCHITECTURAL) - Code quality, standards, security, architecture
 5. **Leadership Approval** - Business requirements, technical quality, operational readiness
 6. **Merge Ready** - Leadership approved, no conflicts, branch up to date
 
@@ -437,8 +439,8 @@ steps:
 **To create a release**:
 
 ```bash
-git tag v3.0.1
-git push origin v3.0.1
+git tag v1.0.0
+git push origin v1.0.0
 # CI automatically builds and publishes to GitHub releases
 ```
 
@@ -446,18 +448,18 @@ git push origin v3.0.1
 
 **mg-init** is a hybrid installer:
 
-1. Check local cache: `~/.cache/miniature-guacamole/v3.0.0.tar.gz`
+1. Check local cache: `~/.cache/miniature-guacamole/v1.0.0.tar.gz`
 2. If cache miss → fetch from GitHub releases API
 3. Download tarball, cache it, extract to temp
 4. Run bundled `install.sh` against target project
 
 **Flags**:
-- `--version v3.1.0` - Specific version (default: latest)
+- `--version v1.0.0` - Specific version (default: latest)
 - `--offline` - Cache only, no network
 - `--force` - Force re-initialization
 
 **Example**:
 
 ```bash
-mg-init --version v3.0.0 /path/to/project
+mg-init --version v1.0.0 /path/to/project
 ```

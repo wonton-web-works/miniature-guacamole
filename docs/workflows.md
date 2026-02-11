@@ -1,10 +1,10 @@
 # Workflows
 
-This guide covers the TDD/BDD development cycle, workstream management, and workflow skills available in the system.
+This guide covers the CAD (Constraint-Driven Agentic Development) cycle, workstream management, and workflow skills available in the system.
 
-## The TDD/BDD Development Cycle
+## The CAD Development Cycle
 
-The system follows a disciplined test-driven development (TDD) and behavior-driven development (BDD) workflow:
+The system follows a Constraint-Driven Agentic Development (CAD) workflow that enhances test-first principles with artifact bundles, curated context, and classification-driven gating:
 
 ```
 ┌─────────────────┐
@@ -14,8 +14,8 @@ The system follows a disciplined test-driven development (TDD) and behavior-driv
          │
          ▼
 ┌─────────────────┐
-│ /mg-build       │  ← TDD Cycle: Tests → Code → Verify → Review
-│                 │
+│ /mg-build       │  ← CAD Cycle: Tests → Code → Verify → Classify → Review
+│                 │    (Step 3.5: MECHANICAL or ARCHITECTURAL classification)
 └────────┬────────┘
          │
          ▼
@@ -38,7 +38,7 @@ The system follows a disciplined test-driven development (TDD) and behavior-driv
 └─────────────────┘
 ```
 
-## The 4-Step TDD Cycle
+## The CAD Development Cycle
 
 ### Step 1: Tests (PM + QA)
 
@@ -46,11 +46,13 @@ The system follows a disciplined test-driven development (TDD) and behavior-driv
 **Branch:** `feature/ws-{n}-{name}`
 
 **Activities:**
-1. PM defines acceptance criteria (BDD: Given/When/Then)
-2. QA writes failing test files (TDD)
+1. PM defines acceptance criteria (Given/When/Then)
+2. QA writes failing test files following misuse-first ordering: misuse cases → boundary cases → golden path
 3. Commit tests to feature branch
 
 **Output:** Test files that define "done"
+
+**CAD Enhancement:** QA receives an artifact bundle (~8K tokens) with curated context: relevant acceptance criteria, applicable security standards, and related test patterns.
 
 **Example:**
 ```
@@ -73,9 +75,11 @@ The system follows a disciplined test-driven development (TDD) and behavior-driv
 
 **Output:** Code that passes all tests
 
+**CAD Enhancement:** Dev receives a pre-computed artifact bundle (~12K tokens) with INPUTS (relevant test specs), GATE (pass criteria: 99% coverage, all tests green), and CONSTRAINTS (applicable standards). This reduces context from ~75K to ~12K tokens (84% reduction).
+
 **Example:**
 ```
-/dev Implement login endpoint with TDD
+/dev Implement login endpoint
 
 # Dev process:
 # - Runs tests (RED - failing)
@@ -107,9 +111,39 @@ The system follows a disciplined test-driven development (TDD) and behavior-driv
 # - SIGN OFF
 ```
 
-### Step 4: Review (Staff Engineer)
+### Step 3.5: Classification
+
+**Who:** Automated (mg-build orchestrator)
+
+**Activities:**
+1. Classify workstream as MECHANICAL or ARCHITECTURAL
+2. Apply classification rules (R1-R8 for ARCHITECTURAL, M1-M5 for MECHANICAL)
+3. Conservative bias: if uncertain, default to ARCHITECTURAL
+
+**ARCHITECTURAL triggers (R1-R8):** package.json changes, framework files, security-sensitive paths, >5 files + >300 lines, new subdirectories, new projects, CI/CD files, database migrations
+
+**MECHANICAL criteria (M1-M5):** All tests pass + 99% coverage, <200 lines (<500 single-module), modifications only, single src/ + tests/ directory, single skill/agent template additions
+
+**Output:** Route to Step 4A (Mechanical Gate) or Step 4B (Staff Engineer Review)
+
+### Step 4A: Mechanical Gate (Automated)
+
+**Who:** Automated bash verification
+**Trigger:** Workstream classified as MECHANICAL
+
+**Verification:**
+- [ ] All tests pass
+- [ ] Coverage >= 99%
+- [ ] Total changes < 200 lines (< 500 single-module)
+- [ ] Modifications only (no new files except tests)
+- [ ] No package.json, framework, or CI/CD changes
+
+**Output:** Automated gate pass — eliminates need for staff-engineer spawn
+
+### Step 4B: Staff Engineer Review (Architectural)
 
 **Who:** Staff Engineer
+**Trigger:** Workstream classified as ARCHITECTURAL
 
 **Activities:**
 1. Review code quality
@@ -166,11 +200,12 @@ Use the build skill to execute a workstream:
 ```
 /mg-build Execute WS-1: Login endpoint
 
-# Runs the full 4-step cycle:
+# Runs the full CAD cycle:
 # 1. PM + QA write tests
 # 2. Dev implements
 # 3. QA verifies
-# 4. Staff Eng reviews
+# 3.5. Classify (MECHANICAL or ARCHITECTURAL)
+# 4. Mechanical Gate (4A) or Staff Eng Review (4B)
 ```
 
 ## Quality Gates
@@ -191,10 +226,23 @@ Each workstream must pass through multiple quality gates:
 - [ ] Edge cases handled
 - [ ] QA approves
 
-### Gate 4: Internal Review
+### Gate 3.5: Classification
+- [ ] Workstream classified as MECHANICAL or ARCHITECTURAL
+- [ ] Classification rules applied (R1-R8, M1-M5)
+- [ ] Route determined (4A or 4B)
+
+### Gate 4A: Mechanical Gate (MECHANICAL path)
+- [ ] All tests pass
+- [ ] Coverage >= 99%
+- [ ] <200 lines (<500 single-module)
+- [ ] Modifications only
+- [ ] Single src/ + tests/ directory
+
+### Gate 4B: Internal Review (ARCHITECTURAL path)
 - [ ] Code quality approved
 - [ ] Standards met
 - [ ] Security reviewed
+- [ ] Architecture compliance
 
 ### Gate 5: Leadership Approval
 - [ ] Business requirements met
@@ -357,13 +405,14 @@ The system provides 16 workflow skills for common development tasks.
 
 **Command:** `/mg-build`
 
-**Purpose:** Execute full TDD cycle from tests to production-ready code
+**Purpose:** Execute full CAD cycle from tests to production-ready code
 
 **Process:**
 1. Spawns QA to write tests
 2. Spawns Dev to implement
 3. Spawns QA to verify
-4. Spawns Staff Engineer to review
+4. Classifies workstream (MECHANICAL or ARCHITECTURAL)
+5. Routes to automated gate (4A) or Staff Engineer review (4B)
 
 **Example:**
 ```
@@ -442,7 +491,7 @@ main (protected)
 ### Branch Lifecycle
 
 1. **Create** - Branch from main for new workstream
-2. **Develop** - Execute TDD cycle on feature branch
+2. **Develop** - Execute CAD cycle on feature branch
 3. **Review** - Leadership reviews completed workstream
 4. **Merge** - Deployment engineer merges to main
 5. **Cleanup** - Delete feature branch after merge
@@ -577,19 +626,21 @@ Continue with WS-2, WS-3, and WS-4 using the same process.
 **When:** Executing a workstream
 **Does:**
 - Coordinates PM, QA, Dev, Staff Eng
-- Runs the TDD cycle
+- Runs the CAD cycle (test-first with artifact bundles and classification-driven gating)
 - Reports when ready for leadership review
 
 ### PM + QA (Step 1)
 **When:** First step of each workstream
 **Does:**
-- PM defines acceptance criteria (BDD: Given/When/Then)
-- QA writes test files (TDD: failing tests)
+- PM defines acceptance criteria (Given/When/Then)
+- QA writes test files with misuse-first ordering (misuse → boundary → golden path)
+- Receives artifact bundle (~8K tokens) with curated context
 - Commits tests to feature branch
 
 ### Dev (Step 2)
 **When:** After tests exist
 **Does:**
+- Receives artifact bundle (~12K tokens) with curated context
 - Runs tests (confirms they fail)
 - Implements minimum code to pass
 - Refactors while green
@@ -603,8 +654,15 @@ Continue with WS-2, WS-3, and WS-4 using the same process.
 - Validates edge cases
 - Signs off OR reports issues
 
-### Staff Engineer (Step 4)
-**When:** After QA sign-off
+### Mechanical Gate (Step 4A — MECHANICAL)
+**When:** After QA sign-off AND classified as MECHANICAL
+**Does:**
+- Automated bash verification
+- Checks: tests pass, 99% coverage, <200 lines, modifications only
+- Eliminates need for staff-engineer spawn
+
+### Staff Engineer (Step 4B — ARCHITECTURAL)
+**When:** After QA sign-off AND classified as ARCHITECTURAL
 **Does:**
 - Reviews code quality
 - Checks architecture compliance
@@ -622,12 +680,14 @@ Continue with WS-2, WS-3, and WS-4 using the same process.
 
 ## Best Practices
 
-### For TDD
+### For CAD Development
 
 1. **Write tests first** - Always red before green
 2. **Minimal implementation** - Only write code to pass tests
 3. **Refactor fearlessly** - Tests protect you
 4. **99% coverage** - No exceptions
+5. **Misuse-first** - Security tests before happy paths
+6. **Artifact bundles** - Curated context reduces noise for task agents
 
 ### For Workstreams
 

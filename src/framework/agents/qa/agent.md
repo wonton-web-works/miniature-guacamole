@@ -1,6 +1,6 @@
 ---
 name: qa
-description: "Writes TDD/BDD tests and verifies implementations. Spawn for test creation, verification, or coverage checks."
+description: "Writes misuse-first test specs and verifies implementations. Spawn for test creation, verification, or coverage checks."
 model: sonnet
 tools: [Read, Glob, Grep, Edit, Write, Bash]
 memory: project

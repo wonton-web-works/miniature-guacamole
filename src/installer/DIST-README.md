@@ -4,7 +4,7 @@ A Product Development Team agent system for [Claude Code](https://claude.ai/code
 
 ## What is this?
 
-miniature-guacamole provides a team of AI agents that work together to build software using a TDD/BDD workflow. Each agent has a specific role and can delegate to others, communicate through shared memory, and escalate issues up the chain.
+miniature-guacamole provides a team of AI agents that work together to build software using a Constraint-Driven Agentic Development (CAD) workflow. Each agent has a specific role and can delegate to others, communicate through shared memory, and escalate issues up the chain.
 
 **Version:** 1.0.0
 
@@ -46,20 +46,21 @@ The installer creates a `.claude/` directory in your project with:
 | Agent | Role |
 |-------|------|
 | `product-owner` | Product vision, backlog prioritization |
-| `product-manager` | Feature specs, user stories, BDD scenarios |
-| `engineering-manager` | Team coordination, TDD/BDD cycle management |
+| `product-manager` | Feature specs, user stories, acceptance criteria |
+| `engineering-manager` | Team coordination, CAD cycle management |
 | `staff-engineer` | Technical standards, code review, architecture guidance |
 | `art-director` | Design vision, brand standards, visual approvals |
 
 ### Individual Contributors (Sonnet model)
 | Agent | Role |
 |-------|------|
-| `dev` | Implementation with TDD, 99% coverage target |
-| `qa` | Test creation, verification, visual regression |
+| `dev` | Implementation test-first, 99% coverage target |
+| `qa` | Misuse-first test specs, verification, visual regression |
 | `design` | UI/UX design, frontend implementation |
-| `docs-writer` | Technical documentation and API references |
-| `technical-writer` | User guides and tutorials |
-| `devops` | Infrastructure and deployment automation |
+| `api-designer` | API specifications and documentation |
+| `technical-writer` | Technical documentation and guides |
+| `copywriter` | Brand-aligned marketing and user-facing copy |
+| `devops-engineer` | Infrastructure and deployment automation |
 | `security-engineer` | Security audits and vulnerability scanning |
 | `data-engineer` | Data pipelines and analytics infrastructure |
 
@@ -78,7 +79,7 @@ All skills use the `mg-` prefix for consistency:
 /mg-add-context          - Cross-project context references
 /mg-assess               - Product assessment and discovery
 /mg-assess-tech          - Technical feasibility analysis
-/mg-build                - TDD/BDD development cycle from tests to production
+/mg-build                - CAD development cycle from tests to production
 /mg-code-review          - Implementation quality review workflow
 /mg-debug                - Structured debugging workflow
 /mg-design               - Visual design and frontend implementation
@@ -86,7 +87,7 @@ All skills use the `mg-` prefix for consistency:
 /mg-document             - Documentation generation and review
 /mg-init                 - Project initialization for agent collaboration
 /mg-leadership-team      - Executive collaboration and strategic decisions
-/mg-refactor             - TDD-safe refactoring workflow
+/mg-refactor             - Test-safe refactoring workflow
 /mg-security-review      - Security audits and vulnerability assessments
 /mg-spec                 - Product definition and requirements
 /mg-write                - Brand-aligned copywriting workflow

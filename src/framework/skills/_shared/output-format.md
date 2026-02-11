@@ -160,7 +160,7 @@ Use code blocks to show structure, tables for comparisons:
 ```markdown
 ## Workstream {id}: {name}
 
-### TDD Cycle Progress
+### CAD Cycle Progress
 - [x] Step 1: Tests written
 - [x] Step 2: Code implemented
 - [ ] Step 3: Verification
@@ -270,7 +270,7 @@ Present to mg-leadership-team for strategic approval and resource allocation
 
 Agents should use these ASCII patterns to show progress visually inline.
 
-### TDD Cycle Pipeline
+### CAD Cycle Pipeline
 
 ```
 ┌─────────┐    ┌─────────┐    ┌─────────┐    ┌─────────┐
@@ -351,7 +351,7 @@ Progress: [████████░░░░░░░░] 50% (Step 2/4)
 
 ### When to Use ASCII Visuals
 
-- **Always**: Show TDD cycle progress during `/mg-build` execution
+- **Always**: Show CAD cycle progress during `/mg-build` execution
 - **Always**: Show dashboard when multiple workstreams active
 - **Optional**: Show delegation flow when spawning multiple agents
 - **Optional**: Show multi-lens diagram during feature assessments
@@ -360,7 +360,7 @@ Progress: [████████░░░░░░░░] 50% (Step 2/4)
 
 **Version 1.1** (2026-02-04)
 - Added ASCII visual progress patterns
-- TDD cycle pipeline, workstream dashboard, delegation flows
+- CAD cycle pipeline, workstream dashboard, delegation flows
 - Status summary boxes and progress indicators
 
 **Version 1.0** (2026-02-04)

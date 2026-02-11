@@ -6,18 +6,18 @@ You have the **miniature-guacamole** framework installed - a product development
 
 miniature-guacamole transforms Claude Code into a complete product development team with specialized agents and collaborative skills:
 
-- **18 Specialized Agents** - Engineering Manager, Product Manager, QA, Design, DevOps, and more
+- **19 Specialized Agents** - Engineering Manager, Product Manager, QA, Design, DevOps, and more
 - **16 Skills** - /mg-leadership-team, /mg-build, /mg-code-review, and others
-- **Shared Protocols** - TDD workflow, memory protocol, handoff protocol for coordination
+- **Shared Protocols** - CAD development workflow, memory protocol, handoff protocol for coordination
 - **NDA-Safe Architecture** - Project memory stays local, agents/skills are shared role definitions
 
 ## Framework Components
 
 ### Installed Globally (~/.claude/)
 
-- **agents/** - 18 specialized roles (dev, qa, product-manager, etc.)
+- **agents/** - 19 specialized roles (dev, qa, product-manager, etc.)
 - **skills/** - 16 collaborative workflows (mg-leadership-team, mg-build, etc.)
-- **shared/** - 6 protocol documents (TDD, memory, handoff, visual formatting, etc.)
+- **shared/** - 6 protocol documents (CAD development workflow, memory, handoff, visual formatting, etc.)
 - **team-config.yaml** - Framework configuration
 - **settings.json** - Permissions and hooks
 
@@ -82,8 +82,8 @@ All memory is **project-local** and never shared between clients or projects.
 
 Framework protocols are in `~/.claude/shared/`:
 
-- **development-workflow.md** - Gate-based development process
-- **tdd-workflow.md** - Test-driven development cycle
+- **development-workflow.md** - CAD gate-based development process
+- **tdd-workflow.md** - Test-first workflow with misuse-first ordering
 - **memory-protocol.md** - How agents read/write memory
 - **handoff-protocol.md** - Agent coordination patterns
 - **engineering-principles.md** - Code quality standards

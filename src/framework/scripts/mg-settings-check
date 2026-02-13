@@ -19,11 +19,12 @@ Detect and clean permission bloat in settings.local.json files.
 
 Options:
   --project       Check only project-level settings (.claude/settings.local.json)
-  --global        Check only global settings (~/.claude/settings.local.json)
+  --global        Check global settings if present (~/.claude/settings.local.json)
   --fix           Remove oversized patterns with user confirmation
   -h, --help      Show this help message
 
-If no scope flag is provided, checks both project and global settings.
+If no scope flag is provided, checks project settings (and global if present).
+Note: v3.x framework is project-local - global settings are optional.
 
 Detection Rules:
   - Pattern >200 characters = oversized (reported as bloat)

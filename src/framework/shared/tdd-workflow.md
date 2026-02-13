@@ -156,7 +156,7 @@ Before Step 4, workstream is classified as MECHANICAL or ARCHITECTURAL using rul
 **ARCHITECTURAL workstreams (rules R1-R8)** - Require Staff Engineer review (Step 4B):
 
 - **R1:** package.json changes (dependencies, scripts)
-- **R2:** Framework files (~/.claude/, core infrastructure)
+- **R2:** Framework files (.claude/, core infrastructure)
 - **R3:** Security-sensitive paths (auth/, permissions/, crypto/)
 - **R4:** Large multi-file changes (>5 files AND >300 lines, except same-module)
 - **R5:** New subdirectories or modules

@@ -157,6 +157,102 @@ if [[ -f "$MG_INSTALL_JSON" ]] && [[ "$FORCE" != "true" ]]; then
 fi
 
 # ============================================================================
+# Clean existing MG-managed directories (remove stale content from prior installs)
+# ============================================================================
+
+if [[ "$FORCE" == "true" ]] || [[ ! -f "$MG_INSTALL_JSON" ]]; then
+    if [[ -d "$CLAUDE_TARGET_DIR" ]]; then
+        echo ""
+        log_info "Cleaning existing framework directories..."
+
+        # Known v0.x (pre-v1.0) deprecated skill names - removed on upgrade
+        declare -a DEPRECATED_SKILLS=(
+            "implement" "engineering-team" "code-review" "init-project"
+            "launch-metrics" "incident-response" "deployment" "documentation"
+            "marketing-content" "user-research" "design" "leadership-team"
+            "help" "version"
+        )
+
+        # Enable dotglob to include hidden files in glob expansion
+        shopt -s dotglob
+
+        # Remove MG-managed directories (selective removal - preserve user-created hidden content)
+        for dir in agents skills shared scripts hooks schemas; do
+            if [[ -d "$CLAUDE_TARGET_DIR/$dir" ]]; then
+                # Build set of known framework items from source
+                declare -A known_items
+                if [[ -d "$CLAUDE_SOURCE_DIR/$dir" ]]; then
+                    for item in "$CLAUDE_SOURCE_DIR/$dir"/*; do
+                        if [[ -e "$item" ]]; then
+                            item_name=$(basename "$item")
+                            known_items["$item_name"]=1
+                        fi
+                    done
+                fi
+
+                # Remove items that exist in source OR are known deprecated (but skip hidden directories)
+                for target_item in "$CLAUDE_TARGET_DIR/$dir"/*; do
+                    if [[ -e "$target_item" ]]; then
+                        item_name=$(basename "$target_item")
+
+                        # Skip hidden directories (preserve user-created content like .old-skill/, .backup/)
+                        # But remove hidden files like .gitkeep (git placeholders for empty dirs)
+                        if [[ -d "$target_item" && "$item_name" == .* ]]; then
+                            continue
+                        fi
+
+                        # Remove if it's in the current source
+                        if [[ -n "${known_items[$item_name]:-}" ]]; then
+                            if rm -rf "$target_item" 2>/dev/null; then
+                                log_success "Cleaned $dir/$item_name"
+                            else
+                                log_error "Failed to clean $dir/$item_name (permission denied)"
+                                exit 1
+                            fi
+                            continue
+                        fi
+
+                        # For skills, also remove known deprecated v0.x skills
+                        if [[ "$dir" == "skills" ]]; then
+                            is_deprecated=0
+                            for deprecated_skill in "${DEPRECATED_SKILLS[@]}"; do
+                                if [[ "$item_name" == "$deprecated_skill" ]]; then
+                                    is_deprecated=1
+                                    break
+                                fi
+                            done
+                            if [[ $is_deprecated -eq 1 ]]; then
+                                if rm -rf "$target_item" 2>/dev/null; then
+                                    log_success "Cleaned skills/$item_name (deprecated)"
+                                else
+                                    log_error "Failed to clean skills/$item_name (permission denied)"
+                                    exit 1
+                                fi
+                                continue
+                            fi
+                        fi
+
+                        # For all directories: remove any item not in source (cleanup stale content)
+                        # For skills, this catches stale custom/user-created skills that aren't deprecated v0.x ones
+                        if rm -rf "$target_item" 2>/dev/null; then
+                            log_success "Cleaned $dir/$item_name (stale)"
+                        else
+                            log_error "Failed to clean $dir/$item_name (permission denied)"
+                            exit 1
+                        fi
+                    fi
+                done
+
+                unset known_items
+            fi
+        done
+
+        # Disable dotglob
+        shopt -u dotglob
+    fi
+fi
+
+# ============================================================================
 # Create directory structure
 # ============================================================================
 

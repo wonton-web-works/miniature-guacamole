@@ -37,9 +37,9 @@ Creates the memory directory where agents store project-local state:
 !.gitignore
 ```
 
-### 2. Copy Shared Protocols to .claude/shared/
+### 2. Install Shared Protocols to .claude/shared/
 
-Copies the 6 shared protocols from `~/.claude/shared/` to `.claude/shared/`:
+Installs the 6 shared protocols to `.claude/shared/`:
 
 1. `development-workflow.md` - Gate-based development process
 2. `engineering-principles.md` - Code quality standards
@@ -48,7 +48,7 @@ Copies the 6 shared protocols from `~/.claude/shared/` to `.claude/shared/`:
 5. `tdd-workflow.md` - Test-driven development cycle
 6. `visual-formatting.md` - ASCII art for progress reports
 
-**Why copy instead of symlink?** Projects can customize protocols without affecting other projects or the global framework. This maintains project isolation.
+**Why install to each project?** Projects can customize protocols without affecting other projects. This maintains project isolation.
 
 **Preservation**: If a protocol file already exists in `.claude/shared/`, it is NOT overwritten. User customizations are preserved.
 
@@ -172,14 +172,14 @@ Next steps:
 
 ## Project-Local Memory Isolation
 
-**Critical**: This skill creates `.claude/` in the **current directory**, NOT `~/.claude/`.
+**Critical**: This skill creates `.claude/` in the **current directory** (project-local).
 
 - Each project has its own `.claude/memory/` directory
 - Memory files are ignored by git (`.claude/memory/.gitignore`)
 - No data crosses between projects or clients
 - NDA-safe architecture
 
-**Absolute paths are NEVER used** in generated files (except when referencing the global `~/.claude/shared/` source for copying).
+**Absolute paths are NEVER used** in generated files.
 
 ## Implementation Notes
 
@@ -211,15 +211,19 @@ EOF
 fi
 ```
 
-### Protocol Copying (Preserve Existing)
+### Protocol Installation (Preserve Existing)
 
 ```bash
+# Protocols are installed as part of the framework installation
+# The installer copies them to .claude/shared/
+# This section shows the preservation logic only
+
 for protocol in development-workflow.md engineering-principles.md handoff-protocol.md memory-protocol.md tdd-workflow.md visual-formatting.md; do
     if [ ! -f .claude/shared/$protocol ]; then
-        cp ~/.claude/shared/$protocol .claude/shared/$protocol
-        echo "  ✓ Copied $protocol to .claude/shared/"
+        echo "  ✓ Installing $protocol to .claude/shared/"
+        # Actual copy happens in installer
     else
-        echo "  ⊘ Skipped $protocol (already exists)"
+        echo "  ⊘ Skipped $protocol (already exists, preserving customizations)"
     fi
 done
 ```
@@ -246,11 +250,11 @@ No parsing, no version detection, no prescriptive configuration - just identify 
 To verify this skill is properly installed:
 
 ```bash
-# Check skill exists
-ls -la ~/.claude/skills/mg-init/SKILL.md
+# Check skill exists in project
+ls -la .claude/skills/mg-init/SKILL.md
 
-# Check it's linked in global config (if applicable)
-grep -r "mg-init" ~/.claude/
+# Check it's available in project
+ls .claude/skills/ | grep mg-init
 ```
 
 To test the skill in a sample project:
@@ -272,11 +276,10 @@ Expected result:
 - Architecture Decision: DEC-INIT-003 (Modular rules structure)
 - Architecture Decision: DEC-INIT-006 (No overwrite policy)
 - Verification: `tests/verify-ws-init-2.sh`
-- SessionStart Hook: `~/.claude/hooks/project-init-check.sh`
 
 ## Maintenance
 
 When adding new shared protocols to the framework:
-1. Add to `~/.claude/shared/`
-2. Update this skill to copy the new protocol
+1. Add to `src/framework/shared/`
+2. Update installer to include the new protocol
 3. Update protocol list in this documentation

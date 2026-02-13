@@ -13,7 +13,7 @@ miniature-guacamole transforms Claude Code into a complete product development t
 
 ## Framework Components
 
-### Installed Globally (~/.claude/)
+### Installed Per-Project (.claude/)
 
 - **agents/** - 19 specialized roles (dev, qa, product-manager, etc.)
 - **skills/** - 16 collaborative workflows (mg-leadership-team, mg-build, etc.)
@@ -80,7 +80,7 @@ All memory is **project-local** and never shared between clients or projects.
 
 ## Shared Protocols
 
-Framework protocols are in `~/.claude/shared/`:
+Framework protocols are in `.claude/shared/`:
 
 - **development-workflow.md** - CAD gate-based development process
 - **tdd-workflow.md** - Test-first workflow with misuse-first ordering
@@ -101,16 +101,16 @@ miniature-guacamole is **NDA-safe**:
 ## Next Steps
 
 1. Run `/mg-init` in your project directories
-2. Explore agents: `ls ~/.claude/agents/` and read their AGENT.md files
-3. Try skills: `ls ~/.claude/skills/` and read their SKILL.md files
-4. Read protocols: `ls ~/.claude/shared/` for coordination guidelines
+2. Explore agents: `ls .claude/agents/` and read their AGENT.md files
+3. Try skills: `ls .claude/skills/` and read their SKILL.md files
+4. Read protocols: `ls .claude/shared/` for coordination guidelines
 
 ## Documentation
 
 - **Framework Repository**: [miniature-guacamole](https://github.com/rivermark-research/miniature-guacamole)
-- **Agent Definitions**: `~/.claude/agents/{agent-name}/AGENT.md`
-- **Skill Definitions**: `~/.claude/skills/{skill-name}/SKILL.md`
-- **Protocol Documents**: `~/.claude/shared/{protocol-name}.md`
+- **Agent Definitions**: `.claude/agents/{agent-name}/AGENT.md`
+- **Skill Definitions**: `.claude/skills/{skill-name}/SKILL.md`
+- **Protocol Documents**: `.claude/shared/{protocol-name}.md`
 
 ---
 

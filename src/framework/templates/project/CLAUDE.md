@@ -23,4 +23,4 @@ This file provides project-specific context to Claude Code agents working in thi
 ---
 
 This file is loaded by Claude Code when working in this project directory.
-For global framework documentation, see ~/.claude/CLAUDE.md
+For framework documentation, see .claude/CLAUDE.md

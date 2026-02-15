@@ -3,6 +3,8 @@
  *
  * Handles persisting state to JSON files with validation,
  * file locking, and backup creation.
+ *
+ * Refactored to use FileAdapter internally while maintaining backward compatibility.
  */
 
 import * as fs from 'fs';
@@ -11,6 +13,10 @@ import { MemoryEntry, MemoryWriteResult } from './types';
 import { MEMORY_CONFIG } from './config';
 import { ensureDirectoryExists, getTimestamp, hasCircularReferences, formatJSON, parseJSON, createBackupPath, sanitizePath } from './utils';
 import { acquireLock, releaseLock } from './locking';
+import { FileAdapter } from './adapters/file-adapter';
+
+// Create default adapter instance
+const defaultAdapter = new FileAdapter({ baseDir: MEMORY_CONFIG.MEMORY_DIR });
 
 export async function writeMemory(
   entry: Partial<MemoryEntry>,

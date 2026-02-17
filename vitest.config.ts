@@ -73,10 +73,13 @@ export default defineConfig({
     // Setup files - enables vi.spyOn for built-in modules like fs
     setupFiles: ['./tests/setup-fs-mock.ts'],
 
-    // Mock reset between tests
-    mockReset: true,
-    restoreMocks: true,
-    clearMocks: true
+    // Clear mock call history between tests.
+    // Individual tests manage their own mock implementations via beforeEach.
+    // mockReset and restoreMocks are intentionally disabled — they clear
+    // vi.mock() factory implementations (e.g., pg Pool) which breaks adapter tests.
+    clearMocks: true,
+    mockReset: false,
+    restoreMocks: false
   },
 
   resolve: {

@@ -39,3 +39,8 @@ export { MockEmbeddingProvider, NomicEmbeddingProvider, OpenAIEmbeddingProvider 
 export type { EmbeddingProvider } from "./vector/embedding-provider";
 export { buildVectorMigrations, VECTOR_SCHEMA_VERSION_START, VECTOR_COLUMN_DIMENSIONS } from "./vector/vector-migrations";
 export type { SearchFilters, SearchOptions, HybridSearchOptions, ReindexResult } from "./vector/vector-search";
+
+// Compliance / SOC 2 — WS-ENT-9
+export { AuditTrailService, buildAuditMigrations, AUDIT_SCHEMA_VERSION_START } from "./compliance/audit-trail";
+export { FieldEncryption, MockKeyProvider } from "./compliance/field-encryption";
+export type { KeyProvider, EncryptedField } from "./compliance/field-encryption";

@@ -16,3 +16,12 @@ export { TenantMiddleware, createTenantMiddleware } from "./isolation/tenant-mid
 export type { TenantMiddlewareConfig, TenantResolutionStrategy, TenantContext as MiddlewareTenantContext } from "./isolation/tenant-middleware";
 export { DatabasePerTenantManager } from "./isolation/database-per-tenant";
 export type { DatabasePerTenantConfig, TenantPoolEntry } from "./isolation/database-per-tenant";
+
+// Platform Schema — WS-ENT-4
+export { PLATFORM_SCHEMA_MIGRATIONS, PLATFORM_SCHEMA_VERSION_START, PLATFORM_TABLES, buildPlatformSchemaMigrations } from "./schema/platform-schema";
+export type { PlatformTable } from "./schema/platform-schema";
+export type { Project, User, Role, Permission, Asset, UserRole, RolePermission, AgentEventExtended, ProjectStatus, UserStatus } from "./schema/models";
+export { ProjectRepository, UserRepository, RoleRepository, PermissionRepository, AssetRepository, UserRoleRepository, RolePermissionRepository, AgentEventRepository } from "./schema/repositories";
+export type { RepositoryConfig, CreateAssetInput, AssignRoleInput } from "./schema/repositories";
+export { hasPermission, checkPermissionOrThrow, assignRole, revokeRole, getUserPermissions, getUserRoles } from "./schema/rbac";
+export type { RbacConfig, PermissionCheckInput, RoleAssignInput, UserPermissionsInput } from "./schema/rbac";

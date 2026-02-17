@@ -31,3 +31,11 @@ export { S3ObjectStorageClient, AssetStorageService } from "./assets/asset-stora
 export type { ObjectStorageClient, S3ObjectStorageClientConfig, AssetStorageServiceConfig, UploadInput, GetUploadUrlInput } from "./assets/asset-storage-service";
 export { processMcpToolOutput } from "./assets/mcp-asset-pipeline";
 export type { ProcessMcpToolOutputInput } from "./assets/mcp-asset-pipeline";
+
+// Vector Search — WS-ENT-6
+export { VectorSearchService } from "./vector/vector-search";
+export type { VectorSearchResult } from "./vector/vector-search";
+export { MockEmbeddingProvider, NomicEmbeddingProvider, OpenAIEmbeddingProvider } from "./vector/embedding-provider";
+export type { EmbeddingProvider } from "./vector/embedding-provider";
+export { buildVectorMigrations, VECTOR_SCHEMA_VERSION_START, VECTOR_COLUMN_DIMENSIONS } from "./vector/vector-migrations";
+export type { SearchFilters, SearchOptions, HybridSearchOptions, ReindexResult } from "./vector/vector-search";

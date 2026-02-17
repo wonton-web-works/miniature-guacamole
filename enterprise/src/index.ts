@@ -25,3 +25,9 @@ export { ProjectRepository, UserRepository, RoleRepository, PermissionRepository
 export type { RepositoryConfig, CreateAssetInput, AssignRoleInput } from "./schema/repositories";
 export { hasPermission, checkPermissionOrThrow, assignRole, revokeRole, getUserPermissions, getUserRoles } from "./schema/rbac";
 export type { RbacConfig, PermissionCheckInput, RoleAssignInput, UserPermissionsInput } from "./schema/rbac";
+
+// Asset Storage — WS-ENT-5
+export { S3ObjectStorageClient, AssetStorageService } from "./assets/asset-storage-service";
+export type { ObjectStorageClient, S3ObjectStorageClientConfig, AssetStorageServiceConfig, UploadInput, GetUploadUrlInput } from "./assets/asset-storage-service";
+export { processMcpToolOutput } from "./assets/mcp-asset-pipeline";
+export type { ProcessMcpToolOutputInput } from "./assets/mcp-asset-pipeline";

@@ -1,0 +1,17 @@
+{
+  "workstream_id": "WS-SYNC-TEST",
+  "name": "Sync Test Workstream",
+  "status": "merged",
+  "phase": "complete",
+  "agent_id": "dev",
+  "created_at": "2026-02-01",
+  "merged_at": "2026-02-15",
+  "gate_status": "ready_for_leadership",
+  "delegated_to": null,
+  "tests": {
+    "total": 30,
+    "passing": 30,
+    "failing": 0
+  },
+  "coverage": 99
+}

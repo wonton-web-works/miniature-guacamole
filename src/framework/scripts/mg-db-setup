@@ -1,0 +1,79 @@
+#!/usr/bin/env bash
+# ============================================================================
+# mg-db-setup - Bootstrap Postgres schema for miniature-guacamole
+# ============================================================================
+# Usage: mg-db-setup
+# Runs migrations/001-core-tables.sql against the target database.
+# Exit 0 = success, Exit 1 = error
+# ============================================================================
+
+set -euo pipefail
+
+# ============================================================================
+# Help text
+# ============================================================================
+show_help() {
+    cat <<EOF
+Usage: mg-db-setup
+
+Create the core miniature-guacamole tables in a Postgres database.
+
+Environment:
+  MG_POSTGRES_URL   Connection string (default: postgresql://mg:mg@localhost:5432/mg_memory)
+
+Options:
+  -h, --help        Show this help message
+
+Prerequisites:
+  - psql (PostgreSQL client)
+  - A running Postgres instance (try: docker compose up -d)
+
+What it does:
+  - Runs migrations/001-core-tables.sql (idempotent, safe to re-run)
+  - Creates: schema_migrations, memory_entries, agent_events
+  - Adds indexes on agent_id, workstream_id, timestamp
+EOF
+}
+
+# ============================================================================
+# Error handling
+# ============================================================================
+error() {
+    echo "Error: $1" >&2
+    exit 1
+}
+
+# ============================================================================
+# Main
+# ============================================================================
+
+if [[ "${1:-}" == "-h" ]] || [[ "${1:-}" == "--help" ]]; then
+    show_help
+    exit 0
+fi
+
+# Check for psql
+if ! command -v psql &>/dev/null; then
+    error "psql not found. Install via: brew install postgresql (macOS) or apt install postgresql-client (Linux)"
+fi
+
+# Connection string
+MG_POSTGRES_URL="${MG_POSTGRES_URL:-postgresql://mg:mg@localhost:5432/mg_memory}"
+
+# Locate migration file relative to this script
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+REPO_ROOT="$(cd "$SCRIPT_DIR/../../.." && pwd)"
+MIGRATION_FILE="$REPO_ROOT/migrations/001-core-tables.sql"
+
+if [[ ! -f "$MIGRATION_FILE" ]]; then
+    error "Migration file not found: $MIGRATION_FILE"
+fi
+
+echo "Running migration: 001-core-tables.sql"
+echo "Target: $MG_POSTGRES_URL"
+
+if psql "$MG_POSTGRES_URL" -v ON_ERROR_STOP=1 -f "$MIGRATION_FILE"; then
+    echo "Done. Tables created successfully."
+else
+    error "Migration failed. Check the output above."
+fi

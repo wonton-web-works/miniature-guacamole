@@ -1,0 +1,346 @@
+#!/usr/bin/env bash
+# ============================================================================
+# mg-db-seed - Seed Postgres from .claude/memory/*.json files
+# ============================================================================
+# Usage: mg-db-seed [--source-dir <dir>] [--dry-run]
+# Exit 0 = success, Exit 1 = error
+# ============================================================================
+
+set -euo pipefail
+
+# ============================================================================
+# Help text
+# ============================================================================
+show_help() {
+    cat <<EOF
+Usage: mg-db-seed [--source-dir <dir>] [--dry-run]
+
+Read .claude/memory/*.json files and upsert them into the memory_entries table.
+
+Derives agent_id, workstream_id, and timestamp from file contents and names
+to match the schema expected by PostgresAdapter.write().
+
+Options:
+  --source-dir <dir>  Directory to read JSON files from (default: .claude/memory/)
+  --dry-run           Print derivations without writing to Postgres
+  -h, --help          Show this help message
+
+Environment:
+  MG_POSTGRES_URL   Connection string (default: postgresql://mg:mg@localhost:5432/mg_memory)
+
+Prerequisites:
+  - jq (JSON processor)
+  - psql (PostgreSQL client, unless --dry-run)
+  - Tables created via mg-db-setup
+EOF
+}
+
+# ============================================================================
+# Error handling
+# ============================================================================
+error() {
+    echo "Error: $1" >&2
+    exit 1
+}
+
+warn() {
+    echo "  SKIP: $1" >&2
+}
+
+# ============================================================================
+# Portable file mtime (macOS + Linux)
+# ============================================================================
+file_mtime_iso() {
+    local file="$1"
+    if stat -f '%Sm' -t '%Y-%m-%dT%H:%M:%S%z' "$file" 2>/dev/null; then
+        return
+    fi
+    # GNU stat fallback (Linux)
+    if stat -c '%y' "$file" 2>/dev/null | sed 's/ /T/' | sed 's/\.[0-9]*//' ; then
+        return
+    fi
+    echo ""
+}
+
+# ============================================================================
+# Derive agent_id from JSON data and filename
+# ============================================================================
+derive_agent_id() {
+    local filepath="$1"
+    local filename="$2"
+
+    # Priority 1: data.agent_id (scalar or first array element)
+    local val
+    val=$(jq -r '.agent_id | if type == "array" then .[0] else . end // empty' "$filepath" 2>/dev/null)
+    if [[ -n "$val" ]]; then echo "$val"; return; fi
+
+    # Priority 2: data.delegated_to
+    val=$(jq -r '.delegated_to | if type == "array" then .[0] else . end // empty' "$filepath" 2>/dev/null)
+    if [[ -n "$val" ]]; then echo "$val"; return; fi
+
+    # Priority 3: filename patterns
+    # agent-{type}-* -> type
+    if [[ "$filename" =~ ^agent-([a-zA-Z_-]+)- ]]; then
+        echo "${BASH_REMATCH[1]}"
+        return
+    fi
+    # tasks-{role}.json -> role
+    if [[ "$filename" =~ ^tasks-([a-zA-Z_-]+)$ ]]; then
+        echo "${BASH_REMATCH[1]}"
+        return
+    fi
+    # handoffs-{from}-{to}.json -> from
+    if [[ "$filename" =~ ^handoffs-([a-zA-Z_-]+)-([a-zA-Z_-]+)$ ]]; then
+        echo "${BASH_REMATCH[1]}"
+        return
+    fi
+
+    # Fallback
+    echo "system"
+}
+
+# ============================================================================
+# Derive workstream_id from JSON data and filename
+# ============================================================================
+derive_workstream_id() {
+    local filepath="$1"
+    local filename="$2"
+
+    # Priority 1: data.workstream_id (scalar or first array element)
+    local val
+    val=$(jq -r '.workstream_id | if type == "array" then .[0] else . end // empty' "$filepath" 2>/dev/null)
+    if [[ -n "$val" ]]; then echo "$val"; return; fi
+
+    # Priority 2: filename patterns
+    # workstream-{ID}-state -> ID
+    if [[ "$filename" =~ ^workstream-(.+)-state$ ]]; then
+        echo "${BASH_REMATCH[1]}"
+        return
+    fi
+    # test-results-{id} -> id
+    if [[ "$filename" =~ ^test-results-(.+)$ ]]; then
+        echo "${BASH_REMATCH[1]}"
+        return
+    fi
+
+    # Fallback
+    echo "global"
+}
+
+# ============================================================================
+# Derive timestamp from JSON data and file mtime
+# ============================================================================
+derive_timestamp() {
+    local filepath="$1"
+
+    # Try each field in priority order (scalar or first array element)
+    local val
+    for field in timestamp test_run_timestamp last_updated created_at created closed_date; do
+        val=$(jq -r ".$field | if type == \"array\" then .[0] else . end // empty" "$filepath" 2>/dev/null)
+        if [[ -n "$val" ]]; then echo "$val"; return; fi
+    done
+
+    # Fall back to file modification time
+    local mtime
+    mtime=$(file_mtime_iso "$filepath")
+    if [[ -n "$mtime" ]]; then echo "$mtime"; return; fi
+
+    # Last resort
+    echo "NOW()"
+}
+
+# ============================================================================
+# Parse arguments
+# ============================================================================
+SOURCE_DIR=".claude/memory/"
+DRY_RUN=false
+
+while [[ $# -gt 0 ]]; do
+    case "$1" in
+        -h|--help)
+            show_help
+            exit 0
+            ;;
+        --source-dir)
+            [[ $# -lt 2 ]] && error "--source-dir requires a directory argument"
+            SOURCE_DIR="$2"
+            shift 2
+            ;;
+        --dry-run)
+            DRY_RUN=true
+            shift
+            ;;
+        *)
+            error "Unknown option: $1. Use --help for usage."
+            ;;
+    esac
+done
+
+# ============================================================================
+# Validate dependencies
+# ============================================================================
+if ! command -v jq &>/dev/null; then
+    error "jq not found. Install via: brew install jq (macOS) or apt install jq (Linux)"
+fi
+
+if [[ "$DRY_RUN" == false ]] && ! command -v psql &>/dev/null; then
+    error "psql not found. Install via: brew install postgresql (macOS) or apt install postgresql-client (Linux)"
+fi
+
+# Validate source directory
+if [[ ! -d "$SOURCE_DIR" ]]; then
+    error "Source directory not found: $SOURCE_DIR"
+fi
+
+MG_POSTGRES_URL="${MG_POSTGRES_URL:-postgresql://mg:mg@localhost:5432/mg_memory}"
+
+# ============================================================================
+# Process files
+# ============================================================================
+inserted=0
+skipped=0
+errors=0
+
+echo "Seeding from: $SOURCE_DIR"
+if [[ "$DRY_RUN" == true ]]; then
+    echo "Mode: DRY RUN (no writes)"
+else
+    echo "Target: $MG_POSTGRES_URL"
+fi
+echo ""
+
+for filepath in "$SOURCE_DIR"*; do
+    basename_full=$(basename "$filepath")
+
+    # Skip non-JSON files
+    if [[ "$basename_full" != *.json ]]; then
+        warn "$basename_full — not a .json file"
+        skipped=$((skipped + 1))
+        continue
+    fi
+
+    # Skip empty files
+    if [[ ! -s "$filepath" ]]; then
+        warn "$basename_full — empty file"
+        skipped=$((skipped + 1))
+        continue
+    fi
+
+    # Derive key from filename (strip .json)
+    key="${basename_full%.json}"
+
+    # Validate JSON (read from file directly to avoid null-byte truncation in bash variables)
+    if ! jq empty "$filepath" 2>/dev/null; then
+        warn "$basename_full — malformed JSON"
+        errors=$((errors + 1))
+        continue
+    fi
+
+    # Normalize: if file contains multiple top-level JSON objects (a JSON stream),
+    # wrap them into a single array so Postgres gets one valid JSONB value.
+    obj_count=$(jq -c '.' "$filepath" 2>/dev/null | wc -l | tr -d ' ')
+    if [[ "$obj_count" -gt 1 ]]; then
+        normalized=$(mktemp)
+        jq -s '.' "$filepath" > "$normalized" 2>/dev/null
+        filepath="$normalized"
+        needs_cleanup=true
+    else
+        needs_cleanup=false
+    fi
+
+    # Derive fields (all functions read from file directly)
+    agent_id=$(derive_agent_id "$filepath" "$key")
+    workstream_id=$(derive_workstream_id "$filepath" "$key")
+    timestamp_val=$(derive_timestamp "$filepath")
+
+    if [[ "$DRY_RUN" == true ]]; then
+        echo "  $key"
+        echo "    agent_id:      $agent_id"
+        echo "    workstream_id: $workstream_id"
+        echo "    timestamp:     $timestamp_val"
+        echo ""
+        inserted=$((inserted + 1))
+        continue
+    fi
+
+    # Build SQL file by concatenating parts around the JSON data.
+    # The JSON is piped from jq directly into the file (never stored in a bash variable)
+    # to avoid null-byte truncation issues with bash command substitution.
+    if [[ "$timestamp_val" == "NOW()" ]]; then
+        ts_expr="NOW()"
+    else
+        ts_expr="'$timestamp_val'::timestamptz"
+    fi
+
+    sqlfile=$(mktemp)
+
+    # Write SQL prefix
+    cat > "$sqlfile" <<EOSQL
+INSERT INTO memory_entries (key, agent_id, workstream_id, timestamp, data, updated_at)
+VALUES (
+    '$key',
+    '$agent_id',
+    '$workstream_id',
+    $ts_expr,
+    \$seed_data\$
+EOSQL
+
+    # Append merged JSON directly from jq (no bash variable).
+    # Also strip \u0000 (null bytes) which Postgres JSONB does not support.
+    # For arrays (multi-object files), wrap with metadata; for objects, merge directly.
+    jq \
+        --arg aid "$agent_id" \
+        --arg wid "$workstream_id" \
+        --arg ts "$timestamp_val" \
+        'if type == "array" then {items: ., agent_id: $aid, workstream_id: $wid, timestamp: $ts}
+         else . + {agent_id: $aid, workstream_id: $wid, timestamp: $ts} end' "$filepath" 2>/dev/null \
+        | sed 's/\\u0000/\\u2400/g' >> "$sqlfile" || {
+        warn "$basename_full — failed to merge derived fields"
+        [[ "$needs_cleanup" == true ]] && rm -f "$filepath"
+        rm -f "$sqlfile"
+        errors=$((errors + 1))
+        continue
+    }
+
+    # Write SQL suffix
+    cat >> "$sqlfile" <<'EOSQL'
+$seed_data$::jsonb,
+    NOW()
+)
+ON CONFLICT (key) DO UPDATE
+    SET agent_id      = EXCLUDED.agent_id,
+        workstream_id = EXCLUDED.workstream_id,
+        timestamp     = EXCLUDED.timestamp,
+        data          = EXCLUDED.data,
+        updated_at    = NOW();
+EOSQL
+
+    if psql "$MG_POSTGRES_URL" -v ON_ERROR_STOP=1 -f "$sqlfile" &>/dev/null; then
+        echo "  OK: $key"
+        inserted=$((inserted + 1))
+    else
+        echo "  FAIL: $key"
+        errors=$((errors + 1))
+    fi
+
+    [[ "$needs_cleanup" == true ]] && rm -f "$filepath"
+    rm -f "$sqlfile"
+done
+
+# ============================================================================
+# Summary
+# ============================================================================
+echo ""
+echo "--- Summary ---"
+if [[ "$DRY_RUN" == true ]]; then
+    echo "Would insert: $inserted"
+else
+    echo "Inserted: $inserted"
+fi
+echo "Skipped:  $skipped"
+echo "Errors:   $errors"
+
+if [[ $errors -gt 0 ]]; then
+    exit 1
+fi
+exit 0

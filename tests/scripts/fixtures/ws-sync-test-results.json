@@ -1,0 +1,16 @@
+{
+  "workstream_id": "WS-SYNC-TEST",
+  "status": "passed",
+  "test_run_timestamp": "2026-02-14T10:00:00Z",
+  "coverage": {
+    "unit": 99.2,
+    "integration": 98.8,
+    "combined": 99.0
+  },
+  "tests": {
+    "total": 30,
+    "passing": 30,
+    "failing": 0,
+    "skipped": 0
+  }
+}

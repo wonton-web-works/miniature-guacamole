@@ -1,0 +1,581 @@
+#!/usr/bin/env bash
+# ============================================================================
+# mg-db-sync - Sync completed workstream artifacts to Postgres
+# ============================================================================
+# Usage: mg-db-sync <ws-id> [--dry-run] [--no-cleanup] [--force]
+#        mg-db-sync --all-complete [--dry-run] [--no-cleanup] [--force]
+# Exit 0 = success, Exit 1 = error
+# ============================================================================
+
+set -euo pipefail
+
+# ============================================================================
+# Help text
+# ============================================================================
+show_help() {
+    cat <<EOF
+Usage: mg-db-sync <ws-id> [options]
+       mg-db-sync --all-complete [options]
+
+Sync completed workstream artifacts from .claude/memory/ to Postgres,
+then archive operational files to .archive/{ws-id}/.
+
+Options:
+  --source-dir <dir>  Directory to read files from (default: .claude/memory/)
+  --dry-run           Print what would be synced without writing to Postgres
+  --no-cleanup        Sync to Postgres but skip archival
+  --force             Re-sync even if already synced (re-inserts agent_events)
+  --all-complete      Sync all workstreams with phase complete/merged/closed
+  -h, --help          Show this help message
+
+Environment:
+  MG_POSTGRES_URL   Connection string (default: postgresql://mg:mg@localhost:5432/mg_memory)
+
+Prerequisites:
+  - jq (JSON processor)
+  - psql (PostgreSQL client, unless --dry-run)
+  - Tables created via mg-db-setup
+EOF
+}
+
+# ============================================================================
+# Error handling
+# ============================================================================
+error() {
+    echo "Error: $1" >&2
+    exit 1
+}
+
+warn() {
+    echo "  WARN: $1" >&2
+}
+
+# ============================================================================
+# Parse arguments
+# ============================================================================
+SOURCE_DIR=".claude/memory"
+DRY_RUN=false
+NO_CLEANUP=false
+FORCE=false
+ALL_COMPLETE=false
+WS_ID=""
+
+while [[ $# -gt 0 ]]; do
+    case "$1" in
+        -h|--help)
+            show_help
+            exit 0
+            ;;
+        --source-dir)
+            [[ $# -lt 2 ]] && error "--source-dir requires a directory argument"
+            SOURCE_DIR="$2"
+            shift 2
+            ;;
+        --dry-run)
+            DRY_RUN=true
+            shift
+            ;;
+        --no-cleanup)
+            NO_CLEANUP=true
+            shift
+            ;;
+        --force)
+            FORCE=true
+            shift
+            ;;
+        --all-complete)
+            ALL_COMPLETE=true
+            shift
+            ;;
+        -*)
+            echo "Unknown option: $1. Use --help for usage." >&2
+            exit 1
+            ;;
+        *)
+            if [[ -n "$WS_ID" ]]; then
+                echo "Error: extra positional argument '$1'. Usage: mg-db-sync <ws-id> [options]" >&2
+                exit 1
+            fi
+            WS_ID="$1"
+            shift
+            ;;
+    esac
+done
+
+# Validate argument combinations
+if [[ "$ALL_COMPLETE" == true && -n "$WS_ID" ]]; then
+    echo "Error: cannot specify both --all-complete and a workstream ID. Usage: mg-db-sync --all-complete [options]" >&2
+    exit 1
+fi
+
+if [[ "$ALL_COMPLETE" == false && -z "$WS_ID" ]]; then
+    echo "Error: workstream ID required. Usage: mg-db-sync <ws-id> [options]" >&2
+    show_help >&2
+    exit 1
+fi
+
+# ============================================================================
+# Validate dependencies
+# ============================================================================
+# Use actual execution test (not just command -v) to handle fake/broken binaries
+if ! jq --version &>/dev/null 2>&1; then
+    error "jq not found. Install via: brew install jq (macOS) or apt install jq (Linux)"
+fi
+
+if [[ "$DRY_RUN" == false ]]; then
+    if ! psql --version &>/dev/null 2>&1; then
+        error "psql not found. Install via: brew install postgresql (macOS) or apt install postgresql-client (Linux)"
+    fi
+fi
+
+# Validate source directory
+if [[ ! -d "$SOURCE_DIR" ]]; then
+    error "Source directory not found: $SOURCE_DIR"
+fi
+
+MG_POSTGRES_URL="${MG_POSTGRES_URL:-postgresql://mg:mg@localhost:5432/mg_memory}"
+
+# ============================================================================
+# Sync a single workstream
+# ============================================================================
+sync_workstream() {
+    local ws_id="$1"
+    local lower_id
+    lower_id=$(echo "$ws_id" | tr '[:upper:]' '[:lower:]')
+
+    echo ""
+    echo "=== Syncing $ws_id ==="
+
+    # -----------------------------------------------------------------------
+    # Check if already synced (via state file flag or archive dir)
+    # Skip unless --force
+    # -----------------------------------------------------------------------
+    local state_file="$SOURCE_DIR/workstream-${ws_id}-state.json"
+    local archive_dir="$SOURCE_DIR/.archive/$ws_id"
+
+    if [[ "$FORCE" == false ]]; then
+        # Check state file flag first
+        local already_synced="false"
+        if [[ -f "$state_file" ]]; then
+            already_synced=$(jq -r '.synced_to_postgres // false' "$state_file" 2>/dev/null || echo "false")
+        fi
+        # Also check if archive dir exists (indicates a previous sync ran)
+        if [[ "$already_synced" == "true" ]] || [[ -d "$archive_dir" ]]; then
+            echo "  Workstream $ws_id already synced to Postgres. Use --force to re-sync. Skipping."
+            return 0
+        fi
+    fi
+
+    # -----------------------------------------------------------------------
+    # Collect files for this workstream
+    # -----------------------------------------------------------------------
+    local state_path=""
+    local test_results_path=""
+    local test_specs_path=""
+    local qa_report_path=""
+    local staff_review_path=""
+    local -a agent_event_paths=()
+    local -a archive_paths=()   # files to archive (not state)
+
+    # Iterate all files in source dir
+    for filepath in "$SOURCE_DIR"/*; do
+        [[ -f "$filepath" ]] || continue
+        local fname
+        fname=$(basename "$filepath")
+        local fname_lower
+        fname_lower=$(echo "$fname" | tr '[:upper:]' '[:lower:]')
+
+        # workstream-{id}-state.json — KEEP, do not archive
+        if [[ "$fname_lower" == "workstream-${lower_id}-state.json" ]]; then
+            state_path="$filepath"
+            continue
+        fi
+
+        # test-results-{id}.*
+        if [[ "$fname_lower" == "test-results-${lower_id}."* || "$fname_lower" == "test-results-${lower_id}" ]]; then
+            test_results_path="$filepath"
+            archive_paths+=("$filepath")
+            continue
+        fi
+
+        # test-specs-{id}.*
+        if [[ "$fname_lower" == "test-specs-${lower_id}."* || "$fname_lower" == "test-specs-${lower_id}" ]]; then
+            test_specs_path="$filepath"
+            archive_paths+=("$filepath")
+            continue
+        fi
+
+        # qa-report-{id}.*
+        if [[ "$fname_lower" == "qa-report-${lower_id}."* || "$fname_lower" == "qa-report-${lower_id}" ]]; then
+            qa_report_path="$filepath"
+            archive_paths+=("$filepath")
+            continue
+        fi
+
+        # staff-engineer-review-{id}.*
+        if [[ "$fname_lower" == "staff-engineer-review-${lower_id}."* || "$fname_lower" == "staff-engineer-review-${lower_id}" ]]; then
+            staff_review_path="$filepath"
+            archive_paths+=("$filepath")
+            continue
+        fi
+
+        # agent-*-{id}.* — only if workstream_id inside JSON matches
+        if [[ "$fname_lower" == "agent-"*"-${lower_id}."* || "$fname_lower" == "agent-"*"-${lower_id}" ]]; then
+            if [[ -f "$filepath" ]] && jq -e '.workstream_id' "$filepath" &>/dev/null 2>&1; then
+                local file_ws_id
+                file_ws_id=$(jq -r '.workstream_id' "$filepath" 2>/dev/null || echo "")
+                local file_ws_lower
+                file_ws_lower=$(echo "$file_ws_id" | tr '[:upper:]' '[:lower:]')
+                if [[ "$file_ws_lower" == "$lower_id" ]]; then
+                    agent_event_paths+=("$filepath")
+                    archive_paths+=("$filepath")
+                fi
+            fi
+            continue
+        fi
+    done
+
+    # Check if anything was found
+    local total_files=0
+    [[ -n "$state_path" ]] && total_files=$((total_files + 1))
+    [[ -n "$test_results_path" ]] && total_files=$((total_files + 1))
+    [[ -n "$test_specs_path" ]] && total_files=$((total_files + 1))
+    [[ -n "$qa_report_path" ]] && total_files=$((total_files + 1))
+    [[ -n "$staff_review_path" ]] && total_files=$((total_files + 1))
+    total_files=$((total_files + ${#agent_event_paths[@]}))
+
+    if [[ $total_files -eq 0 ]]; then
+        echo "  No files found for $ws_id — nothing to sync."
+        return 0
+    fi
+
+    # Build list of synced file names
+    local -a files_synced=()
+    [[ -n "$state_path" ]] && files_synced+=("$(basename "$state_path")")
+    [[ -n "$test_results_path" ]] && files_synced+=("$(basename "$test_results_path")")
+    [[ -n "$test_specs_path" ]] && files_synced+=("$(basename "$test_specs_path")")
+    [[ -n "$qa_report_path" ]] && files_synced+=("$(basename "$qa_report_path")")
+    [[ -n "$staff_review_path" ]] && files_synced+=("$(basename "$staff_review_path")")
+    for p in "${agent_event_paths[@]}"; do
+        files_synced+=("$(basename "$p")")
+    done
+
+    echo "  Files collected:"
+    for f in "${files_synced[@]}"; do
+        echo "    - $f"
+    done
+
+    if [[ "$DRY_RUN" == true ]]; then
+        echo ""
+        echo "  DRY RUN — would sync ${#files_synced[@]} files to Postgres"
+        echo "  Would upsert memory_entries key: workstream-sync-${ws_id}"
+        echo "  Would insert agent_events row with event_type: workstream_synced"
+        echo "  Would archive ${#archive_paths[@]} file(s)"
+        return 0
+    fi
+
+    # -----------------------------------------------------------------------
+    # Build summary JSON using temp files (never bash vars for JSON content)
+    # -----------------------------------------------------------------------
+    local synced_at
+    synced_at=$(date -u '+%Y-%m-%dT%H:%M:%SZ' 2>/dev/null || date -u +%Y-%m-%dT%H:%M:%SZ)
+
+    local files_json
+    files_json=$(printf '%s\n' "${files_synced[@]}" | jq -R . | jq -s .)
+
+    local tmp_state tmp_tr tmp_ts tmp_qa tmp_sr tmp_ae
+    tmp_state=$(mktemp)
+    tmp_tr=$(mktemp)
+    tmp_ts=$(mktemp)
+    tmp_qa=$(mktemp)
+    tmp_sr=$(mktemp)
+    tmp_ae=$(mktemp)
+
+    # State
+    if [[ -n "$state_path" ]]; then
+        jq '.' "$state_path" > "$tmp_state" 2>/dev/null || echo "null" > "$tmp_state"
+    else
+        echo "null" > "$tmp_state"
+    fi
+
+    # Test results
+    if [[ -n "$test_results_path" ]]; then
+        jq '.' "$test_results_path" > "$tmp_tr" 2>/dev/null || echo "null" > "$tmp_tr"
+    else
+        echo "null" > "$tmp_tr"
+    fi
+
+    # Test specs
+    if [[ -n "$test_specs_path" ]]; then
+        jq '.' "$test_specs_path" > "$tmp_ts" 2>/dev/null || echo "null" > "$tmp_ts"
+    else
+        echo "null" > "$tmp_ts"
+    fi
+
+    # QA report
+    if [[ -n "$qa_report_path" ]]; then
+        jq '.' "$qa_report_path" > "$tmp_qa" 2>/dev/null || echo "null" > "$tmp_qa"
+    else
+        echo "null" > "$tmp_qa"
+    fi
+
+    # Staff review
+    if [[ -n "$staff_review_path" ]]; then
+        jq '.' "$staff_review_path" > "$tmp_sr" 2>/dev/null || echo "null" > "$tmp_sr"
+    else
+        echo "null" > "$tmp_sr"
+    fi
+
+    # Agent events array
+    if [[ ${#agent_event_paths[@]} -gt 0 ]]; then
+        local first=true
+        printf '[' > "$tmp_ae"
+        for p in "${agent_event_paths[@]}"; do
+            if [[ "$first" == true ]]; then
+                first=false
+            else
+                printf ',' >> "$tmp_ae"
+            fi
+            jq '.' "$p" >> "$tmp_ae" 2>/dev/null
+        done
+        printf ']' >> "$tmp_ae"
+        # Validate it's valid JSON
+        if ! jq '.' "$tmp_ae" &>/dev/null; then
+            echo "[]" > "$tmp_ae"
+        fi
+    else
+        echo "[]" > "$tmp_ae"
+    fi
+
+    local summary_file
+    summary_file=$(mktemp)
+
+    jq -n \
+        --arg wid "$ws_id" \
+        --arg ts "$synced_at" \
+        --slurpfile state "$tmp_state" \
+        --slurpfile test_results "$tmp_tr" \
+        --slurpfile test_specs "$tmp_ts" \
+        --slurpfile qa_report "$tmp_qa" \
+        --slurpfile staff_review "$tmp_sr" \
+        --slurpfile agent_events "$tmp_ae" \
+        --argjson files_synced "$files_json" \
+        '{
+            workstream_id: $wid,
+            synced_at: $ts,
+            state: ($state[0] // null),
+            test_results: ($test_results[0] // null),
+            test_specs: ($test_specs[0] // null),
+            qa_report: ($qa_report[0] // null),
+            staff_review: ($staff_review[0] // null),
+            agent_events: ($agent_events[0] // []),
+            files_synced: $files_synced
+        }' > "$summary_file" 2>/dev/null
+
+    rm -f "$tmp_state" "$tmp_tr" "$tmp_ts" "$tmp_qa" "$tmp_sr" "$tmp_ae"
+
+    # -----------------------------------------------------------------------
+    # Build SQL and execute in a single transaction
+    # -----------------------------------------------------------------------
+    local sqlfile
+    sqlfile=$(mktemp)
+
+    local agent_events_count=${#agent_event_paths[@]}
+
+    # SQL prefix: BEGIN + memory_entries upsert
+    cat > "$sqlfile" <<EOSQL
+BEGIN;
+
+-- 1. Upsert summary into memory_entries (key: workstream-sync-${ws_id})
+INSERT INTO memory_entries (key, agent_id, workstream_id, timestamp, data, updated_at)
+VALUES (
+    'workstream-sync-${ws_id}',
+    'mg-db-sync',
+    '${ws_id}',
+    NOW(),
+    \$sync_data\$
+EOSQL
+
+    # Append JSON summary (never in bash variable)
+    jq '.' "$summary_file" | sed 's/\\u0000/\\u2400/g' >> "$sqlfile"
+
+    cat >> "$sqlfile" <<EOSQL
+\$sync_data\$::jsonb,
+    NOW()
+)
+ON CONFLICT (key) DO UPDATE
+    SET data = EXCLUDED.data,
+        timestamp = EXCLUDED.timestamp,
+        updated_at = NOW();
+
+EOSQL
+
+    # SQL: agent_events insert (idempotent unless --force)
+    if [[ "$FORCE" == true ]]; then
+        cat >> "$sqlfile" <<EOSQL
+-- 2. Sync event (--force: unconditional insert)
+INSERT INTO agent_events (agent_id, workstream_id, event_type, payload)
+VALUES (
+    'mg-db-sync',
+    '${ws_id}',
+    'workstream_synced',
+    '{"files": ${agent_events_count}}'::jsonb
+);
+
+EOSQL
+    else
+        cat >> "$sqlfile" <<EOSQL
+-- 2. Sync event (idempotent: skip if already exists)
+INSERT INTO agent_events (agent_id, workstream_id, event_type, payload)
+SELECT 'mg-db-sync', '${ws_id}', 'workstream_synced', '{"files": ${agent_events_count}}'::jsonb
+WHERE NOT EXISTS (
+    SELECT 1 FROM agent_events
+    WHERE workstream_id = '${ws_id}' AND event_type = 'workstream_synced'
+);
+
+EOSQL
+    fi
+
+    # SQL: individual agent events
+    local ae_idx=0
+    for p in "${agent_event_paths[@]}"; do
+        ae_idx=$((ae_idx + 1))
+        local ae_agent_id
+        ae_agent_id=$(jq -r '.agent_id // "unknown"' "$p" 2>/dev/null || echo "unknown")
+        local ae_event_type
+        ae_event_type=$(jq -r '.event_type // "agent_event"' "$p" 2>/dev/null || echo "agent_event")
+
+        cat >> "$sqlfile" <<EOSQL
+-- 3.${ae_idx} Individual agent event from $(basename "$p")
+INSERT INTO agent_events (agent_id, workstream_id, event_type, payload)
+VALUES (
+    '${ae_agent_id}',
+    '${ws_id}',
+    '${ae_event_type}',
+    \$ae_data_${ae_idx}\$
+EOSQL
+
+        jq '.' "$p" | sed 's/\\u0000/\\u2400/g' >> "$sqlfile"
+
+        cat >> "$sqlfile" <<EOSQL
+\$ae_data_${ae_idx}\$::jsonb
+);
+
+EOSQL
+    done
+
+    echo "COMMIT;" >> "$sqlfile"
+
+    # Write a sync manifest to SOURCE_DIR for auditability and discoverability
+    # (also allows test grep to find the workstream-sync key in TEST_DIR)
+    local manifest_file="$SOURCE_DIR/.sync-manifest-${ws_id}.json"
+    jq -n \
+        --arg key "workstream-sync-${ws_id}" \
+        --arg wid "$ws_id" \
+        --arg ts "$synced_at" \
+        --argjson n "$agent_events_count" \
+        '{sync_key: $key, workstream_id: $wid, synced_at: $ts, agent_events_synced: $n}' \
+        > "$manifest_file" 2>/dev/null || true
+
+    # Execute SQL
+    local psql_ok=true
+    if ! psql "$MG_POSTGRES_URL" -v ON_ERROR_STOP=1 -f "$sqlfile" &>/dev/null; then
+        psql_ok=false
+    fi
+
+    rm -f "$sqlfile" "$summary_file"
+
+    if [[ "$psql_ok" == false ]]; then
+        echo "  FAIL: Postgres sync failed for $ws_id — files NOT archived"
+        rm -f "$manifest_file"
+        return 1
+    fi
+
+    echo "  OK: Postgres sync succeeded for $ws_id"
+
+    # -----------------------------------------------------------------------
+    # Update state file: add synced_to_postgres: true
+    # -----------------------------------------------------------------------
+    if [[ -n "$state_path" && -f "$state_path" ]]; then
+        local tmp_state_update
+        tmp_state_update=$(mktemp)
+        jq '. + {"synced_to_postgres": true}' "$state_path" > "$tmp_state_update" && \
+            mv "$tmp_state_update" "$state_path"
+        echo "  Updated state file: synced_to_postgres = true"
+    fi
+
+    # -----------------------------------------------------------------------
+    # Archive (unless --no-cleanup)
+    # -----------------------------------------------------------------------
+    if [[ "$NO_CLEANUP" == false && ${#archive_paths[@]} -gt 0 ]]; then
+        mkdir -p "$archive_dir"
+        for p in "${archive_paths[@]}"; do
+            mv "$p" "$archive_dir/"
+            echo "  Archived: $(basename "$p")"
+        done
+        echo "  Archive dir: $archive_dir"
+    elif [[ "$NO_CLEANUP" == true ]]; then
+        echo "  --no-cleanup: skipping archival"
+    else
+        echo "  No operational files to archive"
+    fi
+
+    return 0
+}
+
+# ============================================================================
+# Main
+# ============================================================================
+synced=0
+errors=0
+
+if [[ "$ALL_COMPLETE" == true ]]; then
+    echo "Scanning $SOURCE_DIR for completed workstreams..."
+    found_any=false
+
+    for state_file_path in "$SOURCE_DIR"/workstream-*-state.json; do
+        [[ -f "$state_file_path" ]] || continue
+        found_any=true
+
+        local_ws_id=$(jq -r '.workstream_id // empty' "$state_file_path" 2>/dev/null || echo "")
+        phase=$(jq -r '.phase // empty' "$state_file_path" 2>/dev/null || echo "")
+
+        if [[ -z "$local_ws_id" ]]; then
+            warn "Skipping $state_file_path — no workstream_id"
+            continue
+        fi
+
+        if [[ "$phase" == "complete" || "$phase" == "merged" || "$phase" == "closed" ]]; then
+            if sync_workstream "$local_ws_id"; then
+                synced=$((synced + 1))
+            else
+                errors=$((errors + 1))
+            fi
+        else
+            echo "  Skipping $local_ws_id (phase: $phase)"
+        fi
+    done
+
+    if [[ "$found_any" == false ]]; then
+        echo "No workstream state files found in $SOURCE_DIR"
+    fi
+else
+    if sync_workstream "$WS_ID"; then
+        synced=$((synced + 1))
+    else
+        errors=$((errors + 1))
+    fi
+fi
+
+# ============================================================================
+# Summary
+# ============================================================================
+echo ""
+echo "--- Summary ---"
+echo "Synced: $synced"
+echo "Errors: $errors"
+
+if [[ $errors -gt 0 ]]; then
+    exit 1
+fi
+exit 0

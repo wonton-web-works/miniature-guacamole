@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Greeting</title>
+  <style>
+    body { font-family: sans-serif; max-width: 400px; margin: 2rem auto; padding: 0 1rem; }
+    label { display: block; margin-bottom: 0.25rem; }
+    input { display: block; width: 100%; margin-bottom: 1rem; padding: 0.4rem; box-sizing: border-box; }
+    button { padding: 0.4rem 1rem; }
+    #greeting { margin-top: 1rem; font-size: 1.1rem; }
+  </style>
+</head>
+<body>
+  <form id="greeting-form">
+    <label for="first-name">First name</label>
+    <input type="text" id="first-name" name="first-name">
+    <label for="last-name">Last name</label>
+    <input type="text" id="last-name" name="last-name">
+    <button type="submit">Submit</button>
+  </form>
+  <div id="greeting"></div>
+  <script>
+    document.getElementById('greeting-form').addEventListener('submit', function (e) {
+      e.preventDefault();
+      var first = document.getElementById('first-name').value.trim();
+      var last = document.getElementById('last-name').value.trim();
+      var greeting = document.getElementById('greeting');
+      if (!first || !last) {
+        greeting.textContent = '';
+        return;
+      }
+      greeting.textContent = 'hi ' + first + ' ' + last;
+    });
+  </script>
+</body>
+</html>

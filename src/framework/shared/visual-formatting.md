@@ -2,6 +2,20 @@
 
 All agents should use these visual elements for consistent terminal feedback.
 
+## Output Modes
+
+All visual output supports an `output_mode` flag:
+
+```
+output_mode: full | compact | silent
+```
+
+- `full` — current behavior: all banners, ASCII art, status boxes, progress bars. Use for verbose/debug sessions or when explicitly requested.
+- `compact` — single-line per event, no banners, no ASCII art (exception: errors always use the full box regardless of mode). Default. Reduces per-build output from ~60 lines to ≤10 lines. Unknown or undefined `output_mode` values default to compact.
+- `silent` — errors only. All non-error output is suppressed. Errors are always shown regardless of mode — silent mode never suppresses error output.
+
+To request full mode: include "verbose" or `output_mode: full` in your invocation. Unknown values default to compact.
+
 ## Agent Invocation Banner
 
 When an agent starts, display:
@@ -12,6 +26,11 @@ When an agent starts, display:
 ┃  📋 TASK: [Brief task description]                            ┃
 ┃  ⏱️  STATUS: [Starting | In Progress | Complete]              ┃
 ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+```
+
+**Compact variant** (exactly 1 line):
+```
+>> [Agent Name]: [task description]
 ```
 
 ## Team Invocation Banner
@@ -25,6 +44,11 @@ For composite teams:
 ║  Members: [Agent 1] • [Agent 2] • [Agent 3]                  ║
 ║  Mode: [Planning | Execution | Review]                       ║
 ╚══════════════════════════════════════════════════════════════╝
+```
+
+**Compact variant** (exactly 1 line):
+```
+>> team:[Team Name] members:[Agent 1, Agent 2, Agent 3] mode:[mode]
 ```
 
 ## Progress Indicators
@@ -43,6 +67,11 @@ For composite teams:
 ═══════════════════════════════════════════════════════════════
 ```
 
+**Compact variant** (exactly 1 line):
+```
+progress: Step [n]/4 [status]
+```
+
 ### Delegation Chain
 ```
 ┌─────────────────────────────────────────────────────────────┐
@@ -56,6 +85,11 @@ For composite teams:
 │                                                             │
 │  Depth: 2/3  •  Status: In Progress                        │
 └─────────────────────────────────────────────────────────────┘
+```
+
+**Compact variant** (exactly 1 line):
+```
+[parent] -> [child]: [task]
 ```
 
 ## Status Icons
@@ -85,6 +119,11 @@ For composite teams:
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
   📋 SECTION TITLE
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+```
+
+**Compact variant** (exactly 1 line):
+```
+--- [SECTION TITLE] ---
 ```
 
 ## Agent Spawning Feedback
@@ -191,6 +230,11 @@ Simple return notice:
 ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
 ```
 
+**Compact variant** (exactly 1 line):
+```
+gate:[Gate Name] [PASS|FAIL] tests:[n/n] coverage:[n%]
+```
+
 ## Workstream Status Board
 
 ```
@@ -208,6 +252,11 @@ Simple return notice:
 ╚══════════════════════════════════════════════════════════════╝
 ```
 
+**Compact variant** (single line per workstream):
+```
+[WS-id]: [name] [[STATUS]]
+```
+
 ## Error Display
 
 ```
@@ -219,6 +268,8 @@ Simple return notice:
 ┃  Action: [What to do next]                                  ┃
 ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
 ```
+
+**Note:** Error display uses the full box in all modes, including silent. Errors are always shown — silent mode suppresses non-error output only.
 
 ## Escalation Notice
 
@@ -234,6 +285,11 @@ Simple return notice:
      Decision needed: [What needs to be decided]
 
   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ ⚠️
+```
+
+**Compact variant** (exactly 1 line):
+```
+⚠ ESCALATION: [reason] → [target]
 ```
 
 ## Completion Summary
@@ -254,4 +310,10 @@ Simple return notice:
 ║  Next: [recommended next action]                             ║
 ║                                                              ║
 ╚══════════════════════════════════════════════════════════════╝
+```
+
+**Compact variant** (exactly 2 lines):
+```
+✓ [agent-name]: [task] ([duration])
+  next: [recommended next action]
 ```

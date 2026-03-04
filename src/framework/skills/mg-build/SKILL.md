@@ -91,7 +91,26 @@ Task:
 
 ## Output Format
 
-**Always show the CAD pipeline diagram at the start:**
+**Output mode: compact (default)**
+Use compact mode for normal runs — ≤10 lines per build cycle.
+To request full output: include "verbose" in your invocation.
+
+**Compact mode output** (default, ≤10 lines per build cycle):
+
+```
+progress: Step 1/4 active
+>> qa: Write test specs for WS-{id}
+✓ qa: tests written (31s)
+progress: Step 2/4 active
+>> dev: Implement WS-{id}
+✓ dev: implementation complete (120s)
+progress: Step 3/4 active
+>> qa: Verify WS-{id}
+✓ qa: all tests pass (45s)
+gate:tests_pass PASS tests:[47/47] coverage:[99%]
+```
+
+**Full mode** (pass `output_mode: full` or "verbose"): shows CAD pipeline diagram and status box:
 
 ```
 ┌─────────┐    ┌─────────┐    ┌─────────┐    ┌─────────┐
@@ -102,7 +121,7 @@ Task:
 Legend: ✓ = done, ● = active, ○ = pending, × = failed
 ```
 
-**Then show status box:**
+Full mode status box:
 
 ```
 ┌─────────────────────────────────────────┐
@@ -116,7 +135,7 @@ Legend: ✓ = done, ● = active, ○ = pending, × = failed
 └─────────────────────────────────────────┘
 ```
 
-**Followed by detailed progress:**
+**Followed by detailed progress** (both modes):
 
 ```
 ## Workstream {id}: {name}

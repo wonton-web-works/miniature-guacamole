@@ -11,6 +11,18 @@ This document defines the visual structure and presentation patterns used across
 - Clear communication of status, decisions, and next actions
 - Maintainable templates that can evolve as team needs change
 
+## Output Mode Flag
+
+All skills support an `output_mode` parameter controlling terminal verbosity:
+
+| Mode | Behavior | When to use |
+|------|----------|-------------|
+| `compact` | Single-line per event, no ASCII art (default) | Normal runs, bypass mode, long jobs |
+| `full` | Full banners, ASCII art, status boxes | Verbose/debug sessions, explicit request |
+| `silent` | Errors only, all other output suppressed | Automated pipelines, CI |
+
+To request full mode, include "verbose" or `output_mode: full` in your invocation. Unknown values default to compact. Full mode definitions are in `../shared/visual-formatting.md`.
+
 ## Standard Sections
 
 All skill outputs should include these core sections where applicable:
@@ -156,6 +168,8 @@ Use code blocks to show structure, tables for comparisons:
 ### Implementation Skills (mg-build)
 
 **Pattern**: Progress tracking → Status → Blockers → Next action
+
+See [Output Mode Flag](#output-mode-flag) section above. mg-build defaults to compact.
 
 ```markdown
 ## Workstream {id}: {name}
@@ -349,14 +363,23 @@ Progress: [████████░░░░░░░░] 50% (Step 2/4)
 └─────────────────────────────────────┘
 ```
 
-### When to Use ASCII Visuals
+### When to Use ASCII Visuals (full mode)
 
+In full mode:
 - **Always**: Show CAD cycle progress during `/mg-build` execution
 - **Always**: Show dashboard when multiple workstreams active
 - **Optional**: Show delegation flow when spawning multiple agents
 - **Optional**: Show multi-lens diagram during feature assessments
 
+In compact mode, use the single-line variants defined in the Output Mode Flag section above.
+
 ## Version History
+
+**Version 1.2** (2026-03-04)
+- Added `output_mode` flag (full/compact/silent) to all skills
+- compact is the default mode — reduces per-build output from ~60 lines to ≤10 lines
+- silent mode suppresses non-error output; errors always shown
+- mg-build Implementation Skills section updated to document output_mode
 
 **Version 1.1** (2026-02-04)
 - Added ASCII visual progress patterns

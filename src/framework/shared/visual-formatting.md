@@ -16,6 +16,22 @@ output_mode: full | compact | silent
 
 To request full mode: include "verbose" or `output_mode: full` in your invocation. Unknown values default to compact.
 
+## Status Replacement
+
+Agents replace their previous status output instead of appending. Each status update overwrites the prior one.
+
+**Applies to:** Status boxes, progress indicators, and workstream status boards.
+
+**Error exception:** Error output is NEVER replaced — errors accumulate. This is consistent with the error-always-shown rule in Output Modes and the Error Display section. Errors are additive regardless of mode.
+
+**Compact mode:** Each agent's single-line status output replaces its previous line.
+
+**Full mode:** Replacement is still the default. Full mode may optionally retain history for verbose debugging when explicitly requested, but replacement is the baseline behavior — not the exception.
+
+**Silent mode:** Status replacement is N/A in silent mode. Silent mode produces no status output, only errors, which always accumulate. There is no prior status line to replace.
+
+**First render:** When there is no prior status to replace, render normally. No prior output is not an error condition.
+
 ## Agent Invocation Banner
 
 When an agent starts, display:

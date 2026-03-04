@@ -111,6 +111,103 @@ MEMORY_CONFIG.LOCK_TIMEOUT       // 5000ms
 MEMORY_CONFIG.BACKUP_RETENTION   // 7 days
 ```
 
+## File Rotation
+
+Global memory files accumulate entries across many workstreams and are never cleaned up by `mg-db-sync`. Without a size limit, files like `agent-leadership-decisions.json` grow unbounded (89KB+ observed in practice). This section defines the rotation protocol agents follow to keep global files manageable.
+
+### What Gets Rotated
+
+Rotation applies to global files — files with no workstream scope that accumulate entries over time:
+
+- `agent-leadership-decisions.json`
+- `agent-*-decisions.json` (any agent decision log)
+- `architecture-decisions.json`
+- `*-feature-specs.json`
+
+These files are not handled by `mg-db-sync` archival (see **Hybrid Storage Lifecycle** below). Rotation is their only cleanup path.
+
+### What Does NOT Get Rotated
+
+- **`workstream-{id}-state.json` for in-progress workstreams** — never rotate active work. If a workstream's status is `in_progress`, `blocked`, or any non-terminal state, its state file is off-limits.
+- **Any file referenced by an in-progress workstream** — if an active workstream depends on a file, skip rotation for that file.
+- **Workstream-scoped files** (`test-results-{id}.*`, `qa-report-{id}.*`, `staff-engineer-review-{id}.*`, etc.) — these follow `mg-db-sync` archival rules, not size-based rotation.
+- **`tasks-{agent_id}.json`** — ephemeral task queues, reset per session; size-based rotation doesn't apply.
+- **`escalations.json`** — small by nature and rarely exceeds the size threshold; not subject to rotation.
+
+### Size Threshold
+
+**50KB per file.** When an agent is about to write to a memory file that is at or above 50KB, it triggers rotation before writing.
+
+### Agent-Triggered Rotation (Check-Before-Write)
+
+Rotation is triggered by agents on the write path only — not on reads. The pattern:
+
+1. Agent is about to write a new entry to a global file.
+2. Agent checks the file size. If below 50KB, write normally — no rotation needed.
+3. If at or above 50KB, rotate before writing:
+   a. Read all entries from the file.
+   b. Identify entries tied to in-progress workstreams — carry those forward unconditionally.
+   c. Keep all active entries plus up to N recent non-active entries, where N depends on the file type (see Entry Counts below). The file can exceed N entries total if there are many active workstreams — never drop active work.
+   d. Write the older entries (the removed ones) to `.claude/memory/.archive/{filename}.{YYYY-MM-DD}.json`. Create `.archive/` if it doesn't exist.
+   e. Write the retained entries back to the original file.
+4. Write the new entry to the (now-rotated) file.
+
+```typescript
+// Pseudocode: check-before-write rotation
+async function writeWithRotation(file: string, newEntry: MemoryEntry): Promise<void> {
+  const stats = await fs.stat(file).catch(() => null);
+  const sizeKB = stats ? stats.size / 1024 : 0;
+
+  if (sizeKB >= 50) {
+    const entries: MemoryEntry[] = await readMemory(file);
+
+    // Always preserve entries for in-progress workstreams
+    const active = entries.filter(e => isActiveWorkstream(e.workstream_id));
+    const rest = entries.filter(e => !isActiveWorkstream(e.workstream_id));
+
+    // Use type-specific limit: 10 for feature-spec files, 20 for all others
+    const limit = file.includes('feature-specs') ? 10 : 20;
+    const keep = [...active, ...rest.slice(-limit)];          // keep all active + up to limit recent non-active
+    const archive = rest.slice(0, rest.length - Math.min(limit, rest.length)); // older non-active
+
+    if (archive.length > 0) {
+      const today = new Date().toISOString().slice(0, 10);  // YYYY-MM-DD
+      const basename = path.basename(file);
+      const archivePath = `.claude/memory/.archive/${basename}.${today}.json`;
+      await fs.mkdir('.claude/memory/.archive', { recursive: true });
+      // If an archive file already exists for today, merge rather than overwrite
+      const existingArchive = await readMemory(archivePath).catch(() => []);
+      await writeMemory([...existingArchive, ...archive], archivePath);
+    }
+
+    await writeMemory(keep, file);  // overwrite with retained entries
+  }
+
+  await writeMemory(newEntry, file);  // now write the new entry
+}
+```
+
+Example: `agent-leadership-decisions.json` rotates to `.claude/memory/.archive/agent-leadership-decisions.2026-03-04.json`.
+
+### Archive Path and Naming
+
+- Archive destination: `.claude/memory/.archive/` (within the project, not `/tmp/` or `~/.claude/`)
+- Filename format: `{original-filename}.{YYYY-MM-DD}.json`
+- Example: `agent-leadership-decisions.json` → `.archive/agent-leadership-decisions.2026-03-04.json`
+- Create `.archive/` automatically if it doesn't exist
+- If an archive file already exists for today's date, append to it rather than overwriting.
+- This co-exists with the mg-db-sync workstream archive convention (`.archive/{ws-id}/`). Both live under `.archive/` but use different naming schemes — rotation creates dated files, mg-db-sync creates workstream subdirectories.
+
+### Retention
+
+Archives are kept for 30 days. Files older than 30 days in `.archive/` can be deleted — they've been superseded by Postgres sync or are no longer operationally relevant.
+
+### Entry Counts
+
+For decision files (`agent-*-decisions.json`, `architecture-decisions.json`): keep the most recent **20 entries** in the live file.
+For feature spec files (`*-feature-specs.json`): keep the most recent **10 entries** in the live file.
+In both cases, in-progress workstream entries are always preserved regardless of the count limit.
+
 ## Hybrid Storage Lifecycle
 
 Agents write to `.claude/memory/` files during execution (fast, no dependencies).

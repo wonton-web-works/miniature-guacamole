@@ -464,6 +464,47 @@ EOSQL
 EOSQL
     done
 
+    # SQL: upsert workstreams row with synced_at (AC-DB-1.7)
+    if [[ -n "$state_path" ]]; then
+        local WS_NAME WS_PHASE WS_GATE WS_BLOCKER WS_AGENT
+        WS_NAME=$(jq -r '.name // ""' "$state_path" 2>/dev/null || echo "")
+        WS_PHASE=$(jq -r '.phase // "planning"' "$state_path" 2>/dev/null || echo "planning")
+        WS_GATE=$(jq -r '.gate_status // ""' "$state_path" 2>/dev/null || echo "")
+        WS_BLOCKER=$(jq -r '.blocker // ""' "$state_path" 2>/dev/null || echo "")
+        WS_AGENT=$(jq -r '.agent_id // ""' "$state_path" 2>/dev/null || echo "")
+
+        cat >> "$sqlfile" <<EOSQL
+-- 3. Upsert workstream row with synced_at
+INSERT INTO workstreams (workstream_id, name, phase, gate_status, blocker, agent_id, data, synced_at, updated_at)
+VALUES (
+    :'ws_id',
+    NULLIF(:'ws_name', ''),
+    :'ws_phase',
+    NULLIF(:'ws_gate', ''),
+    NULLIF(:'ws_blocker', ''),
+    NULLIF(:'ws_agent', ''),
+    \$ws_data\$
+EOSQL
+
+        jq '.' "$state_path" | sed 's/\\u0000/\\u2400/g' >> "$sqlfile"
+
+        cat >> "$sqlfile" <<EOSQL
+\$ws_data\$::jsonb,
+    NOW(),
+    NOW()
+)
+ON CONFLICT (workstream_id) DO UPDATE
+    SET phase       = EXCLUDED.phase,
+        gate_status = EXCLUDED.gate_status,
+        blocker     = EXCLUDED.blocker,
+        agent_id    = EXCLUDED.agent_id,
+        data        = EXCLUDED.data,
+        synced_at   = NOW(),
+        updated_at  = NOW();
+
+EOSQL
+    fi
+
     echo "COMMIT;" >> "$sqlfile"
 
     # Write a sync manifest to SOURCE_DIR for auditability and discoverability
@@ -477,9 +518,16 @@ EOSQL
         '{sync_key: $key, workstream_id: $wid, synced_at: $ts, agent_events_synced: $n}' \
         > "$manifest_file" 2>/dev/null || true
 
-    # Execute SQL
+    # Execute SQL — pass workstream scalar fields as -v variables to avoid injection
     local psql_ok=true
-    if ! psql "$MG_POSTGRES_URL" -v ON_ERROR_STOP=1 -f "$sqlfile" &>/dev/null; then
+    if ! psql "$MG_POSTGRES_URL" -v ON_ERROR_STOP=1 \
+            -v "ws_id=${ws_id}" \
+            -v "ws_name=${WS_NAME:-}" \
+            -v "ws_phase=${WS_PHASE:-planning}" \
+            -v "ws_gate=${WS_GATE:-}" \
+            -v "ws_blocker=${WS_BLOCKER:-}" \
+            -v "ws_agent=${WS_AGENT:-}" \
+            -f "$sqlfile" &>/dev/null; then
         psql_ok=false
     fi
 

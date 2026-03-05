@@ -133,7 +133,25 @@ if [[ ! -d "$SOURCE_DIR" ]]; then
     error "Source directory not found: $SOURCE_DIR"
 fi
 
-MG_POSTGRES_URL="${MG_POSTGRES_URL:-postgresql://mg:mg@localhost:5432/mg_memory}"
+# Resolve postgres URL: env var > config file > hardcoded default
+_resolve_pg_url_for_sync() {
+    if [[ -n "${MG_POSTGRES_URL:-}" ]]; then
+        echo "$MG_POSTGRES_URL"
+        return
+    fi
+    local config_dir="${MG_CONFIG_DIR:-${XDG_CONFIG_HOME:-$HOME/.config}/miniature-guacamole}"
+    local config_file="$config_dir/config.json"
+    if [[ -f "$config_file" ]]; then
+        local url
+        url=$(jq -r '.postgres_url // ""' "$config_file" 2>/dev/null || echo "")
+        if [[ -n "$url" ]]; then
+            echo "$url"
+            return
+        fi
+    fi
+    echo "postgresql://mg:mg@localhost:5432/mg_memory"
+}
+MG_POSTGRES_URL="${MG_POSTGRES_URL:-$(_resolve_pg_url_for_sync)}"
 
 # ============================================================================
 # Sync a single workstream
@@ -382,16 +400,21 @@ sync_workstream() {
 
     local agent_events_count=${#agent_event_paths[@]}
 
+    # Collect all psql -v variable args into an array (Fix 1 & 2: prevent SQL injection)
+    local -a psql_vars=()
+    psql_vars+=(-v "ws_id=${ws_id}")
+    psql_vars+=(-v "ws_id_prefix=workstream-sync-${ws_id}")
+
     # SQL prefix: BEGIN + memory_entries upsert
     cat > "$sqlfile" <<EOSQL
 BEGIN;
 
--- 1. Upsert summary into memory_entries (key: workstream-sync-${ws_id})
+-- 1. Upsert summary into memory_entries (key: workstream-sync-{ws_id})
 INSERT INTO memory_entries (key, agent_id, workstream_id, timestamp, data, updated_at)
 VALUES (
-    'workstream-sync-${ws_id}',
+    :'ws_id_prefix',
     'mg-db-sync',
-    '${ws_id}',
+    :'ws_id',
     NOW(),
     \$sync_data\$
 EOSQL
@@ -417,7 +440,7 @@ EOSQL
 INSERT INTO agent_events (agent_id, workstream_id, event_type, payload)
 VALUES (
     'mg-db-sync',
-    '${ws_id}',
+    :'ws_id',
     'workstream_synced',
     '{"files": ${agent_events_count}}'::jsonb
 );
@@ -427,16 +450,16 @@ EOSQL
         cat >> "$sqlfile" <<EOSQL
 -- 2. Sync event (idempotent: skip if already exists)
 INSERT INTO agent_events (agent_id, workstream_id, event_type, payload)
-SELECT 'mg-db-sync', '${ws_id}', 'workstream_synced', '{"files": ${agent_events_count}}'::jsonb
+SELECT 'mg-db-sync', :'ws_id', 'workstream_synced', '{"files": ${agent_events_count}}'::jsonb
 WHERE NOT EXISTS (
     SELECT 1 FROM agent_events
-    WHERE workstream_id = '${ws_id}' AND event_type = 'workstream_synced'
+    WHERE workstream_id = :'ws_id' AND event_type = 'workstream_synced'
 );
 
 EOSQL
     fi
 
-    # SQL: individual agent events
+    # SQL: individual agent events (Fix 1: use indexed -v vars to avoid SQL injection)
     local ae_idx=0
     for p in "${agent_event_paths[@]}"; do
         ae_idx=$((ae_idx + 1))
@@ -445,13 +468,17 @@ EOSQL
         local ae_event_type
         ae_event_type=$(jq -r '.event_type // "agent_event"' "$p" 2>/dev/null || echo "agent_event")
 
+        # Collect agent/type as named psql variables — never interpolated into SQL literals
+        psql_vars+=(-v "ae_agent_${ae_idx}=${ae_agent_id}")
+        psql_vars+=(-v "ae_type_${ae_idx}=${ae_event_type}")
+
         cat >> "$sqlfile" <<EOSQL
 -- 3.${ae_idx} Individual agent event from $(basename "$p")
 INSERT INTO agent_events (agent_id, workstream_id, event_type, payload)
 VALUES (
-    '${ae_agent_id}',
-    '${ws_id}',
-    '${ae_event_type}',
+    :'ae_agent_${ae_idx}',
+    :'ws_id',
+    :'ae_type_${ae_idx}',
     \$ae_data_${ae_idx}\$
 EOSQL
 
@@ -472,6 +499,13 @@ EOSQL
         WS_GATE=$(jq -r '.gate_status // ""' "$state_path" 2>/dev/null || echo "")
         WS_BLOCKER=$(jq -r '.blocker // ""' "$state_path" 2>/dev/null || echo "")
         WS_AGENT=$(jq -r '.agent_id // ""' "$state_path" 2>/dev/null || echo "")
+
+        # Add workstream scalar fields to psql_vars array
+        psql_vars+=(-v "ws_name=${WS_NAME}")
+        psql_vars+=(-v "ws_phase=${WS_PHASE:-planning}")
+        psql_vars+=(-v "ws_gate=${WS_GATE}")
+        psql_vars+=(-v "ws_blocker=${WS_BLOCKER}")
+        psql_vars+=(-v "ws_agent=${WS_AGENT}")
 
         cat >> "$sqlfile" <<EOSQL
 -- 3. Upsert workstream row with synced_at
@@ -518,15 +552,10 @@ EOSQL
         '{sync_key: $key, workstream_id: $wid, synced_at: $ts, agent_events_synced: $n}' \
         > "$manifest_file" 2>/dev/null || true
 
-    # Execute SQL — pass workstream scalar fields as -v variables to avoid injection
+    # Execute SQL — all scalar fields passed via psql_vars array (no SQL string interpolation)
     local psql_ok=true
     if ! psql "$MG_POSTGRES_URL" -v ON_ERROR_STOP=1 \
-            -v "ws_id=${ws_id}" \
-            -v "ws_name=${WS_NAME:-}" \
-            -v "ws_phase=${WS_PHASE:-planning}" \
-            -v "ws_gate=${WS_GATE:-}" \
-            -v "ws_blocker=${WS_BLOCKER:-}" \
-            -v "ws_agent=${WS_AGENT:-}" \
+            "${psql_vars[@]}" \
             -f "$sqlfile" &>/dev/null; then
         psql_ok=false
     fi

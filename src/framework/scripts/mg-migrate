@@ -1,0 +1,315 @@
+#!/usr/bin/env bash
+# ============================================================================
+# mg-migrate — Bulk-migrate .claude/memory/*.json files to Postgres
+# ============================================================================
+# Usage: mg-migrate <PROJECT_DIR> [--force] [--dry-run]
+# Exit 0 = success (even if some files had errors)
+# Exit 1 = fatal error (bad args, non-existent dir)
+# ============================================================================
+
+set -euo pipefail
+
+# ============================================================================
+# Help text
+# ============================================================================
+show_help() {
+    cat <<EOF
+Usage: mg-migrate <PROJECT_DIR> [--force] [--dry-run]
+
+Bulk-migrate .claude/memory/*.json files to Postgres.
+
+Arguments:
+  PROJECT_DIR   Path to the project directory (required)
+
+Options:
+  --force       Migrate files even if already synced (overrides synced_to_postgres guard)
+  --dry-run     Print what would be migrated without making any writes
+  -h, --help    Show this help message
+
+Config:
+  MG_POSTGRES_URL   Override Postgres connection URL
+  MG_CONFIG_DIR     Override config directory (default: ~/.config/miniature-guacamole)
+
+Exit codes:
+  0 - Success (including partial failures — see summary for error count)
+  1 - Fatal error (missing or invalid PROJECT_DIR)
+EOF
+}
+
+# ============================================================================
+# Config URL resolution (same pattern as mg-memory-write)
+# ============================================================================
+MG_CONFIG_DIR="${MG_CONFIG_DIR:-${XDG_CONFIG_HOME:-$HOME/.config}/miniature-guacamole}"
+
+_resolve_pg_url() {
+    if [[ -n "${MG_POSTGRES_URL:-}" ]]; then
+        echo "$MG_POSTGRES_URL"
+        return
+    fi
+    local config_file="$MG_CONFIG_DIR/config.json"
+    if [[ -f "$config_file" ]]; then
+        local mode
+        mode=$(jq -r '.storage_mode // "file"' "$config_file" 2>/dev/null || echo "file")
+        if [[ "$mode" == "postgres" ]]; then
+            jq -r '.postgres_url // ""' "$config_file" 2>/dev/null || echo ""
+        fi
+    fi
+}
+
+# ============================================================================
+# Argument parsing
+# ============================================================================
+PROJECT_DIR=""
+FORCE=false
+DRY_RUN=false
+
+for arg in "$@"; do
+    case "$arg" in
+        -h|--help)
+            show_help
+            exit 0
+            ;;
+        --force)
+            FORCE=true
+            ;;
+        --dry-run)
+            DRY_RUN=true
+            ;;
+        -*)
+            echo "Error: Unknown option: $arg" >&2
+            echo "Run 'mg-migrate --help' for usage." >&2
+            exit 1
+            ;;
+        *)
+            if [[ -z "$PROJECT_DIR" ]]; then
+                PROJECT_DIR="$arg"
+            else
+                echo "Error: Unexpected argument: $arg" >&2
+                exit 1
+            fi
+            ;;
+    esac
+done
+
+# PROJECT_DIR is required
+if [[ -z "$PROJECT_DIR" ]]; then
+    echo "Error: PROJECT_DIR is required." >&2
+    echo "Usage: mg-migrate <PROJECT_DIR> [--force] [--dry-run]" >&2
+    exit 1
+fi
+
+# PROJECT_DIR must exist
+if [[ ! -d "$PROJECT_DIR" ]]; then
+    echo "Error: Directory does not exist: $PROJECT_DIR" >&2
+    exit 1
+fi
+
+# ============================================================================
+# Resolve memory directory
+# ============================================================================
+MEMORY_DIR="$PROJECT_DIR/.claude/memory"
+
+if [[ ! -d "$MEMORY_DIR" ]]; then
+    echo "Nothing to migrate: $MEMORY_DIR not found"
+    exit 0
+fi
+
+# ============================================================================
+# Resolve Postgres URL
+# ============================================================================
+PG_URL=$(_resolve_pg_url || true)
+
+if [[ -z "$PG_URL" ]]; then
+    echo "Error: No Postgres URL configured. Set MG_POSTGRES_URL or run: mg-postgres start" >&2
+    exit 1
+fi
+
+# ============================================================================
+# migrate_file — upsert one JSON file to Postgres
+# Returns 0 on success, 1 on failure
+# ============================================================================
+migrate_file() {
+    local json_file="$1"
+    local fname
+    fname=$(basename "$json_file")
+    local file_key="${fname%.json}"
+
+    # Validate JSON before attempting migration
+    if ! jq empty "$json_file" 2>/dev/null; then
+        echo "WARN: Skipping invalid JSON: $fname" >&2
+        return 1
+    fi
+
+    # Build SQL temp file for memory_entries upsert
+    # /tmp is fine — SQL is throwaway, no atomic rename needed.
+    # Prefix "memory_entries" is intentional: tests grep the psql -f path to assert table routing.
+    local pg_memory_sql
+    pg_memory_sql=$(mktemp -t memory_entries)
+
+    cat > "$pg_memory_sql" <<EOSQL
+INSERT INTO memory_entries (key, agent_id, workstream_id, timestamp, data, updated_at, version, file_path)
+VALUES (
+    :'file_key',
+    'mg-migrate',
+    :'file_key',
+    NOW(),
+    \$pg_data\$
+EOSQL
+
+    cat "$json_file" >> "$pg_memory_sql"
+
+    cat >> "$pg_memory_sql" <<EOSQL
+\$pg_data\$::jsonb,
+    NOW(),
+    1,
+    :'file_path'
+)
+ON CONFLICT (key) DO UPDATE
+    SET data       = EXCLUDED.data,
+        file_path  = EXCLUDED.file_path,
+        updated_at = NOW(),
+        version    = memory_entries.version + 1;
+EOSQL
+
+    local failed=false
+
+    if ! psql "$PG_URL" \
+            -v "file_key=$file_key" \
+            -v "file_path=$json_file" \
+            -f "$pg_memory_sql" >/dev/null 2>&1; then
+        failed=true
+    fi
+    rm -f "$pg_memory_sql"
+
+    # If workstream state file, also upsert to workstreams table
+    if [[ "$fname" =~ ^workstream-.*-state\.json$ ]]; then
+        local ws_id ws_name ws_phase ws_gate ws_blocker ws_agent
+        ws_id=$(jq -r '.workstream_id // ""' "$json_file" 2>/dev/null || echo "")
+        ws_name=$(jq -r '.name // ""' "$json_file" 2>/dev/null || echo "")
+        ws_phase=$(jq -r '.phase // "planning"' "$json_file" 2>/dev/null || echo "planning")
+        ws_gate=$(jq -r '.gate_status // ""' "$json_file" 2>/dev/null || echo "")
+        ws_blocker=$(jq -r '.blocker // ""' "$json_file" 2>/dev/null || echo "")
+        ws_agent=$(jq -r '.agent_id // ""' "$json_file" 2>/dev/null || echo "")
+
+        # Prefix "workstreams" is intentional: tests grep the psql -f path to assert table routing.
+        local pg_ws_sql
+        pg_ws_sql=$(mktemp -t workstreams)
+
+        cat > "$pg_ws_sql" <<EOSQL
+INSERT INTO workstreams (workstream_id, name, phase, gate_status, blocker, agent_id, data, updated_at)
+VALUES (
+    :'ws_id',
+    NULLIF(:'ws_name', ''),
+    :'ws_phase',
+    NULLIF(:'ws_gate', ''),
+    NULLIF(:'ws_blocker', ''),
+    NULLIF(:'ws_agent', ''),
+    \$ws_data\$
+EOSQL
+
+        cat "$json_file" >> "$pg_ws_sql"
+
+        cat >> "$pg_ws_sql" <<EOSQL
+\$ws_data\$::jsonb,
+    NOW()
+)
+ON CONFLICT (workstream_id) DO UPDATE
+    SET name        = EXCLUDED.name,
+        phase       = EXCLUDED.phase,
+        gate_status = EXCLUDED.gate_status,
+        blocker     = EXCLUDED.blocker,
+        agent_id    = EXCLUDED.agent_id,
+        data        = EXCLUDED.data,
+        updated_at  = NOW();
+EOSQL
+
+        if ! psql "$PG_URL" \
+                -v "ws_id=$ws_id" \
+                -v "ws_name=$ws_name" \
+                -v "ws_phase=$ws_phase" \
+                -v "ws_gate=$ws_gate" \
+                -v "ws_blocker=$ws_blocker" \
+                -v "ws_agent=$ws_agent" \
+                -f "$pg_ws_sql" >/dev/null 2>&1; then
+            failed=true
+        fi
+        rm -f "$pg_ws_sql"
+    fi
+
+    if [[ "$failed" == true ]]; then
+        echo "WARN: Postgres migration failed for $fname" >&2
+        return 1
+    fi
+
+    return 0
+}
+
+# ============================================================================
+# Main migration loop
+# ============================================================================
+migrated=0
+skipped=0
+errors=0
+
+# Collect json files; handle empty dir gracefully
+shopt -s nullglob
+json_files=("$MEMORY_DIR"/*.json)
+shopt -u nullglob
+
+if [[ ${#json_files[@]} -eq 0 ]]; then
+    echo "Migrated: 0, Skipped: 0, Errors: 0"
+    exit 0
+fi
+
+if [[ "$DRY_RUN" == true ]]; then
+    echo "Dry run — no changes will be made:"
+    for json_file in "${json_files[@]}"; do
+        [[ -f "$json_file" ]] || continue
+        fname=$(basename "$json_file")
+        already="false"
+        if [[ "$FORCE" == false ]]; then
+            already=$(jq -r '.synced_to_postgres // false' "$json_file" 2>/dev/null || echo "false")
+        fi
+        if [[ "$already" == "true" ]]; then
+            echo "  Would skip (already synced): $fname"
+        else
+            echo "  Would migrate: $fname"
+        fi
+    done
+    exit 0
+fi
+
+for json_file in "${json_files[@]}"; do
+    [[ -f "$json_file" ]] || continue
+
+    # Skip already-synced files unless --force
+    if [[ "$FORCE" == false ]]; then
+        already=$(jq -r '.synced_to_postgres // false' "$json_file" 2>/dev/null || echo "false")
+        if [[ "$already" == "true" ]]; then
+            skipped=$((skipped + 1))
+            continue
+        fi
+    fi
+
+    # Validate JSON; skip invalid files without counting as error (warn only)
+    if ! jq empty "$json_file" 2>/dev/null; then
+        echo "WARN: Skipping invalid JSON: $(basename "$json_file")" >&2
+        errors=$((errors + 1))
+        continue
+    fi
+
+    if migrate_file "$json_file"; then
+        # Mark synced in the file — same-dir mktemp for atomic mv
+        sync_tmp=$(mktemp "${json_file}.tmp.XXXXXX")
+        if jq '. + {"synced_to_postgres": true}' "$json_file" > "$sync_tmp" 2>/dev/null; then
+            mv "$sync_tmp" "$json_file"
+        else
+            rm -f "$sync_tmp"
+        fi
+        migrated=$((migrated + 1))
+    else
+        errors=$((errors + 1))
+    fi
+done
+
+echo "Migrated: $migrated, Skipped: $skipped, Errors: $errors"

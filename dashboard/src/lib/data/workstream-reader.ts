@@ -1,5 +1,11 @@
 import { join } from 'node:path';
+import { readFileSync, existsSync } from 'node:fs';
 import { readJsonFile, listJsonFiles } from './memory-reader';
+import {
+  getAllWorkstreamsFromPostgres,
+  getWorkstreamByIdFromPostgres,
+  getWorkstreamCountsFromPostgres,
+} from './postgres-reader';
 import { DEFAULT_MEMORY_PATH } from '../constants';
 import type {
   WorkstreamSummary,
@@ -59,6 +65,25 @@ function normalizeStatus(raw: Record<string, unknown>): WorkstreamStatus {
   return 'unknown';
 }
 
+function readJsonFileDirect(filePath: string): Record<string, unknown> | null {
+  try {
+    if (!existsSync(filePath)) {
+      return null;
+    }
+    const content = readFileSync(filePath, 'utf-8');
+    if (!content || content.trim() === '') {
+      return null;
+    }
+    const parsed = JSON.parse(content);
+    if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) {
+      return null;
+    }
+    return parsed as Record<string, unknown>;
+  } catch {
+    return null;
+  }
+}
+
 function isValidWorkstream(data: unknown): data is Record<string, unknown> {
   if (!data || typeof data !== 'object') {
     return false;
@@ -68,14 +93,11 @@ function isValidWorkstream(data: unknown): data is Record<string, unknown> {
   return typeof obj.workstream_id === 'string' && typeof obj.name === 'string';
 }
 
-export function getAllWorkstreams(
-  memoryPath: string = DEFAULT_MEMORY_PATH
-): WorkstreamSummary[] {
-  const files = listJsonFiles(memoryPath);
+function getAllWorkstreamsFromFilesystem(memoryPath: string): WorkstreamSummary[] {
+  const files = listJsonFiles(memoryPath) ?? [];
   const workstreams: WorkstreamSummary[] = [];
 
   for (const file of files) {
-    // Only process files that look like workstream state files
     if (!file.startsWith('workstream-') && !file.startsWith('ws-')) {
       continue;
     }
@@ -106,10 +128,54 @@ export function getAllWorkstreams(
   return workstreams;
 }
 
-export function getWorkstreamById(
+function computeCounts(workstreams: WorkstreamSummary[]): WorkstreamCounts {
+  const counts: WorkstreamCounts = {
+    total: workstreams.length,
+    planning: 0,
+    in_progress: 0,
+    ready_for_review: 0,
+    blocked: 0,
+    complete: 0,
+    unknown: 0,
+  };
+
+  for (const ws of workstreams) {
+    counts[ws.status]++;
+  }
+
+  return counts;
+}
+
+export async function getAllWorkstreams(
+  memoryPath: string = DEFAULT_MEMORY_PATH
+): Promise<WorkstreamSummary[]> {
+  const pgUrl = process.env.MG_POSTGRES_URL;
+  if (pgUrl) {
+    try {
+      return await getAllWorkstreamsFromPostgres();
+    } catch (err) {
+      console.warn('[workstream-reader] getAllWorkstreams: Postgres read failed, falling back to filesystem:', err);
+      // fall through to filesystem
+    }
+  }
+
+  return getAllWorkstreamsFromFilesystem(memoryPath);
+}
+
+export async function getWorkstreamById(
   id: string,
   memoryPath: string = DEFAULT_MEMORY_PATH
-): WorkstreamDetail | null {
+): Promise<WorkstreamDetail | null> {
+  const pgUrl = process.env.MG_POSTGRES_URL;
+  if (pgUrl) {
+    try {
+      return await getWorkstreamByIdFromPostgres(id);
+    } catch (err) {
+      console.warn('[workstream-reader] getWorkstreamById: Postgres read failed for id=' + id + ', falling back to filesystem:', err);
+      // fall through to filesystem
+    }
+  }
+
   // Try common file patterns first
   const patterns = [
     `workstream-${id}-state.json`,
@@ -120,7 +186,7 @@ export function getWorkstreamById(
 
   for (const pattern of patterns) {
     const filePath = join(memoryPath, pattern);
-    const data = readJsonFile(filePath);
+    const data = readJsonFileDirect(filePath);
 
     if (isValidWorkstream(data) && data.workstream_id === id) {
       const detail: WorkstreamDetail = {
@@ -147,11 +213,11 @@ export function getWorkstreamById(
   }
 
   // Fall back to scanning all files
-  const files = listJsonFiles(memoryPath);
+  const files = listJsonFiles(memoryPath) ?? [];
 
   for (const file of files) {
     const filePath = join(memoryPath, file);
-    const data = readJsonFile(filePath);
+    const data = readJsonFileDirect(filePath);
 
     if (!isValidWorkstream(data)) {
       continue;
@@ -184,24 +250,19 @@ export function getWorkstreamById(
   return null;
 }
 
-export function getWorkstreamCounts(
+export async function getWorkstreamCounts(
   memoryPath: string = DEFAULT_MEMORY_PATH
-): WorkstreamCounts {
-  const workstreams = getAllWorkstreams(memoryPath);
-
-  const counts: WorkstreamCounts = {
-    total: workstreams.length,
-    planning: 0,
-    in_progress: 0,
-    ready_for_review: 0,
-    blocked: 0,
-    complete: 0,
-    unknown: 0,
-  };
-
-  for (const ws of workstreams) {
-    counts[ws.status]++;
+): Promise<WorkstreamCounts> {
+  const pgUrl = process.env.MG_POSTGRES_URL;
+  if (pgUrl) {
+    try {
+      return await getWorkstreamCountsFromPostgres();
+    } catch (err) {
+      console.warn('[workstream-reader] getWorkstreamCounts: Postgres read failed, falling back to filesystem:', err);
+      // Call filesystem path directly to avoid a second Postgres attempt
+      return computeCounts(getAllWorkstreamsFromFilesystem(memoryPath));
+    }
   }
 
-  return counts;
+  return computeCounts(getAllWorkstreamsFromFilesystem(memoryPath));
 }

@@ -176,9 +176,29 @@ fi
 rm -f "$TEMP_FILE"
 
 # ============================================================================
-# Postgres dual-write (optional — only when MG_POSTGRES_URL is set)
+# Postgres dual-write (optional — only when MG_POSTGRES_URL is set or config enables it)
 # ============================================================================
-if [[ -n "${MG_POSTGRES_URL:-}" ]]; then
+
+# Resolve postgres URL: env var > config file > empty (no postgres)
+# NOTE: MG_POSTGRES_URL env var bypasses storage_mode — unset it to respect config storage_mode=file
+_resolve_pg_url() {
+    if [[ -n "${MG_POSTGRES_URL:-}" ]]; then
+        echo "$MG_POSTGRES_URL"
+        return
+    fi
+    local config_dir="${MG_CONFIG_DIR:-${XDG_CONFIG_HOME:-$HOME/.config}/miniature-guacamole}"
+    local config_file="$config_dir/config.json"
+    if [[ -f "$config_file" ]]; then
+        local storage_mode
+        storage_mode=$(jq -r '.storage_mode // "file"' "$config_file" 2>/dev/null || echo "file")
+        if [[ "$storage_mode" == "postgres" ]]; then
+            jq -r '.postgres_url // ""' "$config_file" 2>/dev/null || echo ""
+        fi
+    fi
+}
+
+PG_URL=$(_resolve_pg_url || true)
+if [[ -n "$PG_URL" ]]; then
     # Derive key from filename (basename without .json)
     FILE_BASENAME=$(basename "$FILE_PATH")
     FILE_KEY="${FILE_BASENAME%.json}"
@@ -217,7 +237,7 @@ EOSQL
 
     # Execute memory_entries upsert — failure is non-fatal
     PG_FAILED=false
-    if ! psql "$MG_POSTGRES_URL" \
+    if ! psql "$PG_URL" \
             -v "file_key=$FILE_KEY" \
             -v "file_path=$FILE_PATH" \
             -f "$PG_MEMORY_SQL" >/dev/null 2>&1; then
@@ -263,7 +283,7 @@ ON CONFLICT (workstream_id) DO UPDATE
         updated_at  = NOW();
 EOSQL
 
-        if ! psql "$MG_POSTGRES_URL" \
+        if ! psql "$PG_URL" \
                 -v "ws_id=$WS_ID" \
                 -v "ws_name=$WS_NAME" \
                 -v "ws_phase=$WS_PHASE" \

@@ -1,0 +1,211 @@
+#!/usr/bin/env bash
+# ============================================================================
+# mg-config - Global config layer for miniature-guacamole (WS-DB-5)
+# ============================================================================
+# Usage: mg-config <subcommand> [args]
+#
+# Subcommands:
+#   init              Create config file with defaults (idempotent)
+#   get <key>         Print value for key
+#   set <key> <val>   Set key to value (atomic write)
+#   list              Print all key=value pairs
+#
+# Config directory resolution (priority order):
+#   1. $MG_CONFIG_DIR
+#   2. ${XDG_CONFIG_HOME}/miniature-guacamole
+#   3. ~/.config/miniature-guacamole
+# ============================================================================
+
+set -euo pipefail
+
+# ============================================================================
+# Config directory resolution
+# ============================================================================
+MG_CONFIG_DIR="${MG_CONFIG_DIR:-${XDG_CONFIG_HOME:-$HOME/.config}/miniature-guacamole}"
+CONFIG_FILE="$MG_CONFIG_DIR/config.json"
+
+# ============================================================================
+# Helpers
+# ============================================================================
+error() {
+    echo "Error: $1" >&2
+    exit 1
+}
+
+require_jq() {
+    if ! command -v jq &>/dev/null; then
+        error "jq not found in PATH. Install via: brew install jq"
+    fi
+}
+
+show_usage() {
+    cat <<EOF
+Usage: mg-config <subcommand> [args]
+
+Subcommands:
+  init              Create config file with defaults (idempotent — no-op if already exists)
+  get <key>         Print value for key; exits non-zero if key not found
+  set <key> <val>   Set key to value (atomic write)
+  list              Print all key=value pairs
+
+Config location (priority order):
+  \$MG_CONFIG_DIR > \$XDG_CONFIG_HOME/miniature-guacamole > ~/.config/miniature-guacamole
+
+Default keys:
+  postgres_url      postgresql://mg:mg@localhost:5432/mg_memory
+  storage_mode      postgres
+  auto_provision    true
+  mg_version        (empty)
+EOF
+}
+
+# ============================================================================
+# Subcommand: init
+# ============================================================================
+cmd_init() {
+    require_jq
+
+    mkdir -p "$MG_CONFIG_DIR"
+
+    if [[ -f "$CONFIG_FILE" ]]; then
+        # Valid JSON — idempotent no-op
+        if jq empty "$CONFIG_FILE" 2>/dev/null; then
+            echo "Config already exists: $CONFIG_FILE"
+            return 0
+        fi
+        # File exists but is corrupt — overwrite
+        echo "WARN: Config file is corrupt, reinitializing: $CONFIG_FILE" >&2
+    fi
+
+    # Atomic write: temp file + mv (never a partial write visible to readers)
+    local tmp
+    tmp=$(mktemp "${CONFIG_FILE}.tmp.XXXXXX")
+    cat > "$tmp" <<'JSON'
+{
+  "postgres_url": "postgresql://mg:mg@localhost:5432/mg_memory",
+  "storage_mode": "postgres",
+  "auto_provision": true,
+  "mg_version": ""
+}
+JSON
+    mv "$tmp" "$CONFIG_FILE"
+    echo "Config initialized: $CONFIG_FILE"
+}
+
+# ============================================================================
+# Subcommand: get
+# ============================================================================
+cmd_get() {
+    if [[ $# -lt 1 ]] || [[ -z "${1:-}" ]]; then
+        echo "Usage: mg-config get <key>" >&2
+        echo "Error: key is required" >&2
+        exit 1
+    fi
+
+    require_jq
+
+    local key="$1"
+
+    if [[ ! -f "$CONFIG_FILE" ]]; then
+        echo "Error: config file not found: $CONFIG_FILE" >&2
+        exit 1
+    fi
+
+    local value
+    value=$(jq -r ".$key" "$CONFIG_FILE" 2>/dev/null) || {
+        echo "Error: failed to read key '$key' from config" >&2
+        exit 1
+    }
+
+    echo "$value"
+}
+
+# ============================================================================
+# Subcommand: set
+# ============================================================================
+cmd_set() {
+    if [[ $# -lt 1 ]] || [[ -z "${1:-}" ]]; then
+        echo "Usage: mg-config set <key> <value>" >&2
+        echo "Error: key is required" >&2
+        exit 1
+    fi
+
+    if [[ $# -lt 2 ]]; then
+        echo "Usage: mg-config set <key> <value>" >&2
+        echo "Error: value is required" >&2
+        exit 1
+    fi
+
+    require_jq
+
+    local key="$1"
+    local value="$2"
+
+    if [[ ! -f "$CONFIG_FILE" ]]; then
+        error "config file not found: $CONFIG_FILE (run 'mg-config init' first)"
+    fi
+
+    # Atomic write: temp file + mv
+    local tmp_file
+    tmp_file=$(mktemp "${CONFIG_FILE}.tmp.XXXXXX")
+
+    if ! jq --arg val "$value" ".$key = \$val" "$CONFIG_FILE" > "$tmp_file" 2>/dev/null; then
+        rm -f "$tmp_file"
+        error "failed to update key '$key'"
+    fi
+
+    if ! mv "$tmp_file" "$CONFIG_FILE" 2>/dev/null; then
+        rm -f "$tmp_file"
+        error "failed to write config file (atomic move failed)"
+    fi
+}
+
+# ============================================================================
+# Subcommand: list
+# ============================================================================
+cmd_list() {
+    require_jq
+
+    if [[ ! -f "$CONFIG_FILE" ]]; then
+        error "config file not found: $CONFIG_FILE (run 'mg-config init' first)"
+    fi
+
+    # Print each top-level key=value on its own line
+    jq -r 'to_entries[] | "\(.key)=\(.value)"' "$CONFIG_FILE"
+}
+
+# ============================================================================
+# Main dispatch
+# ============================================================================
+if [[ $# -eq 0 ]]; then
+    show_usage >&2
+    exit 1
+fi
+
+SUBCOMMAND="$1"
+shift
+
+case "$SUBCOMMAND" in
+    init)
+        cmd_init "$@"
+        ;;
+    get)
+        cmd_get "$@"
+        ;;
+    set)
+        cmd_set "$@"
+        ;;
+    list)
+        cmd_list "$@"
+        ;;
+    -h|--help)
+        show_usage
+        exit 0
+        ;;
+    *)
+        echo "Unknown subcommand: $SUBCOMMAND" >&2
+        echo "" >&2
+        show_usage >&2
+        exit 1
+        ;;
+esac

@@ -1,0 +1,220 @@
+#!/usr/bin/env bash
+# ============================================================================
+# mg-postgres — Provision and manage the miniature-guacamole Postgres container
+# ============================================================================
+# Usage: mg-postgres <start|stop|status> [options]
+# ============================================================================
+
+set -euo pipefail
+
+CONTAINER_NAME="mg_postgres"
+POSTGRES_IMAGE="postgres:16-alpine"
+POSTGRES_USER="mg"
+POSTGRES_PASSWORD="mg"
+POSTGRES_DB="mg_memory"
+POSTGRES_PORT="5432"
+DEFAULT_PG_URL="postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@localhost:${POSTGRES_PORT}/${POSTGRES_DB}"
+
+# Config dir (testable via MG_CONFIG_DIR)
+export MG_CONFIG_DIR="${MG_CONFIG_DIR:-${XDG_CONFIG_HOME:-$HOME/.config}/miniature-guacamole}"
+
+# ============================================================================
+# Helpers
+# ============================================================================
+
+show_usage() {
+    cat <<EOF
+Usage: mg-postgres <start|stop|status>
+
+Provision and manage the miniature-guacamole Postgres container.
+
+Subcommands:
+  start     Start (or verify) the Postgres container and run migrations
+  stop      Stop and remove the Postgres container (idempotent)
+  status    Report container state and connection health
+
+Options:
+  --help    Show this help message
+
+Container: $CONTAINER_NAME
+Image:     $POSTGRES_IMAGE
+Default:   $DEFAULT_PG_URL
+EOF
+}
+
+require_docker() {
+    if ! command -v docker &>/dev/null; then
+        echo "WARN: Docker not available. Install Docker to use auto-provisioning." >&2
+        exit 1
+    fi
+}
+
+is_container_running() {
+    [[ "$(docker inspect --format '{{.State.Running}}' "$CONTAINER_NAME" 2>/dev/null)" == "true" ]]
+}
+
+wait_for_postgres() {
+    local url="$1"
+    local max_attempts=30
+    local attempt=0
+
+    while [[ $attempt -lt $max_attempts ]]; do
+        if psql "$url" -c "SELECT 1" &>/dev/null; then
+            return 0
+        fi
+        attempt=$((attempt + 1))
+        sleep 1
+    done
+
+    return 1
+}
+
+find_mg_db_setup() {
+    # Prefer sibling script (same dir as this script)
+    local script_dir
+    script_dir="$(cd "$(dirname "$0")" && pwd)"
+    if [[ -x "$script_dir/mg-db-setup" ]]; then
+        echo "$script_dir/mg-db-setup"
+        return
+    fi
+    # Fall back to PATH
+    if command -v mg-db-setup &>/dev/null; then
+        echo "mg-db-setup"
+        return
+    fi
+    echo ""
+}
+
+# ============================================================================
+# Subcommand: start
+# ============================================================================
+
+cmd_start() {
+    require_docker
+
+    if is_container_running; then
+        # Container is up — verify connectivity
+        if psql "$DEFAULT_PG_URL" -c "SELECT 1" &>/dev/null; then
+            echo "Container already running and healthy: $CONTAINER_NAME"
+            exit 0
+        else
+            echo "Error: container is running but connection failed. Check logs: docker logs $CONTAINER_NAME" >&2
+            exit 1
+        fi
+    fi
+
+    # Container not running — create it
+    echo "Starting Postgres container: $CONTAINER_NAME"
+    if ! docker run -d \
+        --name "$CONTAINER_NAME" \
+        -e POSTGRES_USER \
+        -e POSTGRES_PASSWORD \
+        -e POSTGRES_DB \
+        -p "${POSTGRES_PORT}:5432" \
+        "$POSTGRES_IMAGE"; then
+        echo "Error: failed to start container" >&2
+        exit 1
+    fi
+
+    # Wait for Postgres to be ready
+    echo "Waiting for Postgres to be ready..."
+    if ! wait_for_postgres "$DEFAULT_PG_URL"; then
+        echo "Error: Postgres did not become healthy within 30s" >&2
+        exit 1
+    fi
+
+    # Run migrations
+    local mg_db_setup
+    mg_db_setup="$(find_mg_db_setup)"
+    if [[ -z "$mg_db_setup" ]]; then
+        echo "Error: mg-db-setup not found in PATH or script directory" >&2
+        exit 1
+    fi
+
+    echo "Running migrations..."
+    if ! "$mg_db_setup"; then
+        echo "Error: mg-db-setup failed" >&2
+        exit 1
+    fi
+
+    # Write config
+    mg-config init   # idempotent — no-op if config already exists
+    mg-config set postgres_url "$DEFAULT_PG_URL"
+    mg-config set storage_mode "postgres"
+
+    echo "Postgres is ready: $DEFAULT_PG_URL"
+    exit 0
+}
+
+# ============================================================================
+# Subcommand: stop
+# ============================================================================
+
+cmd_stop() {
+    require_docker
+
+    echo "Stopping container: $CONTAINER_NAME"
+    docker stop "$CONTAINER_NAME" 2>/dev/null || true
+    docker rm "$CONTAINER_NAME" 2>/dev/null || true
+    echo "Container stopped and removed."
+    exit 0
+}
+
+# ============================================================================
+# Subcommand: status
+# ============================================================================
+
+cmd_status() {
+    if ! command -v docker &>/dev/null; then
+        echo "Docker not available — cannot check container status."
+        exit 0
+    fi
+
+    if is_container_running; then
+        echo "Status: running"
+        if psql "$DEFAULT_PG_URL" -c "SELECT 1" &>/dev/null; then
+            echo "Connection: OK ($DEFAULT_PG_URL)"
+        else
+            echo "Connection: failed (container up but psql cannot connect)"
+        fi
+    else
+        echo "Status: stopped"
+    fi
+
+    exit 0
+}
+
+# ============================================================================
+# Main dispatch
+# ============================================================================
+
+if [[ $# -eq 0 ]]; then
+    echo "Usage: mg-postgres <start|stop|status>" >&2
+    echo "Run 'mg-postgres --help' for more information." >&2
+    exit 1
+fi
+
+SUBCOMMAND="$1"
+shift
+
+case "$SUBCOMMAND" in
+    start)
+        cmd_start "$@"
+        ;;
+    stop)
+        cmd_stop "$@"
+        ;;
+    status)
+        cmd_status "$@"
+        ;;
+    -h|--help)
+        show_usage
+        exit 0
+        ;;
+    *)
+        echo "Unknown subcommand: $SUBCOMMAND" >&2
+        echo "" >&2
+        show_usage >&2
+        exit 1
+        ;;
+esac

@@ -175,4 +175,110 @@ fi
 # Clean up temp file if it still exists
 rm -f "$TEMP_FILE"
 
+# ============================================================================
+# Postgres dual-write (optional — only when MG_POSTGRES_URL is set)
+# ============================================================================
+if [[ -n "${MG_POSTGRES_URL:-}" ]]; then
+    # Derive key from filename (basename without .json)
+    FILE_BASENAME=$(basename "$FILE_PATH")
+    FILE_KEY="${FILE_BASENAME%.json}"
+
+    # Build SQL in temp files in $TMPDIR (Fix 5: avoid writing next to the target file)
+    # Prefix includes table name so psql arg remains grep-able in tests
+    PG_MEMORY_SQL=$(mktemp -t "memory_entries")
+    PG_WS_SQL=$(mktemp -t "workstreams")
+
+    # Always upsert to memory_entries (Fix 1: include all NOT NULL columns)
+    cat > "$PG_MEMORY_SQL" <<EOSQL
+INSERT INTO memory_entries (key, agent_id, workstream_id, timestamp, data, updated_at, version, file_path)
+VALUES (
+    :'file_key',
+    'mg-memory-write',
+    :'file_key',
+    NOW(),
+    \$pg_data\$
+EOSQL
+
+    # Append JSON content (never in bash variable to avoid injection)
+    cat "$FILE_PATH" >> "$PG_MEMORY_SQL"
+
+    cat >> "$PG_MEMORY_SQL" <<EOSQL
+\$pg_data\$::jsonb,
+    NOW(),
+    1,
+    :'file_path'
+)
+ON CONFLICT (key) DO UPDATE
+    SET data       = EXCLUDED.data,
+        file_path  = EXCLUDED.file_path,
+        updated_at = NOW(),
+        version    = memory_entries.version + 1;
+EOSQL
+
+    # Execute memory_entries upsert — failure is non-fatal
+    PG_FAILED=false
+    if ! psql "$MG_POSTGRES_URL" \
+            -v "file_key=$FILE_KEY" \
+            -v "file_path=$FILE_PATH" \
+            -f "$PG_MEMORY_SQL" >/dev/null 2>&1; then
+        PG_FAILED=true
+    fi
+    rm -f "$PG_MEMORY_SQL"
+
+    # If workstream state file, also upsert to workstreams table
+    if [[ "$FILE_BASENAME" =~ ^workstream-.*-state\.json$ ]]; then
+        WS_ID=$(jq -r '.workstream_id // ""' "$FILE_PATH" 2>/dev/null || echo "")
+        WS_NAME=$(jq -r '.name // ""' "$FILE_PATH" 2>/dev/null || echo "")
+        WS_PHASE=$(jq -r '.phase // "planning"' "$FILE_PATH" 2>/dev/null || echo "planning")
+        WS_GATE=$(jq -r '.gate_status // ""' "$FILE_PATH" 2>/dev/null || echo "")
+        WS_BLOCKER=$(jq -r '.blocker // ""' "$FILE_PATH" 2>/dev/null || echo "")
+        WS_AGENT=$(jq -r '.agent_id // ""' "$FILE_PATH" 2>/dev/null || echo "")
+
+        # SQL file for workstreams upsert (Fix 3: use -v named variables, not string interpolation)
+        cat > "$PG_WS_SQL" <<EOSQL
+INSERT INTO workstreams (workstream_id, name, phase, gate_status, blocker, agent_id, data, updated_at)
+VALUES (
+    :'ws_id',
+    NULLIF(:'ws_name', ''),
+    :'ws_phase',
+    NULLIF(:'ws_gate', ''),
+    NULLIF(:'ws_blocker', ''),
+    NULLIF(:'ws_agent', ''),
+    \$ws_data\$
+EOSQL
+
+        cat "$FILE_PATH" >> "$PG_WS_SQL"
+
+        cat >> "$PG_WS_SQL" <<EOSQL
+\$ws_data\$::jsonb,
+    NOW()
+)
+ON CONFLICT (workstream_id) DO UPDATE
+    SET name        = EXCLUDED.name,
+        phase       = EXCLUDED.phase,
+        gate_status = EXCLUDED.gate_status,
+        blocker     = EXCLUDED.blocker,
+        agent_id    = EXCLUDED.agent_id,
+        data        = EXCLUDED.data,
+        updated_at  = NOW();
+EOSQL
+
+        if ! psql "$MG_POSTGRES_URL" \
+                -v "ws_id=$WS_ID" \
+                -v "ws_name=$WS_NAME" \
+                -v "ws_phase=$WS_PHASE" \
+                -v "ws_gate=$WS_GATE" \
+                -v "ws_blocker=$WS_BLOCKER" \
+                -v "ws_agent=$WS_AGENT" \
+                -f "$PG_WS_SQL" >/dev/null 2>&1; then
+            PG_FAILED=true
+        fi
+    fi
+    rm -f "$PG_WS_SQL"
+
+    if [[ "$PG_FAILED" == true ]]; then
+        echo "WARN: Postgres dual-write failed for $FILE_PATH — file write succeeded" >&2
+    fi
+fi
+
 exit 0

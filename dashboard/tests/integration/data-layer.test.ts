@@ -50,7 +50,7 @@ describe('Data Layer Integration', () => {
       // @ts-expect-error - module not implemented yet
       const { getAllWorkstreams } = await import('../../src/lib/data/workstream-reader');
 
-      const workstreams = getAllWorkstreams(memoryPath);
+      const workstreams = await getAllWorkstreams(memoryPath);
 
       expect(workstreams.length).toBeGreaterThan(0);
       expect(workstreams.every(ws => ws.workstream_id)).toBe(true);
@@ -60,7 +60,7 @@ describe('Data Layer Integration', () => {
       // @ts-expect-error - module not implemented yet
       const { getAllWorkstreams } = await import('../../src/lib/data/workstream-reader');
 
-      const workstreams = getAllWorkstreams(memoryPath);
+      const workstreams = await getAllWorkstreams(memoryPath);
       const statuses = workstreams.map(ws => ws.status);
 
       expect(statuses).toContain('in_progress');
@@ -72,7 +72,7 @@ describe('Data Layer Integration', () => {
       // @ts-expect-error - module not implemented yet
       const { getWorkstreamById } = await import('../../src/lib/data/workstream-reader');
 
-      const workstream = getWorkstreamById('WS-DASH-TEST-ACTIVE', memoryPath);
+      const workstream = await getWorkstreamById('WS-DASH-TEST-ACTIVE', memoryPath);
 
       expect(workstream).not.toBeNull();
       expect(workstream?.workstream_id).toBe('WS-DASH-TEST-ACTIVE');
@@ -82,7 +82,7 @@ describe('Data Layer Integration', () => {
       // @ts-expect-error - module not implemented yet
       const { getWorkstreamCounts } = await import('../../src/lib/data/workstream-reader');
 
-      const counts = getWorkstreamCounts(memoryPath);
+      const counts = await getWorkstreamCounts(memoryPath);
 
       expect(counts.total).toBe(3);
       expect(counts.in_progress).toBe(1);
@@ -219,7 +219,7 @@ describe('Data Layer Integration', () => {
       const cache = new MemoryCache(5000);
 
       // First read (cache miss)
-      const workstreams1 = getAllWorkstreams(memoryPath);
+      const workstreams1 = await getAllWorkstreams(memoryPath);
       cache.set('workstreams', workstreams1);
 
       // Second read (cache hit)
@@ -234,7 +234,7 @@ describe('Data Layer Integration', () => {
       const { getAllWorkstreams } = await import('../../src/lib/data/workstream-reader');
 
       const promises = Array.from({ length: 10 }, () =>
-        Promise.resolve(getAllWorkstreams(memoryPath))
+        getAllWorkstreams(memoryPath)
       );
 
       const results = await Promise.all(promises);
@@ -255,7 +255,7 @@ describe('Data Layer Integration', () => {
       // @ts-expect-error - module not implemented yet
       const { getAllWorkstreams } = await import('../../src/lib/data/workstream-reader');
 
-      const workstreams = getAllWorkstreams(memoryPath);
+      const workstreams = await getAllWorkstreams(memoryPath);
 
       // Should skip malformed and return valid ones
       expect(workstreams.length).toBe(3);

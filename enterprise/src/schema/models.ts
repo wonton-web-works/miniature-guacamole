@@ -99,3 +99,20 @@ export interface AgentEventExtended {
   created_at: string;
   project_id?: string;
 }
+
+// ---------------------------------------------------------------------------
+// Dashboard types (WS-DB-2)
+// ---------------------------------------------------------------------------
+
+export interface Workstream {
+  workstream_id: string;
+  name?: string;
+  phase: string;
+  gate_status?: string;
+  blocker?: string;
+  agent_id?: string;
+  data?: Record<string, unknown>;
+  synced_at?: string;
+  created_at: string;
+  updated_at: string;
+}

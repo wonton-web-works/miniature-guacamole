@@ -45,6 +45,7 @@ GITHUB_API="https://api.github.com/repos/$GITHUB_REPO"
 VERSION="latest"
 FORCE=false
 OFFLINE=false
+NO_DB=false
 PROJECT_DIR="$PWD"
 
 # Parse arguments
@@ -60,6 +61,10 @@ while [[ $# -gt 0 ]]; do
             ;;
         --offline)
             OFFLINE=true
+            shift
+            ;;
+        --no-db)
+            NO_DB=true
             shift
             ;;
         --help)
@@ -215,6 +220,24 @@ extract_tarball() {
     echo "$temp_dir"
 }
 
+# Function to find mg-postgres binary (PATH lookup, then sibling script)
+find_mg_postgres() {
+    if command -v mg-postgres &>/dev/null; then echo "mg-postgres"; return; fi
+    local script_dir
+    script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+    if [[ -x "$script_dir/mg-postgres" ]]; then echo "$script_dir/mg-postgres"; return; fi
+    echo ""
+}
+
+# Function to find mg-migrate binary (PATH lookup, then sibling script)
+find_mg_migrate() {
+    if command -v mg-migrate &>/dev/null; then echo "mg-migrate"; return; fi
+    local script_dir
+    script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+    if [[ -x "$script_dir/mg-migrate" ]]; then echo "$script_dir/mg-migrate"; return; fi
+    echo ""
+}
+
 # Main workflow
 
 # Resolve version if "latest"
@@ -294,9 +317,55 @@ fi
 # Cleanup temp directory
 rm -rf "$TEMP_DIR"
 
+# DB provisioning + migration (skipped with --no-db)
+DB_STATUS="file mode (no database)"
+MIGRATION_SUMMARY=""
+
+if [[ "$NO_DB" == "false" ]]; then
+    if ! command -v docker &>/dev/null; then
+        echo -e "${YELLOW}WARN: Docker not available — skipping Postgres provisioning (file mode)${NC}"
+        DB_STATUS="file mode (Docker unavailable)"
+    else
+        MG_POSTGRES_BIN="$(find_mg_postgres)"
+        if [[ -n "$MG_POSTGRES_BIN" ]]; then
+            echo -e "${BLUE}Starting Postgres...${NC}"
+            if "$MG_POSTGRES_BIN" start 2>&1; then
+                DB_STATUS="Postgres (ready)"
+                # Run migration
+                MG_MIGRATE_BIN="$(find_mg_migrate)"
+                if [[ -n "$MG_MIGRATE_BIN" ]]; then
+                    echo -e "${BLUE}Migrating existing memory files...${NC}"
+                    if MIGRATION_SUMMARY=$("$MG_MIGRATE_BIN" "$PROJECT_DIR" 2>&1); then
+                        echo -e "${GREEN}Migration: $MIGRATION_SUMMARY${NC}"
+                    else
+                        echo -e "${YELLOW}WARN: Migration failed — continuing in file mode${NC}"
+                        MIGRATION_SUMMARY=""
+                        DB_STATUS="Postgres (ready, migration failed)"
+                    fi
+                fi
+            else
+                echo -e "${YELLOW}WARN: Postgres provisioning failed — falling back to file mode${NC}"
+                DB_STATUS="file mode (provisioning failed)"
+            fi
+        else
+            echo -e "${YELLOW}WARN: mg-postgres not found — skipping DB provisioning${NC}"
+            DB_STATUS="file mode (mg-postgres not found)"
+        fi
+    fi
+else
+    DB_STATUS="file mode (--no-db)"
+fi
+
 echo ""
-echo -e "${GREEN}Success! Project initialized with miniature-guacamole $VERSION${NC}"
+echo -e "${GREEN}miniature-guacamole $VERSION initialized${NC}"
 echo ""
-echo "Cache directory: $CACHE_DIR"
-echo "Project directory: $PROJECT_DIR"
+echo "  Project: $PROJECT_DIR"
+echo "  DB:      $DB_STATUS"
+if [[ -n "$MIGRATION_SUMMARY" ]]; then
+    echo "  Migrated: $MIGRATION_SUMMARY"
+fi
+echo ""
+echo "Next steps:"
+echo "  /mg-init    — re-run any time to upgrade"
+echo "  /mg-build   — start a workstream"
 echo ""

@@ -22,7 +22,7 @@ export async function GET(request: NextRequest): Promise<NextResponse<ApiRespons
       isCached = true;
       cacheAge = cached.meta.cacheAge;
     } else {
-      const allWorkstreams = getAllWorkstreams();
+      const allWorkstreams = await getAllWorkstreams();
 
       if (statusFilter) {
         workstreams = allWorkstreams.filter(ws => ws.status === statusFilter);

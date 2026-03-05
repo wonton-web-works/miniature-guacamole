@@ -23,7 +23,7 @@ export async function GET(
       isCached = true;
       cacheAge = cached.meta.cacheAge;
     } else {
-      workstream = getWorkstreamById(id);
+      workstream = await getWorkstreamById(id);
 
       if (workstream) {
         cache.set(cacheKey, workstream);

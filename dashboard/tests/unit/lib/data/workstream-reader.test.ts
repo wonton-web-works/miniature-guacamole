@@ -8,6 +8,13 @@ vi.mock('node:fs', () => ({
   readdirSync: vi.fn(),
 }));
 
+// Mock postgres-reader so filesystem-only tests don't depend on pg
+vi.mock('../../../../src/lib/data/postgres-reader', () => ({
+  getAllWorkstreamsFromPostgres: vi.fn(),
+  getWorkstreamByIdFromPostgres: vi.fn(),
+  getWorkstreamCountsFromPostgres: vi.fn(),
+}));
+
 describe('WorkstreamReader', () => {
   let getAllWorkstreams: any;
   let getWorkstreamById: any;
@@ -16,6 +23,8 @@ describe('WorkstreamReader', () => {
 
   beforeEach(async () => {
     vi.resetModules();
+    // Ensure MG_POSTGRES_URL is not set so filesystem path is used
+    delete process.env.MG_POSTGRES_URL;
     fs = await import('node:fs');
     // @ts-expect-error - module not implemented yet
     const module = await import('../../../../src/lib/data/workstream-reader');
@@ -26,7 +35,7 @@ describe('WorkstreamReader', () => {
 
   describe('getAllWorkstreams', () => {
     describe('basic functionality', () => {
-      it('should return WorkstreamSummary array', () => {
+      it('should return WorkstreamSummary array', async () => {
         vi.mocked(fs.existsSync).mockReturnValue(true);
         vi.mocked(fs.readdirSync).mockReturnValue(['ws-1.json'] as any);
         vi.mocked(fs.readFileSync).mockReturnValue(JSON.stringify({
@@ -36,7 +45,7 @@ describe('WorkstreamReader', () => {
           phase: 'step_2_implementation'
         }));
 
-        const result = getAllWorkstreams('/memory/path');
+        const result = await getAllWorkstreams('/memory/path');
 
         expect(Array.isArray(result)).toBe(true);
         expect(result.length).toBeGreaterThan(0);
@@ -45,24 +54,24 @@ describe('WorkstreamReader', () => {
         expect(result[0]).toHaveProperty('status');
       });
 
-      it('should return empty array for empty directory', () => {
+      it('should return empty array for empty directory', async () => {
         vi.mocked(fs.existsSync).mockReturnValue(true);
         vi.mocked(fs.readdirSync).mockReturnValue([] as any);
 
-        const result = getAllWorkstreams('/memory/path');
+        const result = await getAllWorkstreams('/memory/path');
 
         expect(result).toEqual([]);
       });
 
-      it('should return empty array for non-existent directory', () => {
+      it('should return empty array for non-existent directory', async () => {
         vi.mocked(fs.existsSync).mockReturnValue(false);
 
-        const result = getAllWorkstreams('/nonexistent/path');
+        const result = await getAllWorkstreams('/nonexistent/path');
 
         expect(result).toEqual([]);
       });
 
-      it('should handle multiple workstreams', () => {
+      it('should handle multiple workstreams', async () => {
         vi.mocked(fs.existsSync).mockReturnValue(true);
         vi.mocked(fs.readdirSync).mockReturnValue([
           'ws-1.json',
@@ -78,14 +87,14 @@ describe('WorkstreamReader', () => {
           });
         });
 
-        const result = getAllWorkstreams('/memory/path');
+        const result = await getAllWorkstreams('/memory/path');
 
         expect(result.length).toBe(3);
       });
     });
 
     describe('status normalization - complete variants', () => {
-      it('should normalize phase: "complete" to WorkstreamStatus.complete', () => {
+      it('should normalize phase: "complete" to WorkstreamStatus.complete', async () => {
         vi.mocked(fs.existsSync).mockReturnValue(true);
         vi.mocked(fs.readdirSync).mockReturnValue(['ws-1.json'] as any);
         vi.mocked(fs.readFileSync).mockReturnValue(JSON.stringify({
@@ -94,12 +103,12 @@ describe('WorkstreamReader', () => {
           phase: 'complete'
         }));
 
-        const result = getAllWorkstreams('/memory/path');
+        const result = await getAllWorkstreams('/memory/path');
 
         expect(result[0].status).toBe('complete');
       });
 
-      it('should normalize status: "merged" to WorkstreamStatus.complete', () => {
+      it('should normalize status: "merged" to WorkstreamStatus.complete', async () => {
         vi.mocked(fs.existsSync).mockReturnValue(true);
         vi.mocked(fs.readdirSync).mockReturnValue(['ws-1.json'] as any);
         vi.mocked(fs.readFileSync).mockReturnValue(JSON.stringify({
@@ -108,12 +117,12 @@ describe('WorkstreamReader', () => {
           status: 'merged'
         }));
 
-        const result = getAllWorkstreams('/memory/path');
+        const result = await getAllWorkstreams('/memory/path');
 
         expect(result[0].status).toBe('complete');
       });
 
-      it('should normalize status: "success" to WorkstreamStatus.complete', () => {
+      it('should normalize status: "success" to WorkstreamStatus.complete', async () => {
         vi.mocked(fs.existsSync).mockReturnValue(true);
         vi.mocked(fs.readdirSync).mockReturnValue(['ws-1.json'] as any);
         vi.mocked(fs.readFileSync).mockReturnValue(JSON.stringify({
@@ -122,12 +131,12 @@ describe('WorkstreamReader', () => {
           status: 'success'
         }));
 
-        const result = getAllWorkstreams('/memory/path');
+        const result = await getAllWorkstreams('/memory/path');
 
         expect(result[0].status).toBe('complete');
       });
 
-      it('should normalize status: "done" to WorkstreamStatus.complete', () => {
+      it('should normalize status: "done" to WorkstreamStatus.complete', async () => {
         vi.mocked(fs.existsSync).mockReturnValue(true);
         vi.mocked(fs.readdirSync).mockReturnValue(['ws-1.json'] as any);
         vi.mocked(fs.readFileSync).mockReturnValue(JSON.stringify({
@@ -136,14 +145,14 @@ describe('WorkstreamReader', () => {
           status: 'done'
         }));
 
-        const result = getAllWorkstreams('/memory/path');
+        const result = await getAllWorkstreams('/memory/path');
 
         expect(result[0].status).toBe('complete');
       });
     });
 
     describe('status normalization - blocked variants', () => {
-      it('should normalize blocked_reason presence to WorkstreamStatus.blocked', () => {
+      it('should normalize blocked_reason presence to WorkstreamStatus.blocked', async () => {
         vi.mocked(fs.existsSync).mockReturnValue(true);
         vi.mocked(fs.readdirSync).mockReturnValue(['ws-1.json'] as any);
         vi.mocked(fs.readFileSync).mockReturnValue(JSON.stringify({
@@ -153,12 +162,12 @@ describe('WorkstreamReader', () => {
           blocked_reason: 'Waiting for API'
         }));
 
-        const result = getAllWorkstreams('/memory/path');
+        const result = await getAllWorkstreams('/memory/path');
 
         expect(result[0].status).toBe('blocked');
       });
 
-      it('should normalize status: "blocked" to WorkstreamStatus.blocked', () => {
+      it('should normalize status: "blocked" to WorkstreamStatus.blocked', async () => {
         vi.mocked(fs.existsSync).mockReturnValue(true);
         vi.mocked(fs.readdirSync).mockReturnValue(['ws-1.json'] as any);
         vi.mocked(fs.readFileSync).mockReturnValue(JSON.stringify({
@@ -167,12 +176,12 @@ describe('WorkstreamReader', () => {
           status: 'blocked'
         }));
 
-        const result = getAllWorkstreams('/memory/path');
+        const result = await getAllWorkstreams('/memory/path');
 
         expect(result[0].status).toBe('blocked');
       });
 
-      it('should prioritize blocked_reason over status field', () => {
+      it('should prioritize blocked_reason over status field', async () => {
         vi.mocked(fs.existsSync).mockReturnValue(true);
         vi.mocked(fs.readdirSync).mockReturnValue(['ws-1.json'] as any);
         vi.mocked(fs.readFileSync).mockReturnValue(JSON.stringify({
@@ -182,14 +191,14 @@ describe('WorkstreamReader', () => {
           blocked_reason: 'Dependencies not met'
         }));
 
-        const result = getAllWorkstreams('/memory/path');
+        const result = await getAllWorkstreams('/memory/path');
 
         expect(result[0].status).toBe('blocked');
       });
     });
 
     describe('status normalization - in_progress variants', () => {
-      it('should normalize status: "in_progress" correctly', () => {
+      it('should normalize status: "in_progress" correctly', async () => {
         vi.mocked(fs.existsSync).mockReturnValue(true);
         vi.mocked(fs.readdirSync).mockReturnValue(['ws-1.json'] as any);
         vi.mocked(fs.readFileSync).mockReturnValue(JSON.stringify({
@@ -198,12 +207,12 @@ describe('WorkstreamReader', () => {
           status: 'in_progress'
         }));
 
-        const result = getAllWorkstreams('/memory/path');
+        const result = await getAllWorkstreams('/memory/path');
 
         expect(result[0].status).toBe('in_progress');
       });
 
-      it('should normalize status: "active" to in_progress', () => {
+      it('should normalize status: "active" to in_progress', async () => {
         vi.mocked(fs.existsSync).mockReturnValue(true);
         vi.mocked(fs.readdirSync).mockReturnValue(['ws-1.json'] as any);
         vi.mocked(fs.readFileSync).mockReturnValue(JSON.stringify({
@@ -212,12 +221,12 @@ describe('WorkstreamReader', () => {
           status: 'active'
         }));
 
-        const result = getAllWorkstreams('/memory/path');
+        const result = await getAllWorkstreams('/memory/path');
 
         expect(result[0].status).toBe('in_progress');
       });
 
-      it('should normalize phase: "step_2_implementation" to in_progress', () => {
+      it('should normalize phase: "step_2_implementation" to in_progress', async () => {
         vi.mocked(fs.existsSync).mockReturnValue(true);
         vi.mocked(fs.readdirSync).mockReturnValue(['ws-1.json'] as any);
         vi.mocked(fs.readFileSync).mockReturnValue(JSON.stringify({
@@ -226,14 +235,14 @@ describe('WorkstreamReader', () => {
           phase: 'step_2_implementation'
         }));
 
-        const result = getAllWorkstreams('/memory/path');
+        const result = await getAllWorkstreams('/memory/path');
 
         expect(result[0].status).toBe('in_progress');
       });
     });
 
     describe('status normalization - unknown/unrecognized', () => {
-      it('should normalize unrecognized status to "unknown"', () => {
+      it('should normalize unrecognized status to "unknown"', async () => {
         vi.mocked(fs.existsSync).mockReturnValue(true);
         vi.mocked(fs.readdirSync).mockReturnValue(['ws-1.json'] as any);
         vi.mocked(fs.readFileSync).mockReturnValue(JSON.stringify({
@@ -242,12 +251,12 @@ describe('WorkstreamReader', () => {
           status: 'weird_status'
         }));
 
-        const result = getAllWorkstreams('/memory/path');
+        const result = await getAllWorkstreams('/memory/path');
 
         expect(result[0].status).toBe('unknown');
       });
 
-      it('should handle missing status and phase fields', () => {
+      it('should handle missing status and phase fields', async () => {
         vi.mocked(fs.existsSync).mockReturnValue(true);
         vi.mocked(fs.readdirSync).mockReturnValue(['ws-1.json'] as any);
         vi.mocked(fs.readFileSync).mockReturnValue(JSON.stringify({
@@ -255,12 +264,12 @@ describe('WorkstreamReader', () => {
           name: 'Test'
         }));
 
-        const result = getAllWorkstreams('/memory/path');
+        const result = await getAllWorkstreams('/memory/path');
 
         expect(result[0].status).toBe('unknown');
       });
 
-      it('should handle null status', () => {
+      it('should handle null status', async () => {
         vi.mocked(fs.existsSync).mockReturnValue(true);
         vi.mocked(fs.readdirSync).mockReturnValue(['ws-1.json'] as any);
         vi.mocked(fs.readFileSync).mockReturnValue(JSON.stringify({
@@ -269,12 +278,12 @@ describe('WorkstreamReader', () => {
           status: null
         }));
 
-        const result = getAllWorkstreams('/memory/path');
+        const result = await getAllWorkstreams('/memory/path');
 
         expect(result[0].status).toBe('unknown');
       });
 
-      it('should handle empty string status', () => {
+      it('should handle empty string status', async () => {
         vi.mocked(fs.existsSync).mockReturnValue(true);
         vi.mocked(fs.readdirSync).mockReturnValue(['ws-1.json'] as any);
         vi.mocked(fs.readFileSync).mockReturnValue(JSON.stringify({
@@ -283,14 +292,14 @@ describe('WorkstreamReader', () => {
           status: ''
         }));
 
-        const result = getAllWorkstreams('/memory/path');
+        const result = await getAllWorkstreams('/memory/path');
 
         expect(result[0].status).toBe('unknown');
       });
     });
 
     describe('malformed workstream files', () => {
-      it('should skip malformed workstream files (not thrown)', () => {
+      it('should skip malformed workstream files (not thrown)', async () => {
         vi.mocked(fs.existsSync).mockReturnValue(true);
         vi.mocked(fs.readdirSync).mockReturnValue(['ws-1.json', 'ws-2.json'] as any);
         vi.mocked(fs.readFileSync).mockImplementation((path: string) => {
@@ -304,13 +313,13 @@ describe('WorkstreamReader', () => {
           });
         });
 
-        const result = getAllWorkstreams('/memory/path');
+        const result = await getAllWorkstreams('/memory/path');
 
         expect(result.length).toBe(1);
         expect(result[0].workstream_id).toBe('WS-2');
       });
 
-      it('should skip files missing required fields', () => {
+      it('should skip files missing required fields', async () => {
         vi.mocked(fs.existsSync).mockReturnValue(true);
         vi.mocked(fs.readdirSync).mockReturnValue(['ws-1.json', 'ws-2.json'] as any);
         vi.mocked(fs.readFileSync).mockImplementation((path: string) => {
@@ -324,23 +333,23 @@ describe('WorkstreamReader', () => {
           });
         });
 
-        const result = getAllWorkstreams('/memory/path');
+        const result = await getAllWorkstreams('/memory/path');
 
         expect(result.length).toBe(1);
         expect(result[0].workstream_id).toBe('WS-2');
       });
 
-      it('should handle all files being malformed', () => {
+      it('should handle all files being malformed', async () => {
         vi.mocked(fs.existsSync).mockReturnValue(true);
         vi.mocked(fs.readdirSync).mockReturnValue(['ws-1.json', 'ws-2.json'] as any);
         vi.mocked(fs.readFileSync).mockReturnValue('{ invalid }');
 
-        const result = getAllWorkstreams('/memory/path');
+        const result = await getAllWorkstreams('/memory/path');
 
         expect(result).toEqual([]);
       });
 
-      it('should handle read errors on individual files', () => {
+      it('should handle read errors on individual files', async () => {
         vi.mocked(fs.existsSync).mockReturnValue(true);
         vi.mocked(fs.readdirSync).mockReturnValue(['ws-1.json', 'ws-2.json'] as any);
         vi.mocked(fs.readFileSync).mockImplementation((path: string) => {
@@ -354,7 +363,7 @@ describe('WorkstreamReader', () => {
           });
         });
 
-        const result = getAllWorkstreams('/memory/path');
+        const result = await getAllWorkstreams('/memory/path');
 
         expect(result.length).toBe(1);
         expect(result[0].workstream_id).toBe('WS-2');
@@ -363,7 +372,7 @@ describe('WorkstreamReader', () => {
   });
 
   describe('getWorkstreamById', () => {
-    it('should return WorkstreamDetail for valid ID', () => {
+    it('should return WorkstreamDetail for valid ID', async () => {
       vi.mocked(fs.existsSync).mockReturnValue(true);
       vi.mocked(fs.readFileSync).mockReturnValue(JSON.stringify({
         workstream_id: 'WS-1',
@@ -374,7 +383,7 @@ describe('WorkstreamReader', () => {
         tests: { total: 10, passing: 5, failing: 5 }
       }));
 
-      const result = getWorkstreamById('WS-1', '/memory/path');
+      const result = await getWorkstreamById('WS-1', '/memory/path');
 
       expect(result).not.toBeNull();
       expect(result?.workstream_id).toBe('WS-1');
@@ -382,24 +391,24 @@ describe('WorkstreamReader', () => {
       expect(result).toHaveProperty('tests');
     });
 
-    it('should return null for non-existent ID', () => {
+    it('should return null for non-existent ID', async () => {
       vi.mocked(fs.existsSync).mockReturnValue(false);
 
-      const result = getWorkstreamById('WS-NONEXISTENT', '/memory/path');
+      const result = await getWorkstreamById('WS-NONEXISTENT', '/memory/path');
 
       expect(result).toBeNull();
     });
 
-    it('should return null for malformed file', () => {
+    it('should return null for malformed file', async () => {
       vi.mocked(fs.existsSync).mockReturnValue(true);
       vi.mocked(fs.readFileSync).mockReturnValue('{ invalid }');
 
-      const result = getWorkstreamById('WS-1', '/memory/path');
+      const result = await getWorkstreamById('WS-1', '/memory/path');
 
       expect(result).toBeNull();
     });
 
-    it('should handle multiple file name patterns', () => {
+    it('should handle multiple file name patterns', async () => {
       // Should try: workstream-WS-1-state.json, WS-1-state.json, WS-1.json
       vi.mocked(fs.existsSync).mockImplementation((path: string) => {
         return (path as string).includes('workstream-WS-1-state.json');
@@ -410,12 +419,12 @@ describe('WorkstreamReader', () => {
         status: 'in_progress'
       }));
 
-      const result = getWorkstreamById('WS-1', '/memory/path');
+      const result = await getWorkstreamById('WS-1', '/memory/path');
 
       expect(result).not.toBeNull();
     });
 
-    it('should normalize status in detail view', () => {
+    it('should normalize status in detail view', async () => {
       vi.mocked(fs.existsSync).mockReturnValue(true);
       vi.mocked(fs.readFileSync).mockReturnValue(JSON.stringify({
         workstream_id: 'WS-1',
@@ -423,14 +432,14 @@ describe('WorkstreamReader', () => {
         status: 'merged'
       }));
 
-      const result = getWorkstreamById('WS-1', '/memory/path');
+      const result = await getWorkstreamById('WS-1', '/memory/path');
 
       expect(result?.status).toBe('complete');
     });
   });
 
   describe('getWorkstreamCounts', () => {
-    it('should return correct tallies', () => {
+    it('should return correct tallies', async () => {
       vi.mocked(fs.existsSync).mockReturnValue(true);
       vi.mocked(fs.readdirSync).mockReturnValue([
         'ws-1.json',
@@ -449,7 +458,7 @@ describe('WorkstreamReader', () => {
         });
       });
 
-      const result = getWorkstreamCounts('/memory/path');
+      const result = await getWorkstreamCounts('/memory/path');
 
       expect(result).toHaveProperty('total', 5);
       expect(result).toHaveProperty('in_progress', 2);
@@ -458,11 +467,11 @@ describe('WorkstreamReader', () => {
       expect(result).toHaveProperty('unknown', 1);
     });
 
-    it('should return zero counts for empty directory', () => {
+    it('should return zero counts for empty directory', async () => {
       vi.mocked(fs.existsSync).mockReturnValue(true);
       vi.mocked(fs.readdirSync).mockReturnValue([] as any);
 
-      const result = getWorkstreamCounts('/memory/path');
+      const result = await getWorkstreamCounts('/memory/path');
 
       expect(result.total).toBe(0);
       expect(result.in_progress).toBe(0);
@@ -471,7 +480,7 @@ describe('WorkstreamReader', () => {
       expect(result.unknown).toBe(0);
     });
 
-    it('should skip malformed files in counts', () => {
+    it('should skip malformed files in counts', async () => {
       vi.mocked(fs.existsSync).mockReturnValue(true);
       vi.mocked(fs.readdirSync).mockReturnValue(['ws-1.json', 'ws-2.json'] as any);
       vi.mocked(fs.readFileSync).mockImplementation((path: string) => {
@@ -485,7 +494,7 @@ describe('WorkstreamReader', () => {
         });
       });
 
-      const result = getWorkstreamCounts('/memory/path');
+      const result = await getWorkstreamCounts('/memory/path');
 
       expect(result.total).toBe(1);
       expect(result.in_progress).toBe(1);

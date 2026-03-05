@@ -57,8 +57,27 @@ if ! command -v psql &>/dev/null; then
     error "psql not found. Install via: brew install postgresql (macOS) or apt install postgresql-client (Linux)"
 fi
 
+# Resolve postgres URL: env var > config file > hardcoded default
+_resolve_pg_url_for_setup() {
+    if [[ -n "${MG_POSTGRES_URL:-}" ]]; then
+        echo "$MG_POSTGRES_URL"
+        return
+    fi
+    local config_dir="${MG_CONFIG_DIR:-${XDG_CONFIG_HOME:-$HOME/.config}/miniature-guacamole}"
+    local config_file="$config_dir/config.json"
+    if [[ -f "$config_file" ]]; then
+        local url
+        url=$(jq -r '.postgres_url // ""' "$config_file" 2>/dev/null || echo "")
+        if [[ -n "$url" ]]; then
+            echo "$url"
+            return
+        fi
+    fi
+    echo "postgresql://mg:mg@localhost:5432/mg_memory"
+}
+
 # Connection string
-MG_POSTGRES_URL="${MG_POSTGRES_URL:-postgresql://mg:mg@localhost:5432/mg_memory}"
+MG_POSTGRES_URL="${MG_POSTGRES_URL:-$(_resolve_pg_url_for_setup)}"
 
 # Locate migration file relative to this script
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"

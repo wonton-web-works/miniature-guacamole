@@ -58,12 +58,29 @@ const getTrackedFiles = (): string[] => {
   return output ? output.split('\n').filter(Boolean) : [];
 };
 
+// File path prefixes excluded from pattern scans.
+// These files contain the patterns as string/regex literals in test code,
+// not as actual secrets or placeholders.
+const SCAN_EXCLUDED_PREFIXES = [
+  'tests/integration/',   // test assertions contain the patterns as string literals
+  'tests/scripts/',       // BATS tests use credential regex patterns to test detection logic
+  'daemon/tests/',        // daemon unit tests use realistic-looking fixture values (e.g. ghp_AbCd...)
+];
+
 // Helper to find patterns in tracked files
-const findPatternInTrackedFiles = (pattern: string | RegExp): Array<{ file: string; line: number; match: string }> => {
+const findPatternInTrackedFiles = (
+  pattern: string | RegExp,
+  excludePatterns: string[] = SCAN_EXCLUDED_PREFIXES
+): Array<{ file: string; line: number; match: string }> => {
   const trackedFiles = getTrackedFiles();
   const matches: Array<{ file: string; line: number; match: string }> = [];
 
   for (const file of trackedFiles) {
+    // Skip files that contain the patterns as test literals, not real occurrences
+    if (excludePatterns.some(prefix => file.startsWith(prefix))) {
+      continue;
+    }
+
     const fullPath = path.join(PROJECT_ROOT, file);
     if (!fs.existsSync(fullPath) || fs.statSync(fullPath).isDirectory()) {
       continue;
@@ -372,10 +389,13 @@ describe('WS-OSS-5: Launch Validation & Go-Live', () => {
      * Then: No GitHub tokens should be in tracked files
      */
     it('should have no GitHub tokens in tracked files', () => {
+      // Only match actual token values, not env var references like GITHUB_TOKEN or
+      // placeholder strings like ghp_YOUR_GITHUB_TOKEN. The loose github[_-]?token/i
+      // pattern produces false positives on daemon config and installer code that
+      // legitimately reference GITHUB_TOKEN as an environment variable name.
       const patterns = [
-        /ghp_[a-zA-Z0-9]{36}/,  // GitHub Personal Access Token
-        /ghs_[a-zA-Z0-9]{36}/,  // GitHub Server-to-Server Token
-        /github[_-]?token/i
+        /ghp_[a-zA-Z0-9]{36}/,  // GitHub Personal Access Token (36 alphanumeric chars)
+        /ghs_[a-zA-Z0-9]{36}/,  // GitHub Server-to-Server Token (36 alphanumeric chars)
       ];
 
       const allMatches: string[] = [];

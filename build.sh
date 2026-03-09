@@ -132,9 +132,8 @@ cp "$INSTALLER_DIR/uninstall.sh" "$DIST_DIR/"
 cp "$INSTALLER_DIR/web-install.sh" "$DIST_DIR/"
 cp "$INSTALLER_DIR/mg-migrate" "$DIST_DIR/"
 cp "$INSTALLER_DIR/mg-init" "$DIST_DIR/"
-cp "$INSTALLER_DIR/INSTALL-README.md" "$DIST_DIR/"
 cp "$INSTALLER_DIR/QUICK-START.md" "$DIST_DIR/"
-cp "$INSTALLER_DIR/DIST-README.md" "$DIST_DIR/README.md"
+cp "$ROOT_DIR/README.md" "$DIST_DIR/README.md" 2>/dev/null || true
 
 chmod +x "$DIST_DIR/install.sh"
 chmod +x "$DIST_DIR/uninstall.sh"

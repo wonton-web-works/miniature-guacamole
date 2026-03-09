@@ -1,16 +1,17 @@
 # miniature-guacamole Quick Start
 
-## Installation (Choose One)
+## Installation — web-install.sh (curl), local install, or mg-init
+
+### Web Install (Recommended)
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/rivermark-research/miniature-guacamole/main/src/installer/web-install.sh | bash
+```
 
 ### Local Install
 ```bash
 cd /path/to/your/project
 /path/to/dist/miniature-guacamole/install.sh
-```
-
-### Web Install
-```bash
-curl -fsSL https://raw.githubusercontent.com/rivermark-research/miniature-guacamole/main/src/installer/web-install.sh | bash
 ```
 
 ### Config Cache + mg-init
@@ -23,6 +24,16 @@ export PATH="$PATH:~/.claude/.mg-configs/scripts"
 cd /path/to/project
 mg-init
 ```
+
+## Launch Claude Code
+
+After install, navigate to your project and start Claude Code:
+
+```bash
+claude
+```
+
+# Output: Claude Code launches with all skills and agents available — type /help to see them
 
 ## Common Tasks
 
@@ -45,6 +56,16 @@ cat .claude/MG_INSTALL.json
 ```bash
 /path/to/dist/miniature-guacamole/uninstall.sh --purge
 ```
+
+### File-Only Mode (Skip Database)
+
+If you don't need a database or are working offline, install with `--no-db`:
+
+```bash
+./install.sh --no-db
+```
+
+This skips database setup and runs entirely on local files.
 
 ## What's Installed
 
@@ -86,17 +107,15 @@ Task(subagent_type="dev", prompt="Implement auth")
 
 ## Key Files
 
-- **INSTALL-README.md** - Full installation guide
 - **settings.json** - Permissions (customize as needed)
 - **CLAUDE.md** - Framework documentation
 - **MG_INSTALL.json** - Version and metadata
 
 ## Need Help?
 
-1. Read `INSTALL-README.md` for detailed guide
-2. Run `mg-help` for script documentation
-3. Check `.claude/shared/` for protocols
-4. See `.claude/agents/*/agent.md` for agent details
+1. Run `mg-help` for script documentation
+2. Check `.claude/shared/` for protocols
+3. See `.claude/agents/*/agent.md` for agent details
 
 ## Data Isolation
 
@@ -111,6 +130,7 @@ Task(subagent_type="dev", prompt="Implement auth")
 |---------|---------|
 | `install.sh` | Install framework |
 | `install.sh --force` | Upgrade framework |
+| `install.sh --no-db` | Install without database (file-only mode) |
 | `install.sh --config-cache` | Install global cache |
 | `uninstall.sh` | Remove framework (keep data) |
 | `uninstall.sh --purge` | Remove everything |

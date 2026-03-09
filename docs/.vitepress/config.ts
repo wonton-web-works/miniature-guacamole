@@ -51,7 +51,7 @@ export default defineConfig({
         items: [
           { text: 'What is This?', link: '/' },
           { text: 'Getting Started', link: '/getting-started' },
-          { text: 'Quick Start Examples', link: '/getting-started#quick-start-examples' }
+          { text: 'Installation Methods', link: '/getting-started#installation-methods' }
         ]
       },
       {
@@ -60,6 +60,12 @@ export default defineConfig({
           { text: 'Architecture', link: '/architecture' },
           { text: 'Agent Reference', link: '/agents' },
           { text: 'Development Workflow', link: '/workflows' }
+        ]
+      },
+      {
+        text: 'Reference',
+        items: [
+          { text: 'Audit Logging', link: '/audit-logging' }
         ]
       },
       {

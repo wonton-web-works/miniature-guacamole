@@ -183,7 +183,7 @@ The installer creates a `.claude/` directory in your project with:
 - **agents/** - 19 specialized agent roles
 - **skills/** - 16 team collaboration workflows
 - **shared/** - 6 protocol documents
-- **scripts/** - 11 mg-* utility commands
+- **scripts/** - 17 mg-* utility commands
 - **hooks/** - Project initialization and safety checks
 - **memory/** - Agent memory directory (gitignored)
 - **settings.json** - Project-level permissions
@@ -314,6 +314,7 @@ All 16 skills use the `mg-` prefix. Use them in Claude Code chat:
 | **API Designer** | `/api-designer` | API specifications and documentation |
 | **Technical Writer** | `/technical-writer` | Documentation and guides |
 | **Deployment Engineer** | `/deployment-engineer` | Handles merges and releases |
+| **Copywriter** | `/copywriter` | Brand-aligned copywriting for marketing and user-facing content |
 
 ### System Agents
 | Agent | Slash Command | Role |
@@ -395,16 +396,24 @@ your-project/
     │   ├── tdd-workflow.md
     │   └── visual-formatting.md
     │
-    ├── scripts/                     # 11 mg-* utilities
-    │   ├── mg-memory-read
-    │   ├── mg-memory-write
-    │   ├── mg-workstream-status
-    │   ├── mg-workstream-create
-    │   ├── mg-workstream-transition
+    ├── scripts/                     # 17 mg-* utilities
+    │   ├── mg-config
+    │   ├── mg-db-seed
+    │   ├── mg-db-setup
+    │   ├── mg-db-sync
+    │   ├── mg-diff-summary
     │   ├── mg-gate-check
     │   ├── mg-git-summary
-    │   ├── mg-diff-summary
-    │   └── mg-help
+    │   ├── mg-help
+    │   ├── mg-memory-read
+    │   ├── mg-memory-write
+    │   ├── mg-migrate
+    │   ├── mg-postgres
+    │   ├── mg-settings-check
+    │   ├── mg-util
+    │   ├── mg-workstream-create
+    │   ├── mg-workstream-status
+    │   └── mg-workstream-transition
     │
     ├── hooks/                       # Project initialization hooks
     │   └── project-init-check.sh
@@ -457,7 +466,7 @@ miniature-guacamole/
 │   │   ├── skills/         # 16 skill definitions
 │   │   ├── shared/         # 6 protocol docs
 │   │   ├── hooks/          # Hook scripts
-│   │   ├── scripts/        # 11 mg-* utilities
+│   │   ├── scripts/        # 17 mg-* utilities
 │   │   ├── settings.json
 │   │   ├── CLAUDE.md
 │   │   └── team-config.*
@@ -586,12 +595,11 @@ const entries = await queryMemory({
 ### File Structure
 ```
 .claude/memory/
-├── shared.json              # Primary shared state
-├── ws-1.json               # Workstream-specific state
-├── ws-2.json
-└── backups/                # Automatic backups
-    ├── shared.json.2026-02-04T10:00:00Z.bak
-    └── shared.json.2026-02-04T11:00:00Z.bak
+├── workstream-{id}-state.json     # Workstream status tracking
+├── tasks-{role}.json              # Task queues per agent role
+├── agent-{name}-decisions.json    # Agent decision records
+├── handoffs-{from}-{to}.json      # Agent-to-agent handoffs
+└── decisions.json                 # Architecture decisions
 ```
 
 ### Features
@@ -920,7 +928,7 @@ MIT
 **Project-Local Architecture** - Each project has own `.claude/` directory with:
 - 19 specialized agents
 - 16 mg-prefixed skills
-- 11 utility scripts
+- 17 utility scripts
 - Complete data isolation
 - CAD workflow with Git workstreams
 
@@ -931,13 +939,12 @@ See [CHANGELOG.md](CHANGELOG.md) for complete version history.
 ## Documentation Index
 
 - **Quick Start**: This file (README.md)
-- **Agent System**: [.claude/README.md](.claude/README.md)
-- **Handoff Protocol**: [.claude/shared/handoff-protocol.md](.claude/shared/handoff-protocol.md)
-- **Development Workflow**: [.claude/shared/development-workflow.md](.claude/shared/development-workflow.md)
+- **Agent System**: [src/framework/CLAUDE.md](src/framework/CLAUDE.md)
+- **Handoff Protocol**: [src/framework/shared/handoff-protocol.md](src/framework/shared/handoff-protocol.md)
+- **Development Workflow**: [src/framework/shared/development-workflow.md](src/framework/shared/development-workflow.md)
 - **Shared Memory API**: [src/memory/README.md](src/memory/README.md)
 - **Test Guide**: [tests/README.md](tests/README.md)
-- **Implementation Plan**: [.claude/PLAN.md](.claude/PLAN.md)
 
 ---
 
-**Built with Claude Code** | [Report Issues](https://github.com/rivermark-research/miniature-guacamole/issues) | [Documentation](.claude/README.md)
+**Built with Claude Code** | [Report Issues](https://github.com/rivermark-research/miniature-guacamole/issues) | [Documentation](src/framework/CLAUDE.md)

@@ -2,17 +2,60 @@
 
 ## Prerequisites
 
-Before installing miniature-guacamole, ensure you have:
-
 - [Claude Code CLI](https://claude.ai/code) installed and authenticated
-- Git (for cloning the repository)
-- Node.js 20+ and npm (for the shared memory layer)
+- Bash 4.0+
+- Git
+- Docker (optional — for auto-provisioned Postgres)
+- Node.js 20+ and npm (optional — for TypeScript memory layer development)
 
-## Installation
+## Quick Start (3 commands)
 
-miniature-guacamole uses project-local installation. Each project gets its own `.claude/` directory with the framework files.
+```bash
+# 1. Install
+curl -fsSL https://raw.githubusercontent.com/rivermark-research/miniature-guacamole/main/src/installer/web-install.sh | bash
 
-### Method 1: Install from Source
+# 2. Start Claude Code
+claude
+
+# 3. Run a workflow
+/mg-assess Build a user authentication system
+```
+
+That's it. Claude Code now has all 16 skills and 19 agents available.
+
+## Installation Methods
+
+### Method 1: Web Install (Recommended)
+
+One-liner using `web-install.sh` — downloads and installs the latest release:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/rivermark-research/miniature-guacamole/main/src/installer/web-install.sh | bash
+```
+
+Or pin to a specific version:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/rivermark-research/miniature-guacamole/main/src/installer/web-install.sh -o mg-web-install.sh
+chmod +x mg-web-install.sh
+./mg-web-install.sh --version v1.0.0 /path/to/project
+```
+
+### Method 2: Tarball (Offline / CI)
+
+Use this when you can't hit the network at install time, or in CI pipelines:
+
+```bash
+# Download the latest release
+curl -fsSL https://github.com/rivermark-research/miniature-guacamole/releases/latest/download/miniature-guacamole.tar.gz -o mg.tar.gz
+tar -xzf mg.tar.gz
+cd miniature-guacamole
+
+# Install to your project
+./install.sh /path/to/your-project
+```
+
+### Method 3: From Source
 
 ```bash
 # Clone the repository
@@ -22,240 +65,164 @@ cd miniature-guacamole
 # Build the distribution
 ./build.sh
 
-# Install to your project
+# Install to a project
 dist/miniature-guacamole/install.sh /path/to/your-project
 ```
 
-### Method 2: Install from GitHub Release
+## Project Initialization
 
-```bash
-# Download and extract
-curl -fsSL https://github.com/rivermark-research/miniature-guacamole/releases/latest/download/miniature-guacamole.tar.gz | tar -xz
-cd miniature-guacamole
+### mg-init
 
-# Install to your project
-./install.sh /path/to/your-project
+After installing, run `/mg-init` in Claude Code to initialize your project:
+
+```
+/mg-init
 ```
 
-### Method 3: Web Install (One-liner)
+What it does:
+- Creates `.claude/memory/` — the project-local agent state directory
+- Creates `.claude/CLAUDE.md` — project-specific context for agents
+- Auto-provisions Postgres if Docker is available (`mg-postgres start`)
+- Runs `mg-migrate` to sync any existing memory files to the database
+
+You can also run it from the command line:
 
 ```bash
-cd /path/to/your-project
-curl -fsSL https://raw.githubusercontent.com/rivermark-research/miniature-guacamole/main/src/installer/web-install.sh | bash
+mg-init /path/to/project
 ```
 
-### What Gets Installed
+Or pin to a specific version:
 
-Installation creates `.claude/` in your project:
+```bash
+mg-init --version v1.0.0 /path/to/project
+```
+
+### File-Only Mode (--no-db)
+
+Skip database setup entirely — useful for offline environments, CI, or projects that don't need cross-agent persistent state:
+
+```bash
+# During install
+./install.sh --no-db /path/to/your-project
+
+# Or during project init
+mg-init --no-db
+```
+
+With `--no-db`, all agent memory stays in local JSON files under `.claude/memory/`. Everything still works — you just don't get the Postgres-backed query layer.
+
+## What Gets Installed
+
+The installer creates a `.claude/` directory in your project:
 
 ```
 your-project/
 └── .claude/
-    ├── agents/           # 19 specialized roles
-    ├── skills/           # 16 collaboration workflows
-    ├── shared/           # Protocol documents
-    ├── scripts/          # mg-* utilities
-    ├── hooks/            # Safety and initialization
+    ├── agents/           # 19 specialized agent roles
+    ├── skills/           # 16 team collaboration workflows
+    ├── shared/           # 6 protocol documents
+    ├── scripts/          # 17 mg-* utility commands
+    ├── hooks/            # Project initialization and safety checks
     ├── memory/           # Agent state (gitignored)
-    ├── settings.json     # Project permissions
-    └── CLAUDE.md         # Framework docs
+    ├── settings.json     # Project-level permissions
+    ├── CLAUDE.md         # Framework documentation
+    ├── team-config.yaml  # Framework configuration
+    └── MG_INSTALL.json   # Installation metadata
 ```
 
-## Verifying Installation
+## Verify Installation
 
 ```bash
-# Check installed version
-cat .claude/MG_INSTALL.json
+# Check directory structure
+ls .claude/
 
 # List available agents
 ls .claude/agents/
 
-# List available skills
-ls .claude/skills/
+# List available scripts
+ls .claude/scripts/
 
 # Test a script
 .claude/scripts/mg-help
 ```
 
-## Uninstalling
-
-```bash
-# Remove framework, preserve memory
-/path/to/miniature-guacamole/dist/miniature-guacamole/uninstall.sh
-
-# Remove everything (DESTRUCTIVE)
-/path/to/miniature-guacamole/dist/miniature-guacamole/uninstall.sh --purge
-```
-
-## Quick Start Examples
-
-### Example 1: Assess a New Feature
+In Claude Code:
 
 ```
-/mg-assess Add user authentication system
+/help
+# Should show all available skills
+
+/mg-assess What should we build next?
+# Should invoke the feature assessment workflow
 ```
 
-The feature assessment skill will:
-1. Ask clarifying questions about the feature
-2. Spawn the Product Owner for strategic fit analysis
-3. Spawn the Product Manager for scope breakdown
-4. Spawn the CTO for technical feasibility
-5. Synthesize a GO/NO-GO recommendation with next steps
+## First Workflow
 
-### Example 2: Execute a Workstream
+The standard CAD development cycle looks like this:
 
+**1. Plan the work**
 ```
 /mg-leadership-team Build a user authentication system
 ```
+Output: Executive review + workstream plan (WS-1, WS-2, WS-3, ...)
 
-Leadership team creates executive review and workstream plan:
-- WS-1: Login endpoint
-- WS-2: Password hashing
-- WS-3: Session management
-
-Then execute the first workstream:
-
+**2. Execute a workstream**
 ```
 /mg-build Execute WS-1: Add login endpoint
 ```
+QA writes failing tests → Dev implements → QA verifies 99% coverage → Staff Engineer or mechanical gate review
 
-This runs the full CAD cycle:
-1. QA Engineer writes failing tests (misuse-first ordering)
-2. Dev implements code to pass tests (with artifact bundle)
-3. QA verifies all tests pass with 99% coverage
-4. Workstream classified as MECHANICAL or ARCHITECTURAL
-5. Mechanical gate (automated) or Staff Engineer review
-
-### Example 3: Review and Deploy
-
-After implementation, request leadership review:
-
+**3. Leadership approves**
 ```
 /mg-leadership-team Review WS-1 on branch feature/ws-1-login
 ```
 
-Leadership team (CEO, CTO, Engineering Director) reviews and provides:
-- APPROVED or REQUEST CHANGES decision
-- Specific feedback if changes needed
-
-On approval, merge to main:
-
+**4. Merge**
 ```
 /deployment-engineer Merge feature/ws-1-login
 ```
 
-### Example 4: Invoke Individual Agents
+## Troubleshooting
 
-You can also work directly with individual agents:
+### Agent not found
+
+1. Verify `.claude/` exists in your project root
+2. Check that `skills/` and `agents/` directories are present
+3. Restart Claude Code
+
+### Postgres not starting
+
+If Docker isn't available, mg-init will fall back to file-only mode automatically. To explicitly skip it:
 
 ```bash
-# Strategic planning
-/ceo Review our Q4 product strategy
-
-# Technical architecture
-/cto Evaluate our microservices architecture
-
-# Product management
-/product-owner Prioritize the feature backlog
-
-# Implementation
-/dev Implement user authentication
-/qa Write comprehensive test suite for auth flow
-/design Create mockups for the login experience
-
-# Operations
-/devops-engineer Set up CI/CD pipeline
-/security-engineer Review authentication implementation
+mg-init --no-db
 ```
 
-### Example 5: Team Collaboration
+If you have Docker but it's not running, start it and re-run `mg-init`.
 
-Use team commands for coordinated multi-perspective collaboration:
+### Scripts not executable
 
 ```bash
-# Leadership perspective
-/mg-leadership-team Evaluate build vs buy for payment processing
+chmod +x .claude/scripts/mg-*
+```
 
-# Product perspective
-/mg-spec Define requirements for user onboarding flow
+### Missing Node.js dependencies
 
-# Engineering perspective
-/mg-build Break down and implement authentication feature
+If the TypeScript memory layer fails:
 
-# Design perspective
-/mg-design Create design system for the new dashboard
-
-# Documentation perspective
-/mg-document Document the API endpoints and write user guides
+```bash
+npm install
+npm test  # Verify it works
 ```
 
 ## Next Steps
 
-- Read the [Architecture Guide](/architecture) to understand the agent hierarchy
-- Explore the [Agent Reference](/agents) for detailed role specifications
-- Learn the [Development Workflow](/workflows) for CAD development cycles
-- Check [Contributing](/contributing) to extend the system
-
-## Configuration
-
-### Shared Memory
-
-The shared memory layer stores agent state in `.claude/memory/`:
-
-```
-.claude/memory/
-├── workstream-{id}-state.json     # Workstream status tracking
-├── tasks-{role}.json              # Task queues per agent role
-├── agent-{name}-decisions.json    # Agent decision records
-├── handoffs-{from}-{to}.json      # Agent-to-agent handoffs
-└── decisions.json                 # Architecture decisions
-```
-
-### Audit Logging
-
-Enable audit logging to track token usage and API costs:
-
-Add to `~/.claude/config.json`:
-```json
-{
-  "audit_logging": {
-    "enabled": true
-  }
-}
-```
-
-See [docs/audit-logging.md](https://github.com/rivermark-research/miniature-guacamole/blob/main/docs/audit-logging.md) for full documentation.
-
-## Troubleshooting
-
-### Agent Not Found
-
-If you see "agent not found" errors:
-
-1. Verify `.claude` directory exists in your project root or `~/.claude/`
-2. Check that `skills/` and `agents/` directories are present
-3. Restart Claude Code
-
-### Missing Dependencies
-
-If shared memory features fail:
-
-```bash
-npm install
-npm test  # Verify shared memory layer works
-```
-
-### Permission Issues
-
-If file operations fail:
-
-```bash
-chmod -R 755 .claude/
-chmod -R 755 src/
-```
+- [Workflow Guide](/workflows) - Learn the full CAD development cycle
+- [Architecture Overview](/architecture) - Agent hierarchy, delegation model, memory layer
+- [Agent Reference](/agents) - All 19 agents and their roles
 
 ## Support
 
 - [Report Issues](https://github.com/rivermark-research/miniature-guacamole/issues)
 - [View Documentation](https://rivermarkresearch.github.io/miniature-guacamole/)
-- [Read Contributing Guide](/contributing)
+- [Contributing Guide](/contributing)

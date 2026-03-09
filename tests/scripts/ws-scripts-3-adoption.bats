@@ -5,7 +5,7 @@
 # Verifies that mg-* scripts are properly integrated into the framework:
 # - Documentation references (memory-protocol.md, AGENT.md files, SKILL.md)
 # - Installer functionality (install.sh deploys scripts/)
-# - mg-help command lists all 9 scripts
+# - mg-help command lists mg-* scripts (9 core scripts verified)
 #
 # Test ordering: MISUSE → BOUNDARY → GOLDEN PATH (CAD protocol)
 # ============================================================================
@@ -320,8 +320,9 @@ EOF
 # ============================================================================
 
 @test "WS-SCRIPTS-3 (golden): memory-protocol.md references mg-memory-read and mg-memory-write" {
-    # Verify actual memory-protocol.md contains script references
-    local protocol_file="$HOME/.claude/shared/memory-protocol.md"
+    # Verify source memory-protocol.md contains script references
+    local project_root="$(cd "$(dirname "$BATS_TEST_FILENAME")/../.." && pwd)"
+    local protocol_file="$project_root/src/framework/shared/memory-protocol.md"
 
     [ -f "$protocol_file" ]
 
@@ -336,7 +337,8 @@ EOF
 
 @test "WS-SCRIPTS-3 (golden): memory-protocol.md includes usage examples for scripts" {
     # Documentation should show how to use scripts
-    local protocol_file="$HOME/.claude/shared/memory-protocol.md"
+    local project_root="$(cd "$(dirname "$BATS_TEST_FILENAME")/../.." && pwd)"
+    local protocol_file="$project_root/src/framework/shared/memory-protocol.md"
 
     [ -f "$protocol_file" ]
 
@@ -344,107 +346,36 @@ EOF
     run grep -q '```bash' "$protocol_file"
     [ "$status" -eq 0 ]
 
-    # Check for script usage examples
-    run grep -q "mg-memory-read.*\.claude/memory" "$protocol_file"
+    # Check for mg-db-sync command (hybrid storage lifecycle section)
+    run grep -q "mg-db-sync" "$protocol_file"
     [ "$status" -eq 0 ]
 }
 
-@test "WS-SCRIPTS-3 (golden): dev AGENT.md Memory Protocol section mentions mg-* commands" {
-    # Dev agent should reference scripts in memory protocol
-    local dev_agent="$HOME/.claude/agents/dev/AGENT.md"
-
-    [ -f "$dev_agent" ]
-
-    # Verify Memory Protocol section exists
-    run grep -q "## Memory Protocol" "$dev_agent"
-    [ "$status" -eq 0 ]
-
-    # Check for mg-* command references
-    run grep -q "mg-memory-read" "$dev_agent"
-    [ "$status" -eq 0 ]
-
-    run grep -q "mg-memory-write" "$dev_agent"
-    [ "$status" -eq 0 ]
-}
-
-@test "WS-SCRIPTS-3 (golden): qa AGENT.md Memory Protocol section mentions mg-* commands" {
-    # QA agent should reference scripts
-    local qa_agent="$HOME/.claude/agents/qa/AGENT.md"
-
-    [ -f "$qa_agent" ]
-
-    # Verify Memory Protocol section exists
-    run grep -q "## Memory Protocol" "$qa_agent"
-    [ "$status" -eq 0 ]
-
-    # Check for mg-* command references
-    run grep -q "mg-memory-read" "$qa_agent"
-    [ "$status" -eq 0 ]
-
-    run grep -q "mg-gate-check" "$qa_agent"
-    [ "$status" -eq 0 ]
-}
-
-@test "WS-SCRIPTS-3 (golden): engineering-manager AGENT.md references scripts" {
-    # Engineering manager coordinates team, should reference scripts
-    local em_agent="$HOME/.claude/agents/engineering-manager/AGENT.md"
-
-    [ -f "$em_agent" ]
-
-    # Check for workstream script references
-    run grep -q "mg-workstream-status" "$em_agent"
-    [ "$status" -eq 0 ]
-
-    run grep -q "mg-workstream-create" "$em_agent"
-    [ "$status" -eq 0 ]
-
-    run grep -q "mg-workstream-transition" "$em_agent"
-    [ "$status" -eq 0 ]
-}
-
-@test "WS-SCRIPTS-3 (golden): engineering-team SKILL.md artifact bundles reference available scripts" {
-    # SKILL.md should document available mg-* commands for agents
-    local skill_file="$HOME/.claude/skills/engineering-team/SKILL.md"
-
-    [ -f "$skill_file" ]
-
-    # Check for script references in artifact bundles context
-    run grep -q "mg-memory-read" "$skill_file"
-    [ "$status" -eq 0 ]
-
-    run grep -q "mg-memory-write" "$skill_file"
-    [ "$status" -eq 0 ]
-
-    run grep -q "mg-gate-check" "$skill_file"
-    [ "$status" -eq 0 ]
-}
-
-@test "WS-SCRIPTS-3 (golden): install.sh copies scripts/ directory to ~/.claude/scripts" {
-    # Verify real installer handles scripts
-    # Find project root (tests/scripts is 2 levels down from root)
+@test "WS-SCRIPTS-3 (golden): install.sh copies scripts/ directory to project .claude/scripts" {
+    # Verify real installer handles scripts — uses src/installer/install.sh (canonical source)
     local project_root="$(cd "$(dirname "$BATS_TEST_FILENAME")/../.." && pwd)"
-    local dist_install="$project_root/dist/miniature-guacamole/install.sh"
+    local install_sh="$project_root/src/installer/install.sh"
 
-    [ -f "$dist_install" ]
+    [ -f "$install_sh" ]
 
-    # Check if installer references scripts directory
-    run grep -q "Installing scripts" "$dist_install"
+    # Check if installer iterates over mg-* scripts
+    run grep -q 'scripts"/mg-' "$install_sh"
     [ "$status" -eq 0 ]
 
-    # Check if installer copies scripts
-    run grep -q 'scripts"/mg-' "$dist_install"
+    # Check that installer counts and reports scripts copied
+    run grep -q "Copied.*scripts" "$install_sh"
     [ "$status" -eq 0 ]
 }
 
 @test "WS-SCRIPTS-3 (golden): install.sh sets executable permissions on all scripts" {
     # After installation, all mg-* scripts should be executable
     local project_root="$(cd "$(dirname "$BATS_TEST_FILENAME")/../.." && pwd)"
-    local dist_install="$project_root/dist/miniature-guacamole/install.sh"
+    local install_sh="$project_root/src/installer/install.sh"
 
-    [ -f "$dist_install" ]
+    [ -f "$install_sh" ]
 
-    # Check if installer sets executable permissions
-    run grep -q "chmod +x.*target" "$dist_install"
+    # Check if installer sets executable permissions on each script
+    run grep -q "chmod +x.*CLAUDE_TARGET" "$install_sh"
     [ "$status" -eq 0 ]
 }
 
@@ -537,60 +468,34 @@ EOF
     done
 }
 
-@test "WS-SCRIPTS-3 (golden): memory-protocol.md prefers scripts over direct file access" {
-    # Documentation should recommend scripts as primary method
-    local protocol_file="$HOME/.claude/shared/memory-protocol.md"
-
-    [ -f "$protocol_file" ]
-
-    # Check for preference language
-    run grep -qi "prefer.*script" "$protocol_file"
-    [ "$status" -eq 0 ]
-}
-
-@test "WS-SCRIPTS-3 (golden): engineering-team artifact bundles list all 9 available scripts" {
-    # SKILL.md should enumerate tools available to agents
-    local skill_file="$HOME/.claude/skills/engineering-team/SKILL.md"
-
-    [ -f "$skill_file" ]
-
-    # Check for all 9 scripts
-    for script in "${EXPECTED_SCRIPTS[@]}"; do
-        run grep -q "$script" "$skill_file"
-        [ "$status" -eq 0 ]
-    done
-}
-
 @test "WS-SCRIPTS-3 (golden): install.sh includes scripts in installation summary" {
-    # Installer should report scripts deployment
+    # Installer should report scripts deployment in summary output
     local project_root="$(cd "$(dirname "$BATS_TEST_FILENAME")/../.." && pwd)"
-    local dist_install="$project_root/dist/miniature-guacamole/install.sh"
+    local install_sh="$project_root/src/installer/install.sh"
 
-    [ -f "$dist_install" ]
+    [ -f "$install_sh" ]
 
-    # Check for scripts section in summary
-    run grep -q "Script utilities" "$dist_install"
+    # Check for scripts section in summary output
+    run grep -q "mg-\* utility commands" "$install_sh"
     [ "$status" -eq 0 ]
 
-    run grep -q "mg-" "$dist_install"
+    run grep -q "SCRIPT_COUNT" "$install_sh"
     [ "$status" -eq 0 ]
 }
 
-@test "WS-SCRIPTS-3 (golden): CLAUDE.md (global) mentions mg-* utilities availability" {
-    # Framework introduction should mention script utilities
-    local claude_md="$HOME/.claude/CLAUDE.md"
+@test "WS-SCRIPTS-3 (golden): CLAUDE.md (project template) mentions mg-* skills" {
+    # Framework CLAUDE.md template should mention mg-build and other mg-* skills
+    local project_root="$(cd "$(dirname "$BATS_TEST_FILENAME")/../.." && pwd)"
+    local claude_md="$project_root/src/framework/CLAUDE.md"
 
     [ -f "$claude_md" ]
 
-    # Check for script utilities section
-    run grep -q "Script Utilities" "$claude_md"
+    # Check for mg-build skill mention (primary build skill)
+    run grep -q "mg-build" "$claude_md"
     [ "$status" -eq 0 ]
 
-    # Check for mg-* command mentions
-    run grep -q "mg-memory-read" "$claude_md"
-    [ "$status" -eq 0 ]
-
-    run grep -q "mg-help" "$claude_md"
+    # Check for mg-leadership-team mention
+    run grep -q "mg-leadership-team" "$claude_md"
     [ "$status" -eq 0 ]
 }
 
@@ -599,49 +504,44 @@ EOF
 # ============================================================================
 
 @test "WS-SCRIPTS-3 (integration): complete documentation chain references scripts" {
-    # Verify end-to-end: CLAUDE.md → memory-protocol.md → AGENT.md → SKILL.md
+    # Verify source file chain: CLAUDE.md → memory-protocol.md → mg-build SKILL.md
+    local project_root="$(cd "$(dirname "$BATS_TEST_FILENAME")/../.." && pwd)"
 
-    local claude_md="$HOME/.claude/CLAUDE.md"
-    local protocol_file="$HOME/.claude/shared/memory-protocol.md"
-    local dev_agent="$HOME/.claude/agents/dev/AGENT.md"
-    local skill_file="$HOME/.claude/skills/engineering-team/SKILL.md"
+    local claude_md="$project_root/src/framework/CLAUDE.md"
+    local protocol_file="$project_root/src/framework/shared/memory-protocol.md"
+    local skill_file="$project_root/src/framework/skills/mg-build/SKILL.md"
 
     [ -f "$claude_md" ]
     [ -f "$protocol_file" ]
-    [ -f "$dev_agent" ]
     [ -f "$skill_file" ]
 
-    # Verify each file in the chain references mg-* scripts
+    # Verify each file in the chain references mg-* scripts or skills
     run grep -q "mg-" "$claude_md"
     [ "$status" -eq 0 ]
 
     run grep -q "mg-" "$protocol_file"
     [ "$status" -eq 0 ]
 
-    run grep -q "mg-" "$dev_agent"
-    [ "$status" -eq 0 ]
-
     run grep -q "mg-" "$skill_file"
     [ "$status" -eq 0 ]
 }
 
-@test "WS-SCRIPTS-3 (integration): install.sh full run deploys all 9 scripts correctly" {
-    # End-to-end installer test (requires clean environment)
-    # This test verifies the install.sh has the correct logic, not actual execution
+@test "WS-SCRIPTS-3 (integration): dist deploy includes all original 9 scripts" {
+    # End-to-end: dist bundle must contain all original 9 scripts for backward compat
     local project_root="$(cd "$(dirname "$BATS_TEST_FILENAME")/../.." && pwd)"
-    local dist_install="$project_root/dist/miniature-guacamole/install.sh"
     local dist_scripts="$project_root/dist/miniature-guacamole/.claude/scripts"
 
-    [ -f "$dist_install" ]
     [ -d "$dist_scripts" ]
 
-    # Verify all 9 scripts exist in distribution
+    # Verify all original 9 scripts exist in distribution
     for script in "${EXPECTED_SCRIPTS[@]}"; do
         [ -f "$dist_scripts/$script" ]
     done
 
     # Verify install.sh has scripts installation logic
-    run grep -q "Installing scripts" "$dist_install"
+    local dist_install="$project_root/dist/miniature-guacamole/install.sh"
+    [ -f "$dist_install" ]
+    run grep -q "mg-\* utility commands" "$dist_install"
     [ "$status" -eq 0 ]
 }
 

@@ -91,7 +91,7 @@ miniature-guacamole/
 │   │   ├── agents/                 # 19 specialized agent roles
 │   │   ├── skills/                 # 16 team collaboration skills
 │   │   ├── shared/                 # 6 protocol documents
-│   │   ├── scripts/                # 11 mg-* utility commands
+│   │   ├── scripts/                # 17 mg-* utility commands
 │   │   ├── hooks/                  # Safety and initialization hooks
 │   │   ├── settings.json           # Default project permissions
 │   │   ├── CLAUDE.md               # Framework documentation template
@@ -202,11 +202,12 @@ This approach balances cost efficiency with quality, using Opus only when necess
 ### Overview
 
 The shared memory layer provides unified state management for all agents with:
-- **99% test coverage** (49/49 tests passing)
+- **99% test coverage**
 - **Atomic writes** with automatic backups
 - **File locking** for concurrent safety
 - **Query capabilities** by agent, workstream, or time
 - **Graceful error handling** - Never throws exceptions
+- **Optional Postgres backend** - `mg-postgres start` and `mg-migrate` sync local JSON files to a Docker-managed Postgres instance for richer querying. Use `--no-db` to stay file-only.
 
 ### API Reference
 
@@ -325,10 +326,10 @@ main (protected)
 
 ### Test Coverage
 
-- **Unit Tests** (18 tests) - Memory layer functions
-- **Integration Tests** (31 tests) - Cross-agent communication
-- **E2E Tests** (Playwright) - Workflow automation
-- **Total Coverage** - 99%+
+- **Unit Tests** (105 files, 3,700+ tests) - Memory, audit, returns, supervisor, agents, skills
+- **Integration Tests** (17 files, 450+ tests) - Cross-agent communication, launch validation, repo sanitization
+- **Script Tests** (30 BATS files, 1,078 tests) - All 17 mg-* utility scripts
+- **Total Coverage** - 99%+ (5,200+ tests across all suites)
 
 ### Test Execution
 
@@ -336,7 +337,7 @@ main (protected)
 npm test              # Run all tests
 npm run test:unit     # Unit tests only
 npm run test:integration  # Integration tests
-npm test:watch        # Watch mode
+npm run test:watch    # Watch mode
 npm run test:coverage # Coverage report
 ```
 
@@ -446,8 +447,14 @@ git push origin v1.0.1
 
 ### Installation System
 
-**mg-init** is a hybrid installer:
+**mg-init** initializes a project for agent collaboration. It's also the primary way to set up a new project after installing the framework:
 
+1. Creates `.claude/memory/` — project-local agent state directory
+2. Creates `.claude/CLAUDE.md` — project-specific agent context
+3. Auto-provisions Postgres via Docker (`mg-postgres start`, `mg-migrate`) if Docker is available
+4. Runs `mg-migrate` to sync any existing memory files to the database
+
+As a hybrid installer, it also handles version management:
 1. Check local cache: `~/.cache/miniature-guacamole/v1.0.0.tar.gz`
 2. If cache miss → fetch from GitHub releases API
 3. Download tarball, cache it, extract to temp
@@ -455,11 +462,19 @@ git push origin v1.0.1
 
 **Flags**:
 - `--version v1.0.0` - Specific version (default: latest)
+- `--no-db` - Skip Postgres setup, run file-only
 - `--offline` - Cache only, no network
 - `--force` - Force re-initialization
 
-**Example**:
+**Examples**:
 
 ```bash
+# Initialize current project (with Postgres if Docker available)
+mg-init
+
+# Skip database setup
+mg-init --no-db
+
+# Pin to a specific version
 mg-init --version v1.0.0 /path/to/project
 ```

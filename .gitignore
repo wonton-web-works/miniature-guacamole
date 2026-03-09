@@ -5,6 +5,7 @@ node_modules/
 dist/
 build/
 .next/
+*.tar.gz
 
 # Test artifacts
 coverage/

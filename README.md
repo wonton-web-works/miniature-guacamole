@@ -26,7 +26,7 @@
 
 ## Table of Contents
 
-- [What is This?](#what-is-this)
+- [What is it?](#what-is-it)
 - [Features](#features)
 - [Quick Start](#quick-start)
 - [Installation](#installation)
@@ -43,7 +43,7 @@
 
 ---
 
-## What is This?
+## What is it?
 
 This is a **Claude Code skill system** that provides a complete product development organization within your IDE. It includes:
 
@@ -93,46 +93,67 @@ Use it to orchestrate complex product development workflows with AI agents that 
 
 ## Quick Start
 
-### 1. Build Distribution
+### 1. Install
+
 ```bash
-git clone https://github.com/rivermark-research/miniature-guacamole.git
-cd miniature-guacamole
-npm install
-./scripts/build-dist.sh
+curl -fsSL https://raw.githubusercontent.com/rivermark-research/miniature-guacamole/main/src/installer/web-install.sh | bash
 ```
 
-### 2. Install to Your Project
-```bash
-cd /path/to/your-project
-/path/to/miniature-guacamole/dist/miniature-guacamole/install.sh
-```
+# Output: Installs framework to .claude/ in your current directory
 
-This creates `.claude/` in your project with all agents, skills, protocols, and scripts.
+### 2. Start Claude Code
 
-### 3. Start Claude Code
 ```bash
 claude
 ```
 
-### 4. Use a Workflow
+# Output: Claude Code launches with all 16 skills and 19 agents available
+
+### 3. Run a workflow
+
 ```
 /mg-assess Build a user authentication system
 ```
 
-The workflow will guide you through feature evaluation, spawn expert agents (Product Owner, Product Manager, CTO), and provide a structured recommendation with next steps.
-
-### 5. Execute with a Team
-```
-/mg-build Execute WS-1: Add login endpoint
-```
-
-The team runs the full CAD cycle: QA writes tests (misuse-first) → Dev implements (with artifact bundle) → QA verifies → Classify → Review.
+# Output: Feature evaluation — spawns Product Owner, Product Manager, CTO — GO/NO-GO recommendation
 
 ---
 
-## Installation
+## Installation — web-install.sh (curl), .tar.gz tarball, or from source
 
-### Quick Start
+Three install methods: web-install (recommended), tarball (offline/CI), or from source.
+
+### Method 1: Web Install (Recommended)
+
+One-liner using `web-install.sh` — downloads and installs latest release:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/rivermark-research/miniature-guacamole/main/src/installer/web-install.sh | bash
+```
+
+Or pin to a specific version:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/rivermark-research/miniature-guacamole/main/src/installer/web-install.sh -o mg-web-install.sh
+chmod +x mg-web-install.sh
+./mg-web-install.sh --version v1.0.0 /path/to/project
+```
+
+Then run `/mg-init` in Claude Code to initialize your project.
+
+### Method 2: Tarball (Offline / CI)
+
+```bash
+# Download latest release
+curl -fsSL https://github.com/rivermark-research/miniature-guacamole/releases/latest/download/miniature-guacamole.tar.gz -o mg.tar.gz
+tar -xzf mg.tar.gz
+cd miniature-guacamole
+
+# Install to your project
+./install.sh /path/to/your-project
+```
+
+### Method 3: From Source
 
 ```bash
 # Clone the repository
@@ -144,22 +165,17 @@ cd miniature-guacamole
 
 # Install to a project
 dist/miniature-guacamole/install.sh /path/to/your-project
-# Or install to current directory
-cd /path/to/your-project
-/path/to/miniature-guacamole/dist/miniature-guacamole/install.sh
 ```
 
-### Installation from GitHub Releases
+### File-Only Mode (--no-db)
+
+By default, the framework uses a database for shared memory. If you want file-only mode without a database:
 
 ```bash
-# Download latest release
-curl -fsSL https://github.com/rivermark-research/miniature-guacamole/releases/latest/download/miniature-guacamole.tar.gz -o mg.tar.gz
-tar -xzf mg.tar.gz
-cd miniature-guacamole
-
-# Install to your project
-./install.sh /path/to/your-project
+./install.sh --no-db /path/to/your-project
 ```
+
+Use `--no-db` to skip database setup and run entirely on local files. Useful for offline environments, CI, or projects that don't need cross-agent state.
 
 ### What Gets Installed
 
@@ -210,15 +226,26 @@ In Claude Code:
 
 ## Available Workflows
 
+All 16 skills use the `mg-` prefix. Use them in Claude Code chat:
+
 | Workflow | Slash Command | Purpose |
 |----------|---------------|---------|
+| **Accessibility Review** | `/mg-accessibility-review` | WCAG 2.1 AA compliance verification |
+| **Add Context** | `/mg-add-context` | Cross-project context references and knowledge sharing |
 | **Feature Assessment** | `/mg-assess` | Interactive feature evaluation with product/technical perspectives |
 | **Technical Assessment** | `/mg-assess-tech` | Architecture planning and feasibility analysis |
-| **Security Review** | `/mg-security-review` | OWASP Top 10, authentication, data protection checks |
-| **Accessibility Review** | `/mg-accessibility-review` | WCAG 2.1 AA compliance verification |
-| **Design Review** | `/mg-design-review` | UI/UX evaluation and design system compliance |
-| **Code Review** | `/mg-code-review` | Technical quality, security, standards verification |
 | **Implementation** | `/mg-build` | Execute CAD cycle: tests → code → verify → classify → review |
+| **Code Review** | `/mg-code-review` | Technical quality, security, standards verification |
+| **Debug** | `/mg-debug` | Structured debugging workflow with root cause analysis |
+| **Design** | `/mg-design` | Visual design and frontend implementation |
+| **Design Review** | `/mg-design-review` | UI/UX evaluation and design system compliance |
+| **Document** | `/mg-document` | Documentation generation and review |
+| **Initialize** | `/mg-init` | Project initialization for agent collaboration |
+| **Leadership Team** | `/mg-leadership-team` | Executive collaboration and strategic decisions |
+| **Refactor** | `/mg-refactor` | Test-safe refactoring workflow |
+| **Security Review** | `/mg-security-review` | OWASP Top 10, authentication, data protection checks |
+| **Spec** | `/mg-spec` | Product definition and requirements |
+| **Write** | `/mg-write` | Brand-aligned copywriting workflow |
 
 ### Workflow Example
 ```

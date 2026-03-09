@@ -58,3 +58,10 @@ docs/.vitepress/dist/
 .claude/README.md
 .claude/vitest.config.ts
 
+# Local build/test artifacts
+bin/
+coverage-adapters.json
+
+# Personal/dev scripts
+src/installer/mg-cleanup-brodie.sh
+

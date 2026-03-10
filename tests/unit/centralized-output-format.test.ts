@@ -39,7 +39,7 @@ const ALL_SKILLS = [
   'mg-write',
 ] as const;
 
-const SKILLS_DIR = path.resolve(__dirname, '../../.claude/skills');
+const SKILLS_DIR = path.resolve(__dirname, '../../src/framework/skills');
 const SHARED_DIR = path.join(SKILLS_DIR, '_shared');
 const OUTPUT_FORMAT_FILE = path.join(SHARED_DIR, 'output-format.md');
 

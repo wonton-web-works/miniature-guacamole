@@ -105,59 +105,11 @@ Task:
 
 ## Output Format
 
-**Always show the debug pipeline diagram at the start:**
+- **Pipeline diagram**: REPRODUCE → INVESTIGATE → FIX → VERIFY (always shown at start)
+- **Status box**: phase, root cause, fix status, tests, blocker
+- **Detailed progress**: symptoms, reproduction steps, root cause, fix applied, verification checklist
 
-```
-┌───────────┐    ┌───────────┐    ┌───────────┐    ┌───────────┐
-│ REPRODUCE │───▶│ INVESTIGATE│───▶│   FIX    │───▶│  VERIFY   │
-│    {s1}   │    │    {s2}   │    │   {s3}   │    │   {s4}    │
-└───────────┘    └───────────┘    └───────────┘    └───────────┘
-
-Legend: ✓ = done, ● = active, ○ = pending, × = failed
-```
-
-**Then show status box:**
-
-```
-┌─────────────────────────────────────────┐
-│ BUG-{id}: {summary}                     │
-├─────────────────────────────────────────┤
-│ Phase:      {phase}                     │
-│ Root Cause: {cause or "investigating"}  │
-│ Fix Status: {status}                    │
-│ Tests:      {passing}/{total}           │
-│ Blocker:    {blocker or "none"}         │
-└─────────────────────────────────────────┘
-```
-
-**Followed by detailed progress:**
-
-```
-## Bug {id}: {summary}
-
-### Symptoms
-{Description of observed behavior}
-
-### Reproduction Steps
-1. {Step 1}
-2. {Step 2}
-...
-
-### Root Cause
-{Detailed analysis of what went wrong and why}
-
-### Fix Applied
-{Description of fix and how it addresses root cause}
-
-### Verification
-- [x] Bug reproduction no longer occurs
-- [x] Tests pass
-- [x] No regressions detected
-- [ ] Code review pending
-
-### Next Action
-{What happens next or who to invoke}
-```
+See `references/output-examples.md` for full template examples.
 
 ## Boundaries
 

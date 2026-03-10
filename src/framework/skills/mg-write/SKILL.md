@@ -134,38 +134,14 @@ prompt: |
 
 ## Output Format
 
-```
-## Content: {Feature/Project}
+Structured report with sections:
+- Brand Direction (Art Director): creative vision, voice guidance, constraints
+- Draft (Copywriter): copy organized by section/component
+- Voice Quality Review: Anti-AI-Patterns, Sentence Variation, Conversational Register, Medium Appropriateness — each PASS | FAIL
+- Decision: APPROVED | NEEDS REVISION with feedback
+- Next Action: hand off, request revision, or escalate
 
-### Brand Direction (Art Director)
-{Creative vision, voice guidance, constraints}
-
-### Draft (Copywriter)
-{Copy organized by section/component}
-
-### Voice Quality Review (Art Director)
-
-Anti-AI-Patterns: PASS | FAIL
-- Issues found: {list or "none"}
-
-Sentence Variation: PASS | FAIL
-- Analysis: {rhythm check}
-
-Conversational Register: PASS | FAIL
-- Analysis: {tone check}
-
-Medium Appropriateness: PASS | FAIL
-- Analysis: {context fit}
-
-### Decision
-
-{APPROVED | NEEDS REVISION}
-
-Feedback: {what to improve if revision needed}
-
-### Next Action
-{Hand off to engineering | Request revision | Escalate}
-```
+See `references/output-examples.md` for full template examples.
 
 ## Voice Quality Standards
 

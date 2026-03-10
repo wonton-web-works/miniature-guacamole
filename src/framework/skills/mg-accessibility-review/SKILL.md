@@ -173,40 +173,14 @@ Task:
 
 ## Output Format
 
-```
-## Accessibility Review: {Feature/Component}
+Structured report with sections:
+- WCAG Compliance status (AA | AAA, Compliant | Non-Compliant | Partial)
+- Critical Violations (block merge) with location and fix
+- Warnings (should fix) with location and fix
+- Recommendations list
+- Summary (counts + overall PASS | FAIL | NEEDS WORK) and Next Action
 
-### WCAG Compliance: {AA | AAA}
-**Status:** {Compliant | Non-Compliant | Partial}
-
-### Critical Violations (Block Merge)
-- **[1.4.3] Contrast (Minimum)** - Button text fails 4.5:1 ratio (3.2:1 actual)
-  Location: src/components/Button.tsx:42
-  Fix: Change text color from #767676 to #595959
-
-- **[2.1.1] Keyboard** - Modal cannot be closed with keyboard
-  Location: src/components/Modal.tsx:18
-  Fix: Add Escape key handler
-
-### Warnings (Should Fix)
-- **[2.4.7] Focus Visible** - Focus outline too subtle (1px)
-  Location: global.css:15
-  Fix: Increase to 2px outline
-
-### Recommendations
-- Add skip link for navigation (2.4.1)
-- Increase touch target sizes to 48x48px for mobile
-- Add aria-live region for status updates
-
-### Summary
-- Critical Issues: {count}
-- Warnings: {count}
-- Passed Checks: {count}
-- Overall: {PASS | FAIL | NEEDS WORK}
-
-### Next Action
-{Block merge | Approve with warnings | Approved}
-```
+See `references/output-examples.md` for full template examples.
 
 ## Testing Tools
 
@@ -217,21 +191,7 @@ Task:
 - **Keyboard**: Tab, Shift+Tab, Enter, Space, Arrow keys, Escape
 - **Color Contrast**: Contrast Checker, WebAIM Contrast Checker
 
-## Model Escalation
-
-This skill runs on Sonnet for cost efficiency. Follow `../_shared/model-escalation.md` protocol.
-
-**Escalate to Opus-tier agent (cto) when:**
-- Accessibility requirements conflict with core UX design (requires nuanced tradeoff)
-- Novel interaction patterns with no WCAG precedent
-- Remediation requires architectural changes (not just component fixes)
-
-**Stay on Sonnet for:**
-- WCAG 2.1 criteria checklist evaluation (highly structured)
-- Color contrast ratio calculations
-- Keyboard navigation and focus management checks
-- ARIA attribute validation
-- Coordinating qa and design specialists
+See `references/model-escalation-guidance.md` for escalation criteria.
 
 ## Boundaries
 

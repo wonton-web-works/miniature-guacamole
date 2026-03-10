@@ -1,12 +1,12 @@
 ---
-# Skill: mg-code-review
-# Workflow skill for implementation quality review
-
 name: mg-code-review
 description: "Reviews code quality, standards compliance, test coverage, performance, and error handling. Invoke for implementation quality review before approval."
 model: sonnet
-tools: [Read, Glob, Grep, Edit, Write, Task, Bash]
-spawn_cap: 6
+allowed-tools: Read, Glob, Grep, Edit, Write, Task, Bash
+compatibility: "Requires Claude Code with Task tool (agent spawning)"
+metadata:
+  version: "1.0"
+  spawn_cap: "6"
 ---
 
 # Code Review

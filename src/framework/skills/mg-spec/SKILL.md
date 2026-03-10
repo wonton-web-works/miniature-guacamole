@@ -1,12 +1,12 @@
 ---
-# Skill: mg-spec
-# Coordinates product definition and requirements
-
 name: mg-spec
 description: "Product definition, user stories, and design specs. Invoke to define requirements before engineering work."
 model: opus
-tools: [Read, Glob, Grep, Task]
-spawn_cap: 6
+allowed-tools: Read, Glob, Grep, Task
+compatibility: "Requires Claude Code with Task tool (agent spawning)"
+metadata:
+  version: "1.0"
+  spawn_cap: "6"
 ---
 
 # Product Team

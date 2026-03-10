@@ -37,7 +37,7 @@ describe('Design Review - WS-12', () => {
 
     it('should have frontmatter with tools array', () => {
       const content = fs.readFileSync(skillPath, 'utf-8');
-      expect(content).toMatch(/tools:\s*\[.+\]/);
+      expect(content).toMatch(/allowed-tools:.+/);
     });
 
     it('should contain ## Constitution section', () => {

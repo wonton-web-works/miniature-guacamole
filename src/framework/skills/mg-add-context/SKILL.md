@@ -1,12 +1,12 @@
 ---
-# Skill: mg-add-context
-# Workflow skill for cross-project context references
-
 name: mg-add-context
 description: "Registers external projects as read-only context references for MG agents. Invoke to reference code, architecture, and patterns from other projects."
 model: sonnet
-tools: [Read, Glob, Grep, Edit, Write, Bash]
-spawn_cap: 6
+allowed-tools: Read, Glob, Grep, Edit, Write, Bash
+compatibility: "Requires Claude Code"
+metadata:
+  version: "1.0"
+  spawn_cap: "6"
 ---
 
 # Add Project Context

@@ -35,14 +35,14 @@ describe('Implement Skill - WS-14', () => {
       expect(content).toMatch(/model:\s+\w+/);
     });
 
-    it('should have frontmatter with tools array', () => {
+    it('should have frontmatter with allowed-tools field', () => {
       const content = fs.readFileSync(skillPath, 'utf-8');
-      expect(content).toMatch(/tools:\s*\[.+\]/);
+      expect(content).toMatch(/allowed-tools:.+/);
     });
 
-    it('should include Bash in tools array', () => {
+    it('should include Bash in allowed-tools', () => {
       const content = fs.readFileSync(skillPath, 'utf-8');
-      expect(content).toMatch(/tools:\s*\[[^\]]*Bash[^\]]*\]/);
+      expect(content).toMatch(/allowed-tools:.*Bash/);
     });
 
     it('should contain ## Constitution section', () => {

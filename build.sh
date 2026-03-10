@@ -84,6 +84,24 @@ for skill_dir in "$FRAMEWORK_DIR/skills"/*; do
 done
 echo "  skills: $SKILL_COUNT"
 
+# Copy _shared/ files into each skill's references/ directory
+echo -e "${GREEN}Copying shared skill resources into skill references/...${NC}"
+SHARED_SKILL_DIR="$FRAMEWORK_DIR/skills/_shared"
+for skill_dist_dir in "$DIST_CLAUDE/skills"/*/; do
+    if [[ -d "$skill_dist_dir" ]]; then
+        mkdir -p "$skill_dist_dir/references"
+        cp "$SHARED_SKILL_DIR/output-format.md" "$skill_dist_dir/references/"
+        cp "$SHARED_SKILL_DIR/model-escalation.md" "$skill_dist_dir/references/"
+        # Rewrite _shared/ references in the built SKILL.md
+        skill_md="$skill_dist_dir/SKILL.md"
+        if [[ -f "$skill_md" ]]; then
+            sed -i '' 's|\.\./\_shared/|references/|g' "$skill_md"
+            sed -i '' 's|`_shared/|`references/|g' "$skill_md"
+        fi
+    fi
+done
+echo "  shared resources copied to all skill references/ directories"
+
 # Shared protocols
 cp -r "$FRAMEWORK_DIR/shared"/* "$DIST_CLAUDE/shared/"
 SHARED_COUNT=$(find "$FRAMEWORK_DIR/shared" -maxdepth 1 -type f -name "*.md" | wc -l | tr -d ' ')

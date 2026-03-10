@@ -1,12 +1,12 @@
 ---
-# Skill: mg-assess-tech
-# Evaluates architecture and technical approach decisions
-
 name: mg-assess-tech
 description: "Evaluates architecture decisions and technical approaches. Invoke for technical recommendations, risk assessment, and scalability analysis."
 model: sonnet
-tools: [Read, Glob, Grep, Edit, Write, Task, Bash]
-spawn_cap: 6
+allowed-tools: Read, Glob, Grep, Edit, Write, Task, Bash
+compatibility: "Requires Claude Code with Task tool (agent spawning)"
+metadata:
+  version: "1.0"
+  spawn_cap: "6"
 ---
 
 # Technical Assessment

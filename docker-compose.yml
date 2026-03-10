@@ -18,6 +18,21 @@ services:
       timeout: 5s
       retries: 5
 
+  dashboard:
+    build:
+      context: ./dashboard
+      dockerfile: Dockerfile
+    container_name: mg_dashboard
+    ports:
+      - "3000:3000"
+    environment:
+      - MG_POSTGRES_URL=postgresql://mg:mg@postgres:5432/mg_memory
+      - NODE_ENV=production
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+
 volumes:
   mg_postgres_data:
     driver: local

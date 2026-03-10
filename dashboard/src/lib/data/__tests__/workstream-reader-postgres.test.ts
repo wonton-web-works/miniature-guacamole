@@ -55,7 +55,6 @@ describe('workstream-reader conditional dispatch', () => {
   });
 
   async function loadWorkstreamReader() {
-    // @ts-expect-error - import resolves from the src path being tested
     const module = await import('../workstream-reader');
     getAllWorkstreams = module.getAllWorkstreams;
     getWorkstreamById = module.getWorkstreamById;

@@ -10,6 +10,8 @@ import {
 import { getResourceList, handleResourceRead } from './resources/workstreams.js';
 import { getMemoryResourceList, handleMemoryRead } from './resources/memory.js';
 import { getEventsResourceList, handleEventsRead } from './resources/events.js';
+import { createHttpServer } from './http-server.js';
+import { getHttpPort } from './config.js';
 
 // ---------------------------------------------------------------------------
 // MCP server entry point
@@ -55,6 +57,10 @@ server.setRequestHandler(ReadResourceRequestSchema, async (request) => {
 });
 
 async function main(): Promise<void> {
+  // AC-MCP-0D.1: start HTTP server alongside stdio MCP transport
+  const port = getHttpPort();
+  await createHttpServer(port);
+
   const transport = new StdioServerTransport();
   await server.connect(transport);
 }

@@ -14,6 +14,8 @@
 import { FileAdapter } from './file-adapter';
 import { MEMORY_CONFIG } from '../config';
 import type { StorageAdapter } from './types';
+// Case-sensitive: env var must match exactly as registered.
+import { getRegistered, listAdapters } from './registry';
 
 export async function getAdapter(): Promise<StorageAdapter> {
   const adapterType = process.env.MG_STORAGE_ADAPTER;
@@ -29,10 +31,16 @@ export async function getAdapter(): Promise<StorageAdapter> {
     case 'file':
       return new FileAdapter({ baseDir: MEMORY_CONFIG.MEMORY_DIR });
 
-    default:
+    default: {
+      const registered = getRegistered(adapterType);
+      if (registered) {
+        // Each adapter reads its own config from the environment.
+        return new registered();
+      }
       throw new Error(
-        `Unknown adapter type: "${adapterType}". Valid values are "file". ` +
+        `Unknown adapter type: "${adapterType}". Valid values: ${listAdapters().join(', ')}. ` +
         'For postgres support, use the mg-enterprise package.'
       );
+    }
   }
 }

@@ -7,6 +7,8 @@ import {
   ErrorCode,
 } from '@modelcontextprotocol/sdk/types.js';
 import { getResourceList, handleResourceRead } from './resources/workstreams.js';
+import { getMemoryResourceList, handleMemoryRead } from './resources/memory.js';
+import { getEventsResourceList, handleEventsRead } from './resources/events.js';
 
 // ---------------------------------------------------------------------------
 // MCP server entry point
@@ -19,11 +21,27 @@ const server = new Server(
 );
 
 server.setRequestHandler(ListResourcesRequestSchema, async () => {
-  return { resources: getResourceList() };
+  return {
+    resources: [
+      ...getResourceList(),
+      ...getMemoryResourceList(),
+      ...getEventsResourceList(),
+    ],
+  };
 });
 
 server.setRequestHandler(ReadResourceRequestSchema, async (request) => {
   const uri = request.params.uri;
+
+  // Route to the correct handler based on URI prefix
+  if (typeof uri === 'string' && uri.startsWith('mg://memory')) {
+    return await handleMemoryRead(uri);
+  }
+
+  if (typeof uri === 'string' && uri.startsWith('mg://events')) {
+    return await handleEventsRead(uri);
+  }
+
   const result = await handleResourceRead(uri);
 
   // If handleResourceRead returned an error shape, convert to MCP error

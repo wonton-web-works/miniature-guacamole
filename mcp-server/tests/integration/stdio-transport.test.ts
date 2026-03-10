@@ -90,6 +90,30 @@ function writeFixtures(dir: string): void {
   );
 }
 
+// Write memory fixture files for WS-MCP-0B integration tests.
+// Memory entries are .claude/memory/*.json files; the "key" is the filename without .json.
+function writeMemoryFixtures(dir: string): void {
+  mkdirSync(dir, { recursive: true });
+
+  const tasksQa = {
+    tasks: [
+      { id: 'T1', title: 'Write memory resource tests', status: 'in_progress', workstream_id: 'WS-MCP-0B' },
+    ],
+    version: 1,
+  };
+
+  const handoffData = {
+    from: 'qa',
+    to: 'dev',
+    workstream_id: 'WS-MCP-0B',
+    message: 'Tests written. Proceed with implementation.',
+    timestamp: '2026-03-09T10:30:00Z',
+  };
+
+  writeFileSync(join(dir, 'tasks-qa.json'), JSON.stringify(tasksQa, null, 2));
+  writeFileSync(join(dir, 'handoffs-qa-dev.json'), JSON.stringify(handoffData, null, 2));
+}
+
 // Spawn the MCP server as a child process.
 // Prefers the compiled binary; falls back to tsx for development.
 function spawnServer(memoryPath: string): ChildProcess {
@@ -646,4 +670,453 @@ describe('stdio-transport GOLDEN PATH', () => {
       expect(countsResp).not.toHaveProperty('error');
     }, 15000);
   });
+});
+
+// ===========================================================================
+// WS-MCP-0B: Memory + Agent Event Resources — integration tests over stdio
+// AC-MCP-0.7: mg://memory returns JSON array of memory entry keys with metadata
+// AC-MCP-0.8: mg://memory/{key} returns full data JSONB or structured error
+// AC-MCP-0.9: mg://events returns recent agent events (default limit 50)
+//
+// CAD ordering: MISUSE → BOUNDARY → GOLDEN PATH
+// ===========================================================================
+
+// Shared memory fixture directory for WS-MCP-0B tests
+const MEMORY_FIXTURE_DIR = join(tmpdir(), `mg-mcp-memory-test-${process.pid}`);
+
+// ===========================================================================
+// WS-MCP-0B MISUSE CASES (integration)
+// ===========================================================================
+
+describe('stdio-transport WS-MCP-0B MISUSE: unknown memory key returns structured error (AC-MCP-0.8)', () => {
+  beforeAll(() => {
+    writeFixtures(MEMORY_FIXTURE_DIR);
+    writeMemoryFixtures(MEMORY_FIXTURE_DIR);
+  });
+
+  afterAll(() => {
+    if (existsSync(MEMORY_FIXTURE_DIR)) {
+      rmSync(MEMORY_FIXTURE_DIR, { recursive: true, force: true });
+    }
+  });
+
+  it('Given an initialized server, When mg://memory/nonexistent-key is read, Then response contains error not result', async () => {
+    const server = spawnServer(MEMORY_FIXTURE_DIR);
+
+    const responses = await exchange(server, [
+      INITIALIZE_MSG,
+      INITIALIZED_NOTIFICATION,
+      {
+        jsonrpc: '2.0',
+        id: 30,
+        method: 'resources/read',
+        params: { uri: 'mg://memory/nonexistent-key' },
+      },
+    ]);
+
+    server.stdin?.end();
+    await new Promise<void>((res) => server.on('close', res));
+
+    const errorResponse = responses.find((r) => r.id === 30);
+    expect(errorResponse).toBeDefined();
+    // Must return a structured error — not a crash and not a result with null data
+    expect(errorResponse).toHaveProperty('error');
+    expect(errorResponse!.error).toBeDefined();
+  }, 10000);
+
+  it('Given an initialized server, When mg://memory/../../etc/passwd is read, Then server returns error and does not crash', async () => {
+    const server = spawnServer(MEMORY_FIXTURE_DIR);
+
+    const responses = await exchange(server, [
+      INITIALIZE_MSG,
+      INITIALIZED_NOTIFICATION,
+      {
+        jsonrpc: '2.0',
+        id: 31,
+        method: 'resources/read',
+        params: { uri: 'mg://memory/../../etc/passwd' },
+      },
+    ]);
+
+    server.stdin?.end();
+    await new Promise<void>((res) => server.on('close', res));
+
+    // Server must not crash
+    expect(server.exitCode).not.toBe(1);
+
+    const errorResponse = responses.find((r) => r.id === 31);
+    if (errorResponse) {
+      expect(errorResponse).toHaveProperty('error');
+    }
+  }, 10000);
+});
+
+// ===========================================================================
+// WS-MCP-0B BOUNDARY CASES (integration)
+// ===========================================================================
+
+describe('stdio-transport WS-MCP-0B BOUNDARY: resources/list includes memory and events URIs (AC-MCP-0.3)', () => {
+  const EMPTY_MEMORY_DIR = join(tmpdir(), `mg-mcp-memory-empty-${process.pid}`);
+
+  beforeAll(() => {
+    mkdirSync(EMPTY_MEMORY_DIR, { recursive: true });
+  });
+
+  afterAll(() => {
+    if (existsSync(EMPTY_MEMORY_DIR)) {
+      rmSync(EMPTY_MEMORY_DIR, { recursive: true, force: true });
+    }
+  });
+
+  it('Given an initialized server, When resources/list is called, Then mg://memory URI is present in the resource list', async () => {
+    const server = spawnServer(EMPTY_MEMORY_DIR);
+
+    const responses = await exchange(server, [
+      INITIALIZE_MSG,
+      INITIALIZED_NOTIFICATION,
+      RESOURCES_LIST_MSG,
+    ]);
+
+    server.stdin?.end();
+    await new Promise<void>((res) => server.on('close', res));
+
+    const listResponse = responses.find((r) => r.id === 2);
+    expect(listResponse).toBeDefined();
+    expect(listResponse).toHaveProperty('result');
+
+    const resources = (listResponse!.result as any)?.resources as Array<{ uri: string }> | undefined;
+    expect(Array.isArray(resources)).toBe(true);
+
+    const memoryUri = resources?.find((r) => r.uri === 'mg://memory');
+    expect(memoryUri).toBeDefined();
+  }, 10000);
+
+  it('Given an initialized server, When resources/list is called, Then mg://events URI is present in the resource list', async () => {
+    const server = spawnServer(EMPTY_MEMORY_DIR);
+
+    const responses = await exchange(server, [
+      INITIALIZE_MSG,
+      INITIALIZED_NOTIFICATION,
+      RESOURCES_LIST_MSG,
+    ]);
+
+    server.stdin?.end();
+    await new Promise<void>((res) => server.on('close', res));
+
+    const listResponse = responses.find((r) => r.id === 2);
+    const resources = (listResponse?.result as any)?.resources as Array<{ uri: string }> | undefined;
+
+    if (resources) {
+      const eventsUri = resources.find((r) => r.uri === 'mg://events');
+      expect(eventsUri).toBeDefined();
+    }
+  }, 10000);
+
+  it('Given an empty memory directory, When mg://memory is read, Then returns empty JSON array not an error', async () => {
+    const server = spawnServer(EMPTY_MEMORY_DIR);
+
+    const responses = await exchange(server, [
+      INITIALIZE_MSG,
+      INITIALIZED_NOTIFICATION,
+      {
+        jsonrpc: '2.0',
+        id: 32,
+        method: 'resources/read',
+        params: { uri: 'mg://memory' },
+      },
+    ]);
+
+    server.stdin?.end();
+    await new Promise<void>((res) => server.on('close', res));
+
+    const readResponse = responses.find((r) => r.id === 32);
+    expect(readResponse).toBeDefined();
+    expect(readResponse).toHaveProperty('result');
+    expect(readResponse).not.toHaveProperty('error');
+
+    const contents = (readResponse!.result as any)?.contents ?? (readResponse!.result as any)?.content;
+    if (contents?.length > 0) {
+      const text = contents[0]?.text;
+      if (text) {
+        const parsed = JSON.parse(text);
+        expect(Array.isArray(parsed)).toBe(true);
+        expect(parsed).toHaveLength(0);
+      }
+    }
+  }, 10000);
+
+  it('Given filesystem-only mode (no Postgres), When mg://events is read, Then returns empty array not an error', async () => {
+    const server = spawnServer(EMPTY_MEMORY_DIR);
+
+    const responses = await exchange(server, [
+      INITIALIZE_MSG,
+      INITIALIZED_NOTIFICATION,
+      {
+        jsonrpc: '2.0',
+        id: 33,
+        method: 'resources/read',
+        params: { uri: 'mg://events' },
+      },
+    ]);
+
+    server.stdin?.end();
+    await new Promise<void>((res) => server.on('close', res));
+
+    const readResponse = responses.find((r) => r.id === 33);
+    expect(readResponse).toBeDefined();
+    // Events are Postgres-only; filesystem fallback must return empty array, not error
+    expect(readResponse).toHaveProperty('result');
+    expect(readResponse).not.toHaveProperty('error');
+
+    const contents = (readResponse!.result as any)?.contents ?? (readResponse!.result as any)?.content;
+    if (contents?.length > 0) {
+      const text = contents[0]?.text;
+      if (text) {
+        const parsed = JSON.parse(text);
+        expect(Array.isArray(parsed)).toBe(true);
+      }
+    }
+  }, 10000);
+});
+
+// ===========================================================================
+// WS-MCP-0B GOLDEN PATH (integration)
+// ===========================================================================
+
+describe('stdio-transport WS-MCP-0B GOLDEN PATH: mg://memory (AC-MCP-0.7)', () => {
+  beforeAll(() => {
+    writeFixtures(MEMORY_FIXTURE_DIR);
+    writeMemoryFixtures(MEMORY_FIXTURE_DIR);
+  });
+
+  it('Given fixture memory files exist, When mg://memory is read, Then response contains JSON array with at least 2 entries', async () => {
+    const server = spawnServer(MEMORY_FIXTURE_DIR);
+
+    const responses = await exchange(server, [
+      INITIALIZE_MSG,
+      INITIALIZED_NOTIFICATION,
+      {
+        jsonrpc: '2.0',
+        id: 40,
+        method: 'resources/read',
+        params: { uri: 'mg://memory' },
+      },
+    ]);
+
+    server.stdin?.end();
+    await new Promise<void>((res) => server.on('close', res));
+
+    const readResponse = responses.find((r) => r.id === 40);
+    expect(readResponse).toBeDefined();
+    expect(readResponse).toHaveProperty('result');
+    expect(readResponse).not.toHaveProperty('error');
+
+    const contents = (readResponse!.result as any)?.contents ?? (readResponse!.result as any)?.content;
+    expect(Array.isArray(contents)).toBe(true);
+    expect(contents.length).toBeGreaterThan(0);
+
+    const text = contents[0]?.text;
+    expect(typeof text).toBe('string');
+
+    const entries = JSON.parse(text);
+    expect(Array.isArray(entries)).toBe(true);
+    // Fixture writes tasks-qa.json and handoffs-qa-dev.json
+    expect(entries.length).toBeGreaterThanOrEqual(2);
+
+    // Each entry must have a key field
+    for (const entry of entries) {
+      expect(entry).toHaveProperty('key');
+      expect(typeof entry.key).toBe('string');
+    }
+  }, 10000);
+
+  it('Given memory entries exist, When mg://memory is read, Then response mimeType is application/json', async () => {
+    const server = spawnServer(MEMORY_FIXTURE_DIR);
+
+    const responses = await exchange(server, [
+      INITIALIZE_MSG,
+      INITIALIZED_NOTIFICATION,
+      {
+        jsonrpc: '2.0',
+        id: 41,
+        method: 'resources/read',
+        params: { uri: 'mg://memory' },
+      },
+    ]);
+
+    server.stdin?.end();
+    await new Promise<void>((res) => server.on('close', res));
+
+    const readResponse = responses.find((r) => r.id === 41);
+    const contents = (readResponse?.result as any)?.contents ?? (readResponse?.result as any)?.content;
+    if (contents?.length > 0) {
+      expect(contents[0]?.mimeType).toBe('application/json');
+    }
+  }, 10000);
+});
+
+describe('stdio-transport WS-MCP-0B GOLDEN PATH: mg://memory/{key} (AC-MCP-0.8)', () => {
+  beforeAll(() => {
+    writeFixtures(MEMORY_FIXTURE_DIR);
+    writeMemoryFixtures(MEMORY_FIXTURE_DIR);
+  });
+
+  it('Given fixture file tasks-qa.json exists, When mg://memory/tasks-qa is read, Then returns full data payload including tasks array', async () => {
+    const server = spawnServer(MEMORY_FIXTURE_DIR);
+
+    const responses = await exchange(server, [
+      INITIALIZE_MSG,
+      INITIALIZED_NOTIFICATION,
+      {
+        jsonrpc: '2.0',
+        id: 50,
+        method: 'resources/read',
+        params: { uri: 'mg://memory/tasks-qa' },
+      },
+    ]);
+
+    server.stdin?.end();
+    await new Promise<void>((res) => server.on('close', res));
+
+    const readResponse = responses.find((r) => r.id === 50);
+    expect(readResponse).toBeDefined();
+    expect(readResponse).toHaveProperty('result');
+    expect(readResponse).not.toHaveProperty('error');
+
+    const contents = (readResponse!.result as any)?.contents ?? (readResponse!.result as any)?.content;
+    expect(Array.isArray(contents)).toBe(true);
+    expect(contents.length).toBeGreaterThan(0);
+
+    const text = contents[0]?.text;
+    expect(typeof text).toBe('string');
+
+    const entry = JSON.parse(text);
+    // Must include the key
+    expect(entry).toHaveProperty('key', 'tasks-qa');
+    // Must include the full data JSONB
+    expect(entry).toHaveProperty('data');
+    expect(entry.data).toHaveProperty('tasks');
+    expect(Array.isArray(entry.data.tasks)).toBe(true);
+  }, 10000);
+
+  it('Given fixture file handoffs-qa-dev.json exists, When mg://memory/handoffs-qa-dev is read, Then returns full handoff data', async () => {
+    const server = spawnServer(MEMORY_FIXTURE_DIR);
+
+    const responses = await exchange(server, [
+      INITIALIZE_MSG,
+      INITIALIZED_NOTIFICATION,
+      {
+        jsonrpc: '2.0',
+        id: 51,
+        method: 'resources/read',
+        params: { uri: 'mg://memory/handoffs-qa-dev' },
+      },
+    ]);
+
+    server.stdin?.end();
+    await new Promise<void>((res) => server.on('close', res));
+
+    const readResponse = responses.find((r) => r.id === 51);
+    expect(readResponse).toBeDefined();
+    expect(readResponse).toHaveProperty('result');
+
+    const contents = (readResponse!.result as any)?.contents ?? (readResponse!.result as any)?.content;
+    if (contents?.length > 0) {
+      const text = contents[0]?.text;
+      if (text) {
+        const entry = JSON.parse(text);
+        expect(entry).toHaveProperty('key', 'handoffs-qa-dev');
+        expect(entry).toHaveProperty('data');
+        expect(entry.data).toHaveProperty('from', 'qa');
+        expect(entry.data).toHaveProperty('to', 'dev');
+      }
+    }
+  }, 10000);
+});
+
+describe('stdio-transport WS-MCP-0B GOLDEN PATH: mg://events (AC-MCP-0.9)', () => {
+  beforeAll(() => {
+    writeFixtures(MEMORY_FIXTURE_DIR);
+    writeMemoryFixtures(MEMORY_FIXTURE_DIR);
+  });
+
+  it('Given an initialized server in filesystem mode, When mg://events is read, Then response is a valid result containing a JSON array', async () => {
+    const server = spawnServer(MEMORY_FIXTURE_DIR);
+
+    const responses = await exchange(server, [
+      INITIALIZE_MSG,
+      INITIALIZED_NOTIFICATION,
+      {
+        jsonrpc: '2.0',
+        id: 60,
+        method: 'resources/read',
+        params: { uri: 'mg://events' },
+      },
+    ]);
+
+    server.stdin?.end();
+    await new Promise<void>((res) => server.on('close', res));
+
+    const readResponse = responses.find((r) => r.id === 60);
+    expect(readResponse).toBeDefined();
+    // Must be a result (not error) — filesystem returns empty array
+    expect(readResponse).toHaveProperty('result');
+    expect(readResponse).not.toHaveProperty('error');
+
+    const contents = (readResponse!.result as any)?.contents ?? (readResponse!.result as any)?.content;
+    expect(Array.isArray(contents)).toBe(true);
+
+    if (contents?.length > 0) {
+      const text = contents[0]?.text;
+      expect(typeof text).toBe('string');
+      const events = JSON.parse(text);
+      expect(Array.isArray(events)).toBe(true);
+    }
+  }, 10000);
+
+  it('Given an initialized server, When mg://events?limit=5 is read, Then response is a valid result (limit param accepted without crash)', async () => {
+    const server = spawnServer(MEMORY_FIXTURE_DIR);
+
+    const responses = await exchange(server, [
+      INITIALIZE_MSG,
+      INITIALIZED_NOTIFICATION,
+      {
+        jsonrpc: '2.0',
+        id: 61,
+        method: 'resources/read',
+        params: { uri: 'mg://events?limit=5' },
+      },
+    ]);
+
+    server.stdin?.end();
+    await new Promise<void>((res) => server.on('close', res));
+
+    const readResponse = responses.find((r) => r.id === 61);
+    expect(readResponse).toBeDefined();
+    expect(readResponse).toHaveProperty('result');
+    expect(readResponse).not.toHaveProperty('error');
+  }, 10000);
+
+  it('Given an initialized server, When mg://events?workstream_id=WS-MCP-0B is read, Then response is a valid result (workstream filter accepted)', async () => {
+    const server = spawnServer(MEMORY_FIXTURE_DIR);
+
+    const responses = await exchange(server, [
+      INITIALIZE_MSG,
+      INITIALIZED_NOTIFICATION,
+      {
+        jsonrpc: '2.0',
+        id: 62,
+        method: 'resources/read',
+        params: { uri: 'mg://events?workstream_id=WS-MCP-0B' },
+      },
+    ]);
+
+    server.stdin?.end();
+    await new Promise<void>((res) => server.on('close', res));
+
+    const readResponse = responses.find((r) => r.id === 62);
+    expect(readResponse).toBeDefined();
+    expect(readResponse).toHaveProperty('result');
+    expect(readResponse).not.toHaveProperty('error');
+  }, 10000);
 });

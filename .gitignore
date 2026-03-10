@@ -65,3 +65,6 @@ coverage-adapters.json
 # Personal/dev scripts
 src/installer/mg-cleanup-brodie.sh
 
+# Enterprise module (private repo: rivermark-research/mg-enterprise)
+enterprise/
+

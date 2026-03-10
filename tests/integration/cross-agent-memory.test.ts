@@ -390,6 +390,9 @@ describe('Cross-Agent Memory Sharing - Integration Tests', () => {
 
       await writeMemory(initial, SHARED_FILE);
 
+      // Ensure backup directory exists (createBackup writes to MEMORY_CONFIG.BACKUP_DIR)
+      fs.mkdirSync(MEMORY_CONFIG.BACKUP_DIR, { recursive: true });
+
       const backup = await createBackup(SHARED_FILE);
       expect(backup.success).toBe(true);
       expect(backup.backup_path).toBeDefined();
@@ -408,9 +411,11 @@ describe('Cross-Agent Memory Sharing - Integration Tests', () => {
       };
 
       // Write to the actual shared memory file that deleteMemory operates on
+      // Also ensure backup dir exists (deleteMemory calls createBackup internally)
       if (!fs.existsSync(MEMORY_CONFIG.MEMORY_DIR)) {
         fs.mkdirSync(MEMORY_CONFIG.MEMORY_DIR, { recursive: true });
       }
+      fs.mkdirSync(MEMORY_CONFIG.BACKUP_DIR, { recursive: true });
       await writeMemory(state, MEMORY_CONFIG.SHARED_MEMORY_FILE);
 
       // Delete with safety

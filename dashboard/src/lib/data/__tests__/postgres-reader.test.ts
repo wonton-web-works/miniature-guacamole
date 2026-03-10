@@ -46,7 +46,6 @@ describe('postgres-reader', () => {
     vi.resetModules();
     vi.stubEnv('MG_POSTGRES_URL', 'postgresql://user:pass@localhost:5432/testdb');
     pg = await import('pg');
-    // @ts-expect-error - module does not exist yet (red phase)
     const module = await import('../postgres-reader');
     getAllWorkstreamsFromPostgres = module.getAllWorkstreamsFromPostgres;
     getWorkstreamByIdFromPostgres = module.getWorkstreamByIdFromPostgres;

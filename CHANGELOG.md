@@ -9,6 +9,41 @@ Versioning follows [Semantic Versioning](https://semver.org/): MAJOR.MINOR.PATCH
 
 ---
 
+## [1.2.0] - 2026-03-10 — Platform Expansion
+
+MCP server, token audit logging, Docker Compose support, and skill spec
+compliance. The framework now exposes a machine-readable API alongside stdio.
+
+### Added
+- **MCP server** (`WS-MCP-0A..0D`) — new `mcp-server/` package with stdio transport, workstream/memory/agent event resources, executable binary, and HTTP API + REST endpoints running alongside stdio
+- **Token audit log** (`WS-16`) — JSONL rotating logger with per-session token tracking and configurable limits
+- **Docker Compose** (`WS-DASH-1`) — `docker compose up` starts Postgres + Next.js dashboard together; migrations run automatically on first start
+
+### Changed
+- **Skill frontmatter compliance** (`WS-COMPAT-1`) — `tools:` → `allowed-tools:`, added `metadata.version` and `compatibility:` fields across all 16 SKILL.md files
+- **Skill content organization** (`WS-COMPAT-2`) — extracted Model Escalation and verbose Output Format sections from 11 skills into `references/` companion files (14 new files); progressive disclosure pattern
+
+### Workstreams
+`WS-MCP-0A..0D`, `WS-16`, `WS-DASH-1`, `WS-COMPAT-1`, `WS-COMPAT-2`
+
+---
+
+## [1.1.0] - 2026-02-10 — Enterprise Adapter Boundary
+
+Enterprise and OSS builds split at a clean plugin boundary. CI hardened to
+run cleanly without enterprise dependencies.
+
+### Added
+- **Enterprise adapter API** (`WS-SPLIT-4`) — `registerAdapter()` plugin boundary; enterprise extensions attach without touching OSS core
+
+### Changed
+- **CI hardening** (`WS-SPLIT-3`) — removed `pg` and `aws-sdk` from OSS `package.json`; resolved 3 CI-environment test failures
+
+### Workstreams
+`WS-SPLIT-3`, `WS-SPLIT-4`
+
+---
+
 ## [1.0.0] - 2026-02-10 — Initial Release
 
 The first public release of miniature-guacamole. Action-based skill system with
@@ -349,6 +384,8 @@ communication protocols.
 
 | Version | Date       | Codename               | Key Milestone                              |
 |---------|------------|------------------------|--------------------------------------------|
+| **1.2.0** | **2026-03-10** | **Platform Expansion** | **MCP server, token audit log, Docker Compose, skill spec compliance** |
+| **1.1.0** | **2026-02-10** | **Enterprise Adapter** | **registerAdapter() plugin boundary, CI hardening** |
 | **1.0.0** | **2026-02-10** | **Initial Release** | **16 mg-prefixed skills, 19 agents, project-local architecture** |
 
 ### Pre-Release Versions

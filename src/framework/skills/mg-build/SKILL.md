@@ -1,12 +1,12 @@
 ---
-# Skill: mg-build
-# Orchestrates the CAD development cycle from tests to production-ready code
-
 name: mg-build
 description: "Build it. Execute full CAD cycle: spawn qa for tests, dev for implementation, staff-engineer for review. Invoke with workstream ID."
 model: sonnet
-tools: [Read, Glob, Grep, Edit, Write, Task, Bash]
-spawn_cap: 6
+allowed-tools: Read, Glob, Grep, Edit, Write, Task, Bash
+compatibility: "Requires Claude Code with Task tool (agent spawning)"
+metadata:
+  version: "1.0"
+  spawn_cap: "6"
 ---
 
 # mg-build

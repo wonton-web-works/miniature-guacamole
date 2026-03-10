@@ -1,12 +1,12 @@
 ---
-# Skill: mg-assess
-# Unified intake and evaluation workflow for feature ideas and requests
-
 name: mg-assess
 description: "Feature intake and evaluation workflow. Invoke for raw feature ideas, structured requests, or formal assessments."
 model: sonnet
-tools: [Read, Glob, Grep, Task]
-spawn_cap: 6
+allowed-tools: Read, Glob, Grep, Task
+compatibility: "Requires Claude Code with Task tool (agent spawning)"
+metadata:
+  version: "1.0"
+  spawn_cap: "6"
 ---
 
 # Feature Assessment

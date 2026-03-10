@@ -43,7 +43,8 @@ export default defineConfig({
     // Include patterns
     include: [
       'tests/unit/**/*.test.ts',
-      'tests/integration/**/*.test.ts'
+      'tests/integration/**/*.test.ts',
+      'tests/compat/**/*.test.ts'
     ],
 
     // Exclude patterns

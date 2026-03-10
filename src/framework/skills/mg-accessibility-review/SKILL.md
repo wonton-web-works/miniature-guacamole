@@ -1,12 +1,12 @@
 ---
-# Skill: mg-accessibility-review
-# Workflow skill for WCAG compliance and inclusive design
-
 name: mg-accessibility-review
 description: "WCAG 2.1 AA/AAA compliance review. Invoke for accessibility audits, keyboard navigation checks, screen reader testing, and inclusive design validation."
 model: sonnet
-tools: [Read, Glob, Grep, Edit, Write, Task]
-spawn_cap: 6
+allowed-tools: Read, Glob, Grep, Edit, Write, Task
+compatibility: "Requires Claude Code with Task tool (agent spawning)"
+metadata:
+  version: "1.0"
+  spawn_cap: "6"
 ---
 
 # Accessibility Review

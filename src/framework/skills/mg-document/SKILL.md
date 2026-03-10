@@ -1,12 +1,12 @@
 ---
-# Skill: mg-document
-# Coordinates documentation generation and review
-
 name: mg-document
 description: "Generates and maintains documentation. Invoke for README, API docs, user guides, or documentation reviews."
 model: sonnet
-tools: [Read, Glob, Grep, Edit, Write, Task]
-spawn_cap: 6
+allowed-tools: Read, Glob, Grep, Edit, Write, Task
+compatibility: "Requires Claude Code with Task tool (agent spawning)"
+metadata:
+  version: "1.0"
+  spawn_cap: "6"
 ---
 
 # Documentation Team

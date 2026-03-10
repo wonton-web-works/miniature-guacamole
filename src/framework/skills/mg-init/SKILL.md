@@ -1,11 +1,11 @@
 ---
-# Skill: mg-init
-# Initializes a project for miniature-guacamole agent collaboration
-
 name: mg-init
 description: "Initialize a project for miniature-guacamole agent collaboration. Creates .claude/memory/, installs shared protocols, detects tech stack."
 model: sonnet
-tools: [Read, Glob, Bash, Write]
+allowed-tools: Read, Glob, Bash, Write
+compatibility: "Requires Claude Code"
+metadata:
+  version: "1.0"
 ---
 
 # /mg-init

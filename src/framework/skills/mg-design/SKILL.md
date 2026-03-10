@@ -1,12 +1,12 @@
 ---
-# Skill: mg-design
-# Coordinates visual design and frontend implementation
-
 name: mg-design
 description: "UI/UX design with visual regression review. Invoke for design direction, visual specs, or approving visual changes."
 model: sonnet
-tools: [Read, Glob, Grep, Edit, Write, Task]
-spawn_cap: 6
+allowed-tools: Read, Glob, Grep, Edit, Write, Task
+compatibility: "Requires Claude Code with Task tool (agent spawning)"
+metadata:
+  version: "1.0"
+  spawn_cap: "6"
 ---
 
 # Design Team

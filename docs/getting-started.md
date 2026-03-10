@@ -111,6 +111,29 @@ mg-init --no-db
 
 With `--no-db`, all agent memory stays in local JSON files under `.claude/memory/`. Everything still works — you just don't get the Postgres-backed query layer.
 
+## Docker Compose
+
+The easiest way to get Postgres and the dashboard running locally is Docker Compose:
+
+```bash
+docker compose up
+```
+
+This starts two services:
+
+- **Postgres** — the memory backend, accessible on port 5432
+- **Next.js dashboard** — available at http://localhost:3000
+
+The dashboard uses a multi-stage Dockerfile with standalone Next.js output, so the production image only includes what's needed to run. No separate `npm run build` step required — Compose handles it.
+
+If you want the memory layer to use Postgres, set `MG_POSTGRES_URL` before starting:
+
+```bash
+MG_POSTGRES_URL=postgresql://mg:mg@localhost:5432/mg_memory docker compose up
+```
+
+Without it, agents fall back to filesystem memory (`.claude/memory/`) automatically.
+
 ## What Gets Installed
 
 The installer creates a `.claude/` directory in your project:

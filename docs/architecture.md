@@ -134,13 +134,25 @@ miniature-guacamole/
 ├── build.sh                        # Unified build: src/ → dist/
 ├── install.sh                      # Root convenience wrapper
 ├── tests/                          # Test suites
-├── dashboard/                      # Analytics dashboard
+├── dashboard/                      # Analytics dashboard (Next.js)
 ├── daemon/                         # Background processes
+├── mcp-server/                     # MCP + HTTP server (TypeScript package)
 ├── docs/                           # VitePress documentation site
 └── .github/workflows/
     ├── ci.yml                      # PR checks + build verification
     └── release.yml                 # v*.*.* tag → GitHub release
 ```
+
+### MCP Server
+
+`mcp-server/` is a standalone TypeScript package that exposes project state as MCP resources and a REST API. It runs alongside your normal Claude Code workflow — it doesn't replace per-project installation.
+
+- **Transport**: stdio (for MCP clients) + HTTP on port 7842 (for REST)
+- **Backend**: Postgres via `MG_POSTGRES_URL`, falls back to `.claude/memory/` filesystem
+- **Resources**: workstreams, memory entries, events (read-only)
+- **Auth**: none — designed for local use only
+
+See [MCP Server](/mcp-server) for setup and the full resource reference.
 
 ## Component Flow
 

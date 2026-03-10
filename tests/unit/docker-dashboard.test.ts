@@ -270,3 +270,15 @@ describe('WS-DASH-1 golden: AC-DASH-1.7 — Postgres volume preserved in compose
     expect(compose.volumes).toHaveProperty('mg_postgres_data');
   });
 });
+
+describe('WS-DASH-1 golden: migrations auto-run on first Postgres init', () => {
+  it('postgres service mounts ./migrations to /docker-entrypoint-initdb.d', async () => {
+    const compose = await parseCompose();
+    const postgres = compose.services?.postgres;
+    const volumes: string[] = postgres?.volumes ?? [];
+    const hasInitdb = volumes.some((v: string) =>
+      String(v).includes('migrations') && String(v).includes('docker-entrypoint-initdb.d')
+    );
+    expect(hasInitdb).toBe(true);
+  });
+});

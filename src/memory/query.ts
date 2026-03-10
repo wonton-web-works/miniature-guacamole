@@ -17,7 +17,7 @@ export async function queryMemory(filters: MemoryQuery): Promise<MemoryEntry[]> 
       return [];
     }
 
-    const adapter = getAdapter();
+    const adapter = await getAdapter();
     const results = await adapter.query({
       agent_id: filters.agent_id,
       workstream_id: filters.workstream_id,

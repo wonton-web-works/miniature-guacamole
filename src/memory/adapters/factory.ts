@@ -11,11 +11,10 @@
  */
 
 import { FileAdapter } from './file-adapter';
-import { PostgresAdapter } from '../../../enterprise/src/storage/postgres-adapter';
 import { MEMORY_CONFIG } from '../config';
 import type { StorageAdapter } from './types';
 
-export function getAdapter(): StorageAdapter {
+export async function getAdapter(): Promise<StorageAdapter> {
   const adapterType = process.env.MG_STORAGE_ADAPTER;
 
   // Unset or empty string defaults to file
@@ -37,6 +36,11 @@ export function getAdapter(): StorageAdapter {
           'Example: postgresql://mg:mg@localhost:5432/mg_memory'
         );
       }
+      // Dynamic import — enterprise/ is outside rootDir, load only at runtime
+      // eslint-disable-next-line @typescript-eslint/no-var-requires
+      const enterprisePath = '../../../enterprise/src/storage/postgres-adapter';
+      const mod = await (import(enterprisePath) as Promise<{ PostgresAdapter: new (opts: { connectionString: string }) => StorageAdapter }>);
+      const { PostgresAdapter } = mod;
       return new PostgresAdapter({ connectionString });
     }
 

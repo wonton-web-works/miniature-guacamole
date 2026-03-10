@@ -9,37 +9,28 @@ import * as fs from 'fs';
 import * as os from 'os';
 import * as path from 'path';
 
-export interface AuditConfig {
-  enabled: boolean;
-  log_path: string;
-  max_size_mb: number;
-  keep_backups: number;
-}
+export type { AuditConfig } from './types';
+import type { AuditConfig } from './types';
 
 /**
- * Centralized audit logging configuration.
- * Follows MEMORY_CONFIG pattern for consistency.
+ * Centralized audit logging configuration constants.
+ * Numeric/boolean values are typed as their base types (not literals) to allow arithmetic.
  */
 export const AUDIT_CONFIG = {
-  // Default settings
-  ENABLED: false,
-  LOG_PATH: '~/.claude/audit.log',
-  MAX_SIZE_MB: 10,
-  KEEP_BACKUPS: 1,
+  ENABLED: false as boolean,
+  LOG_PATH: '~/.claude/audit.log' as string,
+  MAX_SIZE_MB: 10 as number,
+  KEEP_BACKUPS: 1 as number,
 
-  // Validation constraints
-  MAX_SIZE_MB_LIMIT: 1000,
-  MIN_SIZE_MB: 1,
+  MAX_SIZE_MB_LIMIT: 1000 as number,
+  MIN_SIZE_MB: 1 as number,
 
-  // Config file paths (computed lazily to avoid module initialization issues)
   get GLOBAL_CONFIG_PATH(): string {
     return path.join(os.homedir(), '.claude', 'config.json');
   },
-  PROJECT_CONFIG_PATH: '.clauderc',
-
-  // Config key in JSON files
-  CONFIG_KEY: 'audit_logging',
-} as const;
+  PROJECT_CONFIG_PATH: '.clauderc' as string,
+  CONFIG_KEY: 'audit_logging' as string,
+};
 
 /**
  * Loads audit logging configuration from config files.
@@ -69,7 +60,7 @@ export function loadAuditConfig(): AuditConfig {
       const content = fs.readFileSync(projectConfigPath, 'utf8');
       const parsed = JSON.parse(content);
       projectConfig = parsed[AUDIT_CONFIG.CONFIG_KEY] || {};
-    } catch (error) {
+    } catch {
       // Silently ignore project config errors - use global config
       projectConfig = {};
     }
@@ -82,7 +73,7 @@ export function loadAuditConfig(): AuditConfig {
     max_size_mb: AUDIT_CONFIG.MAX_SIZE_MB,
     keep_backups: AUDIT_CONFIG.KEEP_BACKUPS,
     ...globalConfig,
-    ...projectConfig
+    ...projectConfig,
   };
 
   return validateAuditConfig(mergedConfig);
@@ -90,64 +81,96 @@ export function loadAuditConfig(): AuditConfig {
 
 /**
  * Validates and normalizes audit config values.
- * Applies defaults for missing/invalid fields and logs warnings.
+ *
+ * max_size_mb:
+ *   - Valid range [1, 1000]: accepted as-is
+ *   - > 1000: capped at 1000 with console.warn
+ *   - < 1 or wrong type: falls back to default (10) with console.warn
+ *
+ * keep_backups:
+ *   - Valid range [0, 10]: accepted as-is
+ *   - > 10: clamped to 10 with console.warn
+ *   - < 0: clamped to 0 with console.warn
+ *   - non-number: defaults to 1 with console.warn
+ *
+ * enabled: boolean type checked, defaults to false for wrong types.
+ * log_path: string type checked, defaults to '~/.claude/audit.log' for wrong types.
  */
 export function validateAuditConfig(config: Partial<AuditConfig>): AuditConfig {
-  const validated: AuditConfig = {
-    enabled: config.enabled ?? AUDIT_CONFIG.ENABLED,
-    log_path: config.log_path ?? AUDIT_CONFIG.LOG_PATH,
-    max_size_mb: AUDIT_CONFIG.MAX_SIZE_MB,
-    keep_backups: AUDIT_CONFIG.KEEP_BACKUPS
-  };
+  // enabled: must be boolean
+  const enabled =
+    typeof config.enabled === 'boolean' ? config.enabled : AUDIT_CONFIG.ENABLED;
 
-  // Validate max_size_mb
-  if (
-    typeof config.max_size_mb === 'number' &&
-    config.max_size_mb >= AUDIT_CONFIG.MIN_SIZE_MB &&
-    config.max_size_mb <= AUDIT_CONFIG.MAX_SIZE_MB_LIMIT
-  ) {
-    validated.max_size_mb = config.max_size_mb;
-  } else if (config.max_size_mb !== undefined) {
-    if (typeof config.max_size_mb === 'number' && config.max_size_mb > AUDIT_CONFIG.MAX_SIZE_MB_LIMIT) {
-      console.warn(`WARNING: max_size_mb exceeds ${AUDIT_CONFIG.MAX_SIZE_MB_LIMIT}, capping at ${AUDIT_CONFIG.MAX_SIZE_MB_LIMIT}MB`);
-      validated.max_size_mb = AUDIT_CONFIG.MAX_SIZE_MB_LIMIT;
+  // log_path: must be string
+  const log_path =
+    typeof config.log_path === 'string' ? config.log_path : AUDIT_CONFIG.LOG_PATH;
+
+  // max_size_mb: number in [1, 1000]; cap above, default below/wrong-type
+  let max_size_mb: number = AUDIT_CONFIG.MAX_SIZE_MB;
+  if (config.max_size_mb !== undefined) {
+    if (typeof config.max_size_mb === 'number' && !isNaN(config.max_size_mb)) {
+      if (config.max_size_mb > AUDIT_CONFIG.MAX_SIZE_MB_LIMIT) {
+        console.warn(
+          `WARNING: max_size_mb exceeds ${AUDIT_CONFIG.MAX_SIZE_MB_LIMIT}, capping at ${AUDIT_CONFIG.MAX_SIZE_MB_LIMIT}MB`
+        );
+        max_size_mb = AUDIT_CONFIG.MAX_SIZE_MB_LIMIT;
+      } else if (config.max_size_mb < AUDIT_CONFIG.MIN_SIZE_MB) {
+        console.warn(
+          `WARNING: Invalid max_size_mb value, using default (${AUDIT_CONFIG.MAX_SIZE_MB}MB)`
+        );
+        max_size_mb = AUDIT_CONFIG.MAX_SIZE_MB;
+      } else {
+        max_size_mb = config.max_size_mb;
+      }
     } else {
-      console.warn(`WARNING: Invalid max_size_mb value, using default (${AUDIT_CONFIG.MAX_SIZE_MB}MB)`);
-      validated.max_size_mb = AUDIT_CONFIG.MAX_SIZE_MB;
+      console.warn(
+        `WARNING: Invalid max_size_mb value, using default (${AUDIT_CONFIG.MAX_SIZE_MB}MB)`
+      );
+      max_size_mb = AUDIT_CONFIG.MAX_SIZE_MB;
     }
   }
 
-  // Validate keep_backups (MVP only supports 1)
-  if (config.keep_backups !== undefined && config.keep_backups !== AUDIT_CONFIG.KEEP_BACKUPS) {
-    console.warn(`WARNING: keep_backups currently only supports value of ${AUDIT_CONFIG.KEEP_BACKUPS} (MVP limitation)`);
-    validated.keep_backups = AUDIT_CONFIG.KEEP_BACKUPS;
+  // keep_backups: number in [0, 10]; clamp above/below, default for wrong type
+  let keep_backups: number = AUDIT_CONFIG.KEEP_BACKUPS;
+  if (config.keep_backups !== undefined) {
+    if (typeof config.keep_backups === 'number' && !isNaN(config.keep_backups)) {
+      if (config.keep_backups < 0) {
+        console.warn('WARNING: keep_backups cannot be negative, clamping to 0');
+        keep_backups = 0;
+      } else if (config.keep_backups > 10) {
+        console.warn('WARNING: keep_backups exceeds maximum of 10, clamping to 10');
+        keep_backups = 10;
+      } else {
+        keep_backups = config.keep_backups;
+      }
+    } else {
+      console.warn(
+        `WARNING: Invalid keep_backups value, using default (${AUDIT_CONFIG.KEEP_BACKUPS})`
+      );
+      keep_backups = AUDIT_CONFIG.KEEP_BACKUPS;
+    }
   }
 
-  return validated;
+  return { enabled, log_path, max_size_mb, keep_backups };
 }
 
 /**
- * Resolves log path with tilde expansion and relative path handling.
- * Relative paths are resolved relative to ~/.claude/
+ * Resolves log path: expands tilde, passes absolute paths unchanged,
+ * resolves relative paths under ~/.claude/.
  */
 export function resolveLogPath(logPath: string): string {
   const homeDir = os.homedir();
 
-  // Expand tilde
   if (logPath.startsWith('~/')) {
     return path.join(homeDir, logPath.slice(2));
   }
 
-  // Handle absolute paths
   if (path.isAbsolute(logPath)) {
     return logPath;
   }
 
-  // Treat relative paths as relative to ~/.claude/
-  const claudeDir = path.dirname(AUDIT_CONFIG.GLOBAL_CONFIG_PATH);
-
-  // Remove leading './' if present
+  // Relative paths resolve under ~/.claude/
+  const claudeDir = path.join(homeDir, '.claude');
   const cleanPath = logPath.startsWith('./') ? logPath.slice(2) : logPath;
-
   return path.join(claudeDir, cleanPath);
 }

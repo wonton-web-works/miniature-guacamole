@@ -214,115 +214,25 @@ Once a project context is registered, agents can:
 
 ## Output Format
 
-### Add Mode
+Four modes with structured output:
+- **Add**: Registration confirmation with key files and agent usage instructions
+- **List**: Table of all registered contexts (alias, type, path, summary, date)
+- **Inspect**: Detailed info with file access examples (Read/Grep/Glob)
+- **Remove**: Confirmation with optional cache cleanup for GitHub clones
 
-```
-## Project Context Added: {alias}
+See `references/output-examples.md` for full template examples.
 
-### Registration Details
-- **Type**: {local | github}
-- **Path**: {absolute_path}
-- **Project Type**: {detected type}
-- **Added**: {timestamp}
+## Security Considerations
 
-### Context Summary
-{extracted summary from CLAUDE.md or README.md}
+- Paths must be absolute, outside current project, and have read permissions
+- Never read or write external `.claude/memory/` files (except decisions.json read-only)
+- Never spawn agents with external project as working directory
 
-### Key Files Available
-- CLAUDE.md - {brief description}
-- package.json - {project type and dependencies}
-- src/ - {source code structure}
-- tests/ - {test organization}
+## Implementation Notes
 
-### Usage by Agents
-Agents can now read files from this project using:
-- Read: {context_path}/path/to/file
-- Grep: pattern search within {context_path}
-- Glob: file discovery in {context_path}
+V1: local directories only. V2 (future): automatic GitHub clone, context refresh, cross-context search.
 
-### Next Action
-Context registered successfully. Agents can now reference this project.
-```
-
-### List Mode
-
-```
-## Registered Project Contexts
-
-| Alias | Type | Path/URL | Summary | Added |
-|-------|------|----------|---------|-------|
-| api | local | /Users/dev/work/api | Backend REST API (Node/Express) | 2026-02-09 |
-| frontend | local | /Users/dev/work/ui | React frontend app | 2026-02-08 |
-| lib | github | https://github.com/user/lib | Shared utility library | 2026-02-07 |
-
-**Total**: 3 project contexts registered
-
-### Usage
-- Inspect details: `/mg-add-context --inspect {alias}`
-- Remove context: `/mg-add-context --remove {alias}`
-- Add new context: `/mg-add-context {path_or_url}`
-```
-
-### Inspect Mode
-
-```
-## Project Context: {alias}
-
-### Details
-- **Type**: {local | github}
-- **Path**: {absolute_path}
-- **Repository**: {url if github}
-- **Project Type**: {node | python | go | etc}
-- **Added**: {timestamp}
-- **Updated**: {timestamp}
-
-### Context Summary
-{detailed summary from context extraction}
-
-### Architecture Notes
-{extracted architecture information if available}
-
-### Key Files
-- `.claude/CLAUDE.md` - Project overview and framework configuration
-- `package.json` - Node.js project with Express, React, TypeScript
-- `README.md` - Setup and development instructions
-- `.claude/memory/decisions.json` - 15 architecture decisions recorded
-- `src/` - Source code (42 TypeScript files)
-- `tests/` - Test suite (38 test files, Jest framework)
-
-### File Access Examples
-```bash
-# Read the project overview
-Read(file_path="{context_path}/.claude/CLAUDE.md")
-
-# Search for authentication code
-Grep(pattern="authentication", path="{context_path}", output_mode="content")
-
-# List all TypeScript files
-Glob(pattern="**/*.ts", path="{context_path}")
-```
-
-### Next Action
-Use Read, Grep, or Glob tools to explore this project's code and patterns.
-```
-
-### Remove Mode
-
-```
-## Project Context Removed: {alias}
-
-### Removed Details
-- **Type**: {local | github}
-- **Path**: {path}
-- **Was Added**: {timestamp}
-
-{If GitHub clone:}
-### Cleanup
-Cached repository files at `.claude/contexts/{alias}/` were removed.
-
-### Next Action
-Context unregistered. Agents will no longer have access to this project reference.
-```
+See `references/model-escalation-guidance.md` for escalation criteria.
 
 ## Boundaries
 
@@ -344,101 +254,3 @@ Context unregistered. Agents will no longer have access to this project referenc
 **ESCALATES TO:**
 - engineering-manager (if context access patterns need review)
 - security-engineer (if cross-project access raises concerns)
-
-## Security Considerations
-
-### Read-Only Enforcement
-
-Agents MUST respect read-only boundaries. The skill should:
-1. Document paths as read-only in the registry
-2. Never provide write access to external projects
-3. Warn if an agent attempts to write to context paths
-
-### Path Validation
-
-When adding contexts:
-1. Validate paths are absolute and exist
-2. Ensure paths are outside current project (avoid circular references)
-3. Check for .git directories to detect repositories
-4. Verify read permissions
-
-### Memory Isolation
-
-Absolutely enforce:
-1. NO reading external .claude/memory/ files except for architecture decisions (read-only)
-2. NO writing to any external .claude/ files
-3. NO spawning agents with external project as working directory
-4. Each project maintains independent memory state
-
-## Example Use Cases
-
-### 1. Learning from Similar Features
-
-```
-User: "We need to implement user authentication. Can we see how the API project did it?"
-
-Skill: /mg-add-context ~/work/backend-api --alias api
-Agent: Read(file_path="/Users/dev/work/backend-api/src/auth/jwt-strategy.ts")
-```
-
-### 2. Maintaining Consistency
-
-```
-User: "Check if our error handling matches the frontend patterns"
-
-Agent: Grep(pattern="ErrorBoundary", path="{frontend_context_path}")
-Agent: Compare with current project patterns
-```
-
-### 3. Architecture Reference
-
-```
-User: "What decisions did the API team make about database migrations?"
-
-Agent: Read(file_path="{api_context_path}/.claude/memory/decisions.json")
-Agent: Extract migration-related decisions
-```
-
-### 4. Estimation from Similar Work
-
-```
-Product Manager: "How long did the API team take to implement OAuth?"
-
-Agent: Read(file_path="{api_context_path}/.claude/memory/workstream-oauth-state.json")
-Agent: Extract effort and timeline data
-```
-
-## Implementation Notes
-
-### V1 Scope (Minimal Viable)
-
-- Add local directory contexts
-- List and inspect contexts
-- Remove contexts
-- Store context in .claude/memory/project-contexts.json
-- Extract basic context from CLAUDE.md and README.md
-- Manual GitHub clone instructions
-
-### V2 Enhancements (Future)
-
-- Automatic GitHub clone to .claude/contexts/
-- Context update/refresh commands
-- Search across all contexts
-- Pattern analysis across projects
-- Context suggestions based on current task
-- Stale context detection and warnings
-
-## Model Escalation
-
-This skill runs on Sonnet for cost efficiency. Follow `../_shared/model-escalation.md` protocol.
-
-**Escalate to Opus-tier agent when:**
-- Cross-project architecture analysis requires deep reasoning
-- Security implications of context access need expert review
-- Complex pattern extraction across multiple projects
-
-**Stay on Sonnet for:**
-- Adding/removing/listing contexts
-- Reading and summarizing context files
-- Validating paths and permissions
-- Registry management operations

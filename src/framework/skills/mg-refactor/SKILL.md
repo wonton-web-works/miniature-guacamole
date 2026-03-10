@@ -109,63 +109,11 @@ Task:
 
 ## Output Format
 
-**Always show the refactor pipeline diagram at the start:**
+- **Pipeline diagram**: CHARACTERIZE → REFACTOR → VERIFY → REVIEW (always shown at start)
+- **Status box**: phase, tests (with baseline), coverage (with baseline), green/red bar, blocker
+- **Detailed progress**: scope, refactor goals, baseline metrics, current metrics, next action
 
-```
-┌─────────────┐    ┌─────────────┐    ┌─────────────┐    ┌─────────────┐
-│ CHARACTERIZE│───▶│  REFACTOR   │───▶│   VERIFY    │───▶│   REVIEW    │
-│     {s1}    │    │     {s2}    │    │     {s3}    │    │     {s4}    │
-└─────────────┘    └─────────────┘    └─────────────┘    └─────────────┘
-
-Legend: ✓ = done, ● = active, ○ = pending, × = failed
-```
-
-**Then show status box:**
-
-```
-┌─────────────────────────────────────────┐
-│ REFACTOR-{id}: {summary}                │
-├─────────────────────────────────────────┤
-│ Phase:    {phase}                       │
-│ Tests:    {passing}/{total} (baseline: {baseline}) │
-│ Coverage: {percent}% (baseline: {baseline}%) │
-│ Status:   {green_bar or red_bar}       │
-│ Blocker:  {blocker or "none"}           │
-└─────────────────────────────────────────┘
-```
-
-**Followed by detailed progress:**
-
-```
-## Refactor {id}: {summary}
-
-### Scope
-{Description of code being refactored}
-
-### Refactor Goals
-- {Goal 1: e.g., extract duplicated logic}
-- {Goal 2: e.g., improve naming clarity}
-- {Goal 3: e.g., simplify complex conditional}
-
-### Baseline Metrics
-- Tests: {count}
-- Coverage: {percent}%
-- Complexity: {cyclomatic complexity if measured}
-
-### Progress
-- [x] Step 1: Characterization tests written (qa)
-- [x] Step 2: Refactoring executed (dev)
-- [ ] Step 3: Verification complete (qa)
-- [ ] Step 4: Code review (staff-engineer)
-
-### Current Metrics
-- Tests: {count} ({delta} change)
-- Coverage: {percent}% ({delta} change)
-- Green bar: {yes/no}
-
-### Next Action
-{What happens next or who to invoke}
-```
+See `references/output-examples.md` for full template examples.
 
 ## Boundaries
 

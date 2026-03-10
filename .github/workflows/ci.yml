@@ -22,8 +22,8 @@ jobs:
         run: npm ci
       - name: TypeScript type check
         run: npx tsc --noEmit
-      - name: Run tests (excludes enterprise/bench — no Docker in CI)
-        run: npx vitest run --exclude='**/{enterprise,bench}/**' || true
+      - name: Run tests (excludes enterprise/bench — moved to mg-enterprise)
+        run: npx vitest run --exclude='**/{enterprise,bench}/**'
 
   build:
     runs-on: ubuntu-latest

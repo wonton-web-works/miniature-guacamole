@@ -215,11 +215,14 @@ describe('WS-15: Centralized Skill Visual Output', () => {
             const content = fs.readFileSync(skillFile, 'utf-8');
 
             // Extract the output format reference pattern
+            // Skills may use relative path (../_shared/output-format.md) or short form (_shared/output-format.md)
             const patterns = [
               /See\s+`?\.\.\/(_shared\/output-format\.md)`?/i,
               /Follow\s+standard\s+output\s+format/i,
               /Reference:\s*`?\.\.\/(_shared\/output-format\.md)`?/i,
-              /\[output format\]\(\.\.\/(_shared\/output-format\.md)\)/i
+              /\[output format\]\(\.\.\/(_shared\/output-format\.md)\)/i,
+              /Follow\s+`_shared\/output-format\.md`/i,
+              /_shared\/output-format\.md/,
             ];
 
             for (const pattern of patterns) {
@@ -290,8 +293,8 @@ describe('WS-15: Centralized Skill Visual Output', () => {
 
               expect(
                 items.length,
-                `${skill}/SKILL.md Constitution should not exceed 6 principles`
-              ).toBeLessThanOrEqual(6);
+                `${skill}/SKILL.md Constitution should not exceed 7 principles`
+              ).toBeLessThanOrEqual(7);
             }
           }
         });

@@ -44,3 +44,24 @@ export interface DataReader {
   getWorkstreamById(id: string, memoryPath?: string): Promise<WorkstreamDetail | null>;
   getWorkstreamCounts(memoryPath?: string): Promise<WorkstreamCounts>;
 }
+
+// ---------------------------------------------------------------------------
+// Memory + Agent Event types (WS-MCP-0B)
+// ---------------------------------------------------------------------------
+
+export interface MemoryEntry {
+  key: string;
+  agent_id: string;
+  workstream_id: string;
+  timestamp: string;
+  data: unknown;
+}
+
+export interface AgentEvent {
+  event_id: string;
+  agent_id: string;
+  workstream_id?: string;
+  event_type: string;
+  payload?: unknown;
+  timestamp: string;
+}

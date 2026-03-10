@@ -1,5 +1,5 @@
 import { Client } from 'pg';
-import type { WorkstreamSummary, WorkstreamDetail, WorkstreamCounts } from '../types.js';
+import type { WorkstreamSummary, WorkstreamDetail, WorkstreamCounts, MemoryEntry, AgentEvent } from '../types.js';
 import { getMemoryPath } from '../config.js';
 import { normalizeStatus } from './normalize.js';
 
@@ -83,6 +83,92 @@ export async function getWorkstreamById(
     );
     if (result.rows.length === 0) return null;
     return rowToDetail(result.rows[0] as Record<string, unknown>);
+  } finally {
+    await client.end().catch(() => {});
+  }
+}
+
+export async function getAllMemoryEntries(
+  _memoryPath: string = getMemoryPath(),
+  connectionString: string = process.env.MG_POSTGRES_URL ?? '',
+  workstreamId?: string
+): Promise<Pick<MemoryEntry, 'key' | 'agent_id' | 'workstream_id' | 'timestamp'>[]> {
+  const client = new Client({ connectionString });
+  try {
+    await client.connect();
+    let query = 'SELECT key, agent_id, workstream_id, timestamp FROM memory_entries';
+    const params: string[] = [];
+    if (workstreamId) {
+      query += ' WHERE workstream_id = $1';
+      params.push(workstreamId);
+    }
+    query += ' ORDER BY timestamp DESC';
+    const result = await client.query(query, params);
+    return result.rows.map((row) => ({
+      key: row.key as string,
+      agent_id: (row.agent_id as string) || 'unknown',
+      workstream_id: (row.workstream_id as string) || 'unknown',
+      timestamp: (row.timestamp as string) || new Date().toISOString(),
+    }));
+  } finally {
+    await client.end().catch(() => {});
+  }
+}
+
+export async function getMemoryEntry(
+  key: string,
+  _memoryPath: string = getMemoryPath(),
+  connectionString: string = process.env.MG_POSTGRES_URL ?? ''
+): Promise<MemoryEntry | null> {
+  const client = new Client({ connectionString });
+  try {
+    await client.connect();
+    const result = await client.query(
+      'SELECT key, agent_id, workstream_id, timestamp, data FROM memory_entries WHERE key = $1',
+      [key]
+    );
+    if (result.rows.length === 0) return null;
+    const row = result.rows[0];
+    return {
+      key: row.key as string,
+      agent_id: (row.agent_id as string) || 'unknown',
+      workstream_id: (row.workstream_id as string) || 'unknown',
+      timestamp: (row.timestamp as string) || new Date().toISOString(),
+      data: row.data,
+    };
+  } finally {
+    await client.end().catch(() => {});
+  }
+}
+
+export async function getAgentEvents(
+  options: { limit?: number; workstreamId?: string } = {},
+  connectionString: string = process.env.MG_POSTGRES_URL ?? ''
+): Promise<AgentEvent[]> {
+  const { limit = 50, workstreamId } = options;
+  const client = new Client({ connectionString });
+  try {
+    await client.connect();
+    let query = 'SELECT event_id, agent_id, workstream_id, event_type, payload, timestamp FROM agent_events';
+    const params: (string | number)[] = [];
+    if (workstreamId) {
+      query += ' WHERE workstream_id = $1';
+      params.push(workstreamId);
+      query += ` ORDER BY timestamp DESC LIMIT $${params.length + 1}`;
+      params.push(limit);
+    } else {
+      query += ` ORDER BY timestamp DESC LIMIT $1`;
+      params.push(limit);
+    }
+    const result = await client.query(query, params);
+    return result.rows.map((row) => ({
+      event_id: row.event_id as string,
+      agent_id: (row.agent_id as string) || 'unknown',
+      workstream_id: row.workstream_id as string | undefined,
+      event_type: (row.event_type as string) || 'unknown',
+      payload: row.payload,
+      timestamp: (row.timestamp as string) || new Date().toISOString(),
+    }));
   } finally {
     await client.end().catch(() => {});
   }

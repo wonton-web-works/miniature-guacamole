@@ -1,6 +1,6 @@
 import { join } from 'node:path';
 import { readFileSync, existsSync, readdirSync } from 'node:fs';
-import type { WorkstreamSummary, WorkstreamDetail, WorkstreamCounts } from '../types.js';
+import type { WorkstreamSummary, WorkstreamDetail, WorkstreamCounts, MemoryEntry, AgentEvent } from '../types.js';
 import { getMemoryPath } from '../config.js';
 import { normalizeStatus } from './normalize.js';
 
@@ -135,4 +135,58 @@ export async function getWorkstreamCounts(
   }
 
   return { total: workstreams.length, by_status, by_phase };
+}
+
+// ---------------------------------------------------------------------------
+// Memory entry readers (WS-MCP-0B)
+// ---------------------------------------------------------------------------
+
+export async function getAllMemoryEntries(
+  memoryPath: string = getMemoryPath(),
+  workstreamId?: string
+): Promise<Pick<MemoryEntry, 'key' | 'agent_id' | 'workstream_id' | 'timestamp'>[]> {
+  const files = listJsonFiles(memoryPath);
+  const entries: Pick<MemoryEntry, 'key' | 'agent_id' | 'workstream_id' | 'timestamp'>[] = [];
+
+  for (const file of files) {
+    const key = file.replace(/\.json$/, '');
+    const data = readJsonFile(join(memoryPath, file));
+    const agent_id = (data?.agent_id as string) || (data?.from as string) || 'unknown';
+    const workstream_id = (data?.workstream_id as string) || 'unknown';
+    const timestamp = (data?.timestamp as string) || new Date().toISOString();
+
+    if (workstreamId && workstream_id !== workstreamId) continue;
+
+    entries.push({ key, agent_id, workstream_id, timestamp });
+  }
+
+  return entries;
+}
+
+export async function getMemoryEntry(
+  key: string,
+  memoryPath: string = getMemoryPath()
+): Promise<MemoryEntry | null> {
+  const filePath = join(memoryPath, `${key}.json`);
+  if (!existsSync(filePath)) return null;
+
+  try {
+    const content = readFileSync(filePath, 'utf-8');
+    const data: unknown = JSON.parse(content);
+    const obj = data as Record<string, unknown> | null;
+    return {
+      key,
+      agent_id: (obj?.agent_id as string) || (obj?.from as string) || 'unknown',
+      workstream_id: (obj?.workstream_id as string) || 'unknown',
+      timestamp: (obj?.timestamp as string) || new Date().toISOString(),
+      data,
+    };
+  } catch {
+    return null;
+  }
+}
+
+// Events are Postgres-only; filesystem always returns empty array.
+export async function getAgentEvents(): Promise<AgentEvent[]> {
+  return [];
 }

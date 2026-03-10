@@ -4,7 +4,7 @@ layout: home
 hero:
   name: miniature-guacamole
   text: AI-Powered Product Development
-  tagline: A complete product development organization for Claude Code — 19 specialized agents, 16 skills, CAD workflows, and project-local architecture. Run it locally today, or wait for the MCP server coming soon.
+  tagline: A complete product development organization for Claude Code — 19 specialized agents, 16 skills, CAD workflows, and project-local architecture.
   actions:
     - theme: brand
       text: Get Started
@@ -47,9 +47,15 @@ Install the framework directly into any project. Full access to 19 agents, 16 sk
 curl -fsSL https://raw.githubusercontent.com/rivermark-research/miniature-guacamole/main/src/installer/web-install.sh | bash
 ```
 
-### Tier 2: MCP Server (Coming Soon)
+### Tier 2: MCP Server
 
-A single binary that launches an MCP protocol server, HTTP API, dashboard, and managed Postgres instance. Point your IDE at it and the full team is available without per-project installation.
+The `mg-mcp-server` binary reads your project state and exposes it via MCP and a REST API on port 7842. Connects to Postgres if `MG_POSTGRES_URL` is set, falls back to filesystem (`.claude/memory/`) if not. Works with Claude Desktop, Cursor, and any MCP client.
+
+```bash
+npx mg-mcp-server
+```
+
+Exposes workstream, memory, and event resources — read-only, local-only, no auth required. See the [MCP Server docs](/mcp-server) for the full resource list and Claude Desktop config.
 
 ### Tier 3: Commercial Products (Coming Soon)
 

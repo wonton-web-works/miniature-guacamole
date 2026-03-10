@@ -371,8 +371,8 @@ describe('audit/config - validateAuditConfig()', () => {
     });
   });
 
-  describe('Given invalid keep_backups', () => {
-    it('When keep_backups is not 1, Then uses default and warns (MVP limitation)', () => {
+  describe('Given out-of-range keep_backups', () => {
+    it('When keep_backups is 5 (valid), Then accepted as-is with no warning', () => {
       const config = {
         enabled: true,
         log_path: '~/.claude/audit.log',
@@ -382,7 +382,37 @@ describe('audit/config - validateAuditConfig()', () => {
 
       const validated = validateAuditConfig(config);
 
-      expect(validated.keep_backups).toBe(1);
+      expect(validated.keep_backups).toBe(5);
+      expect(consoleWarnSpy).not.toHaveBeenCalled();
+    });
+
+    it('When keep_backups is 99 (above max), Then clamps to 10 and warns', () => {
+      const config = {
+        enabled: true,
+        log_path: '~/.claude/audit.log',
+        max_size_mb: 10,
+        keep_backups: 99
+      };
+
+      const validated = validateAuditConfig(config);
+
+      expect(validated.keep_backups).toBe(10);
+      expect(consoleWarnSpy).toHaveBeenCalledWith(
+        expect.stringContaining('WARNING')
+      );
+    });
+
+    it('When keep_backups is -3 (below min), Then clamps to 0 and warns', () => {
+      const config = {
+        enabled: true,
+        log_path: '~/.claude/audit.log',
+        max_size_mb: 10,
+        keep_backups: -3
+      };
+
+      const validated = validateAuditConfig(config);
+
+      expect(validated.keep_backups).toBe(0);
       expect(consoleWarnSpy).toHaveBeenCalledWith(
         expect.stringContaining('WARNING')
       );

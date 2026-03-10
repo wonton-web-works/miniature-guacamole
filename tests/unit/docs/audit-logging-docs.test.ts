@@ -507,7 +507,10 @@ describe('WS-16-DOCS: Audit Logging Documentation', () => {
         links.push(match[2]);
       }
 
-      const auditLinks = links.filter(link => link.includes('src/audit'));
+      // Only check relative paths (skip http/https URLs)
+      const auditLinks = links.filter(link =>
+        link.includes('src/audit') && !link.startsWith('http')
+      );
 
       if (auditLinks.length > 0) {
         auditLinks.forEach(link => {

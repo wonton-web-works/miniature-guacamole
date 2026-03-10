@@ -1,3 +1,13 @@
+---
+# Skill: mg-init
+# Initializes a project for miniature-guacamole agent collaboration
+
+name: mg-init
+description: "Initialize a project for miniature-guacamole agent collaboration. Creates .claude/memory/, installs shared protocols, detects tech stack."
+model: sonnet
+tools: [Read, Glob, Bash, Write]
+---
+
 # /mg-init
 
 Initialize a project for miniature-guacamole agent collaboration.
@@ -283,3 +293,18 @@ When adding new shared protocols to the framework:
 1. Add to `src/framework/shared/`
 2. Update installer to include the new protocol
 3. Update protocol list in this documentation
+
+## Constitution
+
+1. **Idempotent** - Safe to run multiple times; never overwrites existing content
+2. **Confirm before creating** - Prompt user and explain what will be created, require confirmation
+3. **Preserve user content** - Existing `.claude/` files are never overwritten
+4. **Lightweight detection** - Tech stack detection checks file existence only, no parsing
+5. **Visual standards** - Follow `_shared/output-format.md` for progress reporting
+6. **Project isolation** - All created files are project-local; no absolute paths in generated files
+
+## Boundaries
+
+**CAN:** Create `.claude/` directory structure, install shared protocols, detect tech stack, generate rules templates, run idempotently
+**CANNOT:** Overwrite existing `.claude/` files, commit files to git, modify global `~/.claude/` config, run without user confirmation
+**ESCALATES TO:** engineering-manager (if project structure conflicts or install errors occur)

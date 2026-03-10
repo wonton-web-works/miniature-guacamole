@@ -1,12 +1,12 @@
 ---
-# Skill: mg-debug
-# Structured debugging workflow for investigating and resolving bugs
-
 name: mg-debug
 description: "Debug it. Execute structured debugging: reproduce the issue, investigate root cause, verify fix. Invoke with bug description."
 model: sonnet
-tools: [Read, Glob, Grep, Edit, Write, Task, Bash]
-spawn_cap: 6
+allowed-tools: Read, Glob, Grep, Edit, Write, Task, Bash
+compatibility: "Requires Claude Code with Task tool (agent spawning)"
+metadata:
+  version: "1.0"
+  spawn_cap: "6"
 ---
 
 # mg-debug

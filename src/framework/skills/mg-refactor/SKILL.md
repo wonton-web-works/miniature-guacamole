@@ -1,12 +1,12 @@
 ---
-# Skill: mg-refactor
-# Structured refactoring workflow with test safety net
-
 name: mg-refactor
 description: "Refactor it. Execute safe refactoring: characterization tests, restructure code, verify no regressions. Invoke with refactor scope."
 model: sonnet
-tools: [Read, Glob, Grep, Edit, Write, Task, Bash]
-spawn_cap: 6
+allowed-tools: Read, Glob, Grep, Edit, Write, Task, Bash
+compatibility: "Requires Claude Code with Task tool (agent spawning)"
+metadata:
+  version: "1.0"
+  spawn_cap: "6"
 ---
 
 # mg-refactor

@@ -1,12 +1,12 @@
 ---
-# Skill: mg-design-review
-# Workflow for visual quality and UX assessment
-
 name: mg-design-review
 description: "Visual quality and UX assessment workflow. Invoke for design reviews, brand consistency checks, or visual approval."
 model: sonnet
-tools: [Read, Glob, Grep, Task]
-spawn_cap: 6
+allowed-tools: Read, Glob, Grep, Task
+compatibility: "Requires Claude Code with Task tool (agent spawning)"
+metadata:
+  version: "1.0"
+  spawn_cap: "6"
 ---
 
 # Design Review

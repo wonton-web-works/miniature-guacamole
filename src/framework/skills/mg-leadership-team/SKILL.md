@@ -1,12 +1,12 @@
 ---
-# Skill: mg-leadership-team
-# Orchestrates CEO, CTO, and Engineering Director for strategic decisions
-
 name: mg-leadership-team
 description: "Strategic decisions, executive reviews, code review approvals. Invoke for planning new initiatives or reviewing completed work."
 model: opus
-tools: [Read, Glob, Grep, Task]
-spawn_cap: 6
+allowed-tools: Read, Glob, Grep, Task
+compatibility: "Requires Claude Code with Task tool (agent spawning)"
+metadata:
+  version: "1.0"
+  spawn_cap: "6"
 ---
 
 # Leadership Team

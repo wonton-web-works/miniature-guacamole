@@ -1,12 +1,12 @@
 ---
-# Skill: mg-write
-# Coordinates brand-aligned copywriting workflow
-
 name: mg-write
 description: "Brand-aligned copywriting for marketing, narration, web, and scripts. Invoke for user-facing prose that needs human voice."
 model: sonnet
-tools: [Read, Glob, Grep, Edit, Write, Task]
-spawn_cap: 6
+allowed-tools: Read, Glob, Grep, Edit, Write, Task
+compatibility: "Requires Claude Code with Task tool (agent spawning)"
+metadata:
+  version: "1.0"
+  spawn_cap: "6"
 ---
 
 # Content Team

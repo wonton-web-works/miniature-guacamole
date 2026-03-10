@@ -1,12 +1,12 @@
 ---
-# Skill: mg-security-review
-# Orchestrates security audits and vulnerability assessments
-
 name: mg-security-review
 description: "Performs comprehensive security audits for code vulnerabilities, OWASP Top 10 compliance, authentication/authorization, input validation, XSS, and SQL injection risks. Outputs vulnerability findings with severity ratings and remediation steps."
 model: sonnet
-tools: [Read, Glob, Grep, Edit, Write, Task, Bash]
-spawn_cap: 6
+allowed-tools: Read, Glob, Grep, Edit, Write, Task, Bash
+compatibility: "Requires Claude Code with Task tool (agent spawning)"
+metadata:
+  version: "1.0"
+  spawn_cap: "6"
 ---
 
 # Security Review

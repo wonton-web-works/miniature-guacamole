@@ -50,9 +50,9 @@ describe('Implement Skill - WS-14', () => {
       expect(content).toMatch(/^##\s+Constitution\s*$/m);
     });
 
-    it('should contain ## The TDD Cycle section', () => {
+    it('should contain ## The CAD Cycle section', () => {
       const content = fs.readFileSync(skillPath, 'utf-8');
-      expect(content).toMatch(/^##\s+The TDD Cycle\s*$/m);
+      expect(content).toMatch(/^##\s+The CAD Cycle\s*$/m);
     });
 
     it('should contain ## Memory Protocol section', () => {

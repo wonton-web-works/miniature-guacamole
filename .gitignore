@@ -70,6 +70,8 @@ studio-config.local.yaml
 
 # assets/brand/ is intentionally tracked — brand guide, specs, and terminal theme are version-controlled deliverables
 
-# Enterprise module (private repo: wonton-web-works/mg-enterprise)
+# Internal-only content (lives in wonton-web-works/internal)
 enterprise/
+output/
+miniature-guacamole/
 

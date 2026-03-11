@@ -1,0 +1,35 @@
+episode_id: ep01
+episode_title: "Your Claude Code Just Became a Team"
+
+scenes:
+  - scene_id: "01-hook"
+    narrator_agent: "cto"
+    narration: "Watch what happens when you ask Claude Code to plan a feature."
+    terminal_commands:
+      - command: "/mg-leadership-team plan a user authentication system"
+        wait_after_ms: 500
+    wait_ms: 300
+
+  - scene_id: "02-demo"
+    narrator_agent: "engineering-manager"
+    narration: "The CEO is assessing business value — does this feature justify the investment, does it align with product direction. The CTO is evaluating the technical approach — architecture, risk, dependencies. The Engineering Director is checking operational readiness — team capacity, timeline, what could go wrong in delivery."
+    terminal_commands: []
+    wait_ms: 8000
+
+  - scene_id: "03-reveal"
+    narrator_agent: "product-owner"
+    narration: "Three perspectives. One command. Real workstreams with acceptance criteria, technical constraints, and delivery gates. Not a summary. Not a suggestion. An actual plan your team can execute."
+    terminal_commands: []
+    wait_ms: 1000
+
+  - scene_id: "04-explanation"
+    narrator_agent: "staff-engineer"
+    narration: "That was miniature-guacamole. 19 agents, 16 skills, zero hallway meetings. Each agent has a defined role, a bounded scope, and a protocol for handing off to the next one. One framework that turns Claude Code into a product development team."
+    terminal_commands: []
+    wait_ms: 500
+
+  - scene_id: "05-cta"
+    narrator_agent: "engineering-manager"
+    narration: "Next episode: how to install it in 60 seconds. Link in the description."
+    terminal_commands: []
+    wait_ms: 500

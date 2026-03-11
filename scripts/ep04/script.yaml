@@ -1,0 +1,77 @@
+episode_id: ep04
+episode_title: "Build a Feature From Scratch (Full Walkthrough)"
+
+scenes:
+  - scene_id: "01-intro"
+    narrator_agent: "engineering-manager"
+    narration: "We are building a rate limiter. Real project, real code. We are going to run every step — assess, build, review, ship — and narrate what is happening and why. This is the reference episode. If you want to understand how miniature-guacamole works end to end, this is it."
+    terminal_commands: []
+    wait_ms: 500
+
+  - scene_id: "02-assess"
+    narrator_agent: "engineering-manager"
+    narration: "First step is always assessment. Before any code, we want the leadership team's read on the feature. Is this the right thing to build? Are there architectural concerns? What are the acceptance criteria?"
+    terminal_commands:
+      - command: "/mg-assess build a rate limiter for the API — 100 req/min per user, sliding window"
+        wait_after_ms: 2000
+    wait_ms: 500
+
+  - scene_id: "03-assess-output"
+    narrator_agent: "cto"
+    narration: "The assessment produces a feature spec with three sections: business rationale, technical approach, and delivery scope. The technical section flags the key decision upfront — sliding window versus fixed window, and whether to use Redis or in-memory storage. We need to make that call before writing a line of code."
+    terminal_commands: []
+    wait_ms: 1000
+
+  - scene_id: "04-decision"
+    narrator_agent: "cto"
+    narration: "We go with Redis and sliding window. The spec records the decision. Now the build has a clear constraint: any implementation that does not use Redis fails the gate. That constraint gets embedded in the artifact bundle that dev receives."
+    terminal_commands: []
+    wait_ms: 500
+
+  - scene_id: "05-build-start"
+    narrator_agent: "engineering-manager"
+    narration: "Now we run mg-build. The skill reads the assessment output, creates a task in the queue, and spawns QA first."
+    terminal_commands:
+      - command: "/mg-build implement WS-RATELIMIT-1"
+        wait_after_ms: 1000
+    wait_ms: 500
+
+  - scene_id: "06-qa-tests"
+    narrator_agent: "qa"
+    narration: "QA writes misuse tests first. Exceeding the limit. Malformed user IDs. Redis unavailable — does the system fail open or closed? Concurrent requests hitting the exact boundary. These are the cases that break rate limiters in production. We write them before the implementation exists so we cannot accidentally design around them."
+    terminal_commands: []
+    wait_ms: 1000
+
+  - scene_id: "07-dev-implements"
+    narrator_agent: "engineering-manager"
+    narration: "Dev gets the artifact bundle: test specs, the Redis constraint, coverage gate at 99 percent. The implementation comes back clean. All 23 tests passing. Coverage at 99.3 percent. The mechanical gate check runs — this is a contained change in a single module. No new architecture. Mechanical path."
+    terminal_commands: []
+    wait_ms: 500
+
+  - scene_id: "08-code-review"
+    narrator_agent: "qa"
+    narration: "Even on the mechanical path, we run a code review. The mg-code-review skill checks for common issues: error handling, type safety, test quality. It flags one thing — the Redis connection error handling swallows the exception without logging. Dev fixes it. Second pass is clean."
+    terminal_commands:
+      - command: "/mg-code-review check WS-RATELIMIT-1"
+        wait_after_ms: 2000
+    wait_ms: 500
+
+  - scene_id: "09-leadership-approve"
+    narrator_agent: "engineering-manager"
+    narration: "Final step: leadership team review before the PR goes up. This is a lightweight check — not a full assessment, just a confirmation that the implementation matches the spec and the decision log is consistent."
+    terminal_commands:
+      - command: "/mg-leadership-team review WS-RATELIMIT-1"
+        wait_after_ms: 2000
+    wait_ms: 500
+
+  - scene_id: "10-wrap"
+    narrator_agent: "cto"
+    narration: "Assess, build, review, approve. The whole cycle on a real feature. The rate limiter is in main. Every decision is logged. Every gate is recorded. If something goes wrong in production, we have a complete trace from spec to ship."
+    terminal_commands: []
+    wait_ms: 500
+
+  - scene_id: "11-cta"
+    narrator_agent: "engineering-manager"
+    narration: "Next episode we cover the org chart — all 19 agents, when to use which, and how delegation flows through the hierarchy. Link in the description."
+    terminal_commands: []
+    wait_ms: 500

@@ -1,0 +1,61 @@
+episode_id: ep09
+episode_title: "Debugging and Refactoring the Agent Way"
+
+scenes:
+  - scene_id: "01-intro"
+    narrator_agent: "qa"
+    narration: "Two skills that cover problems you hit every day. mg-debug for when something is broken and you need to understand why before you can fix it. mg-refactor for when something works but the code is a mess and you need to clean it up without breaking anything. We are going to run both."
+    terminal_commands: []
+    wait_ms: 500
+
+  - scene_id: "02-debug-intro"
+    narrator_agent: "qa"
+    narration: "mg-debug takes a description of the broken behavior and the relevant context — stack trace, test output, failing assertion. It does not guess. It produces a structured root cause analysis: what is broken, why, what the likely cause is, and what to verify before fixing."
+    terminal_commands: []
+    wait_ms: 500
+
+  - scene_id: "03-run-debug"
+    narrator_agent: "qa"
+    narration: "We have a failing test. The rate limiter is allowing requests through after the window resets — but only under concurrent load. Intermittent. Happens about one in ten runs. Classic race condition shape."
+    terminal_commands:
+      - command: "/mg-debug WS-RATELIMIT-1 — rate limiter allows extra requests under concurrent load after window reset"
+        wait_after_ms: 2000
+    wait_ms: 500
+
+  - scene_id: "04-debug-output"
+    narrator_agent: "staff-engineer"
+    narration: "The debug output identifies the likely cause: a check-then-act pattern on the Redis counter without a transaction. The window reset check and the increment are two separate Redis calls. Under concurrent load, two requests can both pass the check before either increments the counter. The fix is to use a Redis transaction or a Lua script to make the check-and-increment atomic."
+    terminal_commands: []
+    wait_ms: 1000
+
+  - scene_id: "05-debug-verify"
+    narrator_agent: "qa"
+    narration: "The debug output also tells you what to verify: write a test that hammers the boundary with 50 concurrent requests and confirms the count never exceeds the limit. Run it 100 times. If the race condition hypothesis is correct, the test fails consistently before the fix and passes consistently after."
+    terminal_commands: []
+    wait_ms: 500
+
+  - scene_id: "06-refactor-intro"
+    narrator_agent: "qa"
+    narration: "Now mg-refactor. Different problem. We have a function that works but grew organically — it is 200 lines, does three things, and has no tests at the unit level. We need to clean it up without breaking the integration tests that cover it."
+    terminal_commands:
+      - command: "/mg-refactor src/api/processPayment.ts — extract responsibilities, maintain test coverage"
+        wait_after_ms: 2000
+    wait_ms: 500
+
+  - scene_id: "07-refactor-output"
+    narrator_agent: "engineering-manager"
+    narration: "mg-refactor does not just rewrite the function. It produces a refactoring plan first: what to extract, in what order, with what intermediate test additions to keep the safety net tight throughout the process. The plan has steps. Each step is a safe extraction. You can stop after any step and the code still works."
+    terminal_commands: []
+    wait_ms: 1000
+
+  - scene_id: "08-refactor-safety"
+    narrator_agent: "staff-engineer"
+    narration: "The test-safe constraint is not optional. mg-refactor will not propose an extraction that breaks existing test coverage. If the function has no unit tests, the plan starts with adding them before doing any restructuring. You cannot refactor into a worse coverage situation. The gate enforces it."
+    terminal_commands: []
+    wait_ms: 500
+
+  - scene_id: "09-cta"
+    narrator_agent: "qa"
+    narration: "Last episode of Season 1 is next — recap of the ten most interesting moments and a look at what is coming. Link in the description."
+    terminal_commands: []
+    wait_ms: 500

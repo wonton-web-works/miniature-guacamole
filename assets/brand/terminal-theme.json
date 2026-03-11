@@ -1,0 +1,50 @@
+{
+  "name": "coding-capybaras",
+  "description": "Dark terminal theme for miniature-guacamole screen recordings. High contrast, no transparency.",
+  "version": "1.0.0",
+
+  "background": "#121820",
+  "foreground": "#E8E8E8",
+  "cursor": "#4A7C59",
+  "cursor_text": "#121820",
+  "selection": "#2E6E8E",
+  "selection_text": "#E8E8E8",
+
+  "black": "#1E2A38",
+  "bright_black": "#3D4F63",
+
+  "red": "#C75F5F",
+  "bright_red": "#E07070",
+
+  "green": "#4A7C59",
+  "bright_green": "#6AAD7A",
+
+  "yellow": "#B8954A",
+  "bright_yellow": "#D4AE6A",
+
+  "blue": "#2E6E8E",
+  "bright_blue": "#4A90B8",
+
+  "magenta": "#7A5C8B",
+  "bright_magenta": "#9A7CAB",
+
+  "cyan": "#3D5A6B",
+  "bright_cyan": "#5A7A8E",
+
+  "white": "#C8D4E0",
+  "bright_white": "#E8E8E8",
+
+  "notes": {
+    "intended_use": "Screen recordings for the Coding Capybaras YouTube channel (miniature-guacamole)",
+    "character_color_mapping": {
+      "green": "Engineering Manager #4A7C59",
+      "blue": "CTO #2E6E8E",
+      "magenta": "QA #7A5C8B",
+      "cyan": "Staff Engineer #3D5A6B",
+      "yellow": "Product Owner (approximated from #8B4A2E — shifted to yellow for terminal readability)"
+    },
+    "iterm2_import": "File > Import Color Presets",
+    "no_transparency": "All colors are opaque hex values. Do not add transparency — it causes washed-out colors in screen recordings.",
+    "font_recommendation": "JetBrains Mono 16px or larger for recording readability"
+  }
+}

@@ -96,7 +96,7 @@ Use it to orchestrate complex product development workflows with AI agents that 
 ### 1. Install
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/rivermark-research/miniature-guacamole/main/src/installer/web-install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/wonton-web-works/miniature-guacamole/main/src/installer/web-install.sh | bash
 ```
 
 # Output: Installs framework to .claude/ in your current directory
@@ -128,13 +128,13 @@ Three install methods: web-install (recommended), tarball (offline/CI), or from 
 One-liner using `web-install.sh` — downloads and installs latest release:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/rivermark-research/miniature-guacamole/main/src/installer/web-install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/wonton-web-works/miniature-guacamole/main/src/installer/web-install.sh | bash
 ```
 
 Or pin to a specific version:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/rivermark-research/miniature-guacamole/main/src/installer/web-install.sh -o mg-web-install.sh
+curl -fsSL https://raw.githubusercontent.com/wonton-web-works/miniature-guacamole/main/src/installer/web-install.sh -o mg-web-install.sh
 chmod +x mg-web-install.sh
 ./mg-web-install.sh --version v1.0.0 /path/to/project
 ```
@@ -145,7 +145,7 @@ Then run `/mg-init` in Claude Code to initialize your project.
 
 ```bash
 # Download latest release
-curl -fsSL https://github.com/rivermark-research/miniature-guacamole/releases/latest/download/miniature-guacamole.tar.gz -o mg.tar.gz
+curl -fsSL https://github.com/wonton-web-works/miniature-guacamole/releases/latest/download/miniature-guacamole.tar.gz -o mg.tar.gz
 tar -xzf mg.tar.gz
 cd miniature-guacamole
 
@@ -157,7 +157,7 @@ cd miniature-guacamole
 
 ```bash
 # Clone the repository
-git clone https://github.com/rivermark-research/miniature-guacamole.git
+git clone https://github.com/wonton-web-works/miniature-guacamole.git
 cd miniature-guacamole
 
 # Build the distribution
@@ -947,4 +947,4 @@ See [CHANGELOG.md](CHANGELOG.md) for complete version history.
 
 ---
 
-**Built with Claude Code** | [Report Issues](https://github.com/rivermark-research/miniature-guacamole/issues) | [Documentation](src/framework/CLAUDE.md)
+**Built with Claude Code** | [Report Issues](https://github.com/wonton-web-works/miniature-guacamole/issues) | [Documentation](src/framework/CLAUDE.md)

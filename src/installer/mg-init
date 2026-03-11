@@ -40,7 +40,7 @@ NC='\033[0m' # No Color
 
 # Configuration
 CACHE_DIR="$HOME/.cache/miniature-guacamole"
-GITHUB_REPO="rivermark-research/miniature-guacamole"
+GITHUB_REPO="wonton-web-works/miniature-guacamole"
 GITHUB_API="https://api.github.com/repos/$GITHUB_REPO"
 VERSION="latest"
 FORCE=false

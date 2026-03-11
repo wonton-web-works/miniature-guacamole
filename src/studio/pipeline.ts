@@ -184,6 +184,23 @@ export async function runPipeline(options: PipelineOptions): Promise<PipelineRes
   }
 
   // ── Step 3: Mux ───────────────────────────────────────────────────────────
+
+  // In dry-run mode, skip mux — no real audio/video files exist
+  if (options.dryRun) {
+    state.completedSteps.push('mux');
+    state.outputPath = path.join(options.outputDir, 'raw-cut.mp4');
+    state.status = 'DONE';
+    state.updatedAt = new Date().toISOString();
+    await writeProductionState(state, options.memoryDir);
+
+    return {
+      episodeId: options.episodeId,
+      outputPath: state.outputPath,
+      tapePath: tapeOutput.tapePath,
+      narrationPaths,
+    };
+  }
+
   const outputMp4Path = path.join(options.outputDir, 'raw-cut.mp4');
   const terminalVideoPath = path.join(options.outputDir, 'terminal.mp4');
 

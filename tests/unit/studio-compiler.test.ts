@@ -336,7 +336,7 @@ describe('compiler.ts — Boundary Cases', () => {
         wait_ms: 200,
       };
       const tape = generateTape({ ...VALID_SCRIPT, scenes: [scene] });
-      expect(tape).toContain("Type '/mg-build'");
+      expect(tape).toContain('Type "/mg-build"');
       expect(tape).toContain('Enter');
     });
 
@@ -535,24 +535,24 @@ describe('compiler.ts — Golden Path', () => {
 
     it('includes Type and Enter directives for each terminal command', () => {
       const tape = generateTape(VALID_SCRIPT);
-      expect(tape).toContain("Type '/mg-leadership-team review WS-42'");
+      expect(tape).toContain('Type "/mg-leadership-team review WS-42"');
       expect(tape).toContain('Enter');
     });
 
     it('includes Sleep directive for wait_after_ms after a command', () => {
       const tape = generateTape(VALID_SCRIPT);
-      expect(tape).toContain('Sleep 2000');
+      expect(tape).toContain('Sleep 2000ms');
     });
 
     it('includes Sleep directive for scene wait_ms', () => {
       const tape = generateTape(VALID_SCRIPT);
-      expect(tape).toContain('Sleep 500');
+      expect(tape).toContain('Sleep 500ms');
     });
 
     it('generates Sleep for narration-only scene (no commands) for estimated narration duration', () => {
       const tape = generateTape(VALID_SCRIPT);
       // Scene 02 has no commands — must have a sleep for estimated narration duration
-      const sleepMatches = [...tape.matchAll(/^Sleep\s+(\d+)/gm)];
+      const sleepMatches = [...tape.matchAll(/^Sleep\s+(\d+)ms/gm)];
       expect(sleepMatches.length).toBeGreaterThan(1);
     });
 
@@ -605,7 +605,7 @@ describe('compiler.ts — Golden Path', () => {
       await compile(scriptPath, outputPath);
 
       const content = fs.readFileSync(outputPath, 'utf-8');
-      expect(content).toContain("Type '/mg-leadership-team review WS-42'");
+      expect(content).toContain('Type "/mg-leadership-team review WS-42"');
     });
   });
 });

@@ -65,6 +65,11 @@ coverage-adapters.json
 # Personal/dev scripts
 src/installer/mg-cleanup-brodie.sh
 
+# Studio config with real API keys (template with placeholders is tracked)
+studio-config.local.yaml
+
+# assets/brand/ is intentionally tracked — brand guide, specs, and terminal theme are version-controlled deliverables
+
 # Enterprise module (private repo: rivermark-research/mg-enterprise)
 enterprise/
 

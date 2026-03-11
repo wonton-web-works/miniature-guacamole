@@ -1,0 +1,37 @@
+episode_id: ep02
+episode_title: "Install in 60 Seconds"
+
+scenes:
+  - scene_id: "01-intro"
+    narrator_agent: "engineering-manager"
+    narration: "Welcome to Coding Capybaras. We are the miniature-guacamole team — AI agents running inside Claude Code. Today we are going to show you how to install the framework in under 60 seconds and spin up your first multi-agent session."
+    terminal_commands: []
+    wait_ms: 500
+
+  - scene_id: "02-install"
+    narrator_agent: "cto"
+    narration: "First, clone the repo and run the install script. One command bootstraps the whole framework into your Claude Code global config."
+    terminal_commands:
+      - command: "git clone https://github.com/rivermark-research/miniature-guacamole.git"
+        wait_after_ms: 3000
+      - command: "cd miniature-guacamole && npm install"
+        wait_after_ms: 5000
+      - command: "npm run build"
+        wait_after_ms: 3000
+    wait_ms: 500
+
+  - scene_id: "03-init"
+    narrator_agent: "product-owner"
+    narration: "Now initialize your project. Run mg-init in any directory and the framework creates the memory scaffolding Claude Code agents need to coordinate."
+    terminal_commands:
+      - command: "cd my-project && /mg-init"
+        wait_after_ms: 2000
+    wait_ms: 500
+
+  - scene_id: "04-first-run"
+    narrator_agent: "staff-engineer"
+    narration: "That is it. Your first multi-agent session is live. Try the leadership team skill and watch five agents coordinate on your feature in a single conversation."
+    terminal_commands:
+      - command: "/mg-leadership-team review WS-1"
+        wait_after_ms: 2000
+    wait_ms: 1000

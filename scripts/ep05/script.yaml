@@ -1,0 +1,59 @@
+episode_id: ep05
+episode_title: "19 Agents, One System: The Org Chart Explained"
+
+scenes:
+  - scene_id: "01-intro"
+    narrator_agent: "cto"
+    narration: "There are 19 agents in miniature-guacamole. The question every new user asks is: which one do I talk to? The answer depends on what you want to accomplish and how much authority you need behind the response. We are going to walk through the hierarchy from top to bottom."
+    terminal_commands: []
+    wait_ms: 500
+
+  - scene_id: "02-top-level"
+    narrator_agent: "cto"
+    narration: "At the top is the CEO. CEO handles strategic decisions, budget framing, stakeholder communication. If you need a business case written or a product direction validated, that is CEO territory. Below CEO is CTO — technical strategy, architecture, build versus buy decisions. Below CTO is the Engineering Manager, who owns delivery: team capacity, workstream planning, blockers."
+    terminal_commands: []
+    wait_ms: 500
+
+  - scene_id: "03-delegation-rules"
+    narrator_agent: "staff-engineer"
+    narration: "The hierarchy enforces bounded delegation. Maximum three levels deep on any task. CEO can spawn CTO, CTO can spawn Staff Engineer, Staff Engineer can spawn Dev. That is the chain. If Dev needs to ask a question that requires CEO context, that escalates back up — it does not jump the chain. This prevents context collapse where an agent deep in the tree is making decisions with incomplete information."
+    terminal_commands: []
+    wait_ms: 500
+
+  - scene_id: "04-task-agents"
+    narrator_agent: "cto"
+    narration: "The task agents are Dev and QA. They do the actual implementation work. Dev writes code. QA writes tests and verifies coverage. Both run with artifact bundles — curated context rather than full memory access. The design is intentional: task agents should not need to know the business strategy to write a function."
+    terminal_commands: []
+    wait_ms: 500
+
+  - scene_id: "05-specialist-agents"
+    narrator_agent: "engineering-manager"
+    narration: "Then there are the specialist agents. Security Engineer runs OWASP checks. Accessibility Specialist runs WCAG 2.1 AA audits. DevOps handles CI/CD and infrastructure. Data Engineer handles pipeline and schema design. Each specialist is scoped to a domain. You do not invoke them directly on most workstreams — they get pulled in when the skill requires it."
+    terminal_commands: []
+    wait_ms: 500
+
+  - scene_id: "06-coordination-agents"
+    narrator_agent: "staff-engineer"
+    narration: "The coordination agents are different from task agents. Product Manager, Product Owner, Design, UX Researcher — these agents help define what gets built. They are stateful role simulators with full memory access. You bring them in during planning, not during implementation. The distinction matters: coordination agents shape the spec, task agents execute it."
+    terminal_commands: []
+    wait_ms: 500
+
+  - scene_id: "07-invoking-directly"
+    narrator_agent: "cto"
+    narration: "You can invoke any agent directly. If you have a specific architecture question, spawn the CTO. If you need a security review on a single file, spawn the Security Engineer. The skills orchestrate the right agents for common workflows, but the agents are available individually when you know exactly what you need."
+    terminal_commands:
+      - command: "Ask the security-engineer to review auth/jwt.ts"
+        wait_after_ms: 1500
+    wait_ms: 500
+
+  - scene_id: "08-loop-prevention"
+    narrator_agent: "staff-engineer"
+    narration: "One constraint worth knowing: loop prevention. An agent cannot spawn itself and cannot spawn an agent that has already spawned it in the current chain. If you hit a loop, the framework surfaces it rather than silently cycling. In practice this rarely comes up, but the rule keeps agent chains from going recursive in unexpected ways."
+    terminal_commands: []
+    wait_ms: 500
+
+  - scene_id: "09-cta"
+    narrator_agent: "engineering-manager"
+    narration: "Next episode: code review, security review, and accessibility — all in one command. Link in the description."
+    terminal_commands: []
+    wait_ms: 500

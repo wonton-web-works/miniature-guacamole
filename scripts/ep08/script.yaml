@@ -1,0 +1,63 @@
+episode_id: ep08
+episode_title: "Multi-Project Setup and Isolation"
+
+scenes:
+  - scene_id: "01-intro"
+    narrator_agent: "cto"
+    narration: "Most developers work on more than one project. Maybe a client project and a side project. Maybe two client projects with NDAs. miniature-guacamole is designed for this. The agents install globally, the memory lives locally in each project. Here is how to set it up and verify the isolation actually works."
+    terminal_commands: []
+    wait_ms: 500
+
+  - scene_id: "02-global-agents"
+    narrator_agent: "cto"
+    narration: "When you run the installer, the agents and skills go into your global Claude Code config at tilde-slash-.claude. That is one copy of the agent definitions, shared across every project. No duplication. When you update the framework, all projects get the update automatically."
+    terminal_commands:
+      - command: "ls ~/.claude/agents/"
+        wait_after_ms: 1000
+    wait_ms: 500
+
+  - scene_id: "03-project-init"
+    narrator_agent: "engineering-manager"
+    narration: "Each project gets its own memory scaffolding. Run mg-init in the project directory. That creates the .claude/memory directory and the project-specific CLAUDE.md. This is all the framework writes into your project. Nothing else. Your existing code is untouched."
+    terminal_commands:
+      - command: "cd ~/projects/client-a && /mg-init"
+        wait_after_ms: 1500
+      - command: "cd ~/projects/client-b && /mg-init"
+        wait_after_ms: 1500
+    wait_ms: 500
+
+  - scene_id: "04-verify-isolation"
+    narrator_agent: "cto"
+    narration: "Now run a workstream in client-a. Create a memory entry, make a decision, write a handoff. Then switch to client-b and check whether any of that bleeds over."
+    terminal_commands:
+      - command: "cd ~/projects/client-a && /mg-leadership-team plan new user onboarding flow"
+        wait_after_ms: 2000
+      - command: "cd ~/projects/client-b && cat .claude/memory/decisions.json"
+        wait_after_ms: 1000
+    wait_ms: 500
+
+  - scene_id: "05-isolation-confirmed"
+    narrator_agent: "staff-engineer"
+    narration: "Client-b has no memory of what happened in client-a. The decisions.json is empty. The handoff files do not exist. The workstream state files do not exist. This is the NDA guarantee in practice — not a policy, a structural constraint. The memory cannot bleed because it is never written to a shared location."
+    terminal_commands: []
+    wait_ms: 500
+
+  - scene_id: "06-cross-project-references"
+    narrator_agent: "cto"
+    narration: "There is one exception: project-contexts.json. If you want to share read-only context across projects — a shared design system, a common API contract — you can configure cross-project references. These are explicit and one-way. Project B can read from Project A's context but cannot write to it. You configure this intentionally. Nothing crosses the boundary by accident."
+    terminal_commands: []
+    wait_ms: 500
+
+  - scene_id: "07-upgrading"
+    narrator_agent: "engineering-manager"
+    narration: "When a new version of miniature-guacamole ships, upgrading is one command. Pull the latest, run the build, run the installer. The global agent definitions update. Your project-local memory is untouched — the installer only writes to the global config, never to individual project directories."
+    terminal_commands:
+      - command: "cd miniature-guacamole && git pull && npm run build && npm run install-framework"
+        wait_after_ms: 3000
+    wait_ms: 500
+
+  - scene_id: "08-cta"
+    narrator_agent: "cto"
+    narration: "Next episode: debugging and refactoring the agent way. Two skills that solve daily pain — mg-debug and mg-refactor. Link in the description."
+    terminal_commands: []
+    wait_ms: 500

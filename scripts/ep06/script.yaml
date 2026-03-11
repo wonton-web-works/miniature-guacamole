@@ -1,0 +1,63 @@
+episode_id: ep06
+episode_title: "Code Review, Security Review, and Accessibility — In One Command"
+
+scenes:
+  - scene_id: "01-intro"
+    narrator_agent: "qa"
+    narration: "Three kinds of review that most teams skip because they take time: code quality, security, and accessibility. miniature-guacamole has dedicated skills for all three. We are going to run them against a real codebase and show what each produces."
+    terminal_commands: []
+    wait_ms: 500
+
+  - scene_id: "02-code-review"
+    narrator_agent: "qa"
+    narration: "Start with mg-code-review. Point it at a PR or a workstream. The skill pulls the relevant files, spawns the dev agent as reviewer, and produces a structured report: issues by severity, test coverage gaps, and any patterns that violate the engineering principles on file."
+    terminal_commands:
+      - command: "/mg-code-review check PR-47"
+        wait_after_ms: 2000
+    wait_ms: 500
+
+  - scene_id: "03-code-review-output"
+    narrator_agent: "engineering-manager"
+    narration: "The output has three sections. Blocking issues — things that should not merge. Warnings — things worth fixing but not merge blockers. Observations — patterns to watch over time. This run flagged two blocking issues: a missing null check on the user input handler and a test that was asserting on implementation details rather than behavior."
+    terminal_commands: []
+    wait_ms: 1000
+
+  - scene_id: "04-security-review"
+    narrator_agent: "qa"
+    narration: "Now mg-security-review. This invokes the Security Engineer agent against the same codebase. The agent runs a structured OWASP Top 10 check. It is not a static analysis tool — it reads the code and reasons about the attack surface. It catches things that linters miss."
+    terminal_commands:
+      - command: "/mg-security-review check PR-47"
+        wait_after_ms: 2000
+    wait_ms: 500
+
+  - scene_id: "05-security-output"
+    narrator_agent: "staff-engineer"
+    narration: "This run surfaced a session token that was being logged at the INFO level. Not a critical vulnerability, but it is sensitive data in logs — which means it ends up in whatever log aggregation system you are running. The security review caught it. The code review did not, because it is not primarily looking for that class of issue. This is why the skills are separated."
+    terminal_commands: []
+    wait_ms: 1000
+
+  - scene_id: "06-accessibility-review"
+    narrator_agent: "qa"
+    narration: "Third skill: mg-accessibility-review. The Accessibility Specialist agent runs a WCAG 2.1 AA audit against your UI components or rendered HTML. It checks for missing ARIA labels, insufficient color contrast, keyboard navigation gaps, and form field associations."
+    terminal_commands:
+      - command: "/mg-accessibility-review check src/components/LoginForm.tsx"
+        wait_after_ms: 2000
+    wait_ms: 500
+
+  - scene_id: "07-accessibility-output"
+    narrator_agent: "engineering-manager"
+    narration: "Two findings on the login form. The password field was missing an aria-label — the placeholder text was doing double duty, which breaks screen readers. And the error message container was not connected to the input via aria-describedby, so screen reader users would not hear the error on field blur. Both are quick fixes. Both are real accessibility failures."
+    terminal_commands: []
+    wait_ms: 1000
+
+  - scene_id: "08-combined-workflow"
+    narrator_agent: "cto"
+    narration: "You can run all three in sequence or invoke them individually. For most PRs, you want all three before merge. The combined runtime is a few minutes per PR. The alternative is skipping them and spending hours debugging a prod issue or filing an accessibility remediation ticket six months from now."
+    terminal_commands: []
+    wait_ms: 500
+
+  - scene_id: "09-cta"
+    narrator_agent: "qa"
+    narration: "Next episode: how agents share context — memory, handoffs, and workstream state. Link in the description."
+    terminal_commands: []
+    wait_ms: 500

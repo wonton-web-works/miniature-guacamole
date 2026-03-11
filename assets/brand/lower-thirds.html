@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Coding Capybaras — Lower-Third Overlays</title>
+  <style>
+    /* -----------------------------------------------
+       Page chrome — dark preview area simulating video
+    ----------------------------------------------- */
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background: #0a0a0a;
+      font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', sans-serif;
+      padding: 40px;
+      color: #e8e8e8;
+    }
+
+    h1 {
+      font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', sans-serif;
+      font-weight: 600;
+      font-size: 13px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: #4a7c59;
+      margin-bottom: 8px;
+    }
+
+    .subtitle {
+      font-size: 12px;
+      color: #4a5568;
+      margin-bottom: 48px;
+    }
+
+    /* -----------------------------------------------
+       1920x1080 preview frame (scaled to fit)
+    ----------------------------------------------- */
+    .preview-frame {
+      position: relative;
+      width: 960px;   /* 1920 / 2 for display */
+      height: 540px;  /* 1080 / 2 for display */
+      background: #121820;
+      border: 1px solid #1e2a38;
+      border-radius: 4px;
+      overflow: hidden;
+      margin-bottom: 48px;
+    }
+
+    .preview-label {
+      position: absolute;
+      top: 12px;
+      right: 16px;
+      font-size: 10px;
+      letter-spacing: 0.06em;
+      color: #2d3748;
+      font-family: 'JetBrains Mono', 'Fira Code', 'Courier New', monospace;
+    }
+
+    /* All 6 cards positioned in bottom-left, offset by index */
+    .preview-cards {
+      position: absolute;
+      bottom: 40px;  /* 80px / 2 */
+      left: 40px;    /* 80px / 2 */
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    /* -----------------------------------------------
+       Lower-third card — the actual overlay component
+       Full-size: 400x80px
+    ----------------------------------------------- */
+    .lower-third {
+      display: flex;
+      align-items: center;
+      width: 400px;
+      height: 80px;
+      background: rgba(0, 0, 0, 0.75);
+      border-radius: 4px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    /* Left color bar */
+    .lower-third__bar {
+      width: 4px;
+      height: 100%;
+      flex-shrink: 0;
+    }
+
+    /* Avatar circle placeholder */
+    .lower-third__avatar {
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      margin: 0 14px 0 12px;
+      flex-shrink: 0;
+      opacity: 0.9;
+    }
+
+    /* Text block */
+    .lower-third__text {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: 4px;
+      padding-right: 16px;
+      min-width: 0;
+    }
+
+    .lower-third__name {
+      font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', sans-serif;
+      font-weight: 700;
+      font-size: 16px;
+      line-height: 1.2;
+      color: #ffffff;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .lower-third__role {
+      font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', sans-serif;
+      font-weight: 400;
+      font-size: 12px;
+      line-height: 1.3;
+      color: #b0b0b0;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    /* -----------------------------------------------
+       Section list below preview frames
+    ----------------------------------------------- */
+    .cards-list-section {
+      margin-top: 64px;
+    }
+
+    .section-header {
+      font-size: 11px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: #4a5568;
+      margin-bottom: 24px;
+      font-family: 'JetBrains Mono', 'Fira Code', 'Courier New', monospace;
+    }
+
+    .cards-list {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .card-row {
+      display: flex;
+      align-items: center;
+      gap: 24px;
+    }
+
+    .card-meta {
+      font-family: 'JetBrains Mono', 'Fira Code', 'Courier New', monospace;
+      font-size: 11px;
+      color: #4a5568;
+      width: 160px;
+      flex-shrink: 0;
+    }
+
+    .card-meta span {
+      display: block;
+    }
+
+    .card-meta .char-color {
+      margin-top: 2px;
+      letter-spacing: 0.04em;
+    }
+
+    /* -----------------------------------------------
+       Character-specific color vars
+    ----------------------------------------------- */
+    .char-ceo       { --char-color: #2D2D2D; }
+    .char-cto       { --char-color: #2E6E8E; }
+    .char-em        { --char-color: #4A7C59; }
+    .char-po        { --char-color: #8B4A2E; }
+    .char-qa        { --char-color: #7A5C8B; }
+    .char-se        { --char-color: #3D5A6B; }
+
+    .lower-third__bar,
+    .lower-third__avatar {
+      background-color: var(--char-color);
+    }
+
+    /* CEO avatar needs a slightly lighter tint so it reads against the dark bg */
+    .char-ceo .lower-third__avatar {
+      background-color: #3d3d3d;
+      border: 1px solid #4a4a4a;
+    }
+
+  </style>
+</head>
+<body>
+
+  <h1>Coding Capybaras — Lower-Third Overlays</h1>
+  <p class="subtitle">1920x1080 preview (displayed at 50%). Cards are 400x80px. Place bottom-left at 80px inset in your video editor.</p>
+
+  <!-- -----------------------------------------------
+       1920x1080 Preview — all 6 stacked (reference only)
+  ----------------------------------------------- -->
+  <div class="preview-frame">
+    <span class="preview-label">1920 x 1080 — 50% scale</span>
+
+    <div class="preview-cards">
+
+      <div class="lower-third char-em">
+        <div class="lower-third__bar"></div>
+        <div class="lower-third__avatar"></div>
+        <div class="lower-third__text">
+          <span class="lower-third__name">Engineering Manager</span>
+          <span class="lower-third__role">Engineering Manager</span>
+        </div>
+      </div>
+
+      <div class="lower-third char-cto">
+        <div class="lower-third__bar"></div>
+        <div class="lower-third__avatar"></div>
+        <div class="lower-third__text">
+          <span class="lower-third__name">CTO</span>
+          <span class="lower-third__role">Chief Technology Officer</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- -----------------------------------------------
+       Individual card catalog
+  ----------------------------------------------- -->
+  <div class="cards-list-section">
+    <p class="section-header">all characters — 400 x 80px — 1:1</p>
+
+    <div class="cards-list">
+
+      <!-- CEO -->
+      <div class="card-row">
+        <div class="card-meta">
+          <span>CEO</span>
+          <span class="char-color">#2D2D2D</span>
+        </div>
+        <div class="lower-third char-ceo">
+          <div class="lower-third__bar"></div>
+          <div class="lower-third__avatar"></div>
+          <div class="lower-third__text">
+            <span class="lower-third__name">CEO</span>
+            <span class="lower-third__role">Chief Executive Officer</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- CTO -->
+      <div class="card-row">
+        <div class="card-meta">
+          <span>CTO</span>
+          <span class="char-color">#2E6E8E</span>
+        </div>
+        <div class="lower-third char-cto">
+          <div class="lower-third__bar"></div>
+          <div class="lower-third__avatar"></div>
+          <div class="lower-third__text">
+            <span class="lower-third__name">CTO</span>
+            <span class="lower-third__role">Chief Technology Officer</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Engineering Manager -->
+      <div class="card-row">
+        <div class="card-meta">
+          <span>Engineering Manager</span>
+          <span class="char-color">#4A7C59</span>
+        </div>
+        <div class="lower-third char-em">
+          <div class="lower-third__bar"></div>
+          <div class="lower-third__avatar"></div>
+          <div class="lower-third__text">
+            <span class="lower-third__name">Engineering Manager</span>
+            <span class="lower-third__role">Engineering Manager</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Product Owner -->
+      <div class="card-row">
+        <div class="card-meta">
+          <span>Product Owner</span>
+          <span class="char-color">#8B4A2E</span>
+        </div>
+        <div class="lower-third char-po">
+          <div class="lower-third__bar"></div>
+          <div class="lower-third__avatar"></div>
+          <div class="lower-third__text">
+            <span class="lower-third__name">Product Owner</span>
+            <span class="lower-third__role">Product Owner</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- QA -->
+      <div class="card-row">
+        <div class="card-meta">
+          <span>QA Engineer</span>
+          <span class="char-color">#7A5C8B</span>
+        </div>
+        <div class="lower-third char-qa">
+          <div class="lower-third__bar"></div>
+          <div class="lower-third__avatar"></div>
+          <div class="lower-third__text">
+            <span class="lower-third__name">QA Engineer</span>
+            <span class="lower-third__role">Quality Assurance</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Staff Engineer -->
+      <div class="card-row">
+        <div class="card-meta">
+          <span>Staff Engineer</span>
+          <span class="char-color">#3D5A6B</span>
+        </div>
+        <div class="lower-third char-se">
+          <div class="lower-third__bar"></div>
+          <div class="lower-third__avatar"></div>
+          <div class="lower-third__text">
+            <span class="lower-third__name">Staff Engineer</span>
+            <span class="lower-third__role">Staff Engineer</span>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /.cards-list -->
+  </div><!-- /.cards-list-section -->
+
+  <div style="margin-top: 64px; font-family: 'JetBrains Mono', monospace; font-size: 11px; color: #2d3748;">
+    <p>Export path: assets/brand/lower-thirds/*.svg</p>
+    <p style="margin-top:4px;">Avatar circle is a placeholder — composite character PNG in DaVinci/Descript via the 60x60 circle region at x:16 y:10.</p>
+  </div>
+
+</body>
+</html>

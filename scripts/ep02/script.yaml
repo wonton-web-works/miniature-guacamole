@@ -10,28 +10,26 @@ scenes:
 
   - scene_id: "02-install"
     narrator_agent: "cto"
-    narration: "First, clone the repo and run the install script. One command bootstraps the whole framework into your Claude Code global config."
+    narration: "One curl command. That is the entire install. The web installer downloads the latest release, verifies the checksum, and bootstraps everything into your Claude Code config."
     terminal_commands:
-      - command: "git clone https://github.com/rivermark-research/miniature-guacamole.git"
-        wait_after_ms: 3000
-      - command: "cd miniature-guacamole && npm install"
-        wait_after_ms: 5000
-      - command: "npm run build"
-        wait_after_ms: 3000
-    wait_ms: 500
+      - command: "curl -fsSL https://raw.githubusercontent.com/wonton-web-works/miniature-guacamole/main/src/installer/web-install.sh | bash"
+        wait_after_ms: 30000
+    wait_ms: 5000
 
   - scene_id: "03-init"
     narrator_agent: "product-owner"
-    narration: "Now initialize your project. Run mg-init in any directory and the framework creates the memory scaffolding Claude Code agents need to coordinate."
+    narration: "Now initialize your project. Run mg-init in your project directory. It fetches the framework, caches it locally, and sets up the memory scaffolding your agents need to coordinate."
     terminal_commands:
-      - command: "cd my-project && /mg-init"
-        wait_after_ms: 2000
-    wait_ms: 500
+      - command: "cd my-project"
+        wait_after_ms: 10000
+      - command: "mg-init"
+        wait_after_ms: 30000
+    wait_ms: 5000
 
   - scene_id: "04-first-run"
     narrator_agent: "staff-engineer"
     narration: "That is it. Your first multi-agent session is live. Try the leadership team skill and watch five agents coordinate on your feature in a single conversation."
     terminal_commands:
       - command: "/mg-leadership-team review WS-1"
-        wait_after_ms: 2000
-    wait_ms: 1000
+        wait_after_ms: 30000
+    wait_ms: 5000

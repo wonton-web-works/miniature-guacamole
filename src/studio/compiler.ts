@@ -89,23 +89,23 @@ export function generateTape(script: Script): string {
   for (const scene of script.scenes) {
     if (scene.terminal_commands && scene.terminal_commands.length > 0) {
       for (const cmd of scene.terminal_commands) {
-        // Escape single quotes in commands by replacing ' with '\''
-        const escapedCmd = cmd.command.replace(/'/g, "'\\''");
-        lines.push(`Type '${escapedCmd}'`);
+        // VHS Type uses double quotes — escape any double quotes in the command
+        const escapedCmd = cmd.command.replace(/"/g, '\\"');
+        lines.push(`Type "${escapedCmd}"`);
         lines.push('Enter');
         if (cmd.wait_after_ms > 0) {
-          lines.push(`Sleep ${cmd.wait_after_ms}`);
+          lines.push(`Sleep ${cmd.wait_after_ms}ms`);
         }
       }
     } else {
       // Narration-only scene — sleep for estimated narration duration
       const wordCount = scene.narration.split(/\s+/).filter(Boolean).length;
       const durationMs = Math.round((wordCount / WORDS_PER_MINUTE) * 60 * 1000);
-      lines.push(`Sleep ${durationMs > 0 ? durationMs : 1000}`);
+      lines.push(`Sleep ${durationMs > 0 ? durationMs : 1000}ms`);
     }
 
     if (scene.wait_ms > 0) {
-      lines.push(`Sleep ${scene.wait_ms}`);
+      lines.push(`Sleep ${scene.wait_ms}ms`);
     }
   }
 

@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="400" height="80" viewBox="0 0 400 80">
+  <defs>
+    <clipPath id="card-clip-po">
+      <rect width="400" height="80" rx="4" ry="4"/>
+    </clipPath>
+  </defs>
+
+  <!-- Card background: semi-transparent dark -->
+  <rect width="400" height="80" rx="4" ry="4" fill="rgba(0,0,0,0.75)"/>
+
+  <!-- Left color bar: Burnt Sienna -->
+  <rect x="0" y="0" width="4" height="80" rx="2" ry="2" fill="#8B4A2E"/>
+
+  <!-- Avatar circle placeholder -->
+  <circle cx="46" cy="40" r="30" fill="#8B4A2E"/>
+
+  <!-- Name: Inter Bold 16px white -->
+  <text
+    x="92"
+    y="36"
+    font-family="Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"
+    font-weight="700"
+    font-size="16"
+    fill="#FFFFFF"
+    dominant-baseline="middle"
+  >Product Owner</text>
+
+  <!-- Role: Inter Regular 12px light gray -->
+  <text
+    x="92"
+    y="55"
+    font-family="Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"
+    font-weight="400"
+    font-size="12"
+    fill="#B0B0B0"
+    dominant-baseline="middle"
+  >Product Owner</text>
+</svg>

@@ -1,0 +1,18 @@
+# Studio Configuration
+# WS-STUDIO-1: YouTube production pipeline tooling
+#
+# To use: copy this file to studio-config.local.yaml and fill in real values.
+# studio-config.local.yaml is gitignored — your API keys stay out of the repo.
+#
+# Get voice IDs from https://elevenlabs.io/voice-library or your custom voices dashboard.
+
+voices:
+  cto: YOUR_CTO_VOICE_ID
+  product-owner: YOUR_PRODUCT_OWNER_VOICE_ID
+  engineering-manager: YOUR_ENGINEERING_MANAGER_VOICE_ID
+  qa: YOUR_QA_VOICE_ID
+  staff-engineer: YOUR_STAFF_ENGINEER_VOICE_ID
+
+elevenlabs:
+  apiKey: YOUR_ELEVENLABS_API_KEY
+  model: eleven_multilingual_v2

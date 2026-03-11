@@ -1,0 +1,59 @@
+episode_id: ep07
+episode_title: "Memory, Handoffs, and State: How Agents Share Context"
+
+scenes:
+  - scene_id: "01-intro"
+    narrator_agent: "staff-engineer"
+    narration: "Every multi-agent system has the same problem: how does one agent know what another agent did? If agents do not share context cleanly, you get drift — the dev implements something the QA did not spec, the spec does not match the assessment, the review catches issues that should have been caught earlier. Memory is how miniature-guacamole solves this."
+    terminal_commands: []
+    wait_ms: 500
+
+  - scene_id: "02-memory-structure"
+    narrator_agent: "staff-engineer"
+    narration: "The memory system lives in the .claude/memory directory in your project. It is plain JSON files. No database, no external service. When you run mg-init, this directory gets created with the scaffolding. Each workstream gets a state file. Agents write to it when they complete work. The next agent in the chain reads from it."
+    terminal_commands:
+      - command: "ls .claude/memory/"
+        wait_after_ms: 1000
+    wait_ms: 500
+
+  - scene_id: "03-workstream-state"
+    narrator_agent: "staff-engineer"
+    narration: "The workstream state file is the source of truth for a single workstream. It tracks status, which agents have run, what decisions were made, what files were modified, and what gate criteria were met or missed. If a workstream stalls, this file tells you exactly where."
+    terminal_commands:
+      - command: "cat .claude/memory/workstream-WS-AUTH-1-state.json"
+        wait_after_ms: 1000
+    wait_ms: 500
+
+  - scene_id: "04-handoffs"
+    narrator_agent: "cto"
+    narration: "Handoffs are explicit transitions between agents. When QA finishes writing tests, it writes a handoff file addressed to dev. The handoff contains the artifact bundle: test specs, constraints, gate criteria. Dev reads the handoff at the start of its session. No ambient context loading. No guessing what the previous agent meant."
+    terminal_commands:
+      - command: "cat .claude/memory/handoffs-qa-dev.json"
+        wait_after_ms: 1000
+    wait_ms: 500
+
+  - scene_id: "05-why-local"
+    narrator_agent: "staff-engineer"
+    narration: "All of this is project-local. The memory directory is in your project, not in some shared cloud. This is the NDA-safety guarantee. If you are working on two separate client projects, the memory does not bleed between them. Each .claude/memory directory is isolated. Agents installed globally have role definitions only — no project data."
+    terminal_commands: []
+    wait_ms: 500
+
+  - scene_id: "06-decisions-log"
+    narrator_agent: "engineering-manager"
+    narration: "There is also a decisions.json file that spans workstreams. Any architectural decision that gets made during a workstream — which library to use, which pattern to follow, what to defer — gets written here. Future workstreams read from it. This is how the system avoids repeating the same architectural discussion three weeks in a row."
+    terminal_commands:
+      - command: "cat .claude/memory/decisions.json"
+        wait_after_ms: 1000
+    wait_ms: 500
+
+  - scene_id: "07-pickup-where-left-off"
+    narrator_agent: "staff-engineer"
+    narration: "Practical scenario: you start a workstream on Monday, QA writes tests, then you close Claude Code. Tuesday you come back. You do not need to re-explain the context. Dev reads the handoff from QA, reads the workstream state file, and picks up exactly where the team left off. The memory persisted. The agent does not need to be kept in session."
+    terminal_commands: []
+    wait_ms: 500
+
+  - scene_id: "08-cta"
+    narrator_agent: "engineering-manager"
+    narration: "Next episode: how to set up miniature-guacamole across multiple projects and keep the memory isolated between them. Link in the description."
+    terminal_commands: []
+    wait_ms: 500

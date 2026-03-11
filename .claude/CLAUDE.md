@@ -107,7 +107,7 @@ miniature-guacamole is **NDA-safe**:
 
 ## Documentation
 
-- **Framework Repository**: [miniature-guacamole](https://github.com/rivermark-research/miniature-guacamole)
+- **Framework Repository**: [miniature-guacamole](https://github.com/wonton-web-works/miniature-guacamole)
 - **Agent Definitions**: `~/.claude/agents/{agent-name}/AGENT.md`
 - **Skill Definitions**: `~/.claude/skills/{skill-name}/SKILL.md`
 - **Protocol Documents**: `~/.claude/shared/{protocol-name}.md`

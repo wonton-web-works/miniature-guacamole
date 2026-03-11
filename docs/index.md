@@ -11,7 +11,7 @@ hero:
       link: /getting-started
     - theme: alt
       text: View on GitHub
-      link: https://github.com/rivermark-research/miniature-guacamole
+      link: https://github.com/wonton-web-works/miniature-guacamole
 
 features:
   - icon: '<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#2E8B8B" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="5"/><path d="M20 21a8 8 0 0 0-16 0"/><circle cx="4" cy="8" r="3" opacity="0.4"/><path d="M10 21a6 6 0 0 0-12 0" opacity="0.4"/><circle cx="20" cy="8" r="3" opacity="0.4"/><path d="M26 21a6 6 0 0 0-12 0" opacity="0.4"/></svg>'
@@ -44,7 +44,7 @@ features:
 Install the framework directly into any project. Full access to 19 agents, 16 skills, 17 utility scripts, and the CAD development workflow. Works today, MIT licensed, no account required.
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/rivermark-research/miniature-guacamole/main/src/installer/web-install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/wonton-web-works/miniature-guacamole/main/src/installer/web-install.sh | bash
 ```
 
 ### Tier 2: MCP Server

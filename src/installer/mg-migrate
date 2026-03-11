@@ -594,7 +594,7 @@ All memory is **project-local** and never shared between clients or projects.
 - **Agents**: See `.claude/agents/{agent-name}/agent.md`
 - **Skills**: See `.claude/skills/{skill-name}/skill.md`
 - **Protocols**: See `.claude/shared/{protocol-name}.md`
-- **Framework**: [miniature-guacamole](https://github.com/rivermark-research/miniature-guacamole)
+- **Framework**: [miniature-guacamole](https://github.com/wonton-web-works/miniature-guacamole)
 
 ## Data Isolation
 

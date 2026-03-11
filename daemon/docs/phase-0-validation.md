@@ -76,7 +76,7 @@ gh version 2.86.0 (2026-01-21)
 ```
 
 **Authentication Status:**
-- ✅ Logged in to github.com (account: rivermark-research)
+- ✅ Logged in to github.com (account: wonton-web-works)
 - ✅ Token valid and active
 - ✅ Git operations protocol: https
 - ✅ Token scopes include: `repo`, `workflow`, `write:discussion`, `write:packages`

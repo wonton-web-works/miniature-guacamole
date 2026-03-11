@@ -30,9 +30,9 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/rivermark-research/miniature-guacamole.git"
+    "url": "https://github.com/wonton-web-works/miniature-guacamole.git"
   },
-  "homepage": "https://rivermark-research.github.io/miniature-guacamole",
+  "homepage": "https://wonton-web-works.github.io/miniature-guacamole",
   "devDependencies": {
     "@playwright/test": "^1.40.0",
     "@types/js-yaml": "^4.0.9",

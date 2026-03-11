@@ -17,14 +17,14 @@ export default defineConfig({
     ['meta', { property: 'og:site_name', content: 'miniature-guacamole' }],
     ['meta', { property: 'og:title', content: 'miniature-guacamole - AI Product Development Team' }],
     ['meta', { property: 'og:description', content: 'Turn Claude Code into a 19-agent product development team with specialized roles, collaborative skills, and CAD workflows.' }],
-    ['meta', { property: 'og:image', content: 'https://rivermark-research.github.io/miniature-guacamole/og-image.svg' }],
-    ['meta', { property: 'og:url', content: 'https://rivermark-research.github.io/miniature-guacamole/' }],
+    ['meta', { property: 'og:image', content: 'https://wonton-web-works.github.io/miniature-guacamole/og-image.svg' }],
+    ['meta', { property: 'og:url', content: 'https://wonton-web-works.github.io/miniature-guacamole/' }],
 
     // Twitter Card Meta Tags
     ['meta', { name: 'twitter:card', content: 'summary_large_image' }],
     ['meta', { name: 'twitter:title', content: 'miniature-guacamole - AI Product Development Team' }],
     ['meta', { name: 'twitter:description', content: 'Turn Claude Code into a 19-agent product development team with specialized roles, collaborative skills, and CAD workflows.' }],
-    ['meta', { name: 'twitter:image', content: 'https://rivermark-research.github.io/miniature-guacamole/og-image.svg' }],
+    ['meta', { name: 'twitter:image', content: 'https://wonton-web-works.github.io/miniature-guacamole/og-image.svg' }],
 
     // Additional Meta
     ['meta', { name: 'theme-color', content: '#4A7C59' }],
@@ -41,7 +41,7 @@ export default defineConfig({
       { text: 'Workflows', link: '/workflows' },
       {
         text: 'GitHub',
-        link: 'https://github.com/rivermark-research/miniature-guacamole'
+        link: 'https://github.com/wonton-web-works/miniature-guacamole'
       }
     ],
 
@@ -78,7 +78,7 @@ export default defineConfig({
     ],
 
     socialLinks: [
-      { icon: 'github', link: 'https://github.com/rivermark-research/miniature-guacamole' }
+      { icon: 'github', link: 'https://github.com/wonton-web-works/miniature-guacamole' }
     ],
 
     footer: {

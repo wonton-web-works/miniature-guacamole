@@ -91,10 +91,10 @@ export function buildFfmpegArgs(input: MuxInput): string[] {
     args.push('-i', mp3);
   }
 
-  // Audio filter: concatenate all narration files, add padding to match video length
+  // Audio filter: concatenate all narration files into one audio stream
   const audioInputCount = input.narrationMp3s.length;
   const concatInputs = Array.from({ length: audioInputCount }, (_, i) => `[${i + 1}:a]`).join('');
-  const filterComplex = `${concatInputs}concat=n=${audioInputCount}:v=0:a=1[audio_concat];[audio_concat]apad[audio_out]`;
+  const filterComplex = `${concatInputs}concat=n=${audioInputCount}:v=0:a=1[audio_out]`;
 
   args.push('-filter_complex', filterComplex);
 
@@ -111,6 +111,9 @@ export function buildFfmpegArgs(input: MuxInput): string[] {
 
   // Audio codec: AAC
   args.push('-acodec', 'aac');
+
+  // End when the shorter stream (audio or video) finishes
+  args.push('-shortest');
 
   // Overwrite output if exists
   args.push('-y');

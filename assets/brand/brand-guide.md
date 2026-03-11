@@ -120,9 +120,9 @@ The AI-powered dev team for Claude Code.
 
 miniature-guacamole turns Claude Code into a complete product development team — Engineering Manager, CTO, QA, Staff Engineer, and more. Every agent has a defined role. Memory is project-local. No hallway meetings.
 
-Install: curl -fsSL https://raw.githubusercontent.com/rivermark-research/miniature-guacamole/main/install.sh | bash
+Install: curl -fsSL https://raw.githubusercontent.com/wonton-web-works/miniature-guacamole/main/install.sh | bash
 
-GitHub: https://github.com/rivermark-research/miniature-guacamole
+GitHub: https://github.com/wonton-web-works/miniature-guacamole
 Discord: [discord invite link]
 ```
 

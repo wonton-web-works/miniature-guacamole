@@ -64,7 +64,7 @@ Complete these fields in YouTube Studio > Customization > Basic info:
 
 - [ ] Description: (same as channel description — see step 1)
 - [ ] Links to add:
-  - [ ] GitHub: `https://github.com/rivermark-research/miniature-guacamole`
+  - [ ] GitHub: `https://github.com/wonton-web-works/miniature-guacamole`
   - [ ] Discord: [add invite link when available]
 - [ ] Business email: optional — add if you want to surface a contact email
 

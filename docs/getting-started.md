@@ -122,7 +122,7 @@ docker compose up
 This starts two services:
 
 - **Postgres** — the memory backend, accessible on port 5432
-- **Next.js dashboard** — available at http://localhost:3000
+- **Next.js dashboard** — available at `http://localhost:3000`
 
 The dashboard uses a multi-stage Dockerfile with standalone Next.js output, so the production image only includes what's needed to run. No separate `npm run build` step required — Compose handles it.
 

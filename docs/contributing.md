@@ -27,7 +27,7 @@ Thank you for considering contributing to miniature-guacamole. We welcome contri
 
 ### Installation
 ```bash
-git clone https://github.com/rivermark-research/miniature-guacamole.git
+git clone https://github.com/wonton-web-works/miniature-guacamole.git
 cd miniature-guacamole
 npm install
 ```
@@ -418,7 +418,7 @@ We are committed to providing a welcoming and inclusive environment. Please:
 - Focus on the code, not the person
 - Help others learn and grow
 
-See our full [Code of Conduct](https://github.com/rivermark-research/miniature-guacamole/blob/main/CODE_OF_CONDUCT.md).
+See our full [Code of Conduct](https://github.com/wonton-web-works/miniature-guacamole/blob/main/CODE_OF_CONDUCT.md).
 
 ## License
 

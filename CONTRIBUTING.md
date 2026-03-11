@@ -20,7 +20,7 @@ Thank you for considering contributing to this project. We welcome contributions
 
 ### Installation
 ```bash
-git clone https://github.com/rivermark-research/miniature-guacamole.git
+git clone https://github.com/wonton-web-works/miniature-guacamole.git
 cd miniature-guacamole
 npm install
 ```

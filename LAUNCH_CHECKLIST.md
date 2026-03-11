@@ -29,7 +29,7 @@
 ### Go Live
 - [ ] Set repository visibility to Public
 - [ ] Create GitHub release v1.0.0
-- [ ] Verify docs site deploys: https://rivermark-research.github.io/miniature-guacamole/
+- [ ] Verify docs site deploys: https://wonton-web-works.github.io/miniature-guacamole/
 - [ ] Update repository description on GitHub
 
 ## Post-Launch

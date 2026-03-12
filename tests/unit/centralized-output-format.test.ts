@@ -8,7 +8,7 @@
  *
  * Acceptance Criteria:
  * - Shared output-format.md exists with standard patterns
- * - All 16 skills reference shared output format in their constitution
+ * - All 17 skills reference shared output format in their constitution
  * - All existing tests pass
  * - Output formatting is consistent across all skills
  *
@@ -19,7 +19,7 @@ import { describe, it, expect, beforeAll } from 'vitest';
 import * as fs from 'fs';
 import * as path from 'path';
 
-// Test data: All 16 skills that need output format standardization
+// Test data: All 17 skills that need output format standardization
 const ALL_SKILLS = [
   'mg-accessibility-review',
   'mg-add-context',
@@ -36,6 +36,7 @@ const ALL_SKILLS = [
   'mg-refactor',
   'mg-security-review',
   'mg-spec',
+  'mg-ticket',
   'mg-write',
 ] as const;
 
@@ -45,7 +46,7 @@ const OUTPUT_FORMAT_FILE = path.join(SHARED_DIR, 'output-format.md');
 
 describe('WS-15: Centralized Skill Visual Output', () => {
   describe('Feature: Shared Output Format Documentation', () => {
-    describe('Given: A product development team using 16 skills', () => {
+    describe('Given: A product development team using 17 skills', () => {
       describe('When: Creating a standardized output format specification', () => {
         it('Then: .claude/skills/_shared/ directory should exist', () => {
           expect(fs.existsSync(SHARED_DIR)).toBe(true);
@@ -128,16 +129,16 @@ describe('WS-15: Centralized Skill Visual Output', () => {
   });
 
   describe('Feature: Skills Reference Shared Output Format', () => {
-    describe('Given: All 16 skills need consistent output', () => {
+    describe('Given: All 17 skills need consistent output', () => {
       describe('When: Skills are configured with output format guidance', () => {
-        it('Then: All 16 skills should have SKILL.md files', () => {
+        it('Then: All 17 skills should have SKILL.md files', () => {
           for (const skill of ALL_SKILLS) {
             const skillFile = path.join(SKILLS_DIR, skill, 'SKILL.md');
             expect(fs.existsSync(skillFile), `${skill}/SKILL.md should exist`).toBe(true);
           }
         });
 
-        it('Then: All 16 skills should have readable markdown content', () => {
+        it('Then: All 17 skills should have readable markdown content', () => {
           for (const skill of ALL_SKILLS) {
             const skillFile = path.join(SKILLS_DIR, skill, 'SKILL.md');
             const content = fs.readFileSync(skillFile, 'utf-8');
@@ -147,7 +148,7 @@ describe('WS-15: Centralized Skill Visual Output', () => {
           }
         });
 
-        it('Then: All 16 skills should have Constitution sections', () => {
+        it('Then: All 17 skills should have Constitution sections', () => {
           for (const skill of ALL_SKILLS) {
             const skillFile = path.join(SKILLS_DIR, skill, 'SKILL.md');
             const content = fs.readFileSync(skillFile, 'utf-8');
@@ -157,7 +158,7 @@ describe('WS-15: Centralized Skill Visual Output', () => {
           }
         });
 
-        it('Then: All 16 skills should reference shared output format', () => {
+        it('Then: All 17 skills should reference shared output format', () => {
           for (const skill of ALL_SKILLS) {
             const skillFile = path.join(SKILLS_DIR, skill, 'SKILL.md');
             const content = fs.readFileSync(skillFile, 'utf-8');
@@ -234,7 +235,7 @@ describe('WS-15: Centralized Skill Visual Output', () => {
             }
           }
 
-          // All 16 skills should have found a reference
+          // All 17 skills should have found a reference
           expect(references.length).toBe(ALL_SKILLS.length);
 
           // References should follow similar patterns
@@ -407,16 +408,16 @@ describe('WS-15: Centralized Skill Visual Output', () => {
   });
 
   describe('Feature: Comprehensive Skill Validation', () => {
-    describe('Given: All 16 skills configured', () => {
+    describe('Given: All 17 skills configured', () => {
       describe('When: Validating complete implementation', () => {
-        it('Then: Exactly 16 skills should exist in skills directory', () => {
+        it('Then: Exactly 17 skills should exist in skills directory', () => {
           const skillDirs = fs.readdirSync(SKILLS_DIR)
             .filter(item => {
               const itemPath = path.join(SKILLS_DIR, item);
               return fs.statSync(itemPath).isDirectory() && !item.startsWith('_');
             });
 
-          expect(skillDirs.length).toBe(16);
+          expect(skillDirs.length).toBe(17);
           expect(skillDirs.sort()).toEqual([...ALL_SKILLS].sort());
         });
 

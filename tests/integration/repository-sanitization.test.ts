@@ -689,13 +689,17 @@ describe('WS-OSS-1: Repository Sanitization - Integration Tests', () => {
     it('should have security policy documentation', () => {
       const securityPath = path.join(PROJECT_ROOT, 'SECURITY.md');
       const readmePath = path.join(PROJECT_ROOT, 'README.md');
+      // WS-DOCS-4 moved security content to docs/audit-logging.md (Privacy & Security section)
+      const auditDocsPath = path.join(PROJECT_ROOT, 'docs/audit-logging.md');
 
       const hasSecurityFile = fs.existsSync(securityPath);
       const readmeContent = fs.readFileSync(readmePath, 'utf-8');
       const readmeHasSecurity = readmeContent.toLowerCase().includes('security');
+      const auditDocsHasSecurity = fs.existsSync(auditDocsPath) &&
+        fs.readFileSync(auditDocsPath, 'utf-8').toLowerCase().includes('security');
 
-      // Either explicit SECURITY.md or mention in README
-      expect(hasSecurityFile || readmeHasSecurity).toBe(true);
+      // Accept: explicit SECURITY.md, mention in README, or security coverage in docs
+      expect(hasSecurityFile || readmeHasSecurity || auditDocsHasSecurity).toBe(true);
     });
 
     /**

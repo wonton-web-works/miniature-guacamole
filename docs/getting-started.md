@@ -23,6 +23,16 @@ claude
 
 That's it. Claude Code now has all 17 skills and 20 agents available.
 
+> **`mg-init` vs `/mg-init`** — `mg-init` is a shell script you run in your terminal. It downloads the framework from GitHub and installs it into your project's `.claude/` directory. `/mg-init` is a Claude Code skill you run inside a session. It creates `.claude/memory/`, detects your tech stack, and generates project-specific context. Run the shell script first to install, then the skill to initialize.
+
+## What You Just Got
+
+You now have 17 skills, 20 agents, and a shared memory system installed in `.claude/`. Here's what that means:
+
+- **Skills** are slash commands (`/mg-build`, `/mg-assess`, etc.) that coordinate multi-agent workflows
+- **Agents** are specialized roles (CEO, QA, Dev, etc.) that skills delegate work to
+- **Memory** is a project-local state system in `.claude/memory/` where agents track tasks, decisions, and handoffs
+
 ## Installation Methods
 
 ### Method 1: Web Install (Recommended)
@@ -141,7 +151,7 @@ The installer creates a `.claude/` directory in your project:
 ```
 your-project/
 └── .claude/
-    ├── agents/           # 19 specialized agent roles
+    ├── agents/           # 20 specialized agent roles
     ├── skills/           # 17 team collaboration workflows
     ├── shared/           # 6 protocol documents
     ├── scripts/          # 17 mg-* utility commands
@@ -242,7 +252,7 @@ npm test  # Verify it works
 
 - [Workflow Guide](/workflows) - Learn the full CAD development cycle
 - [Architecture Overview](/architecture) - Agent hierarchy, delegation model, memory layer
-- [Agent Reference](/agents) - All 19 agents and their roles
+- [Agent Reference](/agents) - All 20 agents and their roles
 
 ## Support
 

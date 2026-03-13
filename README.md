@@ -2,25 +2,19 @@
 
 > A complete AI-powered product development organization for Claude Code with workflow automation, specialized agents, and project-local architecture.
 
-**Version:** 1.0.0
+**Version:** 1.3.0
 **Status:** Production Ready
 **License:** MIT
 
 ---
 
-## What's New in v1.0.0
+## What's New in v1.3.0
 
-**Action-Based Skill System** (February 2026):
-- All 16 skills renamed with `mg-` prefix for brand coherence
-- `/engineering-team` + `/implement` merged into single `/mg-build` skill
-- 2 new skills: `/mg-debug` (structured debugging) and `/mg-refactor` (test-safe refactoring)
-- Hard cutover — old skill names no longer work
-- Spawn cap of 6 agents enforced on all skills
-
-**Breaking Changes from pre-release**:
-- All skill names changed (e.g. `/leadership-team` → `/mg-leadership-team`, `/code-review` → `/mg-code-review`)
-- `/engineering-team` and `/implement` removed, replaced by `/mg-build`
-- No backwards compatibility aliases — update all references
+**GitHub Issue Filing from CLI** (March 2026):
+- New `/mg-ticket` skill — file GitHub Issues directly from Claude Code sessions
+- Auto-attaches MG version, current workstream, and recent errors as context
+- Supports `--bug` (default), `--feature`, and `--question` templates
+- Preview/confirmation step before posting — no memory content goes public without approval
 
 ---
 
@@ -47,8 +41,8 @@
 
 This is a **Claude Code skill system** that provides a complete product development organization within your IDE. It includes:
 
-- **16 Skills** - From feature assessment to implementation
-- **19 Specialized Agents** - Specialized roles from CEO to QA
+- **17 Skills** - From feature assessment to implementation
+- **20 Specialized Agents** - Specialized roles from CEO to QA
 - **Shared Memory Layer** - Cross-agent state management with 99% test coverage
 - **Supervisor System** - Monitors depth limits and prevents infinite loops
 - **Structured Return Envelopes** - Type-safe agent communication
@@ -76,14 +70,14 @@ Use it to orchestrate complex product development workflows with AI agents that 
 - **Docs Team** - Technical Writer and API Designer for documentation
 
 ### Agent Specialization
-- **19 specialized agents** with clear responsibilities and delegation patterns
+- **20 specialized agents** with clear responsibilities and delegation patterns
 - **Hierarchical organization** from executives to individual contributors
 - **Peer consultation** - ICs can query each other without affecting delegation depth
 - **Bounded delegation** - Maximum 3 levels prevents infinite chains
 - **Loop prevention** - Automatic detection of circular delegation
 
 ### Shared State Management
-- **TypeScript implementation** with 99% test coverage (49/49 tests passing)
+- **TypeScript implementation** with 99% test coverage (1700+ tests passing)
 - **Atomic writes** with automatic backups
 - **Concurrent-safe** file locking mechanism
 - **Query capabilities** by agent_id, workstream_id, or timestamp range
@@ -107,7 +101,7 @@ curl -fsSL https://raw.githubusercontent.com/wonton-web-works/miniature-guacamol
 claude
 ```
 
-# Output: Claude Code launches with all 16 skills and 19 agents available
+# Output: Claude Code launches with all 17 skills and 20 agents available
 
 ### 3. Run a workflow
 
@@ -226,7 +220,7 @@ In Claude Code:
 
 ## Available Workflows
 
-All 16 skills use the `mg-` prefix. Use them in Claude Code chat:
+All 17 skills use the `mg-` prefix. Use them in Claude Code chat:
 
 | Workflow | Slash Command | Purpose |
 |----------|---------------|---------|
@@ -241,6 +235,7 @@ All 16 skills use the `mg-` prefix. Use them in Claude Code chat:
 | **Design Review** | `/mg-design-review` | UI/UX evaluation and design system compliance |
 | **Document** | `/mg-document` | Documentation generation and review |
 | **Initialize** | `/mg-init` | Project initialization for agent collaboration |
+| **Issue Filing** | `/mg-ticket` | File GitHub Issues from CLI with auto-attached MG context |
 | **Leadership Team** | `/mg-leadership-team` | Executive collaboration and strategic decisions |
 | **Refactor** | `/mg-refactor` | Test-safe refactoring workflow |
 | **Security Review** | `/mg-security-review` | OWASP Top 10, authentication, data protection checks |
@@ -315,6 +310,7 @@ All 16 skills use the `mg-` prefix. Use them in Claude Code chat:
 | **Technical Writer** | `/technical-writer` | Documentation and guides |
 | **Deployment Engineer** | `/deployment-engineer` | Handles merges and releases |
 | **Copywriter** | `/copywriter` | Brand-aligned copywriting for marketing and user-facing content |
+| **Studio Director** | `/studio-director` | Manages content production and media workflows |
 
 ### System Agents
 | Agent | Slash Command | Role |
@@ -559,7 +555,7 @@ miniature-guacamole/
 
 ### Overview
 The shared memory layer provides unified state management for all agents with:
-- **99% test coverage** (49/49 tests passing)
+- **99% test coverage** (1700+ tests passing)
 - **Atomic writes** with automatic backups
 - **File locking** for concurrent safety
 - **Query capabilities** by agent, workstream, or time
@@ -757,7 +753,7 @@ Output: OAuth2 implementation with security review and test plan
 # Install dependencies
 npm install
 
-# Run all tests (49 unit + integration tests)
+# Run all tests (1700+ unit + integration tests)
 npm test
 
 # Run unit tests only
@@ -778,8 +774,8 @@ npm run test:coverage
 
 ### Test Results
 ```
-Test Files  2 passed (2)
-     Tests  49 passed (49)
+Test Files  105+ passed
+     Tests  1700+ passed
   Coverage  99%+
 ```
 
@@ -922,6 +918,22 @@ MIT
 ---
 
 ## Changelog
+
+**Version 1.3.0** (March 2026)
+- New `/mg-ticket` skill for filing GitHub Issues from CLI/co-work sessions
+- Agent spec compliance (WS-COMPAT-1/2): `allowed-tools:` frontmatter, progressive disclosure in references/
+- studio-director agent added
+- 20 specialized agents, 17 skills
+
+**Version 1.2.0** (February 2026)
+- Token usage audit log with JSONL logger, rotation, and config clamping
+- Dashboard: Dockerized Next.js + Postgres via docker compose up
+- Postgres init fix: migrations mounted to initdb
+
+**Version 1.1.0** (February 2026)
+- CAD (Constraint-Driven Agentic Development) workflow
+- Misuse-first test ordering, artifact bundles, mechanical gates
+- Mechanical gate classification: ARCHITECTURAL vs MECHANICAL workstreams
 
 **Version 1.0.0** (2026-02-10)
 

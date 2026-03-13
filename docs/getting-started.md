@@ -21,7 +21,7 @@ claude
 /mg-assess Build a user authentication system
 ```
 
-That's it. Claude Code now has all 16 skills and 19 agents available.
+That's it. Claude Code now has all 17 skills and 20 agents available.
 
 ## Installation Methods
 
@@ -142,7 +142,7 @@ The installer creates a `.claude/` directory in your project:
 your-project/
 └── .claude/
     ├── agents/           # 19 specialized agent roles
-    ├── skills/           # 16 team collaboration workflows
+    ├── skills/           # 17 team collaboration workflows
     ├── shared/           # 6 protocol documents
     ├── scripts/          # 17 mg-* utility commands
     ├── hooks/            # Project initialization and safety checks

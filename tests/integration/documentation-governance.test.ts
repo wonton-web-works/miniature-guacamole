@@ -102,7 +102,13 @@ describe('WS-OSS-2: Documentation & Governance - Integration Tests', () => {
     it('should have a clear project description in README', () => {
       const content = readFile('README.md');
       expect(content.length).toBeGreaterThan(100);
-      expect(hasSection(content, 'What is This?') || hasSection(content, 'Overview') || hasSection(content, 'Description')).toBe(true);
+      // WS-DOCS-4 restructured README: "What It Does" replaces "Overview"/"Description"
+      expect(
+        hasSection(content, 'What is This?') ||
+        hasSection(content, 'Overview') ||
+        hasSection(content, 'Description') ||
+        hasSection(content, 'What It Does')
+      ).toBe(true);
     });
 
     /**
@@ -132,7 +138,8 @@ describe('WS-OSS-2: Documentation & Governance - Integration Tests', () => {
      */
     it('should have a Features section in README', () => {
       const content = readFile('README.md');
-      expect(hasSection(content, 'Features')).toBe(true);
+      // WS-DOCS-4 restructured README: "What You Get" replaces "Features"
+      expect(hasSection(content, 'Features') || hasSection(content, 'What You Get')).toBe(true);
     });
 
     /**
@@ -142,7 +149,12 @@ describe('WS-OSS-2: Documentation & Governance - Integration Tests', () => {
      */
     it('should have a Testing section in README', () => {
       const content = readFile('README.md');
-      expect(hasSection(content, 'Testing')).toBe(true);
+      // WS-DOCS-4 moved testing docs to CONTRIBUTING.md — accept either location
+      const readmeHasTesting = hasSection(content, 'Testing');
+      const contributingHasTesting = fileExists('CONTRIBUTING.md') &&
+        hasSection(readFile('CONTRIBUTING.md'), 'Testing') ||
+        readFile('CONTRIBUTING.md').toLowerCase().includes('running tests');
+      expect(readmeHasTesting || contributingHasTesting).toBe(true);
     });
 
     /**

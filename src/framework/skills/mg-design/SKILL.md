@@ -92,6 +92,23 @@ When QA detects visual changes:
 {APPROVED | Ready for /frontend-design | Changes needed}
 ```
 
+## Brand Kit Mode
+
+Triggered by the `--brand` flag or when the word "brand" appears in the prompt (e.g., "create a brand kit", "set up brand tokens").
+
+**What happens in brand kit mode:**
+
+1. Use `references/brand-kit-template.md` as the starting structure
+2. Design agent populates the template with product-specific decisions (colors, typography, voice, component patterns)
+3. Output lands at `docs/brand-kit.md` — never at the project root
+4. art-director reviews the brand kit and approves before it is used downstream
+5. Design agent produces wireframes at `docs/wireframes/` or `app/wireframes/` (use whichever matches the project's docs convention)
+6. Wireframes reference the brand kit tokens — no ad-hoc color or font choices in wireframe files
+
+**Wireframe output:**
+
+Design agent produces wireframes as markdown or ASCII layout files in `docs/wireframes/` (default) or `app/wireframes/` if the project uses an app/ docs convention. Each wireframe file names the screen and references the relevant brand kit tokens.
+
 ## Boundaries
 
 **CAN:** Set design direction, create specs, approve visuals, spawn design

@@ -80,6 +80,11 @@ WS-1: {name} - {acceptance criteria}
 WS-2: {name} - {acceptance criteria}
 ```
 
+### Deliverables
+Planning sessions write the following files alongside workstreams:
+- **PRD**: `docs/prd-{feature}.md` — product requirements (via `/mg-spec`)
+- **Technical Design**: `docs/technical-design-{feature}.md` — architecture and approach (via `/mg-assess-tech`)
+
 ### Code Review
 ```
 ## Code Review: {Workstream}

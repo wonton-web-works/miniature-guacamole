@@ -25,27 +25,12 @@ This skill only routes. It does not delegate to subagents, execute work, or run 
 
 ## No-Args Mode
 
-When invoked as `/mg` with no arguments, display all 17 skills:
+When invoked as `/mg` with no arguments, display all 17 skills grouped by workflow stage:
 
-| Skill | Purpose |
-|-------|---------|
-| `/mg-accessibility-review` | WCAG 2.1 AA compliance verification |
-| `/mg-add-context` | Register external projects as read-only context references |
-| `/mg-assess` | Feature intake and evaluation — GO/NO-GO recommendation |
-| `/mg-assess-tech` | Architecture planning and technical feasibility |
-| `/mg-build` | Full CAD cycle: tests → implement → verify → review |
-| `/mg-code-review` | Technical quality, security, and standards verification |
-| `/mg-debug` | Structured debugging with root cause analysis |
-| `/mg-design` | UI/UX design with visual regression review |
-| `/mg-design-review` | UI/UX evaluation and design system compliance |
-| `/mg-document` | Documentation generation and review |
-| `/mg-init` | Initialize a project for agent collaboration |
-| `/mg-leadership-team` | Executive planning and code approval |
-| `/mg-refactor` | Test-safe refactoring workflow |
-| `/mg-security-review` | OWASP Top 10, authentication, data protection checks |
-| `/mg-spec` | Product definition, user stories, and design specs |
-| `/mg-ticket` | File GitHub Issues from CLI with auto-attached context |
-| `/mg-write` | Brand-aligned copywriting for marketing and user-facing content |
+**Planning:** `/mg-assess`, `/mg-assess-tech`, `/mg-spec`, `/mg-leadership-team`
+**Building:** `/mg-build`, `/mg-debug`, `/mg-refactor`
+**Reviewing:** `/mg-code-review`, `/mg-security-review`, `/mg-design-review`, `/mg-accessibility-review`
+**Shipping:** `/mg-ticket`, `/mg-write`, `/mg-init`, `/mg-add-context`, `/mg-design`, `/mg-document`
 
 ## Routing Table
 
@@ -54,7 +39,9 @@ When invoked with arguments, match keywords and route:
 | Keywords | Routes to |
 |----------|-----------|
 | `build`, `implement`, `execute` | `/mg-build` |
-| `plan`, `leadership`, `review` (without code context), `executive` | `/mg-leadership-team` |
+| `plan` | See `/mg plan` sub-command below |
+| `leadership`, `executive` | `/mg-leadership-team` |
+| `review` (without code context) | See `/mg review` sub-command below |
 | `assess`, `evaluate`, `feature` | `/mg-assess` |
 | `spec`, `define`, `requirements`, `stories` | `/mg-spec` |
 | `design` | `/mg-design` |
@@ -71,6 +58,48 @@ When invoked with arguments, match keywords and route:
 | `init`, `initialize`, `setup` | `/mg-init` |
 | `context`, `add-context`, `reference` | `/mg-add-context` |
 
+## /mg plan
+
+`/mg plan` is a smart routing sub-command that points to the right skill based on how mature your idea is. It only routes — the target skill runs the work.
+
+| If your input is... | Routes to |
+|---------------------|-----------|
+| A rough idea, vague or early-stage, needs evaluation | `/mg-assess` |
+| An architecture or technical decision — tech stack, feasibility, approach | `/mg-assess-tech` |
+| Ready for requirements, user stories, or spec definition | `/mg-spec` |
+| A strategic review, roadmap discussion, or needs executive/leadership input | `/mg-leadership-team` |
+
+**How routing works:**
+
+- Rough idea, unclear direction → `/mg-assess` (feature intake and GO/NO-GO)
+- Technical or architecture decision needed → `/mg-assess-tech` (feasibility and design)
+- Ready to write requirements and user stories → `/mg-spec` (product definition)
+- Strategic or leadership review required → `/mg-leadership-team` (executive planning)
+
+If the intent is ambiguous, ask one clarifying question rather than guessing.
+
+## /mg review
+
+`/mg review` is a smart routing sub-command that points to the right skill based on what you're reviewing. It only routes — the target skill runs the work.
+
+| If you're reviewing... | Routes to |
+|------------------------|-----------|
+| Code quality, standards, or a PR | `/mg-code-review` |
+| Security-sensitive changes, auth, or data handling | `/mg-security-review` |
+| Visual or UI changes, design system compliance | `/mg-design-review` |
+| Accessibility, a11y, WCAG compliance | `/mg-accessibility-review` |
+| Workstream completion or approval, leadership sign-off | `/mg-leadership-team` |
+
+**How routing works:**
+
+- Code changes for quality and standards → `/mg-code-review`
+- Security-sensitive code (auth, encryption, data handling) → `/mg-security-review`
+- Visual/UI changes, design review → `/mg-design-review`
+- Accessibility audit → `/mg-accessibility-review`
+- Workstream approval or executive review → `/mg-leadership-team`
+
+Bare `/mg review` with no context presents all five options rather than picking one silently — review could mean code, security, design, or accessibility.
+
 ## Natural Language Fallback
 
 When input doesn't match a keyword, use best-effort interpretation and suggest a skill — never silently fail or produce an unrecognized error:
@@ -85,5 +114,5 @@ Always suggest the skill explicitly. If genuinely ambiguous, show two or three o
 ## Boundaries
 
 **CAN:** Show available skills, match keywords to skills, suggest skills for natural language input, ask for confirmation
-**CANNOT:** Dispatch subagents, execute workstreams, write code, run tests, perform work on behalf of the user
+**CANNOT:** Dispatch subagents, execute workstreams, write code, run tests, perform work on behalf of the user, spawn subagents
 **ESCALATES TO:** Nothing — this skill only routes to other skills

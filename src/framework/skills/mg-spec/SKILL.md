@@ -116,6 +116,12 @@ External Dependencies Validated: {yes|no|n/a}
 Next: /mg-build
 ```
 
+## Document Output
+
+When this skill produces a PRD, write it to `docs/prd-{feature}.md` using `references/prd-template.md` as the structure guide.
+
+Financial data in the Business Case section must come from user-provided input — never fabricated or hallucinated by the agent. If the user has not supplied financial figures, leave those fields blank and note that estimates are pending user input.
+
 ## Boundaries
 
 **CAN:** Define requirements, write specs, prioritize, spawn for research

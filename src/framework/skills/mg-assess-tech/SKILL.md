@@ -155,6 +155,10 @@ Task:
 
 See `references/model-escalation-guidance.md` for escalation criteria.
 
+## Document Output
+
+When this skill produces a technical design document, write it to `docs/technical-design-{feature}.md` using `references/technical-design-template.md` as the structure guide.
+
 ## Boundaries
 
 **CAN:** Evaluate architecture, analyze technical approaches, assess risks and scalability, spawn cto/staff-engineer/api-designer/data-engineer, provide technical recommendations

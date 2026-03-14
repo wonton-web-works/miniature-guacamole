@@ -1,0 +1,19 @@
+episode_id: short-01
+episode_title: "/mg — One Command to Rule Them All"
+
+scenes:
+  - scene_id: "01-hook"
+    narrator_agent: "cto"
+    narration: "18 skills. One entry point."
+    terminal_commands:
+      - command: "/mg"
+        wait_after_ms: 8000
+    wait_ms: 2000
+
+  - scene_id: "02-demo"
+    narrator_agent: "cto"
+    narration: "Planning, building, reviewing, shipping. /mg routes you to the right skill. You do not memorize commands. You describe what you need."
+    terminal_commands:
+      - command: "/mg plan evaluate a new auth system"
+        wait_after_ms: 5000
+    wait_ms: 2000

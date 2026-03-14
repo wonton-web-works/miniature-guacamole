@@ -4,15 +4,15 @@ episode_title: "Code Review, Security Review, and Accessibility — In One Comma
 scenes:
   - scene_id: "01-intro"
     narrator_agent: "qa"
-    narration: "Three kinds of review that most teams skip because they take time: code quality, security, and accessibility. miniature-guacamole has dedicated skills for all three. We are going to run them against a real codebase and show what each produces."
+    narration: "Three kinds of review that most teams skip because they take time: code quality, security, and accessibility. miniature-guacamole has dedicated skills for all three — and /mg review routes you to the right one. We are going to run them against a real codebase and show what each produces."
     terminal_commands: []
     wait_ms: 500
 
   - scene_id: "02-code-review"
     narrator_agent: "qa"
-    narration: "Start with mg-code-review. Point it at a PR or a workstream. The skill pulls the relevant files, spawns the dev agent as reviewer, and produces a structured report: issues by severity, test coverage gaps, and any patterns that violate the engineering principles on file."
+    narration: "Start with /mg review on a PR. The dispatcher sees code changes and routes to the code review skill. It pulls the relevant files, spawns the dev agent as reviewer, and produces a structured report: issues by severity, test coverage gaps, and any patterns that violate the engineering principles on file."
     terminal_commands:
-      - command: "/mg-code-review check PR-47"
+      - command: "/mg review PR-47"
         wait_after_ms: 2000
     wait_ms: 500
 
@@ -24,9 +24,9 @@ scenes:
 
   - scene_id: "04-security-review"
     narrator_agent: "qa"
-    narration: "Now mg-security-review. This invokes the Security Engineer agent against the same codebase. The agent runs a structured OWASP Top 10 check. It is not a static analysis tool — it reads the code and reasons about the attack surface. It catches things that linters miss."
+    narration: "Now the security review. Run /mg review with a security keyword or point it at auth code — the dispatcher routes to the security review skill. The Security Engineer agent runs a structured OWASP Top 10 check. It is not a static analysis tool — it reads the code and reasons about the attack surface."
     terminal_commands:
-      - command: "/mg-security-review check PR-47"
+      - command: "/mg review security PR-47"
         wait_after_ms: 2000
     wait_ms: 500
 
@@ -38,9 +38,9 @@ scenes:
 
   - scene_id: "06-accessibility-review"
     narrator_agent: "qa"
-    narration: "Third skill: mg-accessibility-review. The Accessibility Specialist agent runs a WCAG 2.1 AA audit against your UI components or rendered HTML. It checks for missing ARIA labels, insufficient color contrast, keyboard navigation gaps, and form field associations."
+    narration: "Third: accessibility. /mg review with an accessibility keyword routes to the accessibility review skill. The Accessibility Specialist agent runs a WCAG 2.1 AA audit against your UI components or rendered HTML. Missing ARIA labels, contrast, keyboard navigation, form field associations."
     terminal_commands:
-      - command: "/mg-accessibility-review check src/components/LoginForm.tsx"
+      - command: "/mg review accessibility src/components/LoginForm.tsx"
         wait_after_ms: 2000
     wait_ms: 500
 

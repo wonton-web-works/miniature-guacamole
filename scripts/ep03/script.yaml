@@ -16,9 +16,9 @@ scenes:
 
   - scene_id: "03-start-build"
     narrator_agent: "engineering-manager"
-    narration: "We kick off a build with the mg-build skill. Pass in a workstream ID. The skill reads the task queue, assembles context, and spawns the right agents in the right order."
+    narration: "We kick off a build with /mg build. The dispatcher routes to the build skill. Pass in a workstream ID. The skill reads the task queue, assembles context, and spawns the right agents in the right order."
     terminal_commands:
-      - command: "/mg-build implement WS-AUTH-1"
+      - command: "/mg build implement WS-AUTH-1"
         wait_after_ms: 1000
     wait_ms: 500
 
@@ -40,19 +40,25 @@ scenes:
     terminal_commands: []
     wait_ms: 500
 
-  - scene_id: "07-gate-check"
+  - scene_id: "07-classification"
     narrator_agent: "staff-engineer"
-    narration: "After dev finishes, there is a classification step. Is this workstream mechanical — a contained change with no architectural impact — or does it touch something that needs a second set of eyes? Mechanical workstreams go through automated bash gates. Architectural workstreams get a staff engineer review. The classification rules are explicit and documented."
+    narration: "After dev finishes, there is a classification step. Eight rules for architectural changes — package.json modifications, security-sensitive paths, new subdirectories, CI/CD files, changes over 300 lines across multiple modules. Five rules for mechanical — tests pass, under 200 lines, modifications only, single directory. The classification is explicit and documented. No guessing."
     terminal_commands: []
     wait_ms: 500
 
-  - scene_id: "08-why-it-matters"
+  - scene_id: "08-gate-check"
+    narrator_agent: "staff-engineer"
+    narration: "Mechanical workstreams go through automated bash gates — tests pass, coverage at 99, no new files outside the module. Architectural workstreams get a full staff engineer review. This saves an entire agent spawn on contained changes. On our validation run, the classification rules were 100 percent accurate across 38 historical workstreams."
+    terminal_commands: []
+    wait_ms: 500
+
+  - scene_id: "09-why-it-matters"
     narrator_agent: "cto"
     narration: "The reason this matters: every step produces an artifact that the next step consumes. Tests produce specs. Specs produce implementations. Implementations produce coverage reports. Coverage reports produce gate decisions. The whole cycle is traceable. When something goes wrong, you know exactly where it broke and why."
     terminal_commands: []
     wait_ms: 500
 
-  - scene_id: "09-cta"
+  - scene_id: "10-cta"
     narrator_agent: "engineering-manager"
     narration: "Next episode we run the full CAD cycle on a real feature, start to finish. No skips, no edits. Link in the description."
     terminal_commands: []

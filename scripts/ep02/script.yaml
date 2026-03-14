@@ -26,10 +26,18 @@ scenes:
         wait_after_ms: 30000
     wait_ms: 5000
 
-  - scene_id: "04-first-run"
+  - scene_id: "04-dispatcher"
     narrator_agent: "staff-engineer"
-    narration: "That is it. Your first multi-agent session is live. Try the leadership team skill and watch five agents coordinate on your feature in a single conversation."
+    narration: "Your first command after install: /mg. The dispatcher shows you every skill grouped by stage — planning, building, reviewing, shipping. 18 skills, one entry point. You do not need to memorize anything."
     terminal_commands:
-      - command: "/mg-leadership-team review WS-1"
+      - command: "/mg"
+        wait_after_ms: 10000
+    wait_ms: 5000
+
+  - scene_id: "05-first-run"
+    narrator_agent: "staff-engineer"
+    narration: "Now try it for real. /mg plan routes to the right planning skill based on your input. Watch 20 agents coordinate on your feature in a single conversation."
+    terminal_commands:
+      - command: "/mg plan review our authentication approach"
         wait_after_ms: 30000
     wait_ms: 5000

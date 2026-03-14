@@ -1,0 +1,23 @@
+episode_id: short-04
+episode_title: "Code Review in 3 Seconds"
+
+scenes:
+  - scene_id: "01-hook"
+    narrator_agent: "qa"
+    narration: "How fast can AI review your PR?"
+    terminal_commands: []
+    wait_ms: 1000
+
+  - scene_id: "02-demo"
+    narrator_agent: "qa"
+    narration: "/mg review. The skill reads your changes, spawns a reviewer, and produces a structured report. Blocking issues, warnings, observations. Severity-ranked."
+    terminal_commands:
+      - command: "/mg review PR-47"
+        wait_after_ms: 10000
+    wait_ms: 3000
+
+  - scene_id: "03-punchline"
+    narrator_agent: "qa"
+    narration: "Missing null check on user input. Test asserting implementation details instead of behavior. Caught before merge. Every time."
+    terminal_commands: []
+    wait_ms: 2000

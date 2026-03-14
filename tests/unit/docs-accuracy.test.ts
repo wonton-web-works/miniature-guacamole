@@ -24,20 +24,20 @@ function read(relPath: string): string {
 
 describe('README.md — misuse cases (stale values must not appear)', () => {
   it('does not say version 1.0.0 in the Version badge', () => {
-    // AC-1: version must be 1.3.0, not 1.0.0
+    // AC-1: version must be 2.0.0, not 1.0.0
     const readme = read('README.md');
     // Match the specific "Version: 1.0.0" line only — not changelog or code references
     expect(readme).not.toMatch(/^\*\*Version:\*\*\s*1\.0\.0/m);
   });
 
   it('does not have a "What\'s New in v1.0.0" section heading', () => {
-    // AC-2: What's New section must be for v1.3.0
+    // AC-2: What's New section must be for v2.0.0
     const readme = read('README.md');
     expect(readme).not.toMatch(/##\s+What'?s New in v1\.0\.0/);
   });
 
   it('does not say "16 Skills" in the feature bullet list', () => {
-    // AC-3: skill count must be 17 everywhere
+    // AC-3: skill count must be 18 everywhere
     const readme = read('README.md');
     expect(readme).not.toMatch(/^\s*-\s+\*\*16 Skills\*\*/m);
   });
@@ -55,7 +55,7 @@ describe('README.md — misuse cases (stale values must not appear)', () => {
   });
 
   it('does not say "All 16 skills" in the Available Workflows section', () => {
-    // AC-3: skill count must be 17 everywhere
+    // AC-3: skill count must be 18 everywhere
     const readme = read('README.md');
     expect(readme).not.toMatch(/All 16 skills/);
   });
@@ -92,22 +92,22 @@ describe('README.md — misuse cases (stale values must not appear)', () => {
 });
 
 describe('README.md — golden path (correct values must appear)', () => {
-  it('version badge says 1.3.0', () => {
+  it('version badge says 2.0.0', () => {
     // AC-1
     const readme = read('README.md');
-    expect(readme).toMatch(/^\*\*Version:\*\*\s*1\.3\.0/m);
+    expect(readme).toMatch(/^\*\*Version:\*\*\s*2\.0\.0/m);
   });
 
-  it('What\'s New section is for v1.3.0', () => {
+  it('What\'s New section is for v2.0.0', () => {
     // AC-2
     const readme = read('README.md');
-    expect(readme).toMatch(/##\s+What'?s New in v1\.3\.0/);
+    expect(readme).toMatch(/##\s+What'?s New in v2\.0\.0/);
   });
 
-  it('feature bullet list says "17 Skills"', () => {
+  it('feature bullet list says "18 Skills"', () => {
     // AC-3
     const readme = read('README.md');
-    expect(readme).toMatch(/\*\*17 Skills\*\*/);
+    expect(readme).toMatch(/\*\*18 Skills\*\*/);
   });
 
   it('feature bullet list says "20 Specialized Agents"', () => {
@@ -176,25 +176,25 @@ describe('docs/index.md — misuse cases (stale values must not appear)', () => 
 });
 
 describe('docs/index.md — golden path (correct values must appear)', () => {
-  it('tagline says "17 skills"', () => {
+  it('tagline says "18 skills"', () => {
     // AC-8
     const index = read('docs/index.md');
-    expect(index).toMatch(/tagline:.*17 skills/);
+    expect(index).toMatch(/tagline:.*18 skills/);
   });
 
-  it('"17 Team Skills" feature card title appears', () => {
+  it('"18 Team Skills" feature card title appears', () => {
     // AC-9
     const index = read('docs/index.md');
-    expect(index).toMatch(/title:\s*17 Team Skills/);
+    expect(index).toMatch(/title:\s*18 Team Skills/);
   });
 
-  it('Tier 1 description says "17 skills"', () => {
+  it('Tier 1 description says "18 skills"', () => {
     // AC-10
     const index = read('docs/index.md');
     const tier1Block = index.match(/###\s+Tier 1[^#]+/s);
     expect(tier1Block).not.toBeNull();
     if (tier1Block) {
-      expect(tier1Block[0]).toMatch(/\b17 skills\b/);
+      expect(tier1Block[0]).toMatch(/\b18 skills\b/);
     }
   });
 });
@@ -205,13 +205,13 @@ describe('docs/index.md — golden path (correct values must appear)', () => {
 
 describe('docs/getting-started.md — misuse cases (stale values must not appear)', () => {
   it('Quick Start summary does not say "all 16 skills"', () => {
-    // AC-11: line 24 area — "That's it. Claude Code now has all 16 skills and 19 agents available."
+    // AC-11: skill count must be 18 everywhere
     const gs = read('docs/getting-started.md');
     expect(gs).not.toMatch(/all 16 skills/);
   });
 
   it('What Gets Installed section does not say "16 team collaboration workflows"', () => {
-    // AC-12: line 145 area — skills/ comment says "16 team collaboration workflows"
+    // AC-12: skill count must be 18 everywhere
     const gs = read('docs/getting-started.md');
     // Match the comment line inside the code block
     expect(gs).not.toMatch(/16 team collaboration workflows/);
@@ -219,16 +219,16 @@ describe('docs/getting-started.md — misuse cases (stale values must not appear
 });
 
 describe('docs/getting-started.md — golden path (correct values must appear)', () => {
-  it('Quick Start summary says "17 skills and 20 agents"', () => {
+  it('Quick Start summary says "18 skills and 20 agents"', () => {
     // AC-11
     const gs = read('docs/getting-started.md');
-    expect(gs).toMatch(/17 skills and 20 agents/);
+    expect(gs).toMatch(/18 skills and 20 agents/);
   });
 
-  it('What Gets Installed section says "17 team collaboration workflows"', () => {
+  it('What Gets Installed section says "18 team collaboration workflows"', () => {
     // AC-12
     const gs = read('docs/getting-started.md');
-    expect(gs).toMatch(/17 team collaboration workflows/);
+    expect(gs).toMatch(/18 team collaboration workflows/);
   });
 });
 
@@ -245,9 +245,9 @@ describe('docs/architecture.md — misuse cases (stale values must not appear)',
 });
 
 describe('docs/architecture.md — golden path (correct values must appear)', () => {
-  it('directory structure comment says "17 team collaboration skills"', () => {
+  it('directory structure comment says "18 team collaboration skills"', () => {
     // AC-13
     const arch = read('docs/architecture.md');
-    expect(arch).toMatch(/17 team collaboration skills/);
+    expect(arch).toMatch(/18 team collaboration skills/);
   });
 });

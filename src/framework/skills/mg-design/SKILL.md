@@ -104,10 +104,13 @@ Triggered by the `--brand` flag or when the word "brand" appears in the prompt (
 4. art-director reviews the brand kit and approves before it is used downstream
 5. Design agent produces wireframes at `docs/wireframes/` or `app/wireframes/` (use whichever matches the project's docs convention)
 6. Wireframes reference the brand kit tokens — no ad-hoc color or font choices in wireframe files
+7. art-director reviews the wireframes before they are handed off downstream
 
 **Wireframe output:**
 
 Design agent produces wireframes as markdown or ASCII layout files in `docs/wireframes/` (default) or `app/wireframes/` if the project uses an app/ docs convention. Each wireframe file names the screen and references the relevant brand kit tokens.
+
+**Wireframe quality benchmark:** The `app/wireframes/` directory in the wonton project is the reference implementation for expected output quality.
 
 ## Boundaries
 

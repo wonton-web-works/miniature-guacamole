@@ -25,13 +25,14 @@ Coordinates qa, dev, and staff-engineer through the complete CAD development cyc
 ## The CAD Cycle
 
 ```
-Step 1: QA writes tests (failing)     → tests_written gate
-Step 2: Dev implements (passing)      → tests_pass + coverage >= 99%
-Step 3: QA verifies                   → qa_approved gate
-Step 4: Staff Engineer reviews        → code_approved gate
-        ↓
+Step 1: QA writes tests (failing)        → tests_written gate
+Step 2: Dev implements (passing)         → tests_pass + coverage >= 99%
+Step 3: QA verifies                      → qa_approved gate
+Step 4A: Dual-specialist review (if code blocks in deliverable) → specialists_approved gate
+Step 4B: Staff Engineer reviews          → code_approved gate
+         ↓
 Ready for mg-leadership-team approval
-        ↓
+         ↓
 /deployment-engineer to merge
 ```
 
@@ -82,6 +83,29 @@ Task:
     Check: all tests pass, coverage >= 99%, no regressions.
 
 # Step 4: Code review
+
+## Step 4A: Dual-Specialist Review (conditional)
+
+After dev completes implementation, inspect each deliverable file before proceeding to staff-engineer review.
+
+**Trigger:** If the deliverable contains fenced code blocks (``` or ~~~), run dual-specialist review. If no code blocks are present, skip Step 4A entirely and proceed directly to Step 4B.
+
+Spawn two specialist agents in parallel (at most one additional spawn beyond the normal Step 4 budget):
+
+1. **Domain specialist** — reviews code blocks for platform correctness. The domain specialist is determined at runtime by the platform context of the workstream (e.g., the relevant backend, infra, or data platform). Do not pre-assign a fixed domain specialist.
+2. **Language specialist** — reviews code blocks for code quality regardless of language. The language specialist evaluates correctness, clarity, and idiomatic style for whichever language appears in the code blocks.
+
+**Gate:** Both specialists must pass before the code is included in the deliverable. Partial approval — where one specialist approves but the other has not — is not sufficient to proceed.
+
+**Review output format:** Each specialist returns findings severity-ranked as:
+- `blocking` — must be fixed before the deliverable is accepted (correctness errors, security issues, broken logic)
+- `warning` — advisory; should be addressed but does not block acceptance
+
+## Step 4B: Staff-engineer review
+
+After dual-specialist review passes (or is skipped because the deliverable has no code blocks), proceed to staff-engineer review.
+
+```yaml
 Task:
   subagent_type: staff-engineer
   prompt: |

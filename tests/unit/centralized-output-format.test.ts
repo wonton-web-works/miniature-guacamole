@@ -438,7 +438,7 @@ describe('WS-15: Centralized Skill Visual Output', () => {
               expect(frontmatter, `${skill} should have name field`).toContain('name:');
               expect(frontmatter, `${skill} should have description field`).toContain('description:');
               expect(frontmatter, `${skill} should have model field`).toContain('model:');
-              expect(frontmatter, `${skill} should have tools field`).toContain('tools:');
+              expect(frontmatter, `${skill} should have allowed-tools field`).toContain('allowed-tools:');
             }
           }
         });

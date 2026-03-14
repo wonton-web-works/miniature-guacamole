@@ -89,7 +89,7 @@ miniature-guacamole/
 ├── src/
 │   ├── framework/                  # Framework source
 │   │   ├── agents/                 # 19 specialized agent roles
-│   │   ├── skills/                 # 17 team collaboration skills
+│   │   ├── skills/                 # 18 team collaboration skills
 │   │   ├── shared/                 # 6 protocol documents
 │   │   ├── scripts/                # 17 mg-* utility commands
 │   │   ├── hooks/                  # Safety and initialization hooks

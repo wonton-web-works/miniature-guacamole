@@ -135,10 +135,10 @@ describe('WS-DOCS-4 README.md — golden path (required content must appear)', (
     expect(lineCount).toBeLessThan(300);
   });
 
-  it('contains version badge "1.3.0"', () => {
+  it('contains version badge "2.0.0"', () => {
     // AC-2
     const readme = read('README.md');
-    expect(readme).toMatch(/1\.3\.0/);
+    expect(readme).toMatch(/2\.0\.0/);
   });
 
   it('contains a Quick Start section', () => {
@@ -201,10 +201,10 @@ describe('WS-DOCS-4 README.md — golden path (required content must appear)', (
     expect(hasDocsUrl || hasRelativePaths).toBe(true);
   });
 
-  it('contains a "What you get" or summary section mentioning 17 skills', () => {
+  it('contains a "What you get" or summary section mentioning 18 skills', () => {
     // AC-11: summary section with counts
     const readme = read('README.md');
-    expect(readme).toMatch(/17 [Ss]kills?/);
+    expect(readme).toMatch(/18 [Ss]kills?/);
   });
 
   it('contains a "What you get" or summary section mentioning 20 agents', () => {
@@ -373,10 +373,10 @@ describe('WS-DOCS-5 docs/getting-started.md — golden path (required content mu
     expect(gs).toMatch(/\/mg-init/);
   });
 
-  it('says "17 skills"', () => {
+  it('says "18 skills"', () => {
     // AC-5
     const gs = read('docs/getting-started.md');
-    expect(gs).toMatch(/17 skills?/i);
+    expect(gs).toMatch(/18 skills?/i);
   });
 
   it('says "20 agents"', () => {

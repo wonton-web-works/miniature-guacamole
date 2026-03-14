@@ -4,7 +4,7 @@ layout: home
 hero:
   name: miniature-guacamole
   text: AI-Powered Product Development
-  tagline: A complete product development organization for Claude Code — 19 specialized agents, 17 skills, CAD workflows, and project-local architecture.
+  tagline: A complete product development organization for Claude Code — 19 specialized agents, 18 skills, CAD workflows, and project-local architecture.
   actions:
     - theme: brand
       text: Get Started
@@ -27,8 +27,8 @@ features:
     title: Git Workstreams
     details: Each feature in its own branch with structured merge process and executive review gates before production.
   - icon: '<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#2E8B8B" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>'
-    title: 17 Team Skills
-    details: From feature assessment to implementation, security review to accessibility checks — coordinated multi-agent workflows invoked with simple slash commands.
+    title: 18 Team Skills
+    details: From feature assessment to implementation, security review to accessibility checks — coordinated multi-agent workflows invoked with simple slash commands. Use `/mg` as the front door.
   - icon: '<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#2E8B8B" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>'
     title: Loop Prevention
     details: Automatic detection of circular delegation with depth limits and supervisor monitoring to prevent infinite chains.
@@ -41,7 +41,7 @@ features:
 
 ### Tier 1: Open Source (Local Install)
 
-Install the framework directly into any project. Full access to 19 agents, 17 skills, 17 utility scripts, and the CAD development workflow. Works today, MIT licensed, no account required.
+Install the framework directly into any project. Full access to 19 agents, 18 skills, 17 utility scripts, and the CAD development workflow. Works today, MIT licensed, no account required.
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/wonton-web-works/miniature-guacamole/main/src/installer/web-install.sh | bash

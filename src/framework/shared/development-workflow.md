@@ -133,7 +133,7 @@ This document defines the Constraint-Driven Agentic Development (CAD) workflow u
 ### Dev (Step 2)
 **When:** After tests exist
 **Does:**
-1. Receives artifact bundle: INPUTS (context), GATE (success criteria), CONSTRAINTS (standards) - ~12K token budget
+1. Receives compressed artifact bundle: INPUTS (context), GATE (success criteria), CONSTRAINTS (standards) — ~12K token budget
 2. Runs tests (confirms they fail)
 3. Implements minimum code to pass
 4. Refactors while green
@@ -303,11 +303,40 @@ Coordination agents (engineering-manager, cto, staff-engineer) retain full memor
 
 ### Curated Context
 
-The orchestrator (/mg-build) reads all memory files but passes only relevant subsets to task agents:
+The orchestrator (mg-build) reads all memory files and full source documents, then passes only relevant subsets to task agents:
 
 - **qa:** ~8K token budget
 - **dev:** ~12K token budget
 - **staff-engineer:** Full access (coordination role)
+
+### Document Compression
+
+Large deliverable documents (PRD, Technical Design, Brand Kit) are compressed via template-based extraction before being forwarded to task agents. The orchestrator (mg-build) reads the full document; task agents (dev, qa, design) receive only the compressed version — never the raw full document.
+
+Context budgets apply to compressed bundles: qa ~8K tokens, dev ~12K tokens. Compressed content populates the INPUTS or CONSTRAINTS fields of the artifact bundle. No new top-level bundle fields are introduced.
+
+**PRD → dev and qa bundles**
+
+Extract verbatim using template-based extraction (not LLM summarization):
+- Acceptance criteria — extracted in full, never paraphrased or shortened
+- Constraints (technical, timeline, budget)
+- Key decisions recorded in the PRD
+
+**Technical Design → dev and staff-engineer bundles**
+
+Extract:
+- Selected approach
+- Risk mitigations
+
+Do not extract the alternatives analysis — task agents do not need it.
+
+**Brand Kit → design agent bundle**
+
+Extract as token injection:
+- Color token values (hex codes or semantic color names)
+- Font stack (typeface and fallbacks)
+
+The design agent receives the Brand Kit compression; dev and qa do not.
 
 ### Classification Rules
 

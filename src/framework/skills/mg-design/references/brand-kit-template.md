@@ -214,3 +214,27 @@ Page margins: min 16px on mobile, 24–48px on desktop
 ```
 
 Define how the spacing scale maps to component internal padding, card padding, and section gutters for this specific product.
+
+---
+
+## Wireframe Token Usage
+
+When writing wireframe screen descriptions, reference tokens by their CSS custom property name — never use raw hex values or font names. This keeps wireframes consistent with the brand kit and immediately actionable by engineering.
+
+**Token reference style for wireframe files:**
+
+```
+CTA Button:      background `--color-primary`  |  label `--color-surface-base`
+Secondary Button: border `--color-border`       |  label `--color-ink-primary`
+Page background: `--color-surface-base`
+Card:            background `--color-surface-raised`  |  border `--color-border`
+Body text:       `--color-ink-primary`  |  size `--text-base`
+Caption / meta:  `--color-ink-secondary`  |  size `--text-sm`
+Input field:     background `--color-surface-sunken`  |  border `--color-border`
+Focus ring:      `--color-border-focus`
+Error state:     border `--color-feedback-error`
+```
+
+Use these token names verbatim in wireframe `.md` files so engineering can map directly to the CSS variables defined above.
+
+---

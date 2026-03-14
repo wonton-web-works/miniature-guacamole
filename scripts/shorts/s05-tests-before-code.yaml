@@ -1,0 +1,23 @@
+episode_id: short-05
+episode_title: "Tests Before Code — Always"
+
+scenes:
+  - scene_id: "01-hook"
+    narrator_agent: "qa"
+    narration: "The first tests we write are not the happy path. They are the misuse cases."
+    terminal_commands: []
+    wait_ms: 2000
+
+  - scene_id: "02-explain"
+    narrator_agent: "qa"
+    narration: "What happens when the input is null? When the rate limit is negative? When Redis is down? We write those tests first. Then boundary conditions. Then — and only then — the golden path. If you write success cases first, you anchor the implementation to the best case and miss the edges."
+    terminal_commands:
+      - command: "/mg build implement WS-AUTH-1"
+        wait_after_ms: 8000
+    wait_ms: 3000
+
+  - scene_id: "03-punchline"
+    narrator_agent: "qa"
+    narration: "Misuse first. Boundary second. Golden path last. 99 percent coverage. Every workstream."
+    terminal_commands: []
+    wait_ms: 2000

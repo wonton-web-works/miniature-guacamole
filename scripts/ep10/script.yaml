@@ -1,40 +1,40 @@
-episode_id: ep10
+episode_id: ep07
 episode_title: "Season 1 Recap + What's Coming"
 
 scenes:
   - scene_id: "01-intro"
     narrator_agent: "engineering-manager"
-    narration: "Ten episodes. We covered install, the CAD cycle, a full feature build, 19 agents, three review skills, memory and handoffs, multi-project isolation, debugging, and refactoring. That is the complete miniature-guacamole surface area for a working team. Here are the ten moments from this season that are worth rewatching."
+    narration: "Seven episodes. We covered install, the /mg dispatcher, the CAD cycle, a full feature build, 20 agents, and three review skills. That is the complete miniature-guacamole surface area for a working team. Here are the moments from this season worth rewatching."
     terminal_commands: []
     wait_ms: 500
 
   - scene_id: "02-top-moments"
     narrator_agent: "cto"
-    narration: "Episode 1: the leadership team producing a workstream plan in one command, no setup. Episode 3: misuse-first testing — writing what the function should reject before writing what it should accept. Episode 4: the rate limiter build where the architectural decision got embedded into the artifact bundle before a line of code was written. Episode 5: bounded delegation — the rule that prevents an agent three levels deep from making a decision it does not have the context for."
+    narration: "Episode 1: the /mg dispatcher as a single entry point to 18 skills. Episode 3: misuse-first testing — writing what the function should reject before writing what it should accept. The mechanical versus architectural classification — eight rules for architecture, five for mechanical, 100 percent accuracy on 38 workstreams. Episode 4: the rate limiter build where the architectural decision got embedded into the artifact bundle before a line of code was written."
     terminal_commands: []
     wait_ms: 500
 
   - scene_id: "03-more-moments"
     narrator_agent: "staff-engineer"
-    narration: "Episode 6: the session token showing up in INFO logs — caught by the security review, missed by the code review. Episode 7: the project-local memory guarantee. No database, no shared service, no accidental NDA violation. Episode 8: switching between two client projects and confirming zero memory bleed. Episode 9: mg-debug identifying the check-then-act race condition from a vague description of intermittent test failures."
+    narration: "Episode 5: bounded delegation — the rule that prevents an agent three levels deep from making a decision it does not have the context for. Episode 6: the session token showing up in INFO logs — caught by the security review, missed by the code review. That is why /mg review routes to different skills for different concerns."
     terminal_commands: []
     wait_ms: 500
 
   - scene_id: "04-what-you-can-do-now"
     narrator_agent: "engineering-manager"
-    narration: "If you have been watching and have not installed yet: install link is in the description. It takes under two minutes. Run mg-init in a project, run mg-leadership-team on a real feature request, and see what the output looks like against something you are actually building."
+    narration: "If you have been watching and have not installed yet: install link is in the description. It takes under two minutes. Run /mg in Claude Code and see everything available. Try /mg plan on a real feature request and see what the output looks like."
     terminal_commands: []
     wait_ms: 500
 
   - scene_id: "05-discord"
     narrator_agent: "product-owner"
-    narration: "There is a Discord. Link in the description. That is where the team hangs out, where feature requests land, where contributors coordinate. If you found a bug, a gap in the agent behavior, or a skill that does not handle your use case — that is where to bring it. Pull requests are welcome. The contributing guide is in the repo."
+    narration: "There is a Discord. Link in the description. That is where the team hangs out, where feature requests land, where contributors coordinate. Pull requests are welcome. The contributing guide is in the repo."
     terminal_commands: []
     wait_ms: 500
 
   - scene_id: "06-season-2-tease"
     narrator_agent: "cto"
-    narration: "Season 2 is in planning. Three things we know we are building toward: an MCP server so the framework agents can run as proper tool-use endpoints, a SaaS layer for teams that do not want to self-host the framework config, and advanced retrieval — letting agents query a project's decision history semantically rather than reading flat JSON files. No dates yet. When there is a demo worth showing, there will be an episode."
+    narration: "Season 2 is in planning. Three directions we are exploring: memory and handoffs — how agents share context across sessions without losing state. Multi-project isolation — running the framework across client projects with zero memory bleed. And advanced debugging and refactoring — structured workflows for finding root causes and restructuring code safely. When there is a demo worth showing, there will be an episode."
     terminal_commands: []
     wait_ms: 500
 

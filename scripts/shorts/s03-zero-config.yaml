@@ -1,0 +1,27 @@
+episode_id: short-03
+episode_title: "20 Agents, Zero Config"
+
+scenes:
+  - scene_id: "01-hook"
+    narrator_agent: "engineering-manager"
+    narration: "Install to first multi-agent session. Under 60 seconds."
+    terminal_commands: []
+    wait_ms: 1000
+
+  - scene_id: "02-install"
+    narrator_agent: "engineering-manager"
+    narration: "One curl. One init. Done."
+    terminal_commands:
+      - command: "curl -fsSL https://raw.githubusercontent.com/wonton-web-works/miniature-guacamole/main/src/installer/web-install.sh | bash"
+        wait_after_ms: 10000
+      - command: "cd my-project && mg-init"
+        wait_after_ms: 10000
+    wait_ms: 2000
+
+  - scene_id: "03-first-run"
+    narrator_agent: "engineering-manager"
+    narration: "20 agents. 18 skills. /mg is your front door."
+    terminal_commands:
+      - command: "/mg"
+        wait_after_ms: 5000
+    wait_ms: 2000

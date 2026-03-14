@@ -1,0 +1,23 @@
+episode_id: short-02
+episode_title: "Your AI Just Wrote a PRD"
+
+scenes:
+  - scene_id: "01-hook"
+    narrator_agent: "product-owner"
+    narration: "What if your AI didn't just write code — it wrote the spec first?"
+    terminal_commands: []
+    wait_ms: 2000
+
+  - scene_id: "02-demo"
+    narrator_agent: "product-owner"
+    narration: "Run /mg spec with a feature idea. The product team — product owner, product manager, designer — defines requirements, writes user stories, and outputs a real PRD to your docs directory."
+    terminal_commands:
+      - command: "/mg spec define requirements for a notification system"
+        wait_after_ms: 10000
+    wait_ms: 3000
+
+  - scene_id: "03-punchline"
+    narrator_agent: "product-owner"
+    narration: "Problem statement. User stories. Acceptance criteria. Design requirements. Business case. A document you can hand to a stakeholder. Not a chat message."
+    terminal_commands: []
+    wait_ms: 2000

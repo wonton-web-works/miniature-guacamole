@@ -7,6 +7,7 @@
 
 import * as fs from 'fs';
 import * as path from 'path';
+import { execFile } from 'child_process';
 import { compile, parseScript } from './compiler';
 import { loadStudioConfig, generateNarration } from './elevenlabs';
 import { mux } from './mux';
@@ -60,8 +61,9 @@ export async function writeProductionState(
 /**
  * Run the full YouTube production pipeline:
  * 1. compile: script.yaml → VHS .tape file
- * 2. elevenlabs: generate narration MP3s per scene
- * 3. mux: combine narration audio + terminal video → raw-cut.mp4
+ * 2. vhs: execute .tape file via VHS CLI → terminal.mp4
+ * 3. elevenlabs: generate narration MP3s per scene
+ * 4. mux: combine narration audio + terminal video → raw-cut.mp4
  *
  * On ElevenLabs 429 rate limit: retries up to 3x with exponential backoff.
  * On failure: marks state FAILED at the failing step. Preserves narration MP3s.
@@ -128,7 +130,30 @@ export async function runPipeline(options: PipelineOptions): Promise<PipelineRes
   const scriptYaml = fs.readFileSync(options.scriptPath, 'utf-8');
   const script = parseScript(scriptYaml);
 
-  // ── Step 2: ElevenLabs narration ─────────────────────────────────────────
+  // ── Step 2: VHS execution ─────────────────────────────────────────────────
+  try {
+    await new Promise<void>((resolve, reject) => {
+      execFile('vhs', [tapeOutput.tapePath], (err) => {
+        if (err) {
+          reject(err);
+        } else {
+          resolve();
+        }
+      });
+    });
+    state.completedSteps.push('vhs');
+    state.updatedAt = new Date().toISOString();
+    await writeProductionState(state, options.memoryDir);
+  } catch (err: any) {
+    console.error(err.message);
+    state.status = 'FAILED';
+    state.failedAtStep = 'vhs';
+    state.updatedAt = new Date().toISOString();
+    await writeProductionState(state, options.memoryDir);
+    throw err;
+  }
+
+  // ── Step 3: ElevenLabs narration ─────────────────────────────────────────
   const narrationPaths: string[] = [];
   const narrationDir = options.outputDir;
 
@@ -183,7 +208,7 @@ export async function runPipeline(options: PipelineOptions): Promise<PipelineRes
     throw err;
   }
 
-  // ── Step 3: Mux ───────────────────────────────────────────────────────────
+  // ── Step 4: Mux ───────────────────────────────────────────────────────────
 
   // In dry-run mode, skip mux — no real audio/video files exist
   if (options.dryRun) {

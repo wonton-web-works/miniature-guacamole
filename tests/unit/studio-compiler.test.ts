@@ -472,6 +472,80 @@ scenes:
 });
 
 // ---------------------------------------------------------------------------
+// SECTION 2B: BOUNDARY CASES — Output directive (WS-STUDIO-3)
+// ---------------------------------------------------------------------------
+
+describe('compiler.ts — Boundary Cases: Output directive (WS-STUDIO-3)', () => {
+  let testDir: string;
+
+  beforeEach(() => {
+    testDir = path.join(os.tmpdir(), `studio-compiler-test-${Date.now()}-${Math.random().toString(36).slice(2)}`);
+    fs.mkdirSync(testDir, { recursive: true });
+  });
+
+  afterEach(() => {
+    if (fs.existsSync(testDir)) {
+      fs.rmSync(testDir, { recursive: true, force: true });
+    }
+  });
+
+  // BOUNDARY: Output directive must carry the full explicit path, not a bare filename
+  it('Output directive uses the full absolute path, not a bare filename without directory', () => {
+    const tapePath = path.join(testDir, 'ep01.tape');
+    const expectedMp4 = path.join(testDir, 'ep01.mp4');
+    const tape = generateTape(VALID_SCRIPT, tapePath);
+    const firstLine = tape.split('\n')[0];
+    // Must contain a directory separator — a bare "ep01.mp4" without a path is invalid
+    expect(firstLine).toMatch(/^Output\s+\//);
+    expect(firstLine).toContain(expectedMp4);
+  });
+
+  // BOUNDARY: Output directive must appear on the first line
+  it('Output directive is on the first line of the tape (VHS processes directives before commands)', () => {
+    const tapePath = path.join(testDir, 'ep01.tape');
+    const tape = generateTape(VALID_SCRIPT, tapePath);
+    const firstLine = tape.split('\n')[0];
+    expect(firstLine.trim()).toMatch(/^Output\s+/);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// SECTION 2C: MISUSE CASES — Output directive (WS-STUDIO-3)
+// ---------------------------------------------------------------------------
+
+describe('compiler.ts — Misuse Cases: Output directive (WS-STUDIO-3)', () => {
+  let testDir: string;
+
+  beforeEach(() => {
+    testDir = path.join(os.tmpdir(), `studio-compiler-test-${Date.now()}-${Math.random().toString(36).slice(2)}`);
+    fs.mkdirSync(testDir, { recursive: true });
+  });
+
+  afterEach(() => {
+    if (fs.existsSync(testDir)) {
+      fs.rmSync(testDir, { recursive: true, force: true });
+    }
+  });
+
+  // MISUSE: Bare "Output .mp4" with no directory silently writes to cwd — must not happen
+  it('generateTape() output does NOT contain a bare "Output .mp4" without a directory path', () => {
+    const tapePath = path.join(testDir, 'ep01.tape');
+    const tape = generateTape(VALID_SCRIPT, tapePath);
+    // A bare Output directive like "Output ep01.mp4" or "Output terminal.mp4" with no leading
+    // slash is the failure mode — VHS would write to the cwd and the pipeline would lose the file
+    const bareOutputPattern = /^Output\s+[^/][^\s]*\.mp4$/m;
+    expect(tape).not.toMatch(bareOutputPattern);
+  });
+
+  // MISUSE: Missing Output directive entirely means VHS defaults to output.gif — pipeline breaks
+  it('generateTape() output must NOT omit the Output directive entirely', () => {
+    const tapePath = path.join(testDir, 'ep01.tape');
+    const tape = generateTape(VALID_SCRIPT, tapePath);
+    expect(tape).toMatch(/^Output\s+/m);
+  });
+});
+
+// ---------------------------------------------------------------------------
 // SECTION 3: GOLDEN PATH
 // ---------------------------------------------------------------------------
 
@@ -531,6 +605,23 @@ describe('compiler.ts — Golden Path', () => {
       const tape = generateTape(VALID_SCRIPT);
       expect(typeof tape).toBe('string');
       expect(tape.length).toBeGreaterThan(0);
+    });
+
+    // GOLDEN: Output directive — WS-STUDIO-3
+    it('starts with Output <path>.mp4 so VHS writes the recording to the correct location', () => {
+      const tapePath = path.join('/tmp', 'ep01.tape');
+      const tape = generateTape(VALID_SCRIPT, tapePath);
+      const firstLine = tape.split('\n')[0];
+      expect(firstLine).toMatch(/^Output\s+.+\.mp4$/);
+    });
+
+    it('Output path ends in .mp4 (not .gif or bare extension)', () => {
+      const tapePath = path.join('/tmp', 'ep01.tape');
+      const tape = generateTape(VALID_SCRIPT, tapePath);
+      const outputLine = tape.split('\n').find((l) => l.startsWith('Output '));
+      expect(outputLine).toBeDefined();
+      expect(outputLine).toMatch(/\.mp4$/);
+      expect(outputLine).not.toMatch(/\.gif$/);
     });
 
     it('includes Type and Enter directives for each terminal command', () => {

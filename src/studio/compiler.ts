@@ -83,8 +83,14 @@ export function validateScript(script: unknown): ValidationResult {
   };
 }
 
-export function generateTape(script: Script): string {
+export function generateTape(script: Script, tapePath?: string): string {
   const lines: string[] = [];
+
+  // Output directive: derive .mp4 path from tapePath (replace .tape extension with .mp4)
+  if (tapePath) {
+    const mp4Path = tapePath.replace(/\.tape$/, '.mp4');
+    lines.push(`Output ${mp4Path}`);
+  }
 
   for (const scene of script.scenes) {
     if (scene.terminal_commands && scene.terminal_commands.length > 0) {
@@ -145,7 +151,7 @@ export async function compile(scriptPath: string, outputPath: string): Promise<T
   }
 
   // Generate tape content
-  const tapeContent = generateTape(script);
+  const tapeContent = generateTape(script, outputPath);
 
   // Create output directory if needed
   const outputDir = path.dirname(outputPath);

@@ -37,10 +37,16 @@ vi.mock('../../src/studio/mux', () => ({
   checkFfmpegAvailable: vi.fn(),
 }));
 
+// Mock child_process for VHS execution step (WS-STUDIO-3)
+vi.mock('child_process', () => ({
+  execFile: vi.fn(),
+}));
+
 import { runPipeline, readProductionState, writeProductionState } from '../../src/studio/pipeline';
 import { compile, parseScript } from '../../src/studio/compiler';
 import { generateNarration, loadStudioConfig } from '../../src/studio/elevenlabs';
 import { mux } from '../../src/studio/mux';
+import { execFile } from 'child_process';
 import type { PipelineOptions, ProductionState, Script } from '../../src/studio/types';
 
 // ---------------------------------------------------------------------------
@@ -101,6 +107,9 @@ const MOCK_MUX_RESULT = {
   outputPath: '/tmp/output/raw-cut.mp4',
 };
 
+// VHS execFile resolves with stdout/stderr buffers (WS-STUDIO-3)
+const MOCK_VHS_SUCCESS = { stdout: '', stderr: '' };
+
 const MOCK_STUDIO_CONFIG = {
   voices: {
     cto: 'voice-cto-id',
@@ -127,6 +136,10 @@ describe('pipeline.ts — Misuse Cases', () => {
     fs.mkdirSync(testDir, { recursive: true });
     vi.clearAllMocks();
     (parseScript as any).mockReturnValue(MOCK_SCRIPT);
+    // Default VHS success — tests that need VHS to fail override this explicitly
+    (execFile as any).mockImplementation((_bin: string, _args: string[], cb: Function) => {
+      cb(null, '', '');
+    });
   });
 
   afterEach(() => {
@@ -329,6 +342,82 @@ describe('pipeline.ts — Misuse Cases', () => {
     });
   });
 
+  // ── VHS step misuse (WS-STUDIO-3) ─────────────────────────────────────────
+
+  describe('runPipeline() — VHS step misuse (WS-STUDIO-3)', () => {
+    // MISUSE: Pipeline must NOT call mux without a VHS execution step between compile and elevenlabs
+    it('calls execFile (VHS) between compile and elevenlabs — mux must not be called without a VHS step', async () => {
+      setupTestDir(testDir);
+      const opts = buildPipelineOptions(testDir);
+
+      const callOrder: string[] = [];
+      (loadStudioConfig as any).mockResolvedValue(MOCK_STUDIO_CONFIG);
+      (compile as any).mockImplementation(async () => { callOrder.push('compile'); return MOCK_TAPE_OUTPUT; });
+      (execFile as any).mockImplementation((_bin: string, _args: string[], cb: Function) => {
+        callOrder.push('vhs');
+        cb(null, MOCK_VHS_SUCCESS.stdout, MOCK_VHS_SUCCESS.stderr);
+      });
+      (generateNarration as any).mockImplementation(async () => {
+        callOrder.push('generateNarration');
+        return MOCK_NARRATION_RESULTS[0];
+      });
+      (mux as any).mockImplementation(async () => { callOrder.push('mux'); return MOCK_MUX_RESULT; });
+
+      await runPipeline(opts);
+
+      // vhs must appear in the call order
+      expect(callOrder).toContain('vhs');
+      // compile must precede vhs, vhs must precede generateNarration
+      expect(callOrder.indexOf('compile')).toBeLessThan(callOrder.indexOf('vhs'));
+      expect(callOrder.indexOf('vhs')).toBeLessThan(callOrder.indexOf('generateNarration'));
+    });
+
+    // MISUSE: Pipeline marks state FAILED at 'vhs' step when VHS execution fails
+    it('marks state FAILED at vhs step when execFile returns a non-zero exit error', async () => {
+      setupTestDir(testDir);
+      const opts = buildPipelineOptions(testDir);
+
+      (loadStudioConfig as any).mockResolvedValue(MOCK_STUDIO_CONFIG);
+      (compile as any).mockResolvedValue(MOCK_TAPE_OUTPUT);
+      (execFile as any).mockImplementation((_bin: string, _args: string[], cb: Function) => {
+        cb(new Error('vhs: command not found'), '', 'vhs: command not found');
+      });
+
+      try {
+        await runPipeline(opts);
+      } catch {
+        // expected
+      }
+
+      const statePath = path.join(opts.memoryDir, `studio-production-${EPISODE_ID}.json`);
+      if (fs.existsSync(statePath)) {
+        const state: ProductionState = JSON.parse(fs.readFileSync(statePath, 'utf-8'));
+        expect(state.status).toBe('FAILED');
+        expect(state.failedAtStep).toBe('vhs');
+      }
+    });
+
+    // MISUSE: Pipeline must NOT call elevenlabs if VHS step fails
+    it('does not call generateNarration when VHS step fails', async () => {
+      setupTestDir(testDir);
+      const opts = buildPipelineOptions(testDir);
+
+      (loadStudioConfig as any).mockResolvedValue(MOCK_STUDIO_CONFIG);
+      (compile as any).mockResolvedValue(MOCK_TAPE_OUTPUT);
+      (execFile as any).mockImplementation((_bin: string, _args: string[], cb: Function) => {
+        cb(new Error('vhs failed'), '', '');
+      });
+
+      try {
+        await runPipeline(opts);
+      } catch {
+        // expected
+      }
+
+      expect(generateNarration).not.toHaveBeenCalled();
+    });
+  });
+
   describe('runPipeline() — ElevenLabs rate limit retry', () => {
     it('retries up to 3 times on rate limit (429) error before failing', async () => {
       setupTestDir(testDir);
@@ -385,6 +474,10 @@ describe('pipeline.ts — Boundary Cases', () => {
     fs.mkdirSync(testDir, { recursive: true });
     vi.clearAllMocks();
     (parseScript as any).mockReturnValue(MOCK_SCRIPT);
+    // Default VHS success — tests that need VHS to fail override this explicitly
+    (execFile as any).mockImplementation((_bin: string, _args: string[], cb: Function) => {
+      cb(null, '', '');
+    });
   });
 
   afterEach(() => {
@@ -480,6 +573,77 @@ describe('pipeline.ts — Boundary Cases', () => {
     });
   });
 
+  // ── VHS step boundary (WS-STUDIO-3) ──────────────────────────────────────
+
+  describe('runPipeline() — VHS step boundary (WS-STUDIO-3)', () => {
+    // BOUNDARY: VHS step must receive the tape file path that compile produced
+    it('passes the tape file path from compile output to execFile as the VHS argument', async () => {
+      setupTestDir(testDir);
+      const opts = buildPipelineOptions(testDir);
+
+      const capturedArgs: string[][] = [];
+      (loadStudioConfig as any).mockResolvedValue(MOCK_STUDIO_CONFIG);
+      (compile as any).mockResolvedValue(MOCK_TAPE_OUTPUT);
+      (execFile as any).mockImplementation((_bin: string, args: string[], cb: Function) => {
+        capturedArgs.push(args);
+        cb(null, '', '');
+      });
+      (generateNarration as any).mockResolvedValue(MOCK_NARRATION_RESULTS[0]);
+      (mux as any).mockResolvedValue(MOCK_MUX_RESULT);
+
+      await runPipeline(opts);
+
+      expect(capturedArgs.length).toBeGreaterThan(0);
+      // The tape path from compile output must be passed as a VHS argument
+      const allArgs = capturedArgs.flat();
+      expect(allArgs).toContain(MOCK_TAPE_OUTPUT.tapePath);
+    });
+
+    // BOUNDARY: VHS step must produce terminal.mp4 at the output directory path
+    it('VHS execFile is called with the vhs binary and the tape path emitting terminal.mp4 in outputDir', async () => {
+      setupTestDir(testDir);
+      const opts = buildPipelineOptions(testDir);
+
+      let capturedBin = '';
+      let capturedArgs: string[] = [];
+      (loadStudioConfig as any).mockResolvedValue(MOCK_STUDIO_CONFIG);
+      (compile as any).mockResolvedValue(MOCK_TAPE_OUTPUT);
+      (execFile as any).mockImplementation((bin: string, args: string[], cb: Function) => {
+        capturedBin = bin;
+        capturedArgs = args;
+        cb(null, '', '');
+      });
+      (generateNarration as any).mockResolvedValue(MOCK_NARRATION_RESULTS[0]);
+      (mux as any).mockResolvedValue(MOCK_MUX_RESULT);
+
+      await runPipeline(opts);
+
+      expect(capturedBin).toBe('vhs');
+      // The tape file path must appear in the args
+      expect(capturedArgs).toContain(MOCK_TAPE_OUTPUT.tapePath);
+    });
+
+    // BOUNDARY: completedSteps must include 'vhs' after successful VHS execution
+    it('completedSteps includes vhs after VHS executes successfully', async () => {
+      setupTestDir(testDir);
+      const opts = buildPipelineOptions(testDir);
+
+      (loadStudioConfig as any).mockResolvedValue(MOCK_STUDIO_CONFIG);
+      (compile as any).mockResolvedValue(MOCK_TAPE_OUTPUT);
+      (execFile as any).mockImplementation((_bin: string, _args: string[], cb: Function) => {
+        cb(null, '', '');
+      });
+      (generateNarration as any).mockResolvedValue(MOCK_NARRATION_RESULTS[0]);
+      (mux as any).mockResolvedValue(MOCK_MUX_RESULT);
+
+      await runPipeline(opts);
+
+      const statePath = path.join(opts.memoryDir, `studio-production-${EPISODE_ID}.json`);
+      const state: ProductionState = JSON.parse(fs.readFileSync(statePath, 'utf-8'));
+      expect(state.completedSteps).toContain('vhs');
+    });
+  });
+
   describe('runPipeline() — exponential backoff timing', () => {
     it('uses increasing delays between retries (exponential backoff) on rate limit', async () => {
       setupTestDir(testDir);
@@ -542,6 +706,76 @@ describe('pipeline.ts — Golden Path', () => {
   });
 
   describe('runPipeline() — successful run', () => {
+    // Helper: set up execFile mock for golden path tests that require VHS (WS-STUDIO-3)
+    function mockVhsSuccess(): void {
+      (execFile as any).mockImplementation((_bin: string, _args: string[], cb: Function) => {
+        cb(null, '', '');
+      });
+    }
+
+    // GOLDEN: Full pipeline order is compile → vhs → elevenlabs → mux
+    it('calls compile → vhs → elevenlabs → mux in that order', async () => {
+      setupTestDir(testDir);
+      const opts = buildPipelineOptions(testDir);
+
+      const callOrder: string[] = [];
+      (loadStudioConfig as any).mockResolvedValue(MOCK_STUDIO_CONFIG);
+      (compile as any).mockImplementation(async () => { callOrder.push('compile'); return MOCK_TAPE_OUTPUT; });
+      (execFile as any).mockImplementation((_bin: string, _args: string[], cb: Function) => {
+        callOrder.push('vhs');
+        cb(null, '', '');
+      });
+      (generateNarration as any).mockImplementation(async () => { callOrder.push('generateNarration'); return MOCK_NARRATION_RESULTS[0]; });
+      (mux as any).mockImplementation(async () => { callOrder.push('mux'); return MOCK_MUX_RESULT; });
+
+      await runPipeline(opts);
+
+      expect(callOrder).toContain('vhs');
+      expect(callOrder.indexOf('compile')).toBeLessThan(callOrder.indexOf('vhs'));
+      expect(callOrder.indexOf('vhs')).toBeLessThan(callOrder.indexOf('generateNarration'));
+      expect(callOrder.indexOf('generateNarration')).toBeLessThan(callOrder.indexOf('mux'));
+    });
+
+    // GOLDEN: state file records 'vhs' in completedSteps
+    it('state file completedSteps includes vhs after a successful full run', async () => {
+      setupTestDir(testDir);
+      const opts = buildPipelineOptions(testDir);
+
+      (loadStudioConfig as any).mockResolvedValue(MOCK_STUDIO_CONFIG);
+      (compile as any).mockResolvedValue(MOCK_TAPE_OUTPUT);
+      mockVhsSuccess();
+      (generateNarration as any).mockResolvedValue(MOCK_NARRATION_RESULTS[0]);
+      (mux as any).mockResolvedValue(MOCK_MUX_RESULT);
+
+      await runPipeline(opts);
+
+      const statePath = path.join(opts.memoryDir, `studio-production-${EPISODE_ID}.json`);
+      const state: ProductionState = JSON.parse(fs.readFileSync(statePath, 'utf-8'));
+      expect(state.completedSteps).toContain('vhs');
+    });
+
+    // GOLDEN: VHS execution receives tape file path via child_process.execFile
+    it('passes the tape file path to child_process execFile when executing VHS', async () => {
+      setupTestDir(testDir);
+      const opts = buildPipelineOptions(testDir);
+
+      let vhsReceivedTapePath = false;
+      (loadStudioConfig as any).mockResolvedValue(MOCK_STUDIO_CONFIG);
+      (compile as any).mockResolvedValue(MOCK_TAPE_OUTPUT);
+      (execFile as any).mockImplementation((_bin: string, args: string[], cb: Function) => {
+        if (args.includes(MOCK_TAPE_OUTPUT.tapePath)) {
+          vhsReceivedTapePath = true;
+        }
+        cb(null, '', '');
+      });
+      (generateNarration as any).mockResolvedValue(MOCK_NARRATION_RESULTS[0]);
+      (mux as any).mockResolvedValue(MOCK_MUX_RESULT);
+
+      await runPipeline(opts);
+
+      expect(vhsReceivedTapePath).toBe(true);
+    });
+
     it('calls compile, then generateNarration, then mux — in that order', async () => {
       setupTestDir(testDir);
       const opts = buildPipelineOptions(testDir);
@@ -549,6 +783,7 @@ describe('pipeline.ts — Golden Path', () => {
       const callOrder: string[] = [];
       (loadStudioConfig as any).mockResolvedValue(MOCK_STUDIO_CONFIG);
       (compile as any).mockImplementation(async () => { callOrder.push('compile'); return MOCK_TAPE_OUTPUT; });
+      mockVhsSuccess();
       (generateNarration as any).mockImplementation(async () => { callOrder.push('generateNarration'); return MOCK_NARRATION_RESULTS[0]; });
       (mux as any).mockImplementation(async () => { callOrder.push('mux'); return MOCK_MUX_RESULT; });
 
@@ -566,6 +801,7 @@ describe('pipeline.ts — Golden Path', () => {
 
       (loadStudioConfig as any).mockResolvedValue(MOCK_STUDIO_CONFIG);
       (compile as any).mockResolvedValue(MOCK_TAPE_OUTPUT);
+      mockVhsSuccess();
       (generateNarration as any).mockResolvedValue(MOCK_NARRATION_RESULTS[0]);
       (mux as any).mockResolvedValue(MOCK_MUX_RESULT);
 
@@ -581,6 +817,7 @@ describe('pipeline.ts — Golden Path', () => {
 
       (loadStudioConfig as any).mockResolvedValue(MOCK_STUDIO_CONFIG);
       (compile as any).mockResolvedValue(MOCK_TAPE_OUTPUT);
+      mockVhsSuccess();
       (generateNarration as any).mockResolvedValue(MOCK_NARRATION_RESULTS[0]);
       (mux as any).mockResolvedValue(MOCK_MUX_RESULT);
 
@@ -598,6 +835,7 @@ describe('pipeline.ts — Golden Path', () => {
 
       (loadStudioConfig as any).mockResolvedValue(MOCK_STUDIO_CONFIG);
       (compile as any).mockResolvedValue(MOCK_TAPE_OUTPUT);
+      mockVhsSuccess();
       (generateNarration as any).mockResolvedValue(MOCK_NARRATION_RESULTS[0]);
       (mux as any).mockResolvedValue(MOCK_MUX_RESULT);
 
@@ -616,6 +854,7 @@ describe('pipeline.ts — Golden Path', () => {
 
       (loadStudioConfig as any).mockResolvedValue(MOCK_STUDIO_CONFIG);
       (compile as any).mockResolvedValue(MOCK_TAPE_OUTPUT);
+      mockVhsSuccess();
       (generateNarration as any).mockResolvedValue(MOCK_NARRATION_RESULTS[0]);
       (mux as any).mockResolvedValue(MOCK_MUX_RESULT);
 
@@ -632,6 +871,7 @@ describe('pipeline.ts — Golden Path', () => {
 
       (loadStudioConfig as any).mockResolvedValue(MOCK_STUDIO_CONFIG);
       (compile as any).mockResolvedValue(MOCK_TAPE_OUTPUT);
+      mockVhsSuccess();
       (generateNarration as any).mockResolvedValue(MOCK_NARRATION_RESULTS[0]);
       (mux as any).mockResolvedValue(MOCK_MUX_RESULT);
 

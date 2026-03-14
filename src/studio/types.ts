@@ -101,7 +101,7 @@ export interface PipelineResult {
   narrationPaths: string[];
 }
 
-export type PipelineStep = 'compile' | 'elevenlabs' | 'mux';
+export type PipelineStep = 'compile' | 'vhs' | 'elevenlabs' | 'mux';
 export type PipelineStatus = 'IN_PROGRESS' | 'DONE' | 'FAILED';
 
 export interface ProductionState {

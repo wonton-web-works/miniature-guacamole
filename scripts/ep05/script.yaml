@@ -1,10 +1,10 @@
 episode_id: ep05
-episode_title: "19 Agents, One System: The Org Chart Explained"
+episode_title: "20 Agents, One System: The Org Chart Explained"
 
 scenes:
   - scene_id: "01-intro"
     narrator_agent: "cto"
-    narration: "There are 19 agents in miniature-guacamole. The question every new user asks is: which one do I talk to? The answer depends on what you want to accomplish and how much authority you need behind the response. We are going to walk through the hierarchy from top to bottom."
+    narration: "There are 20 agents in miniature-guacamole. The question every new user asks is: which one do I talk to? The short answer is you do not need to. Run /mg and it routes you to the right skill, which spawns the right agents. But understanding the hierarchy helps you work with the system. We are going to walk through it from top to bottom."
     terminal_commands: []
     wait_ms: 500
 

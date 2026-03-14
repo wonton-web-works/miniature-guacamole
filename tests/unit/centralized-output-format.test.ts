@@ -21,6 +21,7 @@ import * as path from 'path';
 
 // Test data: All 17 skills that need output format standardization
 const ALL_SKILLS = [
+  'mg',
   'mg-accessibility-review',
   'mg-add-context',
   'mg-assess',
@@ -408,16 +409,16 @@ describe('WS-15: Centralized Skill Visual Output', () => {
   });
 
   describe('Feature: Comprehensive Skill Validation', () => {
-    describe('Given: All 17 skills configured', () => {
+    describe('Given: All 18 skills configured', () => {
       describe('When: Validating complete implementation', () => {
-        it('Then: Exactly 17 skills should exist in skills directory', () => {
+        it('Then: Exactly 18 skills should exist in skills directory', () => {
           const skillDirs = fs.readdirSync(SKILLS_DIR)
             .filter(item => {
               const itemPath = path.join(SKILLS_DIR, item);
               return fs.statSync(itemPath).isDirectory() && !item.startsWith('_');
             });
 
-          expect(skillDirs.length).toBe(17);
+          expect(skillDirs.length).toBe(18);
           expect(skillDirs.sort()).toEqual([...ALL_SKILLS].sort());
         });
 

@@ -128,9 +128,10 @@ describe('Implement Skill - WS-14', () => {
       expect(content.toLowerCase()).toMatch(/step\s+3.*qa.*verif/);
     });
 
-    it('should define step 4 as Staff Engineer reviews', () => {
+    it('should define step 4 as classification into mechanical or architectural gate', () => {
       const content = fs.readFileSync(skillPath, 'utf-8');
-      expect(content.toLowerCase()).toMatch(/step\s+4.*staff.*engineer.*review/);
+      // Step 4 is now classification → Gate 4A (mechanical) or Gate 4B (architectural)
+      expect(content.toLowerCase()).toMatch(/step\s+4.*classification|step\s+4.*gate\s+4/);
     });
   });
 

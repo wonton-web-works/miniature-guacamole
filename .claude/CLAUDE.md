@@ -6,7 +6,7 @@ You have the **miniature-guacamole** framework installed - a product development
 
 miniature-guacamole transforms Claude Code into a complete product development team with specialized agents and collaborative skills:
 
-- **19 Specialized Agents** - Engineering Manager, Product Manager, QA, Design, DevOps, and more
+- **20 Specialized Agents** - Engineering Manager, Product Manager, QA, Design, DevOps, and more
 - **16 Skills** - /mg-leadership-team, /mg-build, /mg-code-review, and others
 - **Shared Protocols** - CAD development workflow, memory protocol, handoff protocol for coordination
 - **NDA-Safe Architecture** - Project memory stays local, agents/skills are shared role definitions

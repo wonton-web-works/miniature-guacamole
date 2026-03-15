@@ -2,7 +2,7 @@
 
 ## Overview
 
-miniature-guacamole simulates a complete product development organization within Claude Code. It provides 19 specialized agents organized in a realistic corporate hierarchy, enabling structured delegation and disciplined development workflows.
+miniature-guacamole simulates a complete product development organization within Claude Code. It provides 20 specialized agents organized in a realistic corporate hierarchy, enabling structured delegation and disciplined development workflows.
 
 ## Agent Hierarchy
 

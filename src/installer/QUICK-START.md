@@ -71,7 +71,7 @@ This skips database setup and runs entirely on local files.
 
 ```
 .claude/
-├── agents/           # 19 specialized roles
+├── agents/           # 20 specialized roles
 ├── skills/           # Team collaboration
 ├── shared/           # Protocols & standards
 ├── scripts/          # mg-* utilities

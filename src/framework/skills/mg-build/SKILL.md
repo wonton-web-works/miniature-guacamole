@@ -28,8 +28,8 @@ Coordinates qa, dev, and staff-engineer through the complete CAD development cyc
 Step 1: QA writes tests (failing)        → tests_written gate
 Step 2: Dev implements (passing)         → tests_pass + coverage >= 99%
 Step 3: QA verifies                      → qa_approved gate
-Step 4A: Dual-specialist review (if code blocks in deliverable) → specialists_approved gate
-Step 4B: Staff Engineer reviews          → code_approved gate
+Step 3.5: Dual-specialist review (if code blocks in deliverable) → specialists_approved gate
+Step 4: Classification → MECHANICAL (Gate 4A) or ARCHITECTURAL (Gate 4B)
          ↓
 Ready for mg-leadership-team approval
          ↓
@@ -84,13 +84,13 @@ Task:
 
 # Step 4: Code review
 
-## Step 4A: Dual-Specialist Review (conditional)
+## Step 3.5: Dual-Specialist Review (conditional)
 
-After dev completes implementation, inspect each deliverable file before proceeding to staff-engineer review.
+After dev completes implementation, inspect each deliverable file before proceeding to the classification step.
 
-**Trigger:** If the deliverable contains fenced code blocks (``` or ~~~), run dual-specialist review. If no code blocks are present, skip Step 4A entirely and proceed directly to Step 4B.
+**Trigger:** If the deliverable contains fenced code blocks (``` or ~~~), run dual-specialist review. If no code blocks are present, skip Step 3.5 entirely.
 
-Spawn two specialist agents in parallel (at most one additional spawn beyond the normal Step 4 budget):
+Spawn two specialist agents in parallel (at most one additional spawn beyond the normal budget):
 
 1. **Domain specialist** — reviews code blocks for platform correctness. The domain specialist is determined at runtime by the platform context of the workstream (e.g., the relevant backend, infra, or data platform). Do not pre-assign a fixed domain specialist.
 2. **Language specialist** — reviews code blocks for code quality regardless of language. The language specialist evaluates correctness, clarity, and idiomatic style for whichever language appears in the code blocks.
@@ -101,9 +101,9 @@ Spawn two specialist agents in parallel (at most one additional spawn beyond the
 - `blocking` — must be fixed before the deliverable is accepted (correctness errors, security issues, broken logic)
 - `warning` — advisory; should be addressed but does not block acceptance
 
-## Step 4B: Staff-engineer review
+## Step 4: Classification → Gate 4A (Mechanical) or Gate 4B (Architectural)
 
-After dual-specialist review passes (or is skipped because the deliverable has no code blocks), proceed to staff-engineer review.
+After dual-specialist review passes (or is skipped), classify the workstream and route to the appropriate gate. See `development-workflow.md` for classification rules (R1-R8, M1-M5).
 
 ```yaml
 Task:

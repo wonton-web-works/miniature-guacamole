@@ -28,8 +28,8 @@ The "Avocado Chip" logo implements the Art Director's concept:
 - Dark gradient background (Avocado Pit #2D3B2D)
 - Logo mark on left
 - "miniature-guacamole" wordmark
-- Tagline: "Turn Claude Code into a 19-agent product development team"
-- Feature highlights: "19 Specialized Agents • 16 Skills • CAD Workflows"
+- Tagline: "Turn Claude Code into a 20-agent product development team"
+- Feature highlights: "20 Specialized Agents • 16 Skills • CAD Workflows"
 - Optimized for Twitter/Discord/Slack previews
 
 **README Header:** `/docs/public/readme-header.svg` (800x200)

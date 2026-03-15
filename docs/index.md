@@ -4,7 +4,7 @@ layout: home
 hero:
   name: miniature-guacamole
   text: AI-Powered Product Development
-  tagline: A complete product development organization for Claude Code — 19 specialized agents, 18 skills, CAD workflows, and project-local architecture.
+  tagline: A complete product development organization for Claude Code — 20 specialized agents, 18 skills, CAD workflows, and project-local architecture.
   actions:
     - theme: brand
       text: Get Started
@@ -15,7 +15,7 @@ hero:
 
 features:
   - icon: '<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#2E8B8B" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="5"/><path d="M20 21a8 8 0 0 0-16 0"/><circle cx="4" cy="8" r="3" opacity="0.4"/><path d="M10 21a6 6 0 0 0-12 0" opacity="0.4"/><circle cx="20" cy="8" r="3" opacity="0.4"/><path d="M26 21a6 6 0 0 0-12 0" opacity="0.4"/></svg>'
-    title: 19 Specialized Agents
+    title: 20 Specialized Agents
     details: Complete organizational hierarchy from CEO to individual contributors with clear delegation patterns and bounded depth control.
   - icon: '<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#2E8B8B" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>'
     title: Constraint-Driven Development
@@ -41,7 +41,7 @@ features:
 
 ### Tier 1: Open Source (Local Install)
 
-Install the framework directly into any project. Full access to 19 agents, 18 skills, 17 utility scripts, and the CAD development workflow. Works today, MIT licensed, no account required.
+Install the framework directly into any project. Full access to 20 agents, 18 skills, 17 utility scripts, and the CAD development workflow. Works today, MIT licensed, no account required.
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/wonton-web-works/miniature-guacamole/main/src/installer/web-install.sh | bash
@@ -94,7 +94,7 @@ Executive approval gates ensure quality before production deployment.
 
 - [Getting Started](/getting-started) - Install and initialize your first project in minutes
 - [Architecture Overview](/architecture) - Agent hierarchy, delegation model, memory layer
-- [Agent Reference](/agents) - All 19 agents and their roles
+- [Agent Reference](/agents) - All 20 agents and their roles
 - [Workflow Guide](/workflows) - CAD cycle and workstream management
 - [Contributing](/contributing) - How to extend the system
 

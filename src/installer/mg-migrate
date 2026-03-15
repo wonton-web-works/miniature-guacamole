@@ -545,7 +545,7 @@ This project uses the **miniature-guacamole** framework - a product development 
 ## Framework Overview
 
 miniature-guacamole provides:
-- **19 Specialized Agents** - Engineering Manager, Product Manager, QA, Design, DevOps, and more
+- **20 Specialized Agents** - Engineering Manager, Product Manager, QA, Design, DevOps, and more
 - **16 Team Skills** - /mg-leadership-team, /mg-build, /mg-code-review, and others
 - **Shared Protocols** - CAD development workflow, memory protocol, handoff protocol
 - **Memory System** - Project-local memory in `.claude/memory/`

@@ -1,6 +1,6 @@
 # Agent Reference
 
-This page provides detailed specifications for all 19 agents in the system, organized by organizational level.
+This page provides detailed specifications for all 20 agents in the system, organized by organizational level.
 
 ## Executive Level
 

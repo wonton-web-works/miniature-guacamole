@@ -610,7 +610,7 @@ echo "    - 1 hook"
 echo ""
 
 log_info "What was installed:"
-echo "  ✓ .claude/agents/        - 19 specialized agent roles"
+echo "  ✓ .claude/agents/        - 20 specialized agent roles"
 echo "  ✓ .claude/skills/        - Team collaboration skills"
 echo "  ✓ .claude/shared/        - Development protocols"
 echo "  ✓ .claude/scripts/       - mg-* utility commands"

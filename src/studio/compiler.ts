@@ -89,7 +89,7 @@ export function generateTape(script: Script, tapePath?: string): string {
   // Output directive: derive .mp4 path from tapePath (replace .tape extension with .mp4)
   if (tapePath) {
     const mp4Path = tapePath.replace(/\.tape$/, '.mp4');
-    lines.push(`Output ${mp4Path}`);
+    lines.push(`Output "${mp4Path}"`);
   }
 
   for (const scene of script.scenes) {

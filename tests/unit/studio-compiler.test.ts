@@ -496,7 +496,7 @@ describe('compiler.ts — Boundary Cases: Output directive (WS-STUDIO-3)', () =>
     const tape = generateTape(VALID_SCRIPT, tapePath);
     const firstLine = tape.split('\n')[0];
     // Must contain a directory separator — a bare "ep01.mp4" without a path is invalid
-    expect(firstLine).toMatch(/^Output\s+\//);
+    expect(firstLine).toMatch(/^Output\s+"?\//);
     expect(firstLine).toContain(expectedMp4);
   });
 
@@ -533,7 +533,7 @@ describe('compiler.ts — Misuse Cases: Output directive (WS-STUDIO-3)', () => {
     const tape = generateTape(VALID_SCRIPT, tapePath);
     // A bare Output directive like "Output ep01.mp4" or "Output terminal.mp4" with no leading
     // slash is the failure mode — VHS would write to the cwd and the pipeline would lose the file
-    const bareOutputPattern = /^Output\s+[^/][^\s]*\.mp4$/m;
+    const bareOutputPattern = /^Output\s+"?[^/"][^\s]*\.mp4"?$/m;
     expect(tape).not.toMatch(bareOutputPattern);
   });
 
@@ -612,7 +612,7 @@ describe('compiler.ts — Golden Path', () => {
       const tapePath = path.join('/tmp', 'ep01.tape');
       const tape = generateTape(VALID_SCRIPT, tapePath);
       const firstLine = tape.split('\n')[0];
-      expect(firstLine).toMatch(/^Output\s+.+\.mp4$/);
+      expect(firstLine).toMatch(/^Output\s+"?.+\.mp4"?$/);
     });
 
     it('Output path ends in .mp4 (not .gif or bare extension)', () => {
@@ -620,8 +620,8 @@ describe('compiler.ts — Golden Path', () => {
       const tape = generateTape(VALID_SCRIPT, tapePath);
       const outputLine = tape.split('\n').find((l) => l.startsWith('Output '));
       expect(outputLine).toBeDefined();
-      expect(outputLine).toMatch(/\.mp4$/);
-      expect(outputLine).not.toMatch(/\.gif$/);
+      expect(outputLine).toMatch(/\.mp4"?$/);
+      expect(outputLine).not.toMatch(/\.gif"?$/);
     });
 
     it('includes Type and Enter directives for each terminal command', () => {

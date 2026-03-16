@@ -8,11 +8,11 @@
 # These tests are intentionally RED before WS-OSS-4 is implemented.
 # They validate that the .claude/memory/ state files reflect reality:
 #   - Merged workstreams show phase=done, gate_status=merged
-#   - WS-MCP-0 scope updated to unified server (not read-only resources only)
 #   - Completed non-DB workstreams show phase=done
 #   - No stale gate_status=tests_written or phase=step_2_implementation
 #   - deferred-v1-follow-ups.json references MCP Tier 2
 #   - All state files are valid JSON
+#   - No mcp-server references exist in the built distribution output
 # ============================================================================
 
 bats_require_minimum_version 1.5.0
@@ -44,11 +44,6 @@ setup() {
 
 @test "AC-OSS-4.6 MISUSE: WS-DB-5 state file must exist" {
     local f="$MEMORY_DIR/workstream-WS-DB-5-state.json"
-    [ -f "$f" ]
-}
-
-@test "AC-OSS-4.6 MISUSE: WS-MCP-0 state file must exist" {
-    local f="$MEMORY_DIR/workstream-WS-MCP-0-state.json"
     [ -f "$f" ]
 }
 
@@ -101,12 +96,6 @@ setup() {
 
 @test "AC-OSS-4.6 MISUSE: WS-DB-5 state file is valid JSON" {
     local f="$MEMORY_DIR/workstream-WS-DB-5-state.json"
-    run jq empty "$f"
-    [ "$status" -eq 0 ]
-}
-
-@test "AC-OSS-4.6 MISUSE: WS-MCP-0 state file is valid JSON" {
-    local f="$MEMORY_DIR/workstream-WS-MCP-0-state.json"
     run jq empty "$f"
     [ "$status" -eq 0 ]
 }
@@ -196,13 +185,6 @@ setup() {
     gate_status="$(jq -r '.gate_status' "$f")"
     [ "$phase" != "null" ]
     [ "$gate_status" != "null" ]
-}
-
-@test "AC-OSS-4.2 BOUNDARY: WS-MCP-0 state file has workstream_id field" {
-    local f="$MEMORY_DIR/workstream-WS-MCP-0-state.json"
-    local id
-    id="$(jq -r '.workstream_id' "$f")"
-    [ "$id" = "WS-MCP-0" ]
 }
 
 @test "AC-OSS-4.3 BOUNDARY: WS-BENCH-1B state file has workstream_id field" {
@@ -358,44 +340,16 @@ setup() {
     [ -n "$commit" ]
 }
 
-# --- AC-OSS-4.2: WS-MCP-0 scope updated to unified server ---
+# --- AC-OSS-4.2: No mcp-server references in the built distribution output ---
 
-@test "AC-OSS-4.2: WS-MCP-0 name no longer describes read-only resources only" {
-    local f="$MEMORY_DIR/workstream-WS-MCP-0-state.json"
-    local name
-    name="$(jq -r '.name' "$f")"
-    # Old name was "MCP Resource Server - Read-Only Data Layer"
-    # New scope is unified server; name must not be the old read-only label
-    [[ "$name" != "MCP Resource Server - Read-Only Data Layer" ]]
-}
-
-@test "AC-OSS-4.2: WS-MCP-0 description references unified server scope" {
-    local f="$MEMORY_DIR/workstream-WS-MCP-0-state.json"
-    local desc
-    desc="$(jq -r '.description' "$f")"
-    # The updated scope covers a unified server — description must mention it
-    [[ "$desc" =~ [Uu]nified ]] || [[ "$desc" =~ [Ss]erver ]]
-}
-
-@test "AC-OSS-4.2: WS-MCP-0 description does not describe scope as read-only resources only" {
-    local f="$MEMORY_DIR/workstream-WS-MCP-0-state.json"
-    local desc
-    desc="$(jq -r '.description' "$f")"
-    # The old description said "read-only MCP resources" — new scope is broader
-    [[ "$desc" != *"read-only MCP resources"* ]]
-}
-
-@test "AC-OSS-4.2: WS-MCP-0 strategic_context or scope_notes field reflects expanded scope" {
-    local f="$MEMORY_DIR/workstream-WS-MCP-0-state.json"
-    # Either the strategic_context.what_this_is is updated or a scope_notes field exists
-    local has_scope_update
-    has_scope_update="$(jq -r '
-        if .scope_notes != null then "yes"
-        elif (.strategic_context.what_this_is // "" | test("unified|dashboard|serve"; "i")) then "yes"
-        else "no"
-        end
-    ' "$f")"
-    [ "$has_scope_update" = "yes" ]
+@test "AC-OSS-4.2: dist output contains no mcp-server references" {
+    local dist_dir="$PROJECT_ROOT/dist"
+    if [ ! -d "$dist_dir" ]; then
+        skip "dist/ not built yet — run ./build.sh first"
+    fi
+    local count
+    count="$(grep -r "mcp-server" "$dist_dir" 2>/dev/null | wc -l | tr -d ' ')"
+    [ "$count" -eq 0 ]
 }
 
 # --- AC-OSS-4.3: WS-BENCH-1B, WS-SYNC-1, WS-OUTPUT-1/2/4 → phase=done ---

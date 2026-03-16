@@ -9,6 +9,28 @@ Versioning follows [Semantic Versioning](https://semver.org/): MAJOR.MINOR.PATCH
 
 ---
 
+## [2.1.0] - 2026-03-16 — CLI-Primary Architecture
+
+MCP server deprecated, `mg` CLI router added as unified entrypoint. Closes
+DEC-003. Zero consumers of the MCP server; 17 existing scripts already cover
+all functionality at 10-32x lower token cost.
+
+### Removed
+- **MCP server** (v0.1.0) — archived per DEC-003. Zero consumers, 10-32x token overhead vs CLI, 80+ unused dependencies
+
+### Added
+- **`mg` CLI router** — unified entrypoint dispatching to 17 mg-* scripts. Short aliases (`ws`, `mem`)
+- **`--json` output flag** — on mg-workstream-status, mg-memory-read, mg-gate-check for machine-readable output
+
+### Fixed
+- **Step 4A/4B label collision** (#13) — label conflict between mg-build and development-workflow resolved
+- **mg-gate-check infinite loop** — flag parsing loop now exits correctly
+
+### Workstreams
+`WS-CLI-1`
+
+---
+
 ## [1.2.0] - 2026-03-10 — Platform Expansion
 
 MCP server, token audit logging, Docker Compose support, and skill spec
@@ -384,6 +406,7 @@ communication protocols.
 
 | Version | Date       | Codename               | Key Milestone                              |
 |---------|------------|------------------------|--------------------------------------------|
+| **2.1.0** | **2026-03-16** | **CLI-Primary** | **MCP server removed, mg router added, --json output** |
 | **1.2.0** | **2026-03-10** | **Platform Expansion** | **MCP server, token audit log, Docker Compose, skill spec compliance** |
 | **1.1.0** | **2026-02-10** | **Enterprise Adapter** | **registerAdapter() plugin boundary, CI hardening** |
 | **1.0.0** | **2026-02-10** | **Initial Release** | **16 mg-prefixed skills, 19 agents, project-local architecture** |

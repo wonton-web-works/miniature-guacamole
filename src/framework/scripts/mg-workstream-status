@@ -2,7 +2,7 @@
 # ============================================================================
 # mg-workstream-status - Display formatted workstream state
 # ============================================================================
-# Usage: mg-workstream-status <ws-id>
+# Usage: mg-workstream-status [--json] <ws-id>
 # Exit 0 = success, Exit 1 = error
 # ============================================================================
 
@@ -13,7 +13,7 @@ set -euo pipefail
 # ============================================================================
 show_help() {
     cat <<EOF
-Usage: mg-workstream-status <ws-id>
+Usage: mg-workstream-status [--json] <ws-id>
 
 Display formatted state, gate, phase, and blockers for a workstream.
 
@@ -22,10 +22,13 @@ Arguments:
 
 Options:
   -h, --help    Show this help message
+  --json        Output structured JSON instead of human-readable text
 
 Examples:
   mg-workstream-status WS-42
   mg-workstream-status WS-SCRIPTS-1
+  mg-workstream-status --json WS-42
+  mg-workstream-status WS-42 --json
 
 Output:
   Formatted workstream state including:
@@ -54,9 +57,25 @@ error() {
     exit 1
 }
 
+json_error() {
+    printf '{"error":"%s"}\n' "$1"
+    exit 1
+}
+
 # ============================================================================
 # Main
 # ============================================================================
+
+# Parse --json flag (position-independent) before other argument checks
+JSON_OUTPUT=false
+ARGS=()
+for arg in "$@"; do
+    case "$arg" in
+        --json) JSON_OUTPUT=true ;;
+        *)      ARGS+=("$arg") ;;
+    esac
+done
+set -- "${ARGS[@]+"${ARGS[@]}"}"
 
 # Check for help flags
 if [[ "${1:-}" == "-h" ]] || [[ "${1:-}" == "--help" ]]; then
@@ -66,15 +85,24 @@ fi
 
 # Check for invalid flags
 if [[ $# -ge 1 ]] && [[ "$1" == --* ]] && [[ "$1" != "--help" ]]; then
+    if [[ "$JSON_OUTPUT" == "true" ]]; then
+        json_error "Invalid flag: $1. Usage: mg-workstream-status [--json] <ws-id>"
+    fi
     error "Invalid flag: $1. Usage: mg-workstream-status <ws-id>"
 fi
 
 # Validate argument count
 if [[ $# -eq 0 ]]; then
+    if [[ "$JSON_OUTPUT" == "true" ]]; then
+        json_error "No workstream ID specified. Usage: mg-workstream-status [--json] <ws-id>"
+    fi
     error "No workstream ID specified. Usage: mg-workstream-status <ws-id>"
 fi
 
 if [[ $# -gt 1 ]]; then
+    if [[ "$JSON_OUTPUT" == "true" ]]; then
+        json_error "Too many arguments. Usage: mg-workstream-status [--json] <ws-id>"
+    fi
     error "Too many arguments. Usage: mg-workstream-status <ws-id>"
 fi
 
@@ -82,18 +110,27 @@ WS_ID="$1"
 
 # Check for empty argument
 if [[ -z "$WS_ID" ]]; then
+    if [[ "$JSON_OUTPUT" == "true" ]]; then
+        json_error "Empty workstream ID. Usage: mg-workstream-status [--json] <ws-id>"
+    fi
     error "Empty workstream ID. Usage: mg-workstream-status <ws-id>"
 fi
 
 # Locate jq using portable command detection
 JQ_PATH=$(command -v jq)
 if [[ -z "$JQ_PATH" ]]; then
+    if [[ "$JSON_OUTPUT" == "true" ]]; then
+        json_error "jq not found in PATH. Install via: brew install jq"
+    fi
     error "jq not found in PATH. Install via: brew install jq"
 fi
 
 # Check for .claude/memory directory
 MEMORY_DIR=".claude/memory"
 if [[ ! -d "$MEMORY_DIR" ]]; then
+    if [[ "$JSON_OUTPUT" == "true" ]]; then
+        json_error "No .claude/memory directory found in current directory"
+    fi
     error "No .claude/memory directory found in current directory"
 fi
 
@@ -102,16 +139,25 @@ STATE_FILE="$MEMORY_DIR/workstream-${WS_ID}-state.json"
 
 # Check if state file exists
 if [[ ! -e "$STATE_FILE" ]]; then
+    if [[ "$JSON_OUTPUT" == "true" ]]; then
+        json_error "Workstream not found: $WS_ID"
+    fi
     error "Workstream not found: $WS_ID (no file: $STATE_FILE)"
 fi
 
 # Check if it's a directory
 if [[ -d "$STATE_FILE" ]]; then
+    if [[ "$JSON_OUTPUT" == "true" ]]; then
+        json_error "Path is a directory, not a file: $STATE_FILE"
+    fi
     error "Path is a directory, not a file: $STATE_FILE"
 fi
 
 # Check if file is readable
 if [[ ! -r "$STATE_FILE" ]]; then
+    if [[ "$JSON_OUTPUT" == "true" ]]; then
+        json_error "File cannot be read (permission denied): $STATE_FILE"
+    fi
     error "File cannot be read (permission denied): $STATE_FILE"
 fi
 
@@ -120,6 +166,9 @@ JSON_DATA=$("$JQ_PATH" '.' "$STATE_FILE" 2>&1) || true
 # Check if jq produced valid output by testing type
 RESULT_TYPE=$("$JQ_PATH" -r 'type' "$STATE_FILE" 2>/dev/null || echo "error")
 if [[ "$RESULT_TYPE" != "object" ]] && [[ "$RESULT_TYPE" != "array" ]]; then
+    if [[ "$JSON_OUTPUT" == "true" ]]; then
+        json_error "Invalid JSON in state file: $STATE_FILE"
+    fi
     error "Invalid JSON in state file: $STATE_FILE"
 fi
 
@@ -136,8 +185,44 @@ ws_tests_total=$("$JQ_PATH" -r '.tests.total // 0' "$STATE_FILE")
 ws_tests_passing=$("$JQ_PATH" -r '.tests.passing // 0' "$STATE_FILE")
 ws_tests_failing=$("$JQ_PATH" -r '.tests.failing // 0' "$STATE_FILE")
 
-# Format output
-cat <<EOF
+# Extract blockers and dependencies arrays (needed by both output modes)
+blockers_count=$("$JQ_PATH" -r 'if .blockers then (.blockers | length) else 0 end' "$STATE_FILE")
+deps_count=$("$JQ_PATH" -r 'if .dependencies then (.dependencies | length) else 0 end' "$STATE_FILE")
+
+if [[ "$JSON_OUTPUT" == "true" ]]; then
+    # Build and emit JSON output using jq for safe string escaping
+    blockers_json=$("$JQ_PATH" -c '.blockers // []' "$STATE_FILE")
+    deps_json=$("$JQ_PATH" -c '.dependencies // []' "$STATE_FILE")
+    tests_json=$("$JQ_PATH" -c '.tests // {"total":0,"passing":0,"failing":0}' "$STATE_FILE")
+
+    "$JQ_PATH" -n \
+        --arg workstream_id "$ws_id" \
+        --arg name "$ws_name" \
+        --arg status "$ws_status" \
+        --arg phase "$ws_phase" \
+        --arg gate_status "$ws_gate" \
+        --arg agent_id "$ws_agent" \
+        --arg created_at "$ws_created" \
+        --argjson coverage "$ws_coverage" \
+        --argjson tests "$tests_json" \
+        --argjson blockers "$blockers_json" \
+        --argjson dependencies "$deps_json" \
+        '{
+            workstream_id: $workstream_id,
+            name: $name,
+            status: $status,
+            phase: $phase,
+            gate_status: $gate_status,
+            agent_id: $agent_id,
+            created_at: $created_at,
+            coverage: $coverage,
+            tests: $tests,
+            blockers: $blockers,
+            dependencies: $dependencies
+        }'
+else
+    # Human-readable formatted output (unchanged behavior)
+    cat <<EOF
 ====================================
 Workstream: $ws_id
 ====================================
@@ -152,25 +237,22 @@ Tests:       $ws_tests_passing/$ws_tests_total passing ($ws_tests_failing failin
 Coverage:    ${ws_coverage}%
 EOF
 
-# Show blockers if present
-blockers_count=$("$JQ_PATH" -r 'if .blockers then (.blockers | length) else 0 end' "$STATE_FILE")
-if [[ "$blockers_count" -gt 0 ]]; then
-    echo ""
-    echo "Blockers:"
-    "$JQ_PATH" -r '.blockers[] | "  - " + .' "$STATE_FILE"
-else
-    echo ""
-    echo "Blockers:    None"
-fi
+    if [[ "$blockers_count" -gt 0 ]]; then
+        echo ""
+        echo "Blockers:"
+        "$JQ_PATH" -r '.blockers[] | "  - " + .' "$STATE_FILE"
+    else
+        echo ""
+        echo "Blockers:    None"
+    fi
 
-# Show dependencies if present
-deps_count=$("$JQ_PATH" -r 'if .dependencies then (.dependencies | length) else 0 end' "$STATE_FILE")
-if [[ "$deps_count" -gt 0 ]]; then
-    echo ""
-    echo "Dependencies:"
-    "$JQ_PATH" -r '.dependencies[] | "  - " + .' "$STATE_FILE"
-fi
+    if [[ "$deps_count" -gt 0 ]]; then
+        echo ""
+        echo "Dependencies:"
+        "$JQ_PATH" -r '.dependencies[] | "  - " + .' "$STATE_FILE"
+    fi
 
-echo "===================================="
+    echo "===================================="
+fi
 
 exit 0

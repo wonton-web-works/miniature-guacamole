@@ -65,8 +65,7 @@ export default defineConfig({
       {
         text: 'Reference',
         items: [
-          { text: 'Audit Logging', link: '/audit-logging' },
-          { text: 'MCP Server', link: '/mcp-server' }
+          { text: 'Audit Logging', link: '/audit-logging' }
         ]
       },
       {

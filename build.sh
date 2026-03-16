@@ -116,7 +116,14 @@ for script_file in "$FRAMEWORK_DIR/scripts"/mg-*; do
         SCRIPT_COUNT=$((SCRIPT_COUNT + 1))
     fi
 done
-echo "  scripts: $SCRIPT_COUNT"
+
+# Router (named 'mg', not 'mg-*', so the glob above won't pick it up)
+if [[ -f "$FRAMEWORK_DIR/scripts/mg" ]]; then
+    cp "$FRAMEWORK_DIR/scripts/mg" "$DIST_CLAUDE/scripts/"
+    chmod +x "$DIST_CLAUDE/scripts/mg"
+fi
+
+echo "  scripts: $SCRIPT_COUNT (+ mg router)"
 
 # Hooks
 if [[ -d "$FRAMEWORK_DIR/hooks" ]]; then

@@ -29,7 +29,7 @@ Step 1: QA writes tests (failing)        → tests_written gate
 Step 2: Dev implements (passing)         → tests_pass + coverage >= 99%
 Step 3: QA verifies                      → qa_approved gate
 Step 3.5: Dual-specialist review (if code blocks in deliverable) → specialists_approved gate
-Step 4: Classification → MECHANICAL (Gate 4A) or ARCHITECTURAL (Gate 4B)
+Step 4: Classification → MECHANICAL (Step 4A) or ARCHITECTURAL (Step 4B)
          ↓
 Ready for mg-leadership-team approval
          ↓
@@ -81,8 +81,7 @@ Task:
   prompt: |
     Verify workstream {id} implementation complete.
     Check: all tests pass, coverage >= 99%, no regressions.
-
-# Step 4: Code review
+```
 
 ## Step 3.5: Dual-Specialist Review (conditional)
 
@@ -101,11 +100,16 @@ Spawn two specialist agents in parallel (at most one additional spawn beyond the
 - `blocking` — must be fixed before the deliverable is accepted (correctness errors, security issues, broken logic)
 - `warning` — advisory; should be addressed but does not block acceptance
 
-## Step 4: Classification → Gate 4A (Mechanical) or Gate 4B (Architectural)
+## Step 4: Classification → Step 4A (Mechanical) or Step 4B (Architectural)
 
 After dual-specialist review passes (or is skipped), classify the workstream and route to the appropriate gate. See `development-workflow.md` for classification rules (R1-R8, M1-M5).
 
+**Step 4A (MECHANICAL):** Run automated bash gates — no agent spawn required.
+
+**Step 4B (ARCHITECTURAL):** Spawn staff-engineer for internal review.
+
 ```yaml
+# Step 4B only
 Task:
   subagent_type: staff-engineer
   prompt: |

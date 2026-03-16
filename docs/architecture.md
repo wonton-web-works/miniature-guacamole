@@ -136,23 +136,27 @@ miniature-guacamole/
 ├── tests/                          # Test suites
 ├── dashboard/                      # Analytics dashboard (Next.js)
 ├── daemon/                         # Background processes
-├── mcp-server/                     # MCP + HTTP server (TypeScript package)
 ├── docs/                           # VitePress documentation site
 └── .github/workflows/
     ├── ci.yml                      # PR checks + build verification
     └── release.yml                 # v*.*.* tag → GitHub release
 ```
 
-### MCP Server
+## Integration Layers
 
-`mcp-server/` is a standalone TypeScript package that exposes project state as MCP resources and a REST API. It runs alongside your normal Claude Code workflow — it doesn't replace per-project installation.
+miniature-guacamole exposes two interfaces for automation and agent use:
 
-- **Transport**: stdio (for MCP clients) + HTTP on port 7842 (for REST)
-- **Backend**: Postgres via `MG_POSTGRES_URL`, falls back to `.claude/memory/` filesystem
-- **Resources**: workstreams, memory entries, events (read-only)
-- **Auth**: none — designed for local use only
+**Task tool + filesystem memory** — the primary agentic interface. Agents use Claude Code's Task tool to spawn subagents and read/write JSON files in `.claude/memory/`.
 
-See [MCP Server](/mcp-server) for setup and the full resource reference.
+**CLI scripts** — the primary human and scripting interface. 17 scripts in `.claude/scripts/` reachable via the `mg` CLI router. Use these from your shell, CI pipelines, or hooks.
+
+The `mg` router is the recommended entry point:
+- `mg workstream status WS-42` — check workstream state
+- `mg memory read <file>` — read memory files
+- `mg gate check` — run mechanical gate checks
+- All commands support `--json` for machine-readable output
+
+Direct script invocation (`mg-workstream-status WS-42`) continues to work.
 
 ## Component Flow
 

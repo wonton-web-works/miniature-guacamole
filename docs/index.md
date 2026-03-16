@@ -47,17 +47,7 @@ Install the framework directly into any project. Full access to 20 agents, 18 sk
 curl -fsSL https://raw.githubusercontent.com/wonton-web-works/miniature-guacamole/main/src/installer/web-install.sh | bash
 ```
 
-### Tier 2: MCP Server
-
-The `mg-mcp-server` binary reads your project state and exposes it via MCP and a REST API on port 7842. Connects to Postgres if `MG_POSTGRES_URL` is set, falls back to filesystem (`.claude/memory/`) if not. Works with Claude Desktop, Cursor, and any MCP client.
-
-```bash
-npx mg-mcp-server
-```
-
-Exposes workstream, memory, and event resources — read-only, local-only, no auth required. See the [MCP Server docs](/mcp-server) for the full resource list and Claude Desktop config.
-
-### Tier 3: Commercial Products (Coming Soon)
+### Tier 2: Commercial Products (Coming Soon)
 
 Product endpoints built on top of the framework: project plan generator, PRD/TDD generator, website builder, application scaffolding. Managed hosting, no local install required.
 

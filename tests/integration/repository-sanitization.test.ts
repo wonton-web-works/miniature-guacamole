@@ -767,6 +767,7 @@ describe('WS-OSS-1: Repository Sanitization - Integration Tests', () => {
         }
 
         const filePath = path.join(PROJECT_ROOT, file);
+        if (!fs.existsSync(filePath)) return;
         if (fs.statSync(filePath).isDirectory()) return;
         const content = fs.readFileSync(filePath, 'utf-8');
 

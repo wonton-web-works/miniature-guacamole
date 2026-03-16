@@ -5,7 +5,7 @@ set -euo pipefail
 
 show_help() {
     cat <<EOF
-Usage: mg-gate-check
+Usage: mg-gate-check [--json]
 
 Run mechanical Gate 4A checks and output structured JSON results.
 
@@ -13,6 +13,7 @@ Gates: tests (vitest), tsc (TypeScript), eslint, file_scope
 
 Options:
   -h, --help   Show this help message
+  --json       Output compact (single-line) JSON instead of pretty-printed
 
 Output:
   Structured JSON with pass/fail per gate and typed failure info.
@@ -20,7 +21,9 @@ Output:
 
 Examples:
   mg-gate-check
+  mg-gate-check --json
   mg-gate-check | jq '.overall'
+  mg-gate-check --json | jq -r '.overall'
 
 Exit codes:
   0 - All gates pass
@@ -35,12 +38,15 @@ sanitize_detail() {
 }
 
 # Parse arguments
+JSON_OUTPUT=false
 while [[ $# -gt 0 ]]; do
     case "$1" in
         -h|--help) show_help; exit 0 ;;
+        --json) JSON_OUTPUT=true ;;
         --*) error "Unknown flag: $1. Usage: mg-gate-check" ;;
         *) error "Too many arguments. Usage: mg-gate-check" ;;
     esac
+    shift
 done
 
 [[ -f "package.json" ]] || error "No package.json found. Run mg-gate-check from the project root."
@@ -152,10 +158,18 @@ TSC_JSON=$(build_gate_json "$TSC_STATUS" "$TSC_TYPE" "$TSC_DETAIL")
 ESLINT_JSON=$(build_gate_json "$ESLINT_STATUS" "$ESLINT_TYPE" "$ESLINT_DETAIL")
 FSCOPE_JSON=$(build_gate_json "$FSCOPE_STATUS" "$FSCOPE_TYPE" "$FSCOPE_DETAIL")
 
-"$JQ_PATH" -n \
-    --arg overall "$OVERALL" --arg timestamp "$TIMESTAMP" \
-    --argjson tests "$TESTS_JSON" --argjson tsc "$TSC_JSON" \
-    --argjson eslint "$ESLINT_JSON" --argjson file_scope "$FSCOPE_JSON" \
-    '{overall: $overall, timestamp: $timestamp, gates: {tests: $tests, tsc: $tsc, eslint: $eslint, file_scope: $file_scope}}'
+if [[ "$JSON_OUTPUT" == "true" ]]; then
+    "$JQ_PATH" -cn \
+        --arg overall "$OVERALL" --arg timestamp "$TIMESTAMP" \
+        --argjson tests "$TESTS_JSON" --argjson tsc "$TSC_JSON" \
+        --argjson eslint "$ESLINT_JSON" --argjson file_scope "$FSCOPE_JSON" \
+        '{overall: $overall, timestamp: $timestamp, gates: {tests: $tests, tsc: $tsc, eslint: $eslint, file_scope: $file_scope}}'
+else
+    "$JQ_PATH" -n \
+        --arg overall "$OVERALL" --arg timestamp "$TIMESTAMP" \
+        --argjson tests "$TESTS_JSON" --argjson tsc "$TSC_JSON" \
+        --argjson eslint "$ESLINT_JSON" --argjson file_scope "$FSCOPE_JSON" \
+        '{overall: $overall, timestamp: $timestamp, gates: {tests: $tests, tsc: $tsc, eslint: $eslint, file_scope: $file_scope}}'
+fi
 
 [[ "$OVERALL" == "pass" ]] && exit 0 || exit 1

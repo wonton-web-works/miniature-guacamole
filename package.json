@@ -1,6 +1,6 @@
 {
   "name": "miniature-guacamole",
-  "version": "2.0.0",
+  "version": "2.1.0",
   "description": "Shared Memory Layer for Product Development Team Agents",
   "main": "src/index.ts",
   "bin": {

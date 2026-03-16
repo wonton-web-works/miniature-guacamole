@@ -19,7 +19,7 @@ import { test, expect } from '@playwright/test';
 
 test.describe('Workstream Persistence - E2E Tests', () => {
   // Base URL for the API that manages memory (to be implemented)
-  const MEMORY_API_URL = process.env.MEMORY_API_URL || 'http://localhost:3000/api/memory';
+  const MEMORY_API_URL = process.env.MEMORY_API_URL || 'http://localhost:4242/api/memory';
 
   test.describe('Single Workstream Lifecycle', () => {
     test('FAIL: Workstream state persists from creation to completion', async ({ request }) => {

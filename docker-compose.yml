@@ -25,7 +25,7 @@ services:
       dockerfile: Dockerfile
     container_name: mg_dashboard
     ports:
-      - "3000:3000"
+      - "4242:4242"
     environment:
       - MG_POSTGRES_URL=postgresql://mg:mg@postgres:5432/mg_memory
       - NODE_ENV=production

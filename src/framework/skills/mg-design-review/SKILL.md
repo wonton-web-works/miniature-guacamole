@@ -20,7 +20,7 @@ Workflow skill for comprehensive visual quality and UX assessment.
 3. **UX patterns over aesthetics** - Usability trumps visual preference
 4. **Responsive validation** - Mobile, tablet, desktop must all be verified
 5. **Spawn specialists** - Leverage art-director for brand, design for UX patterns
-6. **Visual standards** - Follow standard output format in `../_shared/output-format.md`
+6. **Visual standards** - Follow standard output format in `references/output-format.md`
 
 ## Workflow
 

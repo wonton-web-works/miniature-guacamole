@@ -20,7 +20,7 @@ Coordinates technical-writer for comprehensive documentation generation.
 3. **Memory-first** - Read codebase context, write documentation decisions
 4. **Progressive disclosure** - Quick start → advanced → reference
 5. **Keep current** - Documentation is code; update it with features
-6. **Visual standards** - Follow standard output format in `../_shared/output-format.md`
+6. **Visual standards** - Follow standard output format in `references/output-format.md`
 
 ## Documentation Types
 

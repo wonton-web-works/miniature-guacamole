@@ -127,7 +127,9 @@ if [[ -n "$DIFF_NUMSTAT" ]]; then
 fi
 
 # Build scope summary (group files by top-level directory)
-declare -A SCOPE_COUNTS
+# Uses parallel arrays for bash 3.2 compatibility (no associative arrays)
+SCOPE_DIRS=()
+SCOPE_COUNTS=()
 SCOPE_HAS_ENTRIES=false
 if [[ -n "$DIFF_NAME_STATUS" ]]; then
     while IFS=$'\t' read -r status file rest; do
@@ -141,7 +143,19 @@ if [[ -n "$DIFF_NAME_STATUS" ]]; then
         else
             dir="(root)"
         fi
-        SCOPE_COUNTS["$dir"]=$(( ${SCOPE_COUNTS["$dir"]:-0} + 1 ))
+        # Find existing index or append new entry
+        found=false
+        for i in "${!SCOPE_DIRS[@]}"; do
+            if [[ "${SCOPE_DIRS[$i]}" == "$dir" ]]; then
+                SCOPE_COUNTS[$i]=$(( ${SCOPE_COUNTS[$i]} + 1 ))
+                found=true
+                break
+            fi
+        done
+        if [[ "$found" == "false" ]]; then
+            SCOPE_DIRS+=("$dir")
+            SCOPE_COUNTS+=("1")
+        fi
         SCOPE_HAS_ENTRIES=true
     done <<< "$DIFF_NAME_STATUS"
 fi
@@ -158,8 +172,14 @@ echo ""
 # Scope summary
 if [[ "$SCOPE_HAS_ENTRIES" == "true" ]]; then
     echo "Scope:"
-    for dir in $(echo "${!SCOPE_COUNTS[@]}" | tr ' ' '\n' | sort); do
-        printf "  %-20s %d file(s)\n" "$dir/" "${SCOPE_COUNTS[$dir]}"
+    # Sort directories for consistent output
+    for dir in $(printf '%s\n' "${SCOPE_DIRS[@]}" | sort); do
+        for i in "${!SCOPE_DIRS[@]}"; do
+            if [[ "${SCOPE_DIRS[$i]}" == "$dir" ]]; then
+                printf "  %-20s %d file(s)\n" "$dir/" "${SCOPE_COUNTS[$i]}"
+                break
+            fi
+        done
     done
     echo ""
 fi

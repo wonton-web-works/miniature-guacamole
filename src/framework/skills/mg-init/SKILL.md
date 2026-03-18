@@ -204,7 +204,7 @@ Next steps:
 2. **Confirm before creating** - Prompt user and explain what will be created, require confirmation
 3. **Preserve user content** - Existing `.claude/` files are never overwritten
 4. **Lightweight detection** - Tech stack detection checks file existence only, no parsing
-5. **Visual standards** - Follow `_shared/output-format.md` for progress reporting
+5. **Visual standards** - Follow `references/output-format.md` for progress reporting
 6. **Project isolation** - All created files are project-local; no absolute paths in generated files
 
 ## Boundaries

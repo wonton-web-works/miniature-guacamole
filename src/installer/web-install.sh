@@ -1,15 +1,18 @@
 #!/usr/bin/env bash
 # ============================================================================
-# miniature-guacamole web installer
+# miniature-guacamole global CLI installer
 # ============================================================================
-# Downloads and installs miniature-guacamole from GitHub releases.
+# Downloads and installs miniature-guacamole globally.
+# Puts mg, mg-init, and all mg-* scripts on PATH via ~/.local/bin/.
+#
 # Usage: curl -fsSL https://raw.githubusercontent.com/wonton-web-works/miniature-guacamole/main/src/installer/web-install.sh | bash
 # ============================================================================
 
 set -euo pipefail
 
 # Security hardening - prevent sourcing
-if [[ "${BASH_SOURCE[0]}" != "$0" ]]; then
+# When piped (curl | bash), BASH_SOURCE[0] is unset — skip the guard in that case
+if [[ -n "${BASH_SOURCE[0]:-}" ]] && [[ "${BASH_SOURCE[0]}" != "$0" ]]; then
     echo "Error: This script must be executed, not sourced" >&2
     return 1
 fi
@@ -24,9 +27,9 @@ NC='\033[0m' # No Color
 # Configuration
 GITHUB_REPO="wonton-web-works/miniature-guacamole"
 RELEASE_TAG="latest"  # Can be overridden with --version
-PROJECT_DIR="$PWD"
+MG_HOME="$HOME/.miniature-guacamole"
+BIN_DIR="$HOME/.local/bin"
 FORCE=false
-INSTALL_CONFIG_CACHE=false
 
 # ============================================================================
 # Helper functions
@@ -50,24 +53,19 @@ log_error() {
 
 usage() {
     cat <<EOF
-miniature-guacamole web installer
+miniature-guacamole global installer
 
-Usage: $0 [OPTIONS] [PROJECT_DIR]
+Usage: $0 [OPTIONS]
 
 Options:
   --version TAG      Install specific version (default: latest)
   --force            Force re-installation
-  --config-cache     Also install config cache to ~/.claude/.mg-configs/
   --help             Show this help message
 
-Arguments:
-  PROJECT_DIR        Target project directory (default: current directory)
-
 Examples:
-  $0                                  # Install latest to current directory
-  $0 --version v1.0.0                # Install specific version
-  $0 /path/to/project                # Install to specific project
-  $0 --force --config-cache          # Force re-install with config cache
+  $0                                  # Install latest globally
+  $0 --version v2.1.0                # Install specific version
+  $0 --force                         # Force re-install
 
 EOF
 }
@@ -86,10 +84,6 @@ while [[ $# -gt 0 ]]; do
             FORCE=true
             shift
             ;;
-        --config-cache)
-            INSTALL_CONFIG_CACHE=true
-            shift
-            ;;
         --help)
             usage
             exit 0
@@ -100,19 +94,12 @@ while [[ $# -gt 0 ]]; do
             exit 1
             ;;
         *)
-            PROJECT_DIR="$1"
-            shift
+            log_error "Unexpected argument: $1"
+            echo "Run '$0 --help' for usage information."
+            exit 1
             ;;
     esac
 done
-
-# Resolve absolute path
-if [[ ! -d "$PROJECT_DIR" ]]; then
-    log_error "Project directory does not exist: $PROJECT_DIR"
-    exit 1
-fi
-
-PROJECT_DIR="$(cd "$PROJECT_DIR" && pwd)"
 
 # ============================================================================
 # Banner
@@ -120,7 +107,7 @@ PROJECT_DIR="$(cd "$PROJECT_DIR" && pwd)"
 
 echo ""
 echo -e "${BLUE}╔══════════════════════════════════════════════════════════════╗${NC}"
-echo -e "${BLUE}║${NC}  ${GREEN}miniature-guacamole${NC} Web Installer                        ${BLUE}║${NC}"
+echo -e "${BLUE}║${NC}  ${GREEN}miniature-guacamole${NC} Global Installer                      ${BLUE}║${NC}"
 echo -e "${BLUE}╚══════════════════════════════════════════════════════════════╝${NC}"
 echo ""
 
@@ -141,8 +128,9 @@ done
 log_success "All requirements met"
 
 # Check if already installed
-if [[ -f "$PROJECT_DIR/.claude/MG_INSTALL.json" ]] && [[ "$FORCE" != "true" ]]; then
-    log_warning "Project already has miniature-guacamole installed"
+if [[ -f "$MG_HOME/VERSION.json" ]] && [[ "$FORCE" != "true" ]]; then
+    INSTALLED_VERSION=$(python3 -c "import json; print(json.load(open('$MG_HOME/VERSION.json')).get('version', 'unknown'))" 2>/dev/null || echo "unknown")
+    log_warning "miniature-guacamole $INSTALLED_VERSION is already installed at $MG_HOME"
     echo "Use --force to re-install"
     exit 0
 fi
@@ -229,34 +217,106 @@ fi
 log_success "Extracted to temporary directory"
 
 # ============================================================================
-# Run installer
+# Install to ~/.miniature-guacamole/
 # ============================================================================
 
 echo ""
-log_info "Running installer..."
+log_info "Installing to $MG_HOME..."
 
-INSTALLER="$EXTRACTED_DIR/install.sh"
-if [[ ! -f "$INSTALLER" ]]; then
-    log_error "Installer script not found: $INSTALLER"
-    exit 1
+# Clean previous install
+if [[ -d "$MG_HOME" ]]; then
+    rm -rf "$MG_HOME"
 fi
 
-chmod +x "$INSTALLER"
+# Copy extracted dist contents to MG_HOME
+cp -r "$EXTRACTED_DIR" "$MG_HOME"
 
-# Build installer arguments
-INSTALLER_ARGS=()
-if [[ "$FORCE" == "true" ]]; then
-    INSTALLER_ARGS+=("--force")
-fi
-if [[ "$INSTALL_CONFIG_CACHE" == "true" ]]; then
-    INSTALLER_ARGS+=("--config-cache")
-fi
-INSTALLER_ARGS+=("$PROJECT_DIR")
+log_success "Framework bundle installed to $MG_HOME"
 
-# Run installer
-if ! bash "$INSTALLER" "${INSTALLER_ARGS[@]}"; then
-    log_error "Installation failed"
-    exit 1
+# ============================================================================
+# Symlink scripts to ~/.local/bin/
+# ============================================================================
+
+echo ""
+log_info "Creating symlinks in $BIN_DIR..."
+
+mkdir -p "$BIN_DIR"
+
+# Remove existing mg* symlinks that point into MG_HOME (clean re-install)
+for existing in "$BIN_DIR"/mg*; do
+    if [[ -L "$existing" ]]; then
+        link_target=$(readlink "$existing" 2>/dev/null || true)
+        if [[ "$link_target" == *"/.miniature-guacamole/"* ]]; then
+            rm "$existing"
+        fi
+    fi
+done
+
+# Symlink each mg-* script from .claude/scripts/
+LINK_COUNT=0
+for script in "$MG_HOME/.claude/scripts"/mg*; do
+    if [[ -f "$script" ]]; then
+        script_name=$(basename "$script")
+        ln -sf "$script" "$BIN_DIR/$script_name"
+        LINK_COUNT=$((LINK_COUNT + 1))
+    fi
+done
+
+# Symlink mg-init from the top-level bundle
+if [[ -f "$MG_HOME/mg-init" ]]; then
+    ln -sf "$MG_HOME/mg-init" "$BIN_DIR/mg-init"
+    # Don't double-count if mg-init was already linked from scripts/
+    if [[ ! -f "$MG_HOME/.claude/scripts/mg-init" ]]; then
+        LINK_COUNT=$((LINK_COUNT + 1))
+    fi
+fi
+
+log_success "Created $LINK_COUNT symlinks in $BIN_DIR"
+
+# ============================================================================
+# Ensure ~/.local/bin is on PATH
+# ============================================================================
+
+echo ""
+if echo "$PATH" | tr ':' '\n' | grep -qx "$BIN_DIR"; then
+    log_success "$BIN_DIR is already on PATH"
+else
+    log_warning "$BIN_DIR is not on PATH"
+
+    # Detect shell and append to rc file
+    SHELL_NAME=$(basename "${SHELL:-/bin/bash}")
+    RC_FILE=""
+
+    case "$SHELL_NAME" in
+        zsh)  RC_FILE="$HOME/.zshrc" ;;
+        bash)
+            if [[ -f "$HOME/.bashrc" ]]; then
+                RC_FILE="$HOME/.bashrc"
+            elif [[ -f "$HOME/.bash_profile" ]]; then
+                RC_FILE="$HOME/.bash_profile"
+            fi
+            ;;
+    esac
+
+    PATH_LINE='export PATH="$HOME/.local/bin:$PATH"'
+
+    if [[ -n "$RC_FILE" ]]; then
+        # Only append if not already present
+        if ! grep -qF '.local/bin' "$RC_FILE" 2>/dev/null; then
+            echo "" >> "$RC_FILE"
+            echo "# Added by miniature-guacamole installer" >> "$RC_FILE"
+            echo "$PATH_LINE" >> "$RC_FILE"
+            log_success "Added $BIN_DIR to PATH in $RC_FILE"
+        else
+            log_info "$BIN_DIR reference already exists in $RC_FILE"
+        fi
+        echo ""
+        log_warning "Restart your shell or run: source $RC_FILE"
+    else
+        echo ""
+        log_warning "Add this to your shell profile:"
+        echo "  $PATH_LINE"
+    fi
 fi
 
 # ============================================================================
@@ -273,19 +333,20 @@ log_success "Cleanup complete"
 
 echo ""
 echo -e "${GREEN}╔══════════════════════════════════════════════════════════════╗${NC}"
-echo -e "${GREEN}║${NC}  Web Installation Complete!                                  ${GREEN}║${NC}"
+echo -e "${GREEN}║${NC}  Installation Complete!                                      ${GREEN}║${NC}"
 echo -e "${GREEN}╚══════════════════════════════════════════════════════════════╝${NC}"
 echo ""
 
-log_info "miniature-guacamole has been installed to:"
-echo "  $PROJECT_DIR/.claude/"
+log_info "mg and mg-init are now available globally."
+echo ""
+echo "  Bundle:  $MG_HOME"
+echo "  Scripts: $BIN_DIR/mg*"
 echo ""
 
 log_info "Next steps:"
-echo "  1. cd $PROJECT_DIR"
-echo "  2. Review settings: .claude/settings.json"
-echo "  3. Review context: .claude/CLAUDE.md"
-echo "  4. Add scripts to PATH: export PATH=\"\$PATH:$PROJECT_DIR/.claude/scripts\""
+echo "  1. cd your-project"
+echo "  2. mg-init"
+echo "  3. Start Claude Code and run: /mg-assess Build something"
 echo ""
 
 log_info "Documentation:"

@@ -95,8 +95,15 @@ for skill_dist_dir in "$DIST_CLAUDE/skills"/*/; do
         # Rewrite _shared/ references in the built SKILL.md
         skill_md="$skill_dist_dir/SKILL.md"
         if [[ -f "$skill_md" ]]; then
-            sed -i '' 's|\.\./\_shared/|references/|g' "$skill_md"
-            sed -i '' 's|`_shared/|`references/|g' "$skill_md"
+            if sed --version &>/dev/null 2>&1; then
+                # GNU sed (Linux)
+                sed -i 's|\.\./\_shared/|references/|g' "$skill_md"
+                sed -i 's|`_shared/|`references/|g' "$skill_md"
+            else
+                # BSD sed (macOS)
+                sed -i '' 's|\.\./\_shared/|references/|g' "$skill_md"
+                sed -i '' 's|`_shared/|`references/|g' "$skill_md"
+            fi
         fi
     fi
 done
@@ -168,6 +175,13 @@ chmod +x "$DIST_DIR/mg-init"
 
 echo "  install.sh, uninstall.sh, web-install.sh, mg-migrate, mg-init"
 
+# Templates (used by mg-init for project scaffolding)
+TEMPLATES_SRC="$ROOT_DIR/src/framework/templates"
+if [[ -d "$TEMPLATES_SRC" ]]; then
+    cp -r "$TEMPLATES_SRC" "$DIST_DIR/templates"
+    echo "  templates/ copied"
+fi
+
 # ----------------------------------------------------------------------------
 # Generate VERSION.json
 # ----------------------------------------------------------------------------
@@ -223,5 +237,6 @@ echo "  dist/miniature-guacamole.tar.gz ($TARBALL_SIZE)"
 echo "  dist/miniature-guacamole.zip ($ZIP_SIZE)"
 echo ""
 echo "To test:"
-echo "  dist/miniature-guacamole/install.sh ~/temp-test"
+echo "  1. bash dist/miniature-guacamole/web-install.sh  # global install"
+echo "  2. mg-init /tmp/test-project                     # per-project init"
 echo ""

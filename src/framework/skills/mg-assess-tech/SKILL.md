@@ -20,7 +20,7 @@ Coordinates technical evaluation through CTO, staff-engineer, api-designer, and 
 3. **Risk transparency** - Identify technical risks, scalability limits, security concerns
 4. **Memory-first** - Read technical context, write assessment decisions
 5. **Evidence-based** - Recommendations backed by performance, maintainability, technical debt analysis
-6. **Visual standards** - Follow standard output format in `../_shared/output-format.md`
+6. **Visual standards** - Follow standard output format in `references/output-format.md`
 
 ## Evaluation Workflow
 

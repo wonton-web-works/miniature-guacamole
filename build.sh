@@ -95,8 +95,15 @@ for skill_dist_dir in "$DIST_CLAUDE/skills"/*/; do
         # Rewrite _shared/ references in the built SKILL.md
         skill_md="$skill_dist_dir/SKILL.md"
         if [[ -f "$skill_md" ]]; then
-            sed -i '' 's|\.\./\_shared/|references/|g' "$skill_md"
-            sed -i '' 's|`_shared/|`references/|g' "$skill_md"
+            if sed --version &>/dev/null 2>&1; then
+                # GNU sed (Linux)
+                sed -i 's|\.\./\_shared/|references/|g' "$skill_md"
+                sed -i 's|`_shared/|`references/|g' "$skill_md"
+            else
+                # BSD sed (macOS)
+                sed -i '' 's|\.\./\_shared/|references/|g' "$skill_md"
+                sed -i '' 's|`_shared/|`references/|g' "$skill_md"
+            fi
         fi
     fi
 done

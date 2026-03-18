@@ -28,7 +28,7 @@ export function createPR(
   const { key, summary, description, priority, labels, url } = ticketData;
   const { baseBranch } = config.github;
   // Note: token was removed from GitHubConfig; auth is now handled via gh CLI login
-  const token = (config.github as Record<string, unknown>).token as string | undefined;
+  const token = (config.github as unknown as Record<string, unknown>).token as string | undefined;
 
   // Build PR title
   const title = `[${key}] ${summary}`;

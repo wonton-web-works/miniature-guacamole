@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { readFileSync } from 'fs';
 
 // Module under test
-import { main, cmdInit, cmdStart, cmdStop, cmdStatus, cmdLogs } from '../../src/cli';
+import { main, cmdInit, cmdStart, cmdStop, cmdStatus, cmdLogs, cmdDashboard, cmdResume } from '../../src/cli';
 
 // Mock dependencies
 import * as configModule from '../../src/config';
@@ -18,7 +18,35 @@ vi.mock('fs', () => ({
 // Mock config module
 vi.mock('../../src/config', () => ({
   initConfig: vi.fn(),
-  loadConfig: vi.fn(),
+  loadConfig: vi.fn().mockReturnValue({
+    provider: 'github',
+    github: { repo: 'org/repo', baseBranch: 'main' },
+    polling: { intervalSeconds: 60, batchSize: 5 },
+  }),
+}));
+
+// Mock dashboard module
+vi.mock('../../src/dashboard', () => ({
+  gatherDashboardData: vi.fn().mockReturnValue({
+    daemonStatus: { running: false },
+    lastPollTime: null,
+    heartbeatStale: false,
+    inFlightTickets: [],
+    recentCompleted: [],
+    recentFailed: [],
+    errorBudget: { consecutive: 0, threshold: 3, paused: false },
+  }),
+  formatDashboard: vi.fn().mockReturnValue('[ MG DAEMON DASHBOARD ]'),
+}));
+
+// Mock error-budget module
+vi.mock('../../src/error-budget', () => ({
+  ErrorBudget: {
+    load: vi.fn().mockReturnValue({
+      resume: vi.fn(),
+      save: vi.fn(),
+    }),
+  },
 }));
 
 // Mock process module
@@ -28,18 +56,61 @@ vi.mock('../../src/process', () => ({
   statusDaemon: vi.fn(),
 }));
 
+// Mock launchd module
+vi.mock('../../src/launchd', () => ({
+  installService: vi.fn(),
+  uninstallService: vi.fn(),
+}));
+
+// Mock prereqs module
+vi.mock('../../src/prereqs', () => ({
+  checkPrereqs: vi.fn().mockReturnValue([]),
+  formatPrereqReport: vi.fn().mockReturnValue(''),
+}));
+
+// Mock heartbeat module
+vi.mock('../../src/heartbeat', () => ({
+  isStale: vi.fn().mockReturnValue(false),
+}));
+
 describe('CLI Module', () => {
   let consoleLogSpy: ReturnType<typeof vi.spyOn>;
   let consoleErrorSpy: ReturnType<typeof vi.spyOn>;
   let processExitSpy: ReturnType<typeof vi.spyOn>;
 
-  beforeEach(() => {
+  const mockConfig = {
+    provider: 'github' as const,
+    github: { repo: 'org/repo', baseBranch: 'main' },
+    polling: { intervalSeconds: 60, batchSize: 5 },
+  };
+
+  const mockDashboardData = {
+    daemonStatus: { running: false },
+    lastPollTime: null,
+    heartbeatStale: false,
+    inFlightTickets: [],
+    recentCompleted: [],
+    recentFailed: [],
+    errorBudget: { consecutive: 0, threshold: 3, paused: false },
+  };
+
+  beforeEach(async () => {
     vi.clearAllMocks();
     consoleLogSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
     consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
     processExitSpy = vi.spyOn(process, 'exit').mockImplementation((code?: number) => {
       throw new Error(`process.exit(${code})`);
     });
+
+    // Set up default return values for modules reset by mockReset
+    vi.mocked(configModule.loadConfig).mockReturnValue(mockConfig);
+
+    const dashboardModule = await import('../../src/dashboard');
+    vi.mocked(dashboardModule.gatherDashboardData).mockReturnValue(mockDashboardData);
+    vi.mocked(dashboardModule.formatDashboard).mockReturnValue('[ MG DAEMON DASHBOARD ]');
+
+    const { ErrorBudget } = await import('../../src/error-budget');
+    vi.mocked(ErrorBudget.load).mockReturnValue({ resume: vi.fn(), save: vi.fn() } as any);
   });
 
   afterEach(() => {
@@ -634,6 +705,114 @@ describe('CLI Module', () => {
       // Act & Assert
       expect(() => main(['node', 'mg-daemon', 'init'])).toThrow('process.exit');
       expect(processExitSpy).toHaveBeenCalledWith(1);
+    });
+
+    it('GIVEN "start --dry-run" command WHEN main() called THEN it starts in dry-run mode', () => {
+      // Arrange
+      const mockStartResult = { pid: 12345, startedAt: new Date() };
+      vi.mocked(processModule.startDaemon).mockReturnValue(mockStartResult);
+
+      // Act
+      main(['node', 'mg-daemon', 'start', '--dry-run']);
+
+      // Assert
+      expect(processModule.startDaemon).toHaveBeenCalled();
+      const logCalls = consoleLogSpy.mock.calls.flat();
+      const output = logCalls.join(' ');
+      expect(output.toLowerCase()).toMatch(/dry.?run/);
+    });
+
+    it('GIVEN "dashboard" command WHEN main() called THEN it calls cmdDashboard()', async () => {
+      // Arrange
+      const dashboardModule = await import('../../src/dashboard');
+
+      // Act
+      main(['node', 'mg-daemon', 'dashboard']);
+
+      // Assert
+      expect(dashboardModule.gatherDashboardData).toHaveBeenCalled();
+      expect(dashboardModule.formatDashboard).toHaveBeenCalled();
+      expect(consoleLogSpy).toHaveBeenCalledWith('[ MG DAEMON DASHBOARD ]');
+    });
+
+    it('GIVEN "resume" command WHEN main() called THEN it calls cmdResume()', async () => {
+      // Arrange
+      const { ErrorBudget } = await import('../../src/error-budget');
+
+      // Act
+      main(['node', 'mg-daemon', 'resume']);
+
+      // Assert
+      expect(ErrorBudget.load).toHaveBeenCalled();
+      const logCalls = consoleLogSpy.mock.calls.flat();
+      const output = logCalls.join(' ');
+      expect(output.toLowerCase()).toMatch(/resume|reset/);
+    });
+  });
+
+  describe('WS-DAEMON-14: New Commands', () => {
+    describe('cmdDashboard()', () => {
+      it('GIVEN daemon state WHEN cmdDashboard called THEN prints formatted dashboard', async () => {
+        // Act
+        cmdDashboard();
+
+        // Assert
+        expect(consoleLogSpy).toHaveBeenCalledWith('[ MG DAEMON DASHBOARD ]');
+      });
+    });
+
+    describe('cmdStart() with --dry-run', () => {
+      it('GIVEN dryRun true WHEN cmdStart(false, true) called THEN prints dry-run message', () => {
+        // Arrange
+        const mockStartResult = { pid: 12345, startedAt: new Date() };
+        vi.mocked(processModule.startDaemon).mockReturnValue(mockStartResult);
+
+        // Act
+        cmdStart(false, true);
+
+        // Assert
+        const logCalls = consoleLogSpy.mock.calls.flat();
+        const output = logCalls.join(' ');
+        expect(output.toLowerCase()).toMatch(/dry.?run/);
+      });
+
+      it('GIVEN dryRun true WHEN cmdStart called THEN PID is shown in output', () => {
+        // Arrange
+        const mockStartResult = { pid: 99999, startedAt: new Date() };
+        vi.mocked(processModule.startDaemon).mockReturnValue(mockStartResult);
+
+        // Act
+        cmdStart(false, true);
+
+        // Assert
+        const logCalls = consoleLogSpy.mock.calls.flat();
+        const output = logCalls.join(' ');
+        expect(output).toContain('99999');
+      });
+    });
+
+    describe('cmdResume()', () => {
+      it('GIVEN paused error budget WHEN cmdResume called THEN prints resume message', async () => {
+        // Act
+        cmdResume();
+
+        // Assert
+        expect(consoleLogSpy).toHaveBeenCalled();
+        const logCalls = consoleLogSpy.mock.calls.flat();
+        const output = logCalls.join(' ');
+        expect(output.toLowerCase()).toMatch(/resume|reset/);
+      });
+
+      it('GIVEN cmdResume called THEN ErrorBudget.load is called', async () => {
+        // Arrange
+        const { ErrorBudget } = await import('../../src/error-budget');
+
+        // Act
+        cmdResume();
+
+        // Assert
+        expect(ErrorBudget.load).toHaveBeenCalled();
+      });
     });
   });
 });

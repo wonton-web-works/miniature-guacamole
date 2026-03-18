@@ -61,7 +61,7 @@ describe('Type Definitions (AC-1.2 & AC-1.7: TypeScript types)', () => {
 
     it('GIVEN DaemonConfig type THEN version field should be string', () => {
       // Arrange
-      const config: DaemonConfig = {} as any;
+      const config: DaemonConfig = { version: '1.0' } as any;
 
       // Act: Type assertion
       const version: string = config.version;

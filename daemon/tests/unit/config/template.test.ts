@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { existsSync, writeFileSync, readFileSync } from 'fs';
+import { existsSync, writeFileSync, readFileSync, mkdirSync } from 'fs';
 import { parse } from 'yaml';
 
 // Module under test - will be implemented by dev
@@ -36,13 +36,13 @@ describe('Config Template (AC-1.6: Example config template)', () => {
     it('WHEN createConfigTemplate() called THEN it creates .claude directory if missing', () => {
       // Arrange
       vi.mocked(existsSync).mockReturnValue(false);
+      vi.mocked(mkdirSync).mockImplementation(() => undefined);
 
       // Act
       createConfigTemplate(mockProjectPath);
 
       // Assert: Should attempt to create directory
-      const fsMock = vi.mocked(require('fs'));
-      expect(fsMock.mkdirSync).toHaveBeenCalled();
+      expect(mkdirSync).toHaveBeenCalled();
     });
 
     it('WHEN createConfigTemplate() called THEN it writes YAML file with template', () => {
@@ -477,9 +477,10 @@ describe('Config Template (AC-1.6: Example config template)', () => {
     it('WHEN createConfigTemplate() fails to create directory THEN error is descriptive', () => {
       // Arrange
       vi.mocked(existsSync).mockReturnValue(false);
-      const fsMock = require('fs');
-      vi.mocked(fsMock.mkdirSync).mockImplementation(() => {
-        throw new Error('EACCES: permission denied');
+      vi.mocked(mkdirSync).mockImplementation(() => {
+        const err: NodeJS.ErrnoException = new Error('EACCES: permission denied');
+        err.code = 'EACCES';
+        throw err;
       });
 
       // Act & Assert

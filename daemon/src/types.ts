@@ -4,15 +4,23 @@
 
 export interface JiraConfig {
   host: string;
+  email: string;
   apiToken: string;
   project: string;
   jql: string;
 }
 
+export interface LinearConfig {
+  apiKey: string;
+  teamId: string;
+  projectId?: string;
+  filter: string;
+}
+
 export interface GitHubConfig {
   repo: string;
-  token: string;
   baseBranch: string;
+  issueFilter?: string;
 }
 
 export interface PollingConfig {
@@ -20,10 +28,27 @@ export interface PollingConfig {
   batchSize: number;
 }
 
+export interface OrchestrationConfig {
+  claudeTimeout: number;
+  concurrency: number;
+  delayBetweenTicketsMs: number;
+  dryRun: boolean;
+  errorBudget: number;
+}
+
+export interface NotificationConfig {
+  onPRCreated?: string;
+  onFailure?: string;
+}
+
 export interface DaemonConfig {
-  jira: JiraConfig;
+  provider: 'jira' | 'linear' | 'github';
+  jira?: JiraConfig;
+  linear?: LinearConfig;
   github: GitHubConfig;
   polling: PollingConfig;
+  orchestration?: OrchestrationConfig;
+  notifications?: NotificationConfig;
 }
 
 export interface ValidationError {

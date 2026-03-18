@@ -75,3 +75,7 @@ enterprise/
 output/
 miniature-guacamole/
 
+# mg-daemon config (contains API tokens — never commit)
+.mg-daemon.json
+.mg-daemon/
+

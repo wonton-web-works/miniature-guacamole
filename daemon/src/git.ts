@@ -1,7 +1,7 @@
 // Git operations module for miniature-guacamole daemon
 // WS-DAEMON-5: Git Client
 
-import { execSync } from 'child_process';
+import { spawnSync } from 'child_process';
 import type { DaemonConfig, TicketData } from './types';
 
 /**
@@ -18,11 +18,22 @@ function slugify(text: string): string {
 }
 
 /**
+ * Run a git command via spawnSync (argv array — no shell injection).
+ * Throws with stderr on non-zero exit.
+ */
+function runGit(args: string[], options: { cwd: string }): void {
+  const result = spawnSync('git', args, { ...options, encoding: 'utf-8' });
+  if (result.status !== 0) {
+    throw new Error(result.stderr?.trim() || `git ${args[0]} failed`);
+  }
+}
+
+/**
  * Creates a new feature branch for the given ticket
  * AC-5.1: Creates branch 'feature/PROJ-123-slug' from baseBranch
  * AC-5.2: Branch name slug truncation (max 60 chars total)
  * AC-5.3: Idempotent branch creation (checks out if exists)
- * AC-5.9: Git operations shell out to git CLI via child_process.execSync
+ * AC-5.9: Git operations shell out to git CLI via child_process.spawnSync (argv array)
  */
 export function createBranch(ticketData: TicketData, config: DaemonConfig): string {
   const { key, summary } = ticketData;
@@ -41,15 +52,15 @@ export function createBranch(ticketData: TicketData, config: DaemonConfig): stri
 
   try {
     // Checkout base branch first
-    execSync(`git checkout ${baseBranch}`, options);
+    runGit(['checkout', baseBranch], options);
 
     // Try to create new branch
-    execSync(`git checkout -b ${branchName}`, options);
+    runGit(['checkout', '-b', branchName], options);
   } catch (error) {
     // If branch already exists, checkout existing branch (idempotent)
     const errorMessage = error instanceof Error ? error.message : String(error);
     if (errorMessage.includes('already exists')) {
-      execSync(`git checkout ${branchName}`, options);
+      runGit(['checkout', branchName], options);
     } else {
       throw error;
     }
@@ -61,39 +72,38 @@ export function createBranch(ticketData: TicketData, config: DaemonConfig): stri
 /**
  * Commits all changes with a formatted commit message
  * AC-5.4: Stages all and commits with 'feat(KEY): message'
- * AC-5.9: Git operations shell out to git CLI via child_process.execSync
+ * AC-5.9: Git operations shell out to git CLI via child_process.spawnSync (argv array)
  */
 export function commitChanges(ticketKey: string, summary: string, config: DaemonConfig): void {
   const options = { cwd: process.cwd() };
 
   // Stage all changes
-  execSync('git add -A', options);
+  runGit(['add', '-A'], options);
 
   // Commit with formatted message
-  execSync(`git commit -m "feat(${ticketKey}): ${summary}"`, options);
+  runGit(['commit', '-m', `feat(${ticketKey}): ${summary}`], options);
 }
 
 /**
  * Pushes the current branch to origin with upstream tracking
  * AC-5.5: Pushes with -u origin flag
- * AC-5.9: Git operations shell out to git CLI via child_process.execSync
+ * AC-5.9: Git operations shell out to git CLI via child_process.spawnSync (argv array)
  */
 export function pushBranch(branchName: string, config: DaemonConfig): void {
-  const options = { cwd: process.cwd() };
-  execSync(`git push -u origin ${branchName}`, options);
+  runGit(['push', '-u', 'origin', branchName], { cwd: process.cwd() });
 }
 
 /**
  * Cleans up feature branch by checking out base and deleting feature branch
  * AC-5.11: Checks out base and deletes feature branch
- * AC-5.9: Git operations shell out to git CLI via child_process.execSync
+ * AC-5.9: Git operations shell out to git CLI via child_process.spawnSync (argv array)
  */
 export function cleanupBranch(branchName: string, baseBranch: string, config: DaemonConfig): void {
   const options = { cwd: process.cwd() };
 
   // Checkout base branch
-  execSync(`git checkout ${baseBranch}`, options);
+  runGit(['checkout', baseBranch], options);
 
   // Delete feature branch
-  execSync(`git branch -D ${branchName}`, options);
+  runGit(['branch', '-D', branchName], options);
 }

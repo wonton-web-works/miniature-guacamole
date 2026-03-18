@@ -1,11 +1,21 @@
 #!/usr/bin/env node
 // CLI entry point for miniature-guacamole daemon
 // WS-DAEMON-3: Commands: init, start, stop, status, logs
+// WS-DAEMON-13: Commands: install, uninstall, setup-mac
+// WS-DAEMON-14: Commands: dashboard, resume; --dry-run flag for start
 
-import { initConfig } from './config';
+import { initConfig, loadConfig } from './config';
 import { startDaemon, stopDaemon, statusDaemon } from './process';
-import { readFileSync } from 'fs';
-import { join } from 'path';
+import { installService, uninstallService } from './launchd';
+import { checkPrereqs, formatPrereqReport } from './prereqs';
+import { createDaemonUser, formatSetupInstructions } from './setup-user';
+import { isStale } from './heartbeat';
+import { gatherDashboardData, formatDashboard } from './dashboard';
+import { ErrorBudget } from './error-budget';
+import { readFileSync, writeFileSync, existsSync, mkdirSync } from 'fs';
+import { join, basename } from 'path';
+
+const DRY_RUN_STATE_FILE = join('.mg-daemon', 'dry-run');
 
 /**
  * Execute the init command
@@ -20,13 +30,49 @@ export function cmdInit(): void {
  * Execute the start command
  * AC-3.2: Starts daemon and prints PID
  * AC-3.3: --foreground runs in foreground with stdout logs
+ * WS-DAEMON-14: --dry-run polls tickets and runs planning but does NOT execute builds
  */
-export function cmdStart(foreground: boolean = false): void {
+export function cmdStart(foreground: boolean = false, dryRun: boolean = false): void {
   const result = startDaemon();
-  if (foreground) {
-    console.log(`Daemon running in foreground mode (PID: ${result.pid})`);
+
+  // Persist dry-run flag to state file so the poll loop reads it
+  if (dryRun) {
+    try {
+      if (!existsSync('.mg-daemon')) {
+        mkdirSync('.mg-daemon', { recursive: true });
+      }
+      writeFileSync(DRY_RUN_STATE_FILE, 'true', 'utf-8');
+    } catch {
+      // Non-fatal — dry-run mode will still be set via config if loaded fresh
+    }
+    console.log(`Daemon running in dry-run mode (PID: ${result.pid}). No builds or PRs will be created.`);
   } else {
-    console.log(`Daemon started with PID: ${result.pid}`);
+    // Clear any stale dry-run state file from a previous run
+    try {
+      if (existsSync(DRY_RUN_STATE_FILE)) {
+        writeFileSync(DRY_RUN_STATE_FILE, 'false', 'utf-8');
+      }
+    } catch {
+      // Non-fatal
+    }
+    if (foreground) {
+      console.log(`Daemon running in foreground mode (PID: ${result.pid})`);
+    } else {
+      console.log(`Daemon started with PID: ${result.pid}`);
+    }
+  }
+}
+
+/**
+ * Read the dry-run flag from the state file written by cmdStart.
+ * Returns false if no state file exists.
+ */
+export function readDryRunFlag(): boolean {
+  try {
+    if (!existsSync(DRY_RUN_STATE_FILE)) return false;
+    return readFileSync(DRY_RUN_STATE_FILE, 'utf-8').trim() === 'true';
+  } catch {
+    return false;
   }
 }
 
@@ -47,15 +93,112 @@ export function cmdStop(): void {
 /**
  * Execute the status command
  * AC-3.6: Shows running state with PID and uptime
+ * WS-DAEMON-13: Includes heartbeat staleness check
  */
 export function cmdStatus(): void {
   const status = statusDaemon();
   if (status.running && status.pid !== undefined && status.uptimeMs !== undefined) {
     const uptimeSeconds = Math.floor(status.uptimeMs / 1000);
     console.log(`Daemon is running (PID: ${status.pid}, uptime: ${uptimeSeconds}s)`);
+
+    // Heartbeat staleness check
+    const heartbeatPath = join('.mg-daemon', 'heartbeat');
+    const heartbeatConfig = { heartbeatPath, intervalMs: 60000 };
+    if (isStale(heartbeatConfig)) {
+      console.warn('WARNING: Heartbeat is stale. Daemon may be unresponsive.');
+    }
   } else {
     console.log('Daemon is not running.');
   }
+}
+
+/**
+ * Execute the install command
+ * WS-DAEMON-13: Installs daemon as a launchd service
+ * P0-1: Accepts optional --user <username> to run as a dedicated system user
+ */
+export function cmdInstall(username?: string): void {
+  let nodePath = process.execPath;
+  let daemonPath = join(__dirname, 'cli.js');
+  const projectPath = join(process.cwd(), '..');
+  const label = `com.mg-daemon.${basename(projectPath)}`;
+
+  const config = { label, projectPath, daemonPath, nodePath, username };
+  installService(config);
+  console.log(`Service installed: ${label}`);
+  console.log(`Plist written to ~/Library/LaunchAgents/${label}.plist`);
+  if (username) {
+    console.log(`Service configured to run as user: ${username}`);
+  }
+}
+
+/**
+ * Execute the setup-user command
+ * P0-1: Creates a dedicated mg-daemon system user for running the daemon securely
+ */
+export function cmdSetupUser(username: string = 'mg-daemon'): void {
+  console.log(`Setting up dedicated system user: ${username}`);
+  console.log(formatSetupInstructions(username));
+  console.log('');
+
+  const result = createDaemonUser(username);
+  if (result.created) {
+    console.log(`User ${result.username} created successfully (UID: ${result.uid}).`);
+    console.log(`Run 'mg-daemon install --user ${result.username}' to use this user.`);
+  } else if (result.error) {
+    console.error(`Failed to create user ${result.username}: ${result.error}`);
+    console.error('Try running with sudo: sudo mg-daemon setup-user');
+    process.exit(1);
+  } else {
+    console.log(`User ${result.username} already exists. No action needed.`);
+  }
+}
+
+/**
+ * Execute the uninstall command
+ * WS-DAEMON-13: Removes the launchd service
+ */
+export function cmdUninstall(): void {
+  const projectPath = join(process.cwd(), '..');
+  const label = `com.mg-daemon.${basename(projectPath)}`;
+
+  uninstallService(label);
+  console.log(`Service uninstalled: ${label}`);
+}
+
+/**
+ * Execute the dashboard command
+ * WS-DAEMON-14: Shows pipeline status in an 80-column ASCII dashboard
+ */
+export function cmdDashboard(): void {
+  const config = loadConfig();
+  const data = gatherDashboardData(config);
+  console.log(formatDashboard(data));
+}
+
+/**
+ * Execute the resume command
+ * WS-DAEMON-14: Clears the error budget pause so the daemon resumes processing
+ */
+export function cmdResume(): void {
+  const errorBudgetPath = join('.mg-daemon', 'error-budget.json');
+  const config = loadConfig();
+  const threshold = config.orchestration?.errorBudget ?? 3;
+  const budget = ErrorBudget.load(errorBudgetPath, { threshold });
+  budget.resume();
+  budget.save(errorBudgetPath);
+  console.log('Error budget reset. Daemon will resume processing on next poll.');
+}
+
+/**
+ * Execute the setup-mac command
+ * WS-DAEMON-13: Validates prerequisites and guides setup
+ */
+export function cmdSetupMac(): void {
+  console.log('Checking prerequisites for mg-daemon on macOS...\n');
+  const results = checkPrereqs();
+  const report = formatPrereqReport(results);
+  console.log(report);
 }
 
 /**
@@ -89,7 +232,8 @@ export function main(argv: string[] = process.argv): void {
         break;
       case 'start': {
         const foreground = args.includes('--foreground') || args.includes('-f');
-        cmdStart(foreground);
+        const dryRun = args.includes('--dry-run');
+        cmdStart(foreground, dryRun);
         break;
       }
       case 'stop':
@@ -104,8 +248,33 @@ export function main(argv: string[] = process.argv): void {
         cmdLogs(tail);
         break;
       }
+      case 'install': {
+        // P0-1: --user <username> runs the daemon as a dedicated system user
+        const userFlagIndex = args.indexOf('--user');
+        const installUsername = userFlagIndex !== -1 ? args[userFlagIndex + 1] : undefined;
+        cmdInstall(installUsername);
+        break;
+      }
+      case 'uninstall':
+        cmdUninstall();
+        break;
+      case 'setup-mac':
+        cmdSetupMac();
+        break;
+      case 'setup-user': {
+        // P0-1: Create a dedicated system user for running the daemon
+        const setupUsername = args[1] ?? 'mg-daemon';
+        cmdSetupUser(setupUsername);
+        break;
+      }
+      case 'dashboard':
+        cmdDashboard();
+        break;
+      case 'resume':
+        cmdResume();
+        break;
       default:
-        console.error('Unknown command. Usage: mg-daemon <init|start|stop|status|logs>');
+        console.error('Unknown command. Usage: mg-daemon <init|start|stop|status|logs|install|uninstall|setup-mac|setup-user|dashboard|resume>');
         process.exit(1);
     }
   } catch (error) {

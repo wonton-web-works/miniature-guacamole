@@ -9,7 +9,8 @@
 set -euo pipefail
 
 # Security hardening - prevent sourcing
-if [[ "${BASH_SOURCE[0]}" != "$0" ]]; then
+# When piped (curl | bash), BASH_SOURCE[0] is unset — skip the guard in that case
+if [[ -n "${BASH_SOURCE[0]:-}" ]] && [[ "${BASH_SOURCE[0]}" != "$0" ]]; then
     echo "Error: This script must be executed, not sourced" >&2
     return 1
 fi
@@ -179,13 +180,13 @@ if [[ "$FORCE" == "true" ]] || [[ ! -f "$MG_INSTALL_JSON" ]]; then
         # Remove MG-managed directories (selective removal - preserve user-created hidden content)
         for dir in agents skills shared scripts hooks schemas; do
             if [[ -d "$CLAUDE_TARGET_DIR/$dir" ]]; then
-                # Build set of known framework items from source
-                declare -A known_items
+                # Build set of known framework items from source (bash 3.2 compatible)
+                known_items=""
                 if [[ -d "$CLAUDE_SOURCE_DIR/$dir" ]]; then
                     for item in "$CLAUDE_SOURCE_DIR/$dir"/*; do
                         if [[ -e "$item" ]]; then
                             item_name=$(basename "$item")
-                            known_items["$item_name"]=1
+                            known_items="$known_items|$item_name|"
                         fi
                     done
                 fi
@@ -202,7 +203,7 @@ if [[ "$FORCE" == "true" ]] || [[ ! -f "$MG_INSTALL_JSON" ]]; then
                         fi
 
                         # Remove if it's in the current source
-                        if [[ -n "${known_items[$item_name]:-}" ]]; then
+                        if [[ "$known_items" == *"|$item_name|"* ]]; then
                             if rm -rf "$target_item" 2>/dev/null; then
                                 log_success "Cleaned $dir/$item_name"
                             else

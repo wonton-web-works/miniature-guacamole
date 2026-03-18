@@ -101,8 +101,8 @@ miniature-guacamole/
 │   ├── installer/                  # Installation and migration scripts
 │   │   ├── install.sh              # Project-local installer
 │   │   ├── uninstall.sh            # Clean uninstaller
-│   │   ├── web-install.sh          # One-liner web installer
-│   │   ├── mg-init                 # Hybrid cache + GitHub installer
+│   │   ├── web-install.sh          # Global CLI installer (curl | bash)
+│   │   ├── mg-init                 # Per-project init (reads ~/.miniature-guacamole/)
 │   │   └── mg-migrate              # Version migration tool
 │   │
 │   ├── memory/                     # Shared memory TypeScript layer
@@ -463,34 +463,43 @@ git push origin v1.0.1
 
 ### Installation System
 
-**mg-init** initializes a project for agent collaboration. It's also the primary way to set up a new project after installing the framework:
+Installation is two-phase: **global install** (one time) and **per-project init**.
 
-1. Creates `.claude/memory/` — project-local agent state directory
-2. Creates `.claude/CLAUDE.md` — project-specific agent context
-3. Auto-provisions Postgres via Docker (`mg-postgres start`, `mg-migrate`) if Docker is available
-4. Runs `mg-migrate` to sync any existing memory files to the database
+**Phase 1: Global Install** (`web-install.sh`)
 
-As a hybrid installer, it also handles version management:
-1. Check local cache: `~/.cache/miniature-guacamole/v1.0.0.tar.gz`
-2. If cache miss → fetch from GitHub releases API
-3. Download tarball, cache it, extract to temp
-4. Run bundled `install.sh` against target project
+Downloads the release tarball and installs the framework bundle:
 
-**Flags**:
-- `--version v1.0.0` - Specific version (default: latest)
-- `--no-db` - Skip Postgres setup, run file-only
-- `--offline` - Cache only, no network
-- `--force` - Force re-initialization
-
-**Examples**:
+1. Extracts to `~/.miniature-guacamole/` (framework bundle with `.claude/`, `install.sh`, templates)
+2. Symlinks all `mg-*` scripts to `~/.local/bin/`
+3. Adds `~/.local/bin` to PATH if needed
 
 ```bash
-# Initialize current project (with Postgres if Docker available)
+curl -fsSL https://raw.githubusercontent.com/.../web-install.sh | bash
+```
+
+**Phase 2: Per-Project Init** (`mg-init`)
+
+Reads from the global bundle — no network required:
+
+1. Runs `install.sh` from `~/.miniature-guacamole/` against the target project
+2. Creates `.claude/` with all agents, skills, scripts, and protocols
+3. Creates `.claude/memory/` — project-local agent state directory
+4. Auto-provisions Postgres via Docker (`mg-postgres start`, `mg-migrate`) if Docker is available
+
+```bash
+cd your-project
 mg-init
+```
 
-# Skip database setup
-mg-init --no-db
+**Flags**:
+- `--no-db` - Skip Postgres setup, run file-only
+- `--force` - Force re-initialization
 
-# Pin to a specific version
-mg-init --version v1.0.0 /path/to/project
+**Direct install** (`install.sh <dir>`) still works for offline/CI use — bypasses the global bundle entirely.
+
+**From source** for contributors:
+
+```bash
+git clone ... && ./build.sh
+dist/miniature-guacamole/install.sh /path/to/project
 ```

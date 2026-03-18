@@ -117,13 +117,13 @@ describe('WS-DASH-1 boundary: depends_on condition must be service_healthy', () 
   });
 });
 
-describe('WS-DASH-1 boundary: port 3000:3000 must be mapped', () => {
-  it('dashboard service must expose port 3000', async () => {
+describe('WS-DASH-1 boundary: port 4242:4242 must be mapped', () => {
+  it('dashboard service must expose port 4242', async () => {
     const compose = await parseCompose();
     const dashboard = compose.services?.dashboard;
     const ports: string[] = dashboard?.ports ?? [];
-    const has3000 = ports.some((p: string) => String(p).startsWith('3000'));
-    expect(has3000).toBe(true);
+    const has4242 = ports.some((p: string) => String(p).startsWith('4242'));
+    expect(has4242).toBe(true);
   });
 });
 

@@ -1,74 +1,78 @@
 # miniature-guacamole Quick Start
 
-## Installation — web-install.sh (curl), local install, or mg-init
-
-### Web Install (Recommended)
+## Install (one time)
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/wonton-web-works/miniature-guacamole/main/src/installer/web-install.sh | bash
 ```
 
-### Local Install
+This installs the framework bundle to `~/.miniature-guacamole/` and symlinks all `mg-*` scripts to `~/.local/bin/`.
+
+## Initialize a Project
+
 ```bash
 cd /path/to/your/project
-/path/to/dist/miniature-guacamole/install.sh
-```
-
-### Config Cache + mg-init
-```bash
-# One-time setup
-/path/to/dist/miniature-guacamole/install.sh --config-cache
-export PATH="$PATH:~/.claude/.mg-configs/scripts"
-
-# Then for any project
-cd /path/to/project
 mg-init
 ```
 
-## Launch Claude Code
+Reads from the global bundle — no network required. Run this in every project you want to use miniature-guacamole with.
 
-After install, navigate to your project and start Claude Code:
+## Launch Claude Code
 
 ```bash
 claude
 ```
 
-# Output: Claude Code launches with all skills and agents available — type /help to see them
+All skills and agents are available. Type `/help` to see them.
 
 ## Common Tasks
 
 ### Check Version
 ```bash
+mg version
+# or
 cat .claude/MG_INSTALL.json
 ```
 
 ### Upgrade
 ```bash
-/path/to/new/dist/miniature-guacamole/install.sh --force
+# Re-run the global installer
+curl -fsSL https://raw.githubusercontent.com/wonton-web-works/miniature-guacamole/main/src/installer/web-install.sh | bash -s -- --force
+
+# Then re-init each project
+mg-init --force
 ```
 
-### Uninstall (Keep Data)
+### Uninstall from a Project
 ```bash
-/path/to/dist/miniature-guacamole/uninstall.sh
-```
+# Keep memory
+dist/miniature-guacamole/uninstall.sh
 
-### Uninstall (Remove All)
-```bash
-/path/to/dist/miniature-guacamole/uninstall.sh --purge
+# Remove everything
+dist/miniature-guacamole/uninstall.sh --purge
 ```
 
 ### File-Only Mode (Skip Database)
 
-If you don't need a database or are working offline, install with `--no-db`:
-
 ```bash
-./install.sh --no-db
+mg-init --no-db
 ```
 
-This skips database setup and runs entirely on local files.
+Skips Postgres setup. Runs entirely on local JSON files.
 
 ## What's Installed
 
+### Global (`~/.miniature-guacamole/`)
+```
+~/.miniature-guacamole/
+├── .claude/           # Framework bundle (agents, skills, scripts, etc.)
+├── install.sh         # Per-project installer
+├── mg-init            # Per-project init script
+├── templates/         # Project scaffolding templates
+└── VERSION.json       # Version metadata
+```
+
+### Per-Project (`.claude/`)
 ```
 .claude/
 ├── agents/           # 20 specialized roles
@@ -93,10 +97,10 @@ This skips database setup and runs entirely on local files.
 
 ### Scripts (Use in Terminal)
 ```bash
-mg-memory-read .claude/memory/tasks-dev.json
-mg-workstream-status WS-42
-mg-gate-check
-mg-help
+mg workstream status WS-42
+mg memory read .claude/memory/tasks-dev.json
+mg gate check
+mg help
 ```
 
 ### Agents (Spawn from Code)
@@ -113,38 +117,27 @@ Task(subagent_type="dev", prompt="Implement auth")
 
 ## Need Help?
 
-1. Run `mg-help` for script documentation
+1. Run `mg help` for script documentation
 2. Check `.claude/shared/` for protocols
 3. See `.claude/agents/*/agent.md` for agent details
 
 ## Data Isolation
 
-- All files are **project-local** (in `.claude/`)
+- All project files are **project-local** (in `.claude/`)
 - Memory is **never committed** (`.gitignore`)
 - No data crosses between projects
-- `~/.claude/` is **never modified** (except optional config cache)
+- Global bundle is read-only source material
 
 ## Quick Reference
 
 | Command | Purpose |
 |---------|---------|
-| `install.sh` | Install framework |
-| `install.sh --force` | Upgrade framework |
-| `install.sh --no-db` | Install without database (file-only mode) |
-| `install.sh --config-cache` | Install global cache |
+| `web-install.sh` | Global install (one time) |
+| `mg-init` | Initialize a project from global bundle |
+| `mg-init --force` | Re-initialize (upgrade) |
+| `mg-init --no-db` | Initialize without database |
+| `install.sh <dir>` | Direct install (offline/CI) |
 | `uninstall.sh` | Remove framework (keep data) |
 | `uninstall.sh --purge` | Remove everything |
-| `mg-init` | Initialize from cache |
-| `mg-help` | Show script help |
-
-## Version Info
-
-Check installed version:
-```bash
-cat .claude/MG_INSTALL.json | grep version
-```
-
-Check available version:
-```bash
-cat /path/to/dist/miniature-guacamole/VERSION.json
-```
+| `mg help` | Show script help |
+| `mg version` | Show version |

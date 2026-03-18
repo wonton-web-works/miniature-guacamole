@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { existsSync, readFileSync, writeFileSync } from 'fs';
+import { existsSync, readFileSync, writeFileSync, statSync, chmodSync } from 'fs';
 
-// Module under test - will be implemented by dev
+// Module under test
 import { loadConfig, initConfig, validateConfig } from '../../src/config';
 import type { DaemonConfig, ValidationError } from '../../src/types';
 
@@ -11,13 +11,62 @@ vi.mock('fs', () => ({
   readFileSync: vi.fn(),
   writeFileSync: vi.fn(),
   mkdirSync: vi.fn(),
+  statSync: vi.fn(),
+  chmodSync: vi.fn(),
 }));
 
-describe('Configuration Module', () => {
-  const mockConfigPath = '/Users/brodieyazaki/work/claude_things/miniature-guacamole/.mg-daemon.json';
+// Helper: minimal valid config for each provider
+function validJiraConfig(): DaemonConfig {
+  return {
+    provider: 'jira',
+    jira: {
+      host: 'https://example.atlassian.net',
+      email: 'test@example.com',
+      apiToken: 'test-token',
+      project: 'PROJ',
+      jql: 'project = PROJ AND status = "To Do"',
+    },
+    github: {
+      repo: 'owner/repo',
+      baseBranch: 'main',
+    },
+    polling: { intervalSeconds: 60, batchSize: 5 },
+  };
+}
 
+function validLinearConfig(): DaemonConfig {
+  return {
+    provider: 'linear',
+    linear: {
+      apiKey: 'lin_api_test123',
+      teamId: 'team-abc',
+      filter: 'state[name][eq]: "Todo"',
+    },
+    github: {
+      repo: 'owner/repo',
+      baseBranch: 'main',
+    },
+    polling: { intervalSeconds: 60, batchSize: 5 },
+  };
+}
+
+function validGitHubConfig(): DaemonConfig {
+  return {
+    provider: 'github',
+    github: {
+      repo: 'owner/repo',
+      baseBranch: 'main',
+      issueFilter: 'label:mg-daemon state:open',
+    },
+    polling: { intervalSeconds: 60, batchSize: 5 },
+  };
+}
+
+describe('Configuration Module (Updated for multi-provider schema)', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    // statSync returns mode 0o100600 (owner-readable only) so chmodSync is not called
+    vi.mocked(statSync).mockReturnValue({ mode: 0o100600 } as ReturnType<typeof statSync>);
   });
 
   afterEach(() => {
@@ -26,291 +75,179 @@ describe('Configuration Module', () => {
 
   describe('loadConfig()', () => {
     describe('AC-1.1: Error handling when config file does not exist', () => {
-      it('GIVEN no config file exists WHEN loadConfig() called THEN it throws a structured error with message "Config not found. Run mg-daemon init."', () => {
-        // Arrange
+      it('GIVEN no config file exists WHEN loadConfig() called THEN throws "Config not found. Run mg-daemon init."', () => {
         vi.mocked(existsSync).mockReturnValue(false);
-
-        // Act & Assert
         expect(() => loadConfig()).toThrow('Config not found. Run mg-daemon init.');
       });
 
-      it('GIVEN no config file exists WHEN loadConfig() called THEN the error should be an Error instance', () => {
-        // Arrange
+      it('GIVEN no config file exists WHEN loadConfig() called THEN the error is an Error instance', () => {
         vi.mocked(existsSync).mockReturnValue(false);
-
-        // Act & Assert
         expect(() => loadConfig()).toThrowError(Error);
       });
     });
 
     describe('AC-1.4: Validation of required fields', () => {
-      it('GIVEN config with missing github.token WHEN loadConfig() called THEN it returns structured validation errors array with field and message', () => {
-        // Arrange
-        const invalidConfig = {
-          jira: {
-            host: 'https://example.atlassian.net',
-            apiToken: 'test-token',
-            project: 'PROJ',
-            jql: 'project = PROJ',
-          },
-          github: {
-            repo: 'owner/repo',
-            token: '', // Missing
-            baseBranch: 'main',
-          },
-          polling: {
-            intervalSeconds: 60,
-            batchSize: 5,
-          },
-        };
-
+      it('GIVEN config missing provider field WHEN loadConfig() called THEN throws with "provider" in message', () => {
+        const invalid = { github: { repo: 'x/y', baseBranch: 'main' }, polling: { intervalSeconds: 60, batchSize: 5 } };
         vi.mocked(existsSync).mockReturnValue(true);
-        vi.mocked(readFileSync).mockReturnValue(JSON.stringify(invalidConfig));
+        vi.mocked(readFileSync).mockReturnValue(JSON.stringify(invalid));
 
-        // Act & Assert
         expect(() => loadConfig()).toThrow();
-
-        // The error should contain validation information
         try {
           loadConfig();
-        } catch (error: any) {
-          expect(error.message).toContain('github.token');
+        } catch (error: unknown) {
+          expect((error as Error).message).toContain('provider');
         }
       });
 
-      it('GIVEN config with missing jira.apiToken WHEN loadConfig() called THEN validation error includes field reference', () => {
-        // Arrange
-        const invalidConfig = {
-          jira: {
-            host: 'https://example.atlassian.net',
-            apiToken: '', // Missing
-            project: 'PROJ',
-            jql: 'project = PROJ',
-          },
-          github: {
-            repo: 'owner/repo',
-            token: 'ghp_test',
-            baseBranch: 'main',
-          },
-          polling: {
-            intervalSeconds: 60,
-            batchSize: 5,
-          },
+      it('GIVEN provider="jira" with missing jira.apiToken WHEN loadConfig() called THEN throws with "jira.apiToken" in message', () => {
+        const invalid = {
+          ...validJiraConfig(),
+          jira: { host: 'https://example.atlassian.net', apiToken: '', project: 'PROJ', jql: 'project = PROJ' },
         };
-
         vi.mocked(existsSync).mockReturnValue(true);
-        vi.mocked(readFileSync).mockReturnValue(JSON.stringify(invalidConfig));
+        vi.mocked(readFileSync).mockReturnValue(JSON.stringify(invalid));
 
-        // Act & Assert
         expect(() => loadConfig()).toThrow();
-
         try {
           loadConfig();
-        } catch (error: any) {
-          expect(error.message).toContain('jira.apiToken');
+        } catch (error: unknown) {
+          expect((error as Error).message).toContain('jira.apiToken');
         }
       });
 
-      it('GIVEN config with missing multiple required fields WHEN loadConfig() called THEN all validation errors are reported', () => {
-        // Arrange
-        const invalidConfig = {
-          jira: {
-            host: 'https://example.atlassian.net',
-            apiToken: '', // Missing
-            project: '',  // Missing
-            jql: 'project = PROJ',
-          },
-          github: {
-            repo: '',      // Missing
-            token: '',     // Missing
-            baseBranch: 'main',
-          },
-          polling: {
-            intervalSeconds: 60,
-            batchSize: 5,
-          },
+      it('GIVEN provider="jira" with invalid jira.host URL WHEN loadConfig() called THEN throws with "jira.host must be a valid URL"', () => {
+        const invalid = {
+          ...validJiraConfig(),
+          jira: { host: 'not-a-url', apiToken: 'token', project: 'PROJ', jql: 'q' },
         };
-
         vi.mocked(existsSync).mockReturnValue(true);
-        vi.mocked(readFileSync).mockReturnValue(JSON.stringify(invalidConfig));
+        vi.mocked(readFileSync).mockReturnValue(JSON.stringify(invalid));
 
-        // Act & Assert
+        expect(() => loadConfig()).toThrow('jira.host must be a valid URL');
+      });
+
+      it('GIVEN provider="linear" with missing linear.apiKey WHEN loadConfig() called THEN throws with "linear.apiKey"', () => {
+        const invalid = {
+          ...validLinearConfig(),
+          linear: { apiKey: '', teamId: 'team-123', filter: '' },
+        };
+        vi.mocked(existsSync).mockReturnValue(true);
+        vi.mocked(readFileSync).mockReturnValue(JSON.stringify(invalid));
+
         expect(() => loadConfig()).toThrow();
-
         try {
           loadConfig();
-        } catch (error: any) {
-          const message = error.message;
+        } catch (error: unknown) {
+          expect((error as Error).message).toContain('linear.apiKey');
+        }
+      });
+
+      it('GIVEN config missing github.repo WHEN loadConfig() called THEN throws with "github.repo"', () => {
+        const invalid = { ...validJiraConfig(), github: { repo: '', baseBranch: 'main' } };
+        vi.mocked(existsSync).mockReturnValue(true);
+        vi.mocked(readFileSync).mockReturnValue(JSON.stringify(invalid));
+
+        expect(() => loadConfig()).toThrow();
+        try {
+          loadConfig();
+        } catch (error: unknown) {
+          expect((error as Error).message).toContain('github.repo');
+        }
+      });
+
+      it('GIVEN config missing github.baseBranch WHEN loadConfig() called THEN throws with "github.baseBranch"', () => {
+        const invalid = { ...validJiraConfig(), github: { repo: 'owner/repo', baseBranch: '' } };
+        vi.mocked(existsSync).mockReturnValue(true);
+        vi.mocked(readFileSync).mockReturnValue(JSON.stringify(invalid));
+
+        expect(() => loadConfig()).toThrow();
+        try {
+          loadConfig();
+        } catch (error: unknown) {
+          expect((error as Error).message).toContain('github.baseBranch');
+        }
+      });
+
+      it('GIVEN config with multiple missing required fields WHEN loadConfig() called THEN all errors reported', () => {
+        const invalid = {
+          provider: 'jira',
+          jira: { host: 'https://example.atlassian.net', apiToken: '', project: '', jql: '' },
+          github: { repo: '', baseBranch: '' },
+          polling: { intervalSeconds: 60, batchSize: 5 },
+        };
+        vi.mocked(existsSync).mockReturnValue(true);
+        vi.mocked(readFileSync).mockReturnValue(JSON.stringify(invalid));
+
+        expect(() => loadConfig()).toThrow();
+        try {
+          loadConfig();
+        } catch (error: unknown) {
+          const message = (error as Error).message;
           expect(message).toContain('jira.apiToken');
           expect(message).toContain('jira.project');
           expect(message).toContain('github.repo');
-          expect(message).toContain('github.token');
         }
       });
     });
 
     describe('AC-1.5: URL validation for jira.host', () => {
-      it('GIVEN config with invalid URL for jira.host WHEN loadConfig() called THEN validation error includes "jira.host must be a valid URL"', () => {
-        // Arrange
-        const invalidConfig = {
-          jira: {
-            host: 'not-a-valid-url', // Invalid URL
-            apiToken: 'test-token',
-            project: 'PROJ',
-            jql: 'project = PROJ',
-          },
-          github: {
-            repo: 'owner/repo',
-            token: 'ghp_test',
-            baseBranch: 'main',
-          },
-          polling: {
-            intervalSeconds: 60,
-            batchSize: 5,
-          },
+      it('GIVEN jira.host missing protocol WHEN loadConfig() called THEN throws with "jira.host must be a valid URL"', () => {
+        const invalid = {
+          ...validJiraConfig(),
+          jira: { host: 'example.atlassian.net', apiToken: 'tok', project: 'P', jql: 'q' },
         };
-
         vi.mocked(existsSync).mockReturnValue(true);
-        vi.mocked(readFileSync).mockReturnValue(JSON.stringify(invalidConfig));
+        vi.mocked(readFileSync).mockReturnValue(JSON.stringify(invalid));
 
-        // Act & Assert
-        expect(() => loadConfig()).toThrow('jira.host must be a valid URL');
-      });
-
-      it('GIVEN config with jira.host missing protocol WHEN loadConfig() called THEN validation error occurs', () => {
-        // Arrange
-        const invalidConfig = {
-          jira: {
-            host: 'example.atlassian.net', // Missing protocol
-            apiToken: 'test-token',
-            project: 'PROJ',
-            jql: 'project = PROJ',
-          },
-          github: {
-            repo: 'owner/repo',
-            token: 'ghp_test',
-            baseBranch: 'main',
-          },
-          polling: {
-            intervalSeconds: 60,
-            batchSize: 5,
-          },
-        };
-
-        vi.mocked(existsSync).mockReturnValue(true);
-        vi.mocked(readFileSync).mockReturnValue(JSON.stringify(invalidConfig));
-
-        // Act & Assert
         expect(() => loadConfig()).toThrow('jira.host must be a valid URL');
       });
     });
 
     describe('AC-1.6: Valid configuration loading', () => {
-      it('GIVEN valid config WHEN loaded THEN it returns typed DaemonConfig object with all fields populated', () => {
-        // Arrange
-        const validConfig = {
-          jira: {
-            host: 'https://example.atlassian.net',
-            apiToken: 'test-token',
-            project: 'PROJ',
-            jql: 'project = PROJ AND status = "To Do"',
-          },
-          github: {
-            repo: 'owner/repo',
-            token: 'ghp_test123',
-            baseBranch: 'main',
-          },
-          polling: {
-            intervalSeconds: 60,
-            batchSize: 5,
-          },
-        };
-
+      it('GIVEN valid jira config WHEN loadConfig() called THEN returns typed DaemonConfig', () => {
         vi.mocked(existsSync).mockReturnValue(true);
-        vi.mocked(readFileSync).mockReturnValue(JSON.stringify(validConfig));
+        vi.mocked(readFileSync).mockReturnValue(JSON.stringify(validJiraConfig()));
 
-        // Act
         const config = loadConfig();
-
-        // Assert - all fields should be populated
-        expect(config).toBeDefined();
-        expect(config.jira).toBeDefined();
-        expect(config.jira.host).toBe('https://example.atlassian.net');
-        expect(config.jira.apiToken).toBe('test-token');
-        expect(config.jira.project).toBe('PROJ');
-        expect(config.jira.jql).toBe('project = PROJ AND status = "To Do"');
-
-        expect(config.github).toBeDefined();
+        expect(config.provider).toBe('jira');
+        expect(config.jira?.host).toBe('https://example.atlassian.net');
         expect(config.github.repo).toBe('owner/repo');
-        expect(config.github.token).toBe('ghp_test123');
-        expect(config.github.baseBranch).toBe('main');
-
-        expect(config.polling).toBeDefined();
         expect(config.polling.intervalSeconds).toBe(60);
-        expect(config.polling.batchSize).toBe(5);
       });
 
-      it('GIVEN valid config WHEN loaded THEN config object matches DaemonConfig type structure', () => {
-        // Arrange
-        const validConfig: DaemonConfig = {
-          jira: {
-            host: 'https://example.atlassian.net',
-            apiToken: 'test-token',
-            project: 'PROJ',
-            jql: 'project = PROJ',
-          },
-          github: {
-            repo: 'owner/repo',
-            token: 'ghp_test',
-            baseBranch: 'main',
-          },
-          polling: {
-            intervalSeconds: 120,
-            batchSize: 10,
-          },
-        };
-
+      it('GIVEN valid linear config WHEN loadConfig() called THEN returns typed DaemonConfig', () => {
         vi.mocked(existsSync).mockReturnValue(true);
-        vi.mocked(readFileSync).mockReturnValue(JSON.stringify(validConfig));
+        vi.mocked(readFileSync).mockReturnValue(JSON.stringify(validLinearConfig()));
 
-        // Act
         const config = loadConfig();
+        expect(config.provider).toBe('linear');
+        expect(config.linear?.apiKey).toBe('lin_api_test123');
+      });
 
-        // Assert - TypeScript compilation will enforce type safety
-        const typedConfig: DaemonConfig = config;
-        expect(typedConfig).toEqual(validConfig);
+      it('GIVEN valid github config WHEN loadConfig() called THEN returns typed DaemonConfig', () => {
+        vi.mocked(existsSync).mockReturnValue(true);
+        vi.mocked(readFileSync).mockReturnValue(JSON.stringify(validGitHubConfig()));
+
+        const config = loadConfig();
+        expect(config.provider).toBe('github');
+        expect(config.github.repo).toBe('owner/repo');
       });
     });
 
     describe('Edge cases and error handling', () => {
-      it('GIVEN config file with invalid JSON WHEN loadConfig() called THEN it throws a parse error', () => {
-        // Arrange
+      it('GIVEN config file with invalid JSON WHEN loadConfig() called THEN throws a parse error', () => {
         vi.mocked(existsSync).mockReturnValue(true);
         vi.mocked(readFileSync).mockReturnValue('{ invalid json }');
 
-        // Act & Assert
         expect(() => loadConfig()).toThrow();
       });
 
-      it('GIVEN config file with null values WHEN loadConfig() called THEN it throws validation error', () => {
-        // Arrange
-        const invalidConfig = {
-          jira: null,
-          github: {
-            repo: 'owner/repo',
-            token: 'ghp_test',
-            baseBranch: 'main',
-          },
-          polling: {
-            intervalSeconds: 60,
-            batchSize: 5,
-          },
-        };
-
+      it('GIVEN config file with null jira section WHEN loadConfig() with provider=jira THEN throws validation error', () => {
+        const invalid = { provider: 'jira', jira: null, github: { repo: 'x', baseBranch: 'main' }, polling: { intervalSeconds: 60, batchSize: 5 } };
         vi.mocked(existsSync).mockReturnValue(true);
-        vi.mocked(readFileSync).mockReturnValue(JSON.stringify(invalidConfig));
+        vi.mocked(readFileSync).mockReturnValue(JSON.stringify(invalid));
 
-        // Act & Assert
         expect(() => loadConfig()).toThrow();
       });
     });
@@ -318,31 +255,42 @@ describe('Configuration Module', () => {
 
   describe('initConfig()', () => {
     describe('AC-1.2: Config file initialization with template', () => {
-      it('GIVEN mg-daemon init run WHEN no .mg-daemon.json exists THEN it creates a template with all required fields', () => {
-        // Arrange
+      it('GIVEN no .mg-daemon.json exists WHEN initConfig() called THEN creates template with provider field', () => {
         vi.mocked(existsSync).mockReturnValue(false);
         vi.mocked(writeFileSync).mockImplementation(() => {});
 
-        // Act
         initConfig();
 
-        // Assert
         expect(writeFileSync).toHaveBeenCalledOnce();
+        const writeCall = vi.mocked(writeFileSync).mock.calls[0];
+        const config = JSON.parse(writeCall[1] as string);
+
+        expect(config.provider).toBeDefined();
+        expect(['jira', 'linear', 'github']).toContain(config.provider);
+      });
+
+      it('GIVEN no .mg-daemon.json exists WHEN initConfig() called THEN template has jira, linear, github sections', () => {
+        vi.mocked(existsSync).mockReturnValue(false);
+        vi.mocked(writeFileSync).mockImplementation(() => {});
+
+        initConfig();
 
         const writeCall = vi.mocked(writeFileSync).mock.calls[0];
-        const writtenContent = writeCall[1] as string;
-        const config = JSON.parse(writtenContent);
+        const config = JSON.parse(writeCall[1] as string);
 
-        // Verify all required fields exist
         expect(config.jira).toBeDefined();
         expect(config.jira.host).toBeDefined();
+        expect(config.jira.email).toBeDefined();
         expect(config.jira.apiToken).toBeDefined();
         expect(config.jira.project).toBeDefined();
         expect(config.jira.jql).toBeDefined();
 
+        expect(config.linear).toBeDefined();
+        expect(config.linear.apiKey).toBeDefined();
+        expect(config.linear.teamId).toBeDefined();
+
         expect(config.github).toBeDefined();
         expect(config.github.repo).toBeDefined();
-        expect(config.github.token).toBeDefined();
         expect(config.github.baseBranch).toBeDefined();
 
         expect(config.polling).toBeDefined();
@@ -350,405 +298,242 @@ describe('Configuration Module', () => {
         expect(config.polling.batchSize).toBeDefined();
       });
 
-      it('GIVEN mg-daemon init run WHEN no .mg-daemon.json exists THEN template has placeholder values for secrets', () => {
-        // Arrange
+      it('GIVEN initConfig() WHEN template created THEN JSON is properly formatted with indentation', () => {
         vi.mocked(existsSync).mockReturnValue(false);
         vi.mocked(writeFileSync).mockImplementation(() => {});
 
-        // Act
         initConfig();
 
-        // Assert
         const writeCall = vi.mocked(writeFileSync).mock.calls[0];
         const writtenContent = writeCall[1] as string;
-        const config = JSON.parse(writtenContent);
 
-        // Secrets should have placeholder values, not real values
-        expect(config.jira.apiToken).toMatch(/YOUR_|your-|<|placeholder/i);
-        expect(config.github.token).toMatch(/YOUR_|your-|ghp_|<|placeholder/i);
+        expect(writtenContent).toContain('\n');
+        expect(writtenContent).toMatch(/  "/); // 2-space indentation
       });
 
-      it('GIVEN mg-daemon init run WHEN no .mg-daemon.json exists THEN file is written to project root', () => {
-        // Arrange
+      it('GIVEN initConfig() WHEN called THEN template has placeholder values for secrets', () => {
         vi.mocked(existsSync).mockReturnValue(false);
         vi.mocked(writeFileSync).mockImplementation(() => {});
 
-        // Act
         initConfig();
 
-        // Assert
+        const writeCall = vi.mocked(writeFileSync).mock.calls[0];
+        const config = JSON.parse(writeCall[1] as string);
+
+        expect(config.jira.apiToken).toMatch(/YOUR_|your-|<|placeholder/i);
+        expect(config.linear.apiKey).toMatch(/YOUR_|your-|<|placeholder/i);
+      });
+
+      it('GIVEN initConfig() WHEN called THEN file is written to path containing .mg-daemon.json', () => {
+        vi.mocked(existsSync).mockReturnValue(false);
+        vi.mocked(writeFileSync).mockImplementation(() => {});
+
+        initConfig();
+
         const writeCall = vi.mocked(writeFileSync).mock.calls[0];
         const filePath = writeCall[0] as string;
-
-        expect(filePath).toContain('.mg-daemon.json');
         expect(filePath).toMatch(/\.mg-daemon\.json$/);
       });
     });
 
     describe('AC-1.3: Config already exists error handling', () => {
-      it('GIVEN .mg-daemon.json exists WHEN mg-daemon init run THEN it exits with code 1 and message "Config already exists"', () => {
-        // Arrange
+      it('GIVEN .mg-daemon.json already exists WHEN initConfig() called THEN throws "Config already exists"', () => {
         vi.mocked(existsSync).mockReturnValue(true);
-
-        // Act & Assert
         expect(() => initConfig()).toThrow('Config already exists');
       });
 
-      it('GIVEN .mg-daemon.json exists WHEN mg-daemon init run THEN it does not overwrite existing config', () => {
-        // Arrange
+      it('GIVEN .mg-daemon.json already exists WHEN initConfig() called THEN does not overwrite existing config', () => {
         vi.mocked(existsSync).mockReturnValue(true);
         vi.mocked(writeFileSync).mockImplementation(() => {});
 
-        // Act
         try {
           initConfig();
         } catch {
           // Expected to throw
         }
 
-        // Assert
         expect(writeFileSync).not.toHaveBeenCalled();
-      });
-    });
-
-    describe('Config template structure', () => {
-      it('GIVEN initConfig() called WHEN template created THEN JSON is properly formatted with indentation', () => {
-        // Arrange
-        vi.mocked(existsSync).mockReturnValue(false);
-        vi.mocked(writeFileSync).mockImplementation(() => {});
-
-        // Act
-        initConfig();
-
-        // Assert
-        const writeCall = vi.mocked(writeFileSync).mock.calls[0];
-        const writtenContent = writeCall[1] as string;
-
-        // Should have indentation (not minified)
-        expect(writtenContent).toContain('\n');
-        expect(writtenContent).toMatch(/  "/); // 2-space indentation
       });
     });
   });
 
   describe('validateConfig()', () => {
-    describe('AC-1.4 & AC-1.9: Comprehensive validation coverage', () => {
-      it('GIVEN config with all valid fields WHEN validateConfig() called THEN it returns empty errors array', () => {
-        // Arrange
-        const validConfig: DaemonConfig = {
-          jira: {
-            host: 'https://example.atlassian.net',
-            apiToken: 'test-token',
-            project: 'PROJ',
-            jql: 'project = PROJ',
-          },
-          github: {
-            repo: 'owner/repo',
-            token: 'ghp_test',
-            baseBranch: 'main',
-          },
-          polling: {
-            intervalSeconds: 60,
-            batchSize: 5,
-          },
-        };
+    describe('AC: provider field validation', () => {
+      it('GIVEN config with valid provider="jira" WHEN validateConfig() THEN no provider error', () => {
+        const errors = validateConfig(validJiraConfig());
+        const providerError = errors.find((e: ValidationError) => e.field === 'provider');
+        expect(providerError).toBeUndefined();
+      });
 
-        // Act
-        const errors = validateConfig(validConfig);
+      it('GIVEN config with valid provider="linear" WHEN validateConfig() THEN no provider error', () => {
+        const errors = validateConfig(validLinearConfig());
+        const providerError = errors.find((e: ValidationError) => e.field === 'provider');
+        expect(providerError).toBeUndefined();
+      });
 
-        // Assert
+      it('GIVEN config with valid provider="github" WHEN validateConfig() THEN no provider error', () => {
+        const errors = validateConfig(validGitHubConfig());
+        const providerError = errors.find((e: ValidationError) => e.field === 'provider');
+        expect(providerError).toBeUndefined();
+      });
+
+      it('GIVEN config with missing provider WHEN validateConfig() THEN returns provider error', () => {
+        const config = { ...validJiraConfig() };
+        (config as Record<string, unknown>).provider = undefined;
+        const errors = validateConfig(config as DaemonConfig);
+        expect(errors.some((e: ValidationError) => e.field === 'provider')).toBe(true);
+      });
+
+      it('GIVEN config with invalid provider WHEN validateConfig() THEN returns provider error', () => {
+        const config = { ...validJiraConfig(), provider: 'slack' as 'jira' };
+        const errors = validateConfig(config);
+        expect(errors.some((e: ValidationError) => e.field === 'provider')).toBe(true);
+      });
+    });
+
+    describe('AC: provider="jira" validates only jira section', () => {
+      it('GIVEN valid jira config WHEN validateConfig() called THEN returns empty errors array', () => {
+        const errors = validateConfig(validJiraConfig());
         expect(errors).toEqual([]);
-        expect(errors.length).toBe(0);
       });
 
-      it('GIVEN config missing jira.host WHEN validateConfig() called THEN errors array contains {field: "jira.host", message: "..."}', () => {
-        // Arrange
-        const invalidConfig = {
-          jira: {
-            host: '',
-            apiToken: 'test-token',
-            project: 'PROJ',
-            jql: 'project = PROJ',
-          },
-          github: {
-            repo: 'owner/repo',
-            token: 'ghp_test',
-            baseBranch: 'main',
-          },
-          polling: {
-            intervalSeconds: 60,
-            batchSize: 5,
-          },
-        } as DaemonConfig;
-
-        // Act
-        const errors = validateConfig(invalidConfig);
-
-        // Assert
-        expect(errors.length).toBeGreaterThan(0);
-        const hostError = errors.find((e: ValidationError) => e.field === 'jira.host');
-        expect(hostError).toBeDefined();
-        expect(hostError?.message).toBeDefined();
-      });
-
-      it('GIVEN config with invalid jira.host URL WHEN validateConfig() called THEN errors array contains URL validation error', () => {
-        // Arrange
-        const invalidConfig = {
-          jira: {
-            host: 'not-a-url',
-            apiToken: 'test-token',
-            project: 'PROJ',
-            jql: 'project = PROJ',
-          },
-          github: {
-            repo: 'owner/repo',
-            token: 'ghp_test',
-            baseBranch: 'main',
-          },
-          polling: {
-            intervalSeconds: 60,
-            batchSize: 5,
-          },
-        } as DaemonConfig;
-
-        // Act
-        const errors = validateConfig(invalidConfig);
-
-        // Assert
-        expect(errors.length).toBeGreaterThan(0);
-        const hostError = errors.find((e: ValidationError) => e.field === 'jira.host');
-        expect(hostError).toBeDefined();
-        expect(hostError?.message).toContain('must be a valid URL');
-      });
-
-      it('GIVEN config missing github.repo WHEN validateConfig() called THEN errors array contains repo error', () => {
-        // Arrange
-        const invalidConfig = {
-          jira: {
-            host: 'https://example.atlassian.net',
-            apiToken: 'test-token',
-            project: 'PROJ',
-            jql: 'project = PROJ',
-          },
-          github: {
-            repo: '',
-            token: 'ghp_test',
-            baseBranch: 'main',
-          },
-          polling: {
-            intervalSeconds: 60,
-            batchSize: 5,
-          },
-        } as DaemonConfig;
-
-        // Act
-        const errors = validateConfig(invalidConfig);
-
-        // Assert
-        expect(errors.length).toBeGreaterThan(0);
-        const repoError = errors.find((e: ValidationError) => e.field === 'github.repo');
-        expect(repoError).toBeDefined();
-      });
-
-      it('GIVEN config with invalid polling.intervalSeconds (negative) WHEN validateConfig() called THEN errors array contains validation error', () => {
-        // Arrange
-        const invalidConfig = {
-          jira: {
-            host: 'https://example.atlassian.net',
-            apiToken: 'test-token',
-            project: 'PROJ',
-            jql: 'project = PROJ',
-          },
-          github: {
-            repo: 'owner/repo',
-            token: 'ghp_test',
-            baseBranch: 'main',
-          },
-          polling: {
-            intervalSeconds: -1,
-            batchSize: 5,
-          },
-        } as DaemonConfig;
-
-        // Act
-        const errors = validateConfig(invalidConfig);
-
-        // Assert
-        expect(errors.length).toBeGreaterThan(0);
-        const intervalError = errors.find((e: ValidationError) => e.field === 'polling.intervalSeconds');
-        expect(intervalError).toBeDefined();
-      });
-
-      it('GIVEN config with invalid polling.batchSize (zero) WHEN validateConfig() called THEN errors array contains validation error', () => {
-        // Arrange
-        const invalidConfig = {
-          jira: {
-            host: 'https://example.atlassian.net',
-            apiToken: 'test-token',
-            project: 'PROJ',
-            jql: 'project = PROJ',
-          },
-          github: {
-            repo: 'owner/repo',
-            token: 'ghp_test',
-            baseBranch: 'main',
-          },
-          polling: {
-            intervalSeconds: 60,
-            batchSize: 0,
-          },
-        } as DaemonConfig;
-
-        // Act
-        const errors = validateConfig(invalidConfig);
-
-        // Assert
-        expect(errors.length).toBeGreaterThan(0);
-        const batchError = errors.find((e: ValidationError) => e.field === 'polling.batchSize');
-        expect(batchError).toBeDefined();
-      });
-
-      it('GIVEN config with multiple validation errors WHEN validateConfig() called THEN all errors are returned in array', () => {
-        // Arrange
-        const invalidConfig = {
-          jira: {
-            host: 'invalid-url',
-            apiToken: '',
-            project: '',
-            jql: '',
-          },
-          github: {
-            repo: '',
-            token: '',
-            baseBranch: '',
-          },
-          polling: {
-            intervalSeconds: -1,
-            batchSize: 0,
-          },
-        } as DaemonConfig;
-
-        // Act
-        const errors = validateConfig(invalidConfig);
-
-        // Assert
-        expect(errors.length).toBeGreaterThanOrEqual(8); // At least 8 validation errors
-
-        // Verify structure of errors
-        errors.forEach((error: ValidationError) => {
-          expect(error).toHaveProperty('field');
-          expect(error).toHaveProperty('message');
-          expect(typeof error.field).toBe('string');
-          expect(typeof error.message).toBe('string');
-        });
-      });
-    });
-
-    describe('ValidationError structure', () => {
-      it('GIVEN validation error WHEN returned THEN it has field and message properties', () => {
-        // Arrange
-        const invalidConfig = {
-          jira: {
-            host: '',
-            apiToken: 'test-token',
-            project: 'PROJ',
-            jql: 'project = PROJ',
-          },
-          github: {
-            repo: 'owner/repo',
-            token: 'ghp_test',
-            baseBranch: 'main',
-          },
-          polling: {
-            intervalSeconds: 60,
-            batchSize: 5,
-          },
-        } as DaemonConfig;
-
-        // Act
-        const errors = validateConfig(invalidConfig);
-
-        // Assert
-        expect(errors.length).toBeGreaterThan(0);
-        const error = errors[0];
-        expect(error).toHaveProperty('field');
-        expect(error).toHaveProperty('message');
-        expect(typeof error.field).toBe('string');
-        expect(typeof error.message).toBe('string');
-      });
-    });
-  });
-
-  describe('AC-1.9: Coverage for all validation branches', () => {
-    describe('Jira configuration branches', () => {
-      it('validates jira.host as required', () => {
-        const config = { jira: { host: '', apiToken: 'x', project: 'x', jql: 'x' }, github: { repo: 'x/x', token: 'x', baseBranch: 'x' }, polling: { intervalSeconds: 60, batchSize: 5 } } as DaemonConfig;
+      it('GIVEN provider="jira" with missing jira.host WHEN validateConfig() THEN errors contain jira.host', () => {
+        const config = validJiraConfig();
+        config.jira!.host = '';
         const errors = validateConfig(config);
         expect(errors.some((e: ValidationError) => e.field === 'jira.host')).toBe(true);
       });
 
-      it('validates jira.apiToken as required', () => {
-        const config = { jira: { host: 'https://x.com', apiToken: '', project: 'x', jql: 'x' }, github: { repo: 'x/x', token: 'x', baseBranch: 'x' }, polling: { intervalSeconds: 60, batchSize: 5 } } as DaemonConfig;
+      it('GIVEN provider="jira" with invalid jira.host URL WHEN validateConfig() THEN errors contain URL error', () => {
+        const config = validJiraConfig();
+        config.jira!.host = 'not-a-url';
+        const errors = validateConfig(config);
+        const hostError = errors.find((e: ValidationError) => e.field === 'jira.host');
+        expect(hostError?.message).toContain('must be a valid URL');
+      });
+
+      it('GIVEN provider="jira" with missing jira.email WHEN validateConfig() THEN errors contain jira.email', () => {
+        const config = validJiraConfig();
+        config.jira!.email = '';
+        const errors = validateConfig(config);
+        expect(errors.some((e: ValidationError) => e.field === 'jira.email')).toBe(true);
+      });
+
+      it('GIVEN provider="jira" with missing jira.apiToken WHEN validateConfig() THEN errors contain jira.apiToken', () => {
+        const config = validJiraConfig();
+        config.jira!.apiToken = '';
         const errors = validateConfig(config);
         expect(errors.some((e: ValidationError) => e.field === 'jira.apiToken')).toBe(true);
       });
 
-      it('validates jira.project as required', () => {
-        const config = { jira: { host: 'https://x.com', apiToken: 'x', project: '', jql: 'x' }, github: { repo: 'x/x', token: 'x', baseBranch: 'x' }, polling: { intervalSeconds: 60, batchSize: 5 } } as DaemonConfig;
+      it('GIVEN provider="jira" with missing jira.project WHEN validateConfig() THEN errors contain jira.project', () => {
+        const config = validJiraConfig();
+        config.jira!.project = '';
         const errors = validateConfig(config);
         expect(errors.some((e: ValidationError) => e.field === 'jira.project')).toBe(true);
       });
 
-      it('validates jira.jql as required', () => {
-        const config = { jira: { host: 'https://x.com', apiToken: 'x', project: 'x', jql: '' }, github: { repo: 'x/x', token: 'x', baseBranch: 'x' }, polling: { intervalSeconds: 60, batchSize: 5 } } as DaemonConfig;
+      it('GIVEN provider="jira" with missing jira.jql WHEN validateConfig() THEN errors contain jira.jql', () => {
+        const config = validJiraConfig();
+        config.jira!.jql = '';
         const errors = validateConfig(config);
         expect(errors.some((e: ValidationError) => e.field === 'jira.jql')).toBe(true);
       });
     });
 
-    describe('GitHub configuration branches', () => {
-      it('validates github.repo as required', () => {
-        const config = { jira: { host: 'https://x.com', apiToken: 'x', project: 'x', jql: 'x' }, github: { repo: '', token: 'x', baseBranch: 'x' }, polling: { intervalSeconds: 60, batchSize: 5 } } as DaemonConfig;
+    describe('AC: provider="linear" validates only linear section', () => {
+      it('GIVEN valid linear config WHEN validateConfig() THEN returns empty errors array', () => {
+        const errors = validateConfig(validLinearConfig());
+        expect(errors).toEqual([]);
+      });
+
+      it('GIVEN provider="linear" with missing linear.apiKey WHEN validateConfig() THEN errors contain linear.apiKey', () => {
+        const config = validLinearConfig();
+        config.linear!.apiKey = '';
+        const errors = validateConfig(config);
+        expect(errors.some((e: ValidationError) => e.field === 'linear.apiKey')).toBe(true);
+      });
+
+      it('GIVEN provider="linear" with missing linear.teamId WHEN validateConfig() THEN errors contain linear.teamId', () => {
+        const config = validLinearConfig();
+        config.linear!.teamId = '';
+        const errors = validateConfig(config);
+        expect(errors.some((e: ValidationError) => e.field === 'linear.teamId')).toBe(true);
+      });
+
+      it('GIVEN provider="linear" THEN does NOT validate jira.host (jira section not required)', () => {
+        const config = validLinearConfig();
+        // No jira section at all
+        const errors = validateConfig(config);
+        const jiraError = errors.find((e: ValidationError) => e.field.startsWith('jira'));
+        expect(jiraError).toBeUndefined();
+      });
+    });
+
+    describe('AC: provider="github" validates github section only', () => {
+      it('GIVEN valid github config WHEN validateConfig() THEN returns empty errors array', () => {
+        const errors = validateConfig(validGitHubConfig());
+        expect(errors).toEqual([]);
+      });
+    });
+
+    describe('AC: github section always validated (needed for PR creation)', () => {
+      it('GIVEN provider="jira" with missing github.repo WHEN validateConfig() THEN errors contain github.repo', () => {
+        const config = validJiraConfig();
+        config.github.repo = '';
         const errors = validateConfig(config);
         expect(errors.some((e: ValidationError) => e.field === 'github.repo')).toBe(true);
       });
 
-      it('validates github.token as required', () => {
-        const config = { jira: { host: 'https://x.com', apiToken: 'x', project: 'x', jql: 'x' }, github: { repo: 'x/x', token: '', baseBranch: 'x' }, polling: { intervalSeconds: 60, batchSize: 5 } } as DaemonConfig;
-        const errors = validateConfig(config);
-        expect(errors.some((e: ValidationError) => e.field === 'github.token')).toBe(true);
-      });
-
-      it('validates github.baseBranch as required', () => {
-        const config = { jira: { host: 'https://x.com', apiToken: 'x', project: 'x', jql: 'x' }, github: { repo: 'x/x', token: 'x', baseBranch: '' }, polling: { intervalSeconds: 60, batchSize: 5 } } as DaemonConfig;
+      it('GIVEN provider="jira" with missing github.baseBranch WHEN validateConfig() THEN errors contain github.baseBranch', () => {
+        const config = validJiraConfig();
+        config.github.baseBranch = '';
         const errors = validateConfig(config);
         expect(errors.some((e: ValidationError) => e.field === 'github.baseBranch')).toBe(true);
       });
     });
 
-    describe('Polling configuration branches', () => {
-      it('validates polling.intervalSeconds as positive number', () => {
-        const config = { jira: { host: 'https://x.com', apiToken: 'x', project: 'x', jql: 'x' }, github: { repo: 'x/x', token: 'x', baseBranch: 'x' }, polling: { intervalSeconds: -1, batchSize: 5 } } as DaemonConfig;
+    describe('AC: polling section validated', () => {
+      it('GIVEN config with negative polling.intervalSeconds WHEN validateConfig() THEN errors contain polling.intervalSeconds', () => {
+        const config = validJiraConfig();
+        config.polling.intervalSeconds = -1;
         const errors = validateConfig(config);
         expect(errors.some((e: ValidationError) => e.field === 'polling.intervalSeconds')).toBe(true);
       });
 
-      it('validates polling.intervalSeconds as non-zero', () => {
-        const config = { jira: { host: 'https://x.com', apiToken: 'x', project: 'x', jql: 'x' }, github: { repo: 'x/x', token: 'x', baseBranch: 'x' }, polling: { intervalSeconds: 0, batchSize: 5 } } as DaemonConfig;
+      it('GIVEN config with zero polling.batchSize WHEN validateConfig() THEN errors contain polling.batchSize', () => {
+        const config = validJiraConfig();
+        config.polling.batchSize = 0;
+        const errors = validateConfig(config);
+        expect(errors.some((e: ValidationError) => e.field === 'polling.batchSize')).toBe(true);
+      });
+
+      it('GIVEN config with zero polling.intervalSeconds WHEN validateConfig() THEN errors contain polling.intervalSeconds', () => {
+        const config = validJiraConfig();
+        config.polling.intervalSeconds = 0;
         const errors = validateConfig(config);
         expect(errors.some((e: ValidationError) => e.field === 'polling.intervalSeconds')).toBe(true);
       });
 
-      it('validates polling.batchSize as positive number', () => {
-        const config = { jira: { host: 'https://x.com', apiToken: 'x', project: 'x', jql: 'x' }, github: { repo: 'x/x', token: 'x', baseBranch: 'x' }, polling: { intervalSeconds: 60, batchSize: -1 } } as DaemonConfig;
+      it('GIVEN config with negative polling.batchSize WHEN validateConfig() THEN errors contain polling.batchSize', () => {
+        const config = validJiraConfig();
+        config.polling.batchSize = -1;
         const errors = validateConfig(config);
         expect(errors.some((e: ValidationError) => e.field === 'polling.batchSize')).toBe(true);
       });
+    });
 
-      it('validates polling.batchSize as non-zero', () => {
-        const config = { jira: { host: 'https://x.com', apiToken: 'x', project: 'x', jql: 'x' }, github: { repo: 'x/x', token: 'x', baseBranch: 'x' }, polling: { intervalSeconds: 60, batchSize: 0 } } as DaemonConfig;
+    describe('AC: ValidationError structure', () => {
+      it('GIVEN validation fails THEN each error has field and message string properties', () => {
+        const config = validJiraConfig();
+        config.jira!.host = '';
         const errors = validateConfig(config);
-        expect(errors.some((e: ValidationError) => e.field === 'polling.batchSize')).toBe(true);
+
+        expect(errors.length).toBeGreaterThan(0);
+        errors.forEach((e: ValidationError) => {
+          expect(typeof e.field).toBe('string');
+          expect(typeof e.message).toBe('string');
+        });
       });
     });
   });

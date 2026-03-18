@@ -9,6 +9,29 @@ Versioning follows [Semantic Versioning](https://semver.org/): MAJOR.MINOR.PATCH
 
 ---
 
+## [2.2.0] - 2026-03-18 — Two-Phase Install
+
+Global CLI installer + per-project init. Install once, init anywhere.
+
+### Changed
+- **`web-install.sh`** — now installs globally to `~/.miniature-guacamole/` and symlinks scripts to `~/.local/bin/`
+- **`mg-init`** — reads from global bundle instead of downloading from GitHub. No network required.
+- **BASH_SOURCE guards** — fixed unbound variable in `mg`, `mg-help`, `mg-workstream-transition`, `uninstall.sh`
+- **Location validation** — removed `.claude/scripts/` path check from `mg`, `mg-help`, `mg-workstream-transition` (scripts now run via symlink from `~/.local/bin/`)
+
+### Added
+- **Templates in dist** — `build.sh` now copies `src/framework/templates/` to dist for mg-init scaffolding
+- **VitePress srcExclude** — internal PRD/tech-design docs excluded from site build (fixes build failure)
+- **Contributing docs** — "Building and Testing Your Changes" section
+
+### Fixed
+- **Docs site build** — `prd-cli-primary.md` angle brackets caused Vue compiler failure; excluded internal docs from build
+
+### Workstreams
+`WS-INSTALL-1`
+
+---
+
 ## [2.1.0] - 2026-03-16 — CLI-Primary Architecture
 
 MCP server deprecated, `mg` CLI router added as unified entrypoint. Closes

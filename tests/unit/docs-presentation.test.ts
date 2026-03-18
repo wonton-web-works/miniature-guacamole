@@ -109,16 +109,16 @@ describe('WS-DOCS-4 README.md — boundary tests', () => {
     expect(slashCommandCount).toBeLessThanOrEqual(10);
   });
 
-  it('Quick Start section has exactly 3 commands (curl, claude, /mg-init)', () => {
-    // AC-3: exactly 3 commands — not 2, not 4
+  it('Quick Start section has the 3 commands (curl, mg-init, claude)', () => {
+    // AC-3: three commands — global install, per-project init, launch
     const readme = read('README.md');
     const quickStartBlock = readme.match(/## Quick Start[\s\S]*?(?=\n## )/);
     expect(quickStartBlock).not.toBeNull();
     if (quickStartBlock) {
       const block = quickStartBlock[0];
       expect(block).toMatch(/curl/);
+      expect(block).toMatch(/\bmg-init\b/);
       expect(block).toMatch(/\bclaude\b/);
-      expect(block).toMatch(/\/mg-init/);
     }
   });
 });
@@ -163,13 +163,13 @@ describe('WS-DOCS-4 README.md — golden path (required content must appear)', (
     }
   });
 
-  it('Quick Start contains the /mg-init command', () => {
-    // AC-3: third of the 3 commands
+  it('Quick Start contains the mg-init command', () => {
+    // AC-3: per-project init step
     const readme = read('README.md');
     const quickStartBlock = readme.match(/## Quick Start[\s\S]*?(?=\n## )/);
     expect(quickStartBlock).not.toBeNull();
     if (quickStartBlock) {
-      expect(quickStartBlock[0]).toMatch(/\/mg-init/);
+      expect(quickStartBlock[0]).toMatch(/\bmg-init\b/);
     }
   });
 

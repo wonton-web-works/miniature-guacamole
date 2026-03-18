@@ -54,7 +54,7 @@ export default defineConfig({
   // Web server (if needed for API testing)
   webServer: {
     command: 'npm run dev',
-    url: 'http://localhost:3000',
+    url: 'http://localhost:4242',
     reuseExistingServer: !process.env.CI
   },
 

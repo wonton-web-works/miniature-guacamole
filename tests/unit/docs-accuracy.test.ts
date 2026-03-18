@@ -92,10 +92,10 @@ describe('README.md — misuse cases (stale values must not appear)', () => {
 });
 
 describe('README.md — golden path (correct values must appear)', () => {
-  it('version badge says 2.0.0', () => {
+  it('version badge says 2.2.0', () => {
     // AC-1
     const readme = read('README.md');
-    expect(readme).toMatch(/^\*\*Version:\*\*\s*2\.0\.0/m);
+    expect(readme).toMatch(/^\*\*Version:\*\*\s*2\.2\.0/m);
   });
 
   it('What\'s New section is for v2.0.0', () => {

@@ -4,6 +4,7 @@ export default defineConfig({
   title: 'miniature-guacamole',
   description: 'A complete AI-powered product development organization for Claude Code',
   base: '/miniature-guacamole/',
+  srcExclude: ['prd-*.md', 'technical-design-*.md', 'v0-feedback-summary.md'],
 
   head: [
     // Favicons
@@ -72,6 +73,12 @@ export default defineConfig({
         text: 'Contributing',
         items: [
           { text: 'How to Contribute', link: '/contributing' }
+        ]
+      },
+      {
+        text: 'About',
+        items: [
+          { text: 'Built by Agents', link: '/built-by-agents' }
         ]
       }
     ],

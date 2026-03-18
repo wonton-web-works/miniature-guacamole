@@ -20,7 +20,7 @@ Coordinates product-owner, product-manager, and design for product definition.
 3. **Memory-first** - Write specs for engineering consumption
 4. **Three lenses** - Vision (PO), requirements (PM), experience (Design)
 5. **Enable engineering** - Provide everything they need to build
-6. **Visual standards** - Follow standard output format in `../_shared/output-format.md`
+6. **Visual standards** - Follow standard output format in `references/output-format.md`
 
 ## Workflow
 

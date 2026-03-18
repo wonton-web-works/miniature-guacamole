@@ -9,7 +9,8 @@
 set -euo pipefail
 
 # Security hardening - prevent sourcing
-if [[ "${BASH_SOURCE[0]}" != "$0" ]]; then
+# When piped (curl | bash), BASH_SOURCE[0] is unset — skip the guard in that case
+if [[ -n "${BASH_SOURCE[0]:-}" ]] && [[ "${BASH_SOURCE[0]}" != "$0" ]]; then
     echo "Error: This script must be executed, not sourced" >&2
     return 1
 fi

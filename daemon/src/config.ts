@@ -1,6 +1,6 @@
 // Configuration module for miniature-guacamole daemon
 
-import { existsSync, readFileSync, writeFileSync } from 'fs';
+import { existsSync, readFileSync, writeFileSync, statSync, chmodSync } from 'fs';
 import { join } from 'path';
 import type { DaemonConfig, ValidationError } from './types';
 
@@ -35,35 +35,52 @@ function validatePositiveNumber(
 }
 
 /**
- * Validates a config object and returns array of validation errors
+ * Validates a config object and returns array of validation errors.
+ * Only validates the active provider's config section (not all sections).
+ *
  * AC-1.4: Returns structured validation errors for missing fields
  * AC-1.5: Validates jira.host as valid URL
  * AC-1.9: 99%+ branch coverage on validation paths
- * @param config - The configuration object to validate
- * @returns Array of validation errors (empty if valid)
  */
 export function validateConfig(config: DaemonConfig): ValidationError[] {
   const errors: ValidationError[] = [];
 
-  // Validate jira section
-  if (!config.jira?.host || config.jira.host.trim() === '') {
-    errors.push({ field: 'jira.host', message: 'jira.host is required' });
-  } else {
-    // Validate URL format
-    try {
-      new URL(config.jira.host);
-    } catch {
-      errors.push({ field: 'jira.host', message: 'jira.host must be a valid URL' });
-    }
+  // Validate provider field
+  const validProviders = ['jira', 'linear', 'github'];
+  if (!config.provider || !validProviders.includes(config.provider)) {
+    errors.push({
+      field: 'provider',
+      message: `provider must be one of: ${validProviders.join(', ')}`,
+    });
+    // Can't validate provider-specific config without a valid provider
+    return errors;
   }
 
-  validateRequiredString(config.jira?.apiToken, 'jira.apiToken', errors);
-  validateRequiredString(config.jira?.project, 'jira.project', errors);
-  validateRequiredString(config.jira?.jql, 'jira.jql', errors);
+  // Validate only the active provider's config section
+  if (config.provider === 'jira') {
+    if (!config.jira?.host || config.jira.host.trim() === '') {
+      errors.push({ field: 'jira.host', message: 'jira.host is required' });
+    } else {
+      try {
+        new URL(config.jira.host);
+      } catch {
+        errors.push({ field: 'jira.host', message: 'jira.host must be a valid URL' });
+      }
+    }
 
-  // Validate github section
+    validateRequiredString(config.jira?.email, 'jira.email', errors);
+    validateRequiredString(config.jira?.apiToken, 'jira.apiToken', errors);
+    validateRequiredString(config.jira?.project, 'jira.project', errors);
+    validateRequiredString(config.jira?.jql, 'jira.jql', errors);
+  }
+
+  if (config.provider === 'linear') {
+    validateRequiredString(config.linear?.apiKey, 'linear.apiKey', errors);
+    validateRequiredString(config.linear?.teamId, 'linear.teamId', errors);
+  }
+
+  // Always validate github section (used for PR creation regardless of ticket provider)
   validateRequiredString(config.github?.repo, 'github.repo', errors);
-  validateRequiredString(config.github?.token, 'github.token', errors);
   validateRequiredString(config.github?.baseBranch, 'github.baseBranch', errors);
 
   // Validate polling section
@@ -86,6 +103,12 @@ export function loadConfig(): DaemonConfig {
     throw new Error('Config not found. Run mg-daemon init.');
   }
 
+  // Enforce 0o600 permissions — config may contain API tokens
+  const stat = statSync(CONFIG_PATH);
+  if ((stat.mode & 0o077) !== 0) {
+    chmodSync(CONFIG_PATH, 0o600);
+  }
+
   // Read and parse config
   const fileContent = readFileSync(CONFIG_PATH, 'utf-8');
   const config = JSON.parse(fileContent) as DaemonConfig;
@@ -101,7 +124,7 @@ export function loadConfig(): DaemonConfig {
 }
 
 /**
- * Initializes a new config file with template values
+ * Initializes a new config file with template values for all three providers.
  * AC-1.2: Creates template with all required fields when file doesn't exist
  * AC-1.3: Throws error if config file already exists
  */
@@ -111,18 +134,25 @@ export function initConfig(): void {
     throw new Error('Config already exists');
   }
 
-  // AC-1.2: Create template config
+  // AC-1.2: Create template config with all provider sections
   const template: DaemonConfig = {
+    provider: 'jira',
     jira: {
       host: 'https://your-domain.atlassian.net',
+      email: 'YOUR_JIRA_EMAIL',
       apiToken: 'YOUR_JIRA_API_TOKEN',
       project: 'PROJECT_KEY',
       jql: 'project = PROJECT_KEY AND status = "To Do"',
     },
+    linear: {
+      apiKey: 'YOUR_LINEAR_API_KEY',
+      teamId: 'YOUR_LINEAR_TEAM_ID',
+      filter: 'state[name][eq]: "Todo"',
+    },
     github: {
       repo: 'owner/repository',
-      token: 'ghp_YOUR_GITHUB_TOKEN',
       baseBranch: 'main',
+      issueFilter: 'label:mg-daemon state:open',
     },
     polling: {
       intervalSeconds: 300,
@@ -130,7 +160,7 @@ export function initConfig(): void {
     },
   };
 
-  // Write config with formatting
+  // Write config with formatting — mode 0o600 keeps API tokens owner-readable only
   const configJson = JSON.stringify(template, null, 2);
-  writeFileSync(CONFIG_PATH, configJson, 'utf-8');
+  writeFileSync(CONFIG_PATH, configJson, { encoding: 'utf-8', mode: 0o600 });
 }

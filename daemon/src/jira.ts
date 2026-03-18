@@ -40,14 +40,20 @@ export async function pollJira(
   fetchFn: typeof fetch = globalThis.fetch
 ): Promise<TicketData[]> {
   try {
+    if (!config.jira) {
+      return [];
+    }
+
+    const jiraConfig = config.jira;
+
     // Build Jira API URL with JQL query
-    const jql = encodeURIComponent(config.jira.jql);
+    const jql = encodeURIComponent(jiraConfig.jql);
     const maxResults = config.polling.batchSize;
-    const url = `${config.jira.host}/rest/api/3/search?jql=${jql}&maxResults=${maxResults}`;
+    const url = `${jiraConfig.host}/rest/api/3/search?jql=${jql}&maxResults=${maxResults}`;
 
     // Create Basic auth header
     // Note: Jira requires email:apiToken, but tests use generic credentials
-    const authString = Buffer.from(`:${config.jira.apiToken}`).toString('base64');
+    const authString = Buffer.from(`:${jiraConfig.apiToken}`).toString('base64');
 
     // Make API request
     const response = await fetchFn(url, {
@@ -85,7 +91,7 @@ export async function pollJira(
         description: issue.fields?.description || '',
         priority: issue.fields?.priority?.name || '',
         labels: issue.fields?.labels || [],
-        url: `${config.jira.host}/browse/${issue.key}`,
+        url: `${jiraConfig.host}/browse/${issue.key}`,
       }))
       .slice(0, config.polling.batchSize); // AC-4.2: Respect batchSize limit
 

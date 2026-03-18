@@ -20,7 +20,7 @@ Coordinates qa, dev, and staff-engineer through the complete CAD development cyc
 3. **Memory-first** - Read workstream context, write phase transitions
 4. **Four-step cycle** - Test → Implement → Verify → Review (never skip)
 5. **Escalate blockers** - Surface issues early to engineering-manager
-6. **Visual standards** - Follow `_shared/output-format.md` for progress reporting
+6. **Visual standards** - Follow `references/output-format.md` for progress reporting
 
 ## The CAD Cycle
 

@@ -20,7 +20,7 @@ Coordinates art-director and design for visual excellence.
 3. **Memory-first** - Write specs for engineering, read feedback from QA
 4. **Art Director approval** - All visual work needs sign-off
 5. **No generic AI aesthetics** - Distinctive, thoughtful design
-6. **Visual standards** - Follow standard output format in `../_shared/output-format.md`
+6. **Visual standards** - Follow standard output format in `references/output-format.md`
 
 ## Workflow
 

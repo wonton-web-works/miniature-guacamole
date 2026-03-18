@@ -21,7 +21,7 @@ Unified workflow for feature intake and evaluation. Handles everything from roug
 4. **Risk-aware** - Identify dependencies and blockers early
 5. **Memory-first** - Document decisions for downstream teams
 6. **Actionable outcomes** - Every assessment ends with clear next steps
-7. **Visual standards** - Follow standard output format in `../_shared/output-format.md`
+7. **Visual standards** - Follow standard output format in `references/output-format.md`
 
 ## Workflow
 

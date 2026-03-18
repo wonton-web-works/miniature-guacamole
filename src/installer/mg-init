@@ -106,7 +106,7 @@ fi
 echo -e "${BLUE}Running install.sh...${NC}"
 echo ""
 
-"$INSTALL_SCRIPT" "${INSTALL_FLAGS[@]}" "$PROJECT_DIR" || {
+"$INSTALL_SCRIPT" ${INSTALL_FLAGS[@]+"${INSTALL_FLAGS[@]}"} "$PROJECT_DIR" || {
     echo -e "${RED}Error: install.sh failed${NC}" >&2
     exit 1
 }

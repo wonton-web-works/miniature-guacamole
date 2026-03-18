@@ -32,6 +32,20 @@ cd miniature-guacamole
 npm install
 ```
 
+### Building and Testing Your Changes
+
+```bash
+# Build the distribution
+./build.sh
+
+# Install to a test project
+dist/miniature-guacamole/install.sh /path/to/test-project
+
+# Or use the global install flow
+bash dist/miniature-guacamole/web-install.sh --force
+mg-init /path/to/test-project
+```
+
 ### Running Tests
 ```bash
 # Run all tests

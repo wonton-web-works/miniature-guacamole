@@ -21,7 +21,7 @@ Coordinates CEO, CTO, and Engineering Director for strategic alignment.
 3. **Memory-first** - Read engineering context before reviewing, write decisions for team visibility
 4. **Workstream clarity** - Break initiatives into clear, testable workstreams with acceptance criteria
 5. **Unblock teams** - Leadership exists to enable, not bottleneck
-6. **Visual standards** - Follow standard output format in `../_shared/output-format.md`
+6. **Visual standards** - Follow standard output format in `references/output-format.md`
 
 ## Modes
 

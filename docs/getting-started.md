@@ -11,19 +11,21 @@
 ## Quick Start (3 commands)
 
 ```bash
-# 1. Install
+# 1. Install globally (one time)
 curl -fsSL https://raw.githubusercontent.com/wonton-web-works/miniature-guacamole/main/src/installer/web-install.sh | bash
 
-# 2. Start Claude Code
-claude
+# 2. Initialize your project
+cd your-project
+mg-init
 
-# 3. Run a workflow
+# 3. Start Claude Code and run a workflow
+claude
 /mg-assess Build a user authentication system
 ```
 
 That's it. Claude Code now has all 18 skills and 20 agents available. Type `/mg` to see them all.
 
-> **`mg-init` vs `/mg-init`** — `mg-init` is a shell script you run in your terminal. It downloads the framework from GitHub and installs it into your project's `.claude/` directory. `/mg-init` is a Claude Code skill you run inside a session. It creates `.claude/memory/`, detects your tech stack, and generates project-specific context. Run the shell script first to install, then the skill to initialize.
+> **`mg-init` vs `/mg-init`** — `mg-init` is a shell script you run in your terminal. It reads from `~/.miniature-guacamole/` and installs the framework into your project's `.claude/` directory. `/mg-init` is a Claude Code skill you run inside a session. It creates `.claude/memory/`, detects your tech stack, and generates project-specific context. Run the shell script first to install, then the skill to initialize.
 
 ## What You Just Got
 
@@ -37,10 +39,15 @@ You now have 18 skills, 20 agents, and a shared memory system installed in `.cla
 
 ### Method 1: Web Install (Recommended)
 
-One-liner using `web-install.sh` — downloads and installs the latest release:
+Two-step process — install once globally, then init per project:
 
 ```bash
+# Install globally (puts mg + mg-init on PATH)
 curl -fsSL https://raw.githubusercontent.com/wonton-web-works/miniature-guacamole/main/src/installer/web-install.sh | bash
+
+# Init any project (reads from ~/.miniature-guacamole/, no network needed)
+cd your-project
+mg-init
 ```
 
 Or pin to a specific version:
@@ -48,8 +55,16 @@ Or pin to a specific version:
 ```bash
 curl -fsSL https://raw.githubusercontent.com/wonton-web-works/miniature-guacamole/main/src/installer/web-install.sh -o mg-web-install.sh
 chmod +x mg-web-install.sh
-./mg-web-install.sh --version v1.0.0 /path/to/project
+./mg-web-install.sh --version v2.1.0
 ```
+
+The global installer:
+- Downloads the release tarball from GitHub
+- Installs the framework bundle to `~/.miniature-guacamole/`
+- Symlinks all `mg-*` scripts to `~/.local/bin/`
+- Adds `~/.local/bin` to PATH if needed
+
+Then `mg-init` in any project directory reads from the global bundle — no network required.
 
 ### Method 2: Tarball (Offline / CI)
 
@@ -61,7 +76,7 @@ curl -fsSL https://github.com/wonton-web-works/miniature-guacamole/releases/late
 tar -xzf mg.tar.gz
 cd miniature-guacamole
 
-# Install to your project
+# Install directly to a project (skips global install)
 ./install.sh /path/to/your-project
 ```
 
@@ -83,39 +98,27 @@ dist/miniature-guacamole/install.sh /path/to/your-project
 
 ### mg-init
 
-After installing, run `/mg-init` in Claude Code to initialize your project:
+After the global install, run `mg-init` in any project directory:
 
-```
-/mg-init
+```bash
+cd your-project
+mg-init
 ```
 
 What it does:
+- Runs `install.sh` from `~/.miniature-guacamole/` against your project
+- Creates `.claude/` with all agents, skills, scripts, and protocols
 - Creates `.claude/memory/` — the project-local agent state directory
-- Creates `.claude/CLAUDE.md` — project-specific context for agents
 - Auto-provisions Postgres if Docker is available (`mg-postgres start`)
 - Runs `mg-migrate` to sync any existing memory files to the database
 
-You can also run it from the command line:
-
-```bash
-mg-init /path/to/project
-```
-
-Or pin to a specific version:
-
-```bash
-mg-init --version v1.0.0 /path/to/project
-```
+Then run `/mg-init` inside Claude Code to generate project-specific context.
 
 ### File-Only Mode (--no-db)
 
 Skip database setup entirely — useful for offline environments, CI, or projects that don't need cross-agent persistent state:
 
 ```bash
-# During install
-./install.sh --no-db /path/to/your-project
-
-# Or during project init
 mg-init --no-db
 ```
 
@@ -146,7 +149,20 @@ Without it, agents fall back to filesystem memory (`.claude/memory/`) automatica
 
 ## What Gets Installed
 
-The installer creates a `.claude/` directory in your project:
+### Global (`~/.miniature-guacamole/`)
+
+The full framework bundle — used as the source for per-project init:
+
+```
+~/.miniature-guacamole/
+├── .claude/              # Framework files (agents, skills, scripts, etc.)
+├── install.sh            # Project-level installer
+├── mg-init               # Per-project init script
+├── templates/            # Project scaffolding templates
+└── VERSION.json          # Installed version metadata
+```
+
+### Per-Project (`.claude/`)
 
 ```
 your-project/
@@ -166,17 +182,17 @@ your-project/
 ## Verify Installation
 
 ```bash
-# Check directory structure
+# Check global install
+which mg
+mg version
+
+# Check project install
 ls .claude/
-
-# List available agents
 ls .claude/agents/
-
-# List available scripts
 ls .claude/scripts/
 
 # Test a script
-.claude/scripts/mg-help
+mg help
 ```
 
 In Claude Code:
@@ -216,6 +232,24 @@ QA writes failing tests → Dev implements → QA verifies 99% coverage → Staf
 ```
 
 ## Troubleshooting
+
+### mg-init: command not found
+
+Make sure `~/.local/bin` is on your PATH:
+
+```bash
+export PATH="$HOME/.local/bin:$PATH"
+```
+
+Add this to your `~/.zshrc` or `~/.bashrc` to make it permanent. The global installer normally does this automatically.
+
+### mg-init: "miniature-guacamole is not installed globally"
+
+Run the global installer first:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/wonton-web-works/miniature-guacamole/main/src/installer/web-install.sh | bash
+```
 
 ### Agent not found
 

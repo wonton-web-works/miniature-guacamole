@@ -2,7 +2,7 @@
 
 > A complete AI-powered product development organization for Claude Code.
 
-**Version:** 2.0.0 · **License:** MIT · [Documentation](https://wonton-web-works.github.io/miniature-guacamole/) · [Issues](https://github.com/wonton-web-works/miniature-guacamole/issues)
+**Version:** 2.2.0 · **License:** MIT · [Documentation](https://wonton-web-works.github.io/miniature-guacamole/) · [Issues](https://github.com/wonton-web-works/miniature-guacamole/issues)
 
 ---
 
@@ -34,29 +34,23 @@ Type a slash command. Get a team.
 
 ## Quick Start
 
-### 1. Install
+### 1. Install globally (one time)
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/wonton-web-works/miniature-guacamole/main/src/installer/web-install.sh | bash
 ```
 
-### 2. Start Claude Code
+### 2. Initialize your project
+
+```bash
+cd your-project
+mg-init
+```
+
+### 3. Start Claude Code
 
 ```bash
 claude
-```
-
-### 3. Initialize your project
-
-```
-/mg-init
-```
-
-This creates `.claude/memory/`, installs shared protocols, and detects your tech stack.
-
-### 4. Start with `/mg`
-
-```
 /mg
 ```
 
@@ -123,7 +117,12 @@ Three methods: **web install** (recommended), **tarball** (offline/CI), or **fro
 ### Web Install
 
 ```bash
+# Install globally (one time)
 curl -fsSL https://raw.githubusercontent.com/wonton-web-works/miniature-guacamole/main/src/installer/web-install.sh | bash
+
+# Init any project (no network required)
+cd your-project
+mg-init
 ```
 
 ### Tarball

@@ -41,10 +41,15 @@ features:
 
 ### Tier 1: Open Source (Local Install)
 
-Install the framework directly into any project. Full access to 20 agents, 18 skills, 17 utility scripts, and the CAD development workflow. Works today, MIT licensed, no account required.
+Install once globally, then init per project. Full access to 20 agents, 18 skills, 17 utility scripts, and the CAD development workflow. Works today, MIT licensed, no account required.
 
 ```bash
+# Install globally (one time)
 curl -fsSL https://raw.githubusercontent.com/wonton-web-works/miniature-guacamole/main/src/installer/web-install.sh | bash
+
+# Init any project
+cd your-project
+mg-init
 ```
 
 ### Tier 2: Commercial Products (Coming Soon)

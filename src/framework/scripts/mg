@@ -12,24 +12,18 @@ set -euo pipefail
 # Script location validation (security hardening)
 # ============================================================================
 # Prevent sourcing - must be executed directly
-if [[ "${BASH_SOURCE[0]}" != "$0" ]]; then
+if [[ "${BASH_SOURCE[0]:-}" != "$0" ]]; then
     echo "Error: This script must be executed, not sourced" >&2
     return 1
 fi
 
 # Resolve symlinks and get canonical script directory
-SCRIPTS_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-
-# Validate script is in a trusted .claude/scripts/ directory
-case "$SCRIPTS_DIR" in
-    */.claude/scripts) ;; # Project-local or global - OK
-    *) echo "Error: Script must run from a .claude/scripts/ directory, not $SCRIPTS_DIR" >&2; exit 1 ;;
-esac
+SCRIPTS_DIR="$(cd "$(dirname "${BASH_SOURCE[0]:-$0}")" && pwd)"
 
 # ============================================================================
 # Version
 # ============================================================================
-MG_VERSION="2.1.0"
+MG_VERSION="2.2.0"
 
 # ============================================================================
 # Error / help

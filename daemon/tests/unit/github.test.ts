@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { execSync } from 'child_process';
+import { spawnSync } from 'child_process';
 
 // Module under test - will be implemented by dev
 import { createPR } from '../../src/github';
@@ -7,18 +7,18 @@ import type { DaemonConfig, TicketData } from '../../src/types';
 
 // Mock child_process
 vi.mock('child_process', () => ({
-  execSync: vi.fn(),
+  spawnSync: vi.fn(),
 }));
 
 describe('GitHub Client Module', () => {
-  let mockExec: ReturnType<typeof vi.fn>;
+  let mockSpawn: ReturnType<typeof vi.fn>;
   let mockConfig: DaemonConfig;
   let mockTicketData: TicketData;
 
   beforeEach(() => {
     vi.clearAllMocks();
 
-    mockExec = vi.mocked(execSync);
+    mockSpawn = vi.mocked(spawnSync);
 
     // Standard test config
     mockConfig = {
@@ -56,92 +56,78 @@ describe('GitHub Client Module', () => {
   describe('createPR()', () => {
     describe('AC-5.6: Creates draft PR with title and body including Jira link', () => {
       it('GIVEN ticket PROJ-123 WHEN createPR called THEN creates PR with title "[PROJ-123] summary"', () => {
-        mockExec.mockReturnValue(Buffer.from('https://github.com/owner/repo/pull/42'));
+        mockSpawn.mockReturnValue({ status: 0, stdout: 'https://github.com/owner/repo/pull/42', stderr: '' });
 
         const result = createPR(mockTicketData, 'feature/PROJ-123-add-login-endpoint', mockConfig);
 
-        expect(mockExec).toHaveBeenCalledWith(
-          expect.stringContaining('gh pr create'),
-          expect.any(Object)
-        );
-        expect(mockExec).toHaveBeenCalledWith(
-          expect.stringContaining('[PROJ-123] Add login endpoint'),
-          expect.any(Object)
-        );
+        const args = mockSpawn.mock.calls[0][1] as string[];
+        expect(args).toContain('pr');
+        expect(args).toContain('create');
+        expect(args).toContain('[PROJ-123] Add login endpoint');
       });
 
       it('GIVEN ticket data WHEN createPR called THEN creates draft PR', () => {
-        mockExec.mockReturnValue(Buffer.from('https://github.com/owner/repo/pull/42'));
+        mockSpawn.mockReturnValue({ status: 0, stdout: 'https://github.com/owner/repo/pull/42', stderr: '' });
 
         createPR(mockTicketData, 'feature/PROJ-123-add-login-endpoint', mockConfig);
 
-        expect(mockExec).toHaveBeenCalledWith(
-          expect.stringContaining('--draft'),
-          expect.any(Object)
-        );
+        const args = mockSpawn.mock.calls[0][1] as string[];
+        expect(args).toContain('--draft');
       });
 
       it('GIVEN ticket data WHEN createPR called THEN includes Jira link in PR body', () => {
-        mockExec.mockReturnValue(Buffer.from('https://github.com/owner/repo/pull/42'));
+        mockSpawn.mockReturnValue({ status: 0, stdout: 'https://github.com/owner/repo/pull/42', stderr: '' });
 
         createPR(mockTicketData, 'feature/PROJ-123-add-login-endpoint', mockConfig);
 
-        expect(mockExec).toHaveBeenCalledWith(
-          expect.stringContaining('https://test.atlassian.net/browse/PROJ-123'),
-          expect.any(Object)
-        );
+        const args = mockSpawn.mock.calls[0][1] as string[];
+        const bodyArg = args[args.indexOf('--body') + 1];
+        expect(bodyArg).toContain('https://test.atlassian.net/browse/PROJ-123');
       });
 
       it('GIVEN ticket data WHEN createPR called THEN includes description in PR body', () => {
-        mockExec.mockReturnValue(Buffer.from('https://github.com/owner/repo/pull/42'));
+        mockSpawn.mockReturnValue({ status: 0, stdout: 'https://github.com/owner/repo/pull/42', stderr: '' });
 
         createPR(mockTicketData, 'feature/PROJ-123-add-login-endpoint', mockConfig);
 
-        expect(mockExec).toHaveBeenCalledWith(
-          expect.stringContaining('Implement REST API endpoint for user login'),
-          expect.any(Object)
-        );
+        const args = mockSpawn.mock.calls[0][1] as string[];
+        const bodyArg = args[args.indexOf('--body') + 1];
+        expect(bodyArg).toContain('Implement REST API endpoint for user login');
       });
 
       it('GIVEN ticket data WHEN createPR called THEN includes priority in PR body', () => {
-        mockExec.mockReturnValue(Buffer.from('https://github.com/owner/repo/pull/42'));
+        mockSpawn.mockReturnValue({ status: 0, stdout: 'https://github.com/owner/repo/pull/42', stderr: '' });
 
         createPR(mockTicketData, 'feature/PROJ-123-add-login-endpoint', mockConfig);
 
-        expect(mockExec).toHaveBeenCalledWith(
-          expect.stringContaining('Priority: High'),
-          expect.any(Object)
-        );
+        const args = mockSpawn.mock.calls[0][1] as string[];
+        const bodyArg = args[args.indexOf('--body') + 1];
+        expect(bodyArg).toContain('Priority: High');
       });
 
       it('GIVEN ticket with labels WHEN createPR called THEN includes labels in PR body', () => {
-        mockExec.mockReturnValue(Buffer.from('https://github.com/owner/repo/pull/42'));
+        mockSpawn.mockReturnValue({ status: 0, stdout: 'https://github.com/owner/repo/pull/42', stderr: '' });
 
         createPR(mockTicketData, 'feature/PROJ-123-add-login-endpoint', mockConfig);
 
-        expect(mockExec).toHaveBeenCalledWith(
-          expect.stringContaining('backend'),
-          expect.any(Object)
-        );
-        expect(mockExec).toHaveBeenCalledWith(
-          expect.stringContaining('api'),
-          expect.any(Object)
-        );
+        const args = mockSpawn.mock.calls[0][1] as string[];
+        const bodyArg = args[args.indexOf('--body') + 1];
+        expect(bodyArg).toContain('backend');
+        expect(bodyArg).toContain('api');
       });
 
       it('GIVEN ticket data WHEN createPR called THEN includes footer in PR body', () => {
-        mockExec.mockReturnValue(Buffer.from('https://github.com/owner/repo/pull/42'));
+        mockSpawn.mockReturnValue({ status: 0, stdout: 'https://github.com/owner/repo/pull/42', stderr: '' });
 
         createPR(mockTicketData, 'feature/PROJ-123-add-login-endpoint', mockConfig);
 
-        expect(mockExec).toHaveBeenCalledWith(
-          expect.stringContaining('Generated by miniature-guacamole daemon'),
-          expect.any(Object)
-        );
+        const args = mockSpawn.mock.calls[0][1] as string[];
+        const bodyArg = args[args.indexOf('--body') + 1];
+        expect(bodyArg).toContain('Generated by miniature-guacamole daemon');
       });
 
       it('GIVEN PR created successfully WHEN createPR called THEN returns success with PR URL', () => {
-        mockExec.mockReturnValue(Buffer.from('https://github.com/owner/repo/pull/42\n'));
+        mockSpawn.mockReturnValue({ status: 0, stdout: 'https://github.com/owner/repo/pull/42\n', stderr: '' });
 
         const result = createPR(mockTicketData, 'feature/PROJ-123-add-login-endpoint', mockConfig);
 
@@ -150,7 +136,7 @@ describe('GitHub Client Module', () => {
       });
 
       it('GIVEN PR URL with trailing whitespace WHEN createPR called THEN trims URL', () => {
-        mockExec.mockReturnValue(Buffer.from('  https://github.com/owner/repo/pull/42  \n'));
+        mockSpawn.mockReturnValue({ status: 0, stdout: '  https://github.com/owner/repo/pull/42  \n', stderr: '' });
 
         const result = createPR(mockTicketData, 'feature/PROJ-123-add-login-endpoint', mockConfig);
 
@@ -158,45 +144,42 @@ describe('GitHub Client Module', () => {
       });
 
       it('GIVEN branch name WHEN createPR called THEN specifies head branch', () => {
-        mockExec.mockReturnValue(Buffer.from('https://github.com/owner/repo/pull/42'));
+        mockSpawn.mockReturnValue({ status: 0, stdout: 'https://github.com/owner/repo/pull/42', stderr: '' });
 
         createPR(mockTicketData, 'feature/PROJ-123-add-login-endpoint', mockConfig);
 
-        expect(mockExec).toHaveBeenCalledWith(
-          expect.stringContaining('--head feature/PROJ-123-add-login-endpoint'),
-          expect.any(Object)
-        );
+        const args = mockSpawn.mock.calls[0][1] as string[];
+        const headIdx = args.indexOf('--head');
+        expect(headIdx).toBeGreaterThan(-1);
+        expect(args[headIdx + 1]).toBe('feature/PROJ-123-add-login-endpoint');
       });
 
       it('GIVEN base branch "main" WHEN createPR called THEN specifies base branch', () => {
-        mockExec.mockReturnValue(Buffer.from('https://github.com/owner/repo/pull/42'));
+        mockSpawn.mockReturnValue({ status: 0, stdout: 'https://github.com/owner/repo/pull/42', stderr: '' });
 
         createPR(mockTicketData, 'feature/PROJ-123-add-login-endpoint', mockConfig);
 
-        expect(mockExec).toHaveBeenCalledWith(
-          expect.stringContaining('--base main'),
-          expect.any(Object)
-        );
+        const args = mockSpawn.mock.calls[0][1] as string[];
+        const baseIdx = args.indexOf('--base');
+        expect(baseIdx).toBeGreaterThan(-1);
+        expect(args[baseIdx + 1]).toBe('main');
       });
 
       it('GIVEN base branch "develop" WHEN createPR called THEN specifies base as develop', () => {
         mockConfig.github.baseBranch = 'develop';
-        mockExec.mockReturnValue(Buffer.from('https://github.com/owner/repo/pull/42'));
+        mockSpawn.mockReturnValue({ status: 0, stdout: 'https://github.com/owner/repo/pull/42', stderr: '' });
 
         createPR(mockTicketData, 'feature/PROJ-123-add-login-endpoint', mockConfig);
 
-        expect(mockExec).toHaveBeenCalledWith(
-          expect.stringContaining('--base develop'),
-          expect.any(Object)
-        );
+        const args = mockSpawn.mock.calls[0][1] as string[];
+        const baseIdx = args.indexOf('--base');
+        expect(args[baseIdx + 1]).toBe('develop');
       });
     });
 
     describe('AC-5.7: PR creation failure returns { success: false, error }', () => {
       it('GIVEN gh CLI not installed WHEN createPR called THEN returns failure with error', () => {
-        mockExec.mockImplementation(() => {
-          throw new Error('gh: command not found');
-        });
+        mockSpawn.mockReturnValue({ status: 1, stdout: '', stderr: 'gh: command not found' });
 
         const result = createPR(mockTicketData, 'feature/PROJ-123-add-login-endpoint', mockConfig);
 
@@ -206,9 +189,7 @@ describe('GitHub Client Module', () => {
       });
 
       it('GIVEN authentication failure WHEN createPR called THEN returns failure with error', () => {
-        mockExec.mockImplementation(() => {
-          throw new Error('error: HTTP 401: Bad credentials');
-        });
+        mockSpawn.mockReturnValue({ status: 1, stdout: '', stderr: 'error: HTTP 401: Bad credentials' });
 
         const result = createPR(mockTicketData, 'feature/PROJ-123-add-login-endpoint', mockConfig);
 
@@ -217,9 +198,7 @@ describe('GitHub Client Module', () => {
       });
 
       it('GIVEN network error WHEN createPR called THEN returns failure with error', () => {
-        mockExec.mockImplementation(() => {
-          throw new Error('error: failed to run git: unable to connect');
-        });
+        mockSpawn.mockReturnValue({ status: 1, stdout: '', stderr: 'error: failed to run git: unable to connect' });
 
         const result = createPR(mockTicketData, 'feature/PROJ-123-add-login-endpoint', mockConfig);
 
@@ -228,9 +207,7 @@ describe('GitHub Client Module', () => {
       });
 
       it('GIVEN insufficient permissions WHEN createPR called THEN returns failure with error', () => {
-        mockExec.mockImplementation(() => {
-          throw new Error('error: HTTP 403: Resource not accessible by integration');
-        });
+        mockSpawn.mockReturnValue({ status: 1, stdout: '', stderr: 'error: HTTP 403: Resource not accessible by integration' });
 
         const result = createPR(mockTicketData, 'feature/PROJ-123-add-login-endpoint', mockConfig);
 
@@ -239,9 +216,7 @@ describe('GitHub Client Module', () => {
       });
 
       it('GIVEN unknown error WHEN createPR called THEN returns failure with error message', () => {
-        mockExec.mockImplementation(() => {
-          throw new Error('Unexpected error occurred');
-        });
+        mockSpawn.mockReturnValue({ status: 1, stdout: '', stderr: 'Unexpected error occurred' });
 
         const result = createPR(mockTicketData, 'feature/PROJ-123-add-login-endpoint', mockConfig);
 
@@ -250,7 +225,7 @@ describe('GitHub Client Module', () => {
       });
 
       it('GIVEN error without message WHEN createPR called THEN returns failure with generic error', () => {
-        mockExec.mockImplementation(() => {
+        mockSpawn.mockImplementation(() => {
           throw { code: 'UNKNOWN' };
         });
 
@@ -263,22 +238,9 @@ describe('GitHub Client Module', () => {
 
     describe('AC-5.8: Idempotent PR creation (returns existing PR URL)', () => {
       it('GIVEN PR already exists for branch WHEN createPR called THEN returns existing PR URL', () => {
-        mockExec.mockImplementation((cmd) => {
-          if (typeof cmd === 'string' && cmd.includes('gh pr create')) {
-            const error: any = new Error('error: a pull request for branch "feature/PROJ-123-add-login-endpoint" already exists');
-            error.stderr = Buffer.from('https://github.com/owner/repo/pull/42');
-            throw error;
-          }
-          return Buffer.from('');
-        });
-
-        // Should try to find existing PR
-        mockExec.mockImplementation((cmd) => {
-          if (typeof cmd === 'string' && cmd.includes('gh pr list')) {
-            return Buffer.from('https://github.com/owner/repo/pull/42');
-          }
-          throw new Error('PR already exists');
-        });
+        mockSpawn
+          .mockReturnValueOnce({ status: 1, stdout: '', stderr: 'a pull request for branch "feature/PROJ-123-add-login-endpoint" already exists' })
+          .mockReturnValueOnce({ status: 0, stdout: 'https://github.com/owner/repo/pull/42', stderr: '' });
 
         const result = createPR(mockTicketData, 'feature/PROJ-123-add-login-endpoint', mockConfig);
 
@@ -287,32 +249,23 @@ describe('GitHub Client Module', () => {
       });
 
       it('GIVEN PR exists WHEN createPR called THEN queries existing PR via gh pr list', () => {
-        mockExec
-          .mockImplementationOnce(() => {
-            throw new Error('a pull request for branch "feature/PROJ-123-add-login-endpoint" already exists');
-          })
-          .mockReturnValueOnce(Buffer.from('https://github.com/owner/repo/pull/42'));
+        mockSpawn
+          .mockReturnValueOnce({ status: 1, stdout: '', stderr: 'a pull request for branch "feature/PROJ-123-add-login-endpoint" already exists' })
+          .mockReturnValueOnce({ status: 0, stdout: 'https://github.com/owner/repo/pull/42', stderr: '' });
 
         createPR(mockTicketData, 'feature/PROJ-123-add-login-endpoint', mockConfig);
 
-        expect(mockExec).toHaveBeenCalledWith(
-          expect.stringContaining('gh pr list'),
-          expect.any(Object)
-        );
-        expect(mockExec).toHaveBeenCalledWith(
-          expect.stringContaining('--head feature/PROJ-123-add-login-endpoint'),
-          expect.any(Object)
-        );
+        const secondCall = mockSpawn.mock.calls[1];
+        const args = secondCall[1] as string[];
+        expect(args).toContain('pr');
+        expect(args).toContain('list');
+        expect(args).toContain('feature/PROJ-123-add-login-endpoint');
       });
 
       it('GIVEN PR exists but cannot be found WHEN createPR called THEN returns failure', () => {
-        mockExec
-          .mockImplementationOnce(() => {
-            throw new Error('a pull request for branch "feature/PROJ-123-add-login-endpoint" already exists');
-          })
-          .mockImplementationOnce(() => {
-            throw new Error('no pull requests found');
-          });
+        mockSpawn
+          .mockReturnValueOnce({ status: 1, stdout: '', stderr: 'a pull request for branch "feature/PROJ-123-add-login-endpoint" already exists' })
+          .mockReturnValueOnce({ status: 1, stdout: '', stderr: 'no pull requests found' });
 
         const result = createPR(mockTicketData, 'feature/PROJ-123-add-login-endpoint', mockConfig);
 
@@ -321,25 +274,27 @@ describe('GitHub Client Module', () => {
       });
     });
 
-    describe('AC-5.10: GitHub operations use gh CLI via child_process.execSync', () => {
-      it('GIVEN createPR called WHEN executed THEN calls execSync with gh command', () => {
-        mockExec.mockReturnValue(Buffer.from('https://github.com/owner/repo/pull/42'));
+    describe('AC-5.10: GitHub operations use gh CLI via child_process.spawnSync', () => {
+      it('GIVEN createPR called WHEN executed THEN calls spawnSync with gh command', () => {
+        mockSpawn.mockReturnValue({ status: 0, stdout: 'https://github.com/owner/repo/pull/42', stderr: '' });
 
         createPR(mockTicketData, 'feature/PROJ-123-add-login-endpoint', mockConfig);
 
-        expect(mockExec).toHaveBeenCalledWith(
-          expect.stringContaining('gh pr create'),
+        expect(mockSpawn).toHaveBeenCalledWith(
+          'gh',
+          expect.arrayContaining(['pr', 'create']),
           expect.any(Object)
         );
       });
 
-      it('GIVEN createPR called WHEN executed THEN passes cwd option to execSync', () => {
-        mockExec.mockReturnValue(Buffer.from('https://github.com/owner/repo/pull/42'));
+      it('GIVEN createPR called WHEN executed THEN passes cwd option to spawnSync', () => {
+        mockSpawn.mockReturnValue({ status: 0, stdout: 'https://github.com/owner/repo/pull/42', stderr: '' });
 
         createPR(mockTicketData, 'feature/PROJ-123-add-login-endpoint', mockConfig);
 
-        expect(mockExec).toHaveBeenCalledWith(
+        expect(mockSpawn).toHaveBeenCalledWith(
           expect.any(String),
+          expect.any(Array),
           expect.objectContaining({
             cwd: expect.any(String),
           })
@@ -347,12 +302,13 @@ describe('GitHub Client Module', () => {
       });
 
       it('GIVEN createPR called WHEN executed THEN uses text encoding for output', () => {
-        mockExec.mockReturnValue(Buffer.from('https://github.com/owner/repo/pull/42'));
+        mockSpawn.mockReturnValue({ status: 0, stdout: 'https://github.com/owner/repo/pull/42', stderr: '' });
 
         createPR(mockTicketData, 'feature/PROJ-123-add-login-endpoint', mockConfig);
 
-        expect(mockExec).toHaveBeenCalledWith(
+        expect(mockSpawn).toHaveBeenCalledWith(
           expect.any(String),
+          expect.any(Array),
           expect.objectContaining({
             encoding: 'utf-8',
           })
@@ -360,12 +316,13 @@ describe('GitHub Client Module', () => {
       });
 
       it('GIVEN createPR uses GITHUB_TOKEN WHEN executed THEN sets token in environment', () => {
-        mockExec.mockReturnValue(Buffer.from('https://github.com/owner/repo/pull/42'));
+        mockSpawn.mockReturnValue({ status: 0, stdout: 'https://github.com/owner/repo/pull/42', stderr: '' });
 
         createPR(mockTicketData, 'feature/PROJ-123-add-login-endpoint', mockConfig);
 
-        expect(mockExec).toHaveBeenCalledWith(
+        expect(mockSpawn).toHaveBeenCalledWith(
           expect.any(String),
+          expect.any(Array),
           expect.objectContaining({
             env: expect.objectContaining({
               GITHUB_TOKEN: 'ghp_test',
@@ -378,7 +335,7 @@ describe('GitHub Client Module', () => {
     describe('Edge Cases', () => {
       it('GIVEN ticket with empty labels array WHEN createPR called THEN handles gracefully', () => {
         mockTicketData.labels = [];
-        mockExec.mockReturnValue(Buffer.from('https://github.com/owner/repo/pull/42'));
+        mockSpawn.mockReturnValue({ status: 0, stdout: 'https://github.com/owner/repo/pull/42', stderr: '' });
 
         const result = createPR(mockTicketData, 'feature/PROJ-123-add-login-endpoint', mockConfig);
 
@@ -387,20 +344,19 @@ describe('GitHub Client Module', () => {
 
       it('GIVEN ticket with very long description WHEN createPR called THEN includes full description', () => {
         mockTicketData.description = 'A'.repeat(5000);
-        mockExec.mockReturnValue(Buffer.from('https://github.com/owner/repo/pull/42'));
+        mockSpawn.mockReturnValue({ status: 0, stdout: 'https://github.com/owner/repo/pull/42', stderr: '' });
 
         const result = createPR(mockTicketData, 'feature/PROJ-123-add-login-endpoint', mockConfig);
 
         expect(result.success).toBe(true);
-        expect(mockExec).toHaveBeenCalledWith(
-          expect.stringContaining('A'.repeat(100)), // At least part of it
-          expect.any(Object)
-        );
+        const args = mockSpawn.mock.calls[0][1] as string[];
+        const bodyArg = args[args.indexOf('--body') + 1];
+        expect(bodyArg).toContain('A'.repeat(100)); // At least part of it
       });
 
       it('GIVEN ticket with special characters in summary WHEN createPR called THEN escapes properly', () => {
         mockTicketData.summary = 'Add "quotes" and \'apostrophes\' & symbols';
-        mockExec.mockReturnValue(Buffer.from('https://github.com/owner/repo/pull/42'));
+        mockSpawn.mockReturnValue({ status: 0, stdout: 'https://github.com/owner/repo/pull/42', stderr: '' });
 
         const result = createPR(mockTicketData, 'feature/PROJ-123-add-login-endpoint', mockConfig);
 
@@ -409,7 +365,7 @@ describe('GitHub Client Module', () => {
 
       it('GIVEN ticket with newlines in description WHEN createPR called THEN preserves formatting', () => {
         mockTicketData.description = 'Line 1\nLine 2\n\nLine 4';
-        mockExec.mockReturnValue(Buffer.from('https://github.com/owner/repo/pull/42'));
+        mockSpawn.mockReturnValue({ status: 0, stdout: 'https://github.com/owner/repo/pull/42', stderr: '' });
 
         const result = createPR(mockTicketData, 'feature/PROJ-123-add-login-endpoint', mockConfig);
 
@@ -418,7 +374,7 @@ describe('GitHub Client Module', () => {
 
       it('GIVEN repo "org/repo-name" WHEN createPR called THEN uses correct repo format', () => {
         mockConfig.github.repo = 'my-org/my-repo-123';
-        mockExec.mockReturnValue(Buffer.from('https://github.com/my-org/my-repo-123/pull/42'));
+        mockSpawn.mockReturnValue({ status: 0, stdout: 'https://github.com/my-org/my-repo-123/pull/42', stderr: '' });
 
         const result = createPR(mockTicketData, 'feature/PROJ-123-add-login-endpoint', mockConfig);
 

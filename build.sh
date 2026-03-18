@@ -168,6 +168,13 @@ chmod +x "$DIST_DIR/mg-init"
 
 echo "  install.sh, uninstall.sh, web-install.sh, mg-migrate, mg-init"
 
+# Templates (used by mg-init for project scaffolding)
+TEMPLATES_SRC="$ROOT_DIR/src/framework/templates"
+if [[ -d "$TEMPLATES_SRC" ]]; then
+    cp -r "$TEMPLATES_SRC" "$DIST_DIR/templates"
+    echo "  templates/ copied"
+fi
+
 # ----------------------------------------------------------------------------
 # Generate VERSION.json
 # ----------------------------------------------------------------------------
@@ -223,5 +230,6 @@ echo "  dist/miniature-guacamole.tar.gz ($TARBALL_SIZE)"
 echo "  dist/miniature-guacamole.zip ($ZIP_SIZE)"
 echo ""
 echo "To test:"
-echo "  dist/miniature-guacamole/install.sh ~/temp-test"
+echo "  1. bash dist/miniature-guacamole/web-install.sh  # global install"
+echo "  2. mg-init /tmp/test-project                     # per-project init"
 echo ""

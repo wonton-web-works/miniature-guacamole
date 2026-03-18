@@ -20,7 +20,7 @@ Registers external projects as read-only context references for miniature-guacam
 3. **Context, not coupling** - References are informational, not dependencies
 4. **Explicit boundaries** - Clear separation between read and write operations
 5. **Memory-first** - Store context summaries for efficient agent access
-6. **Visual standards** - Follow standard output format in `../_shared/output-format.md`
+6. **Visual standards** - Follow standard output format in `references/output-format.md`
 
 ## Purpose
 

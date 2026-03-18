@@ -19,7 +19,7 @@ Coordinates art direction and copywriting for authentic, on-brand content.
 2. **Human voice mandatory** - No AI-isms, no generic copy
 3. **Memory-first** - Read brand guidelines, write decisions
 4. **Quality over speed** - Reject copy that fails anti-AI-patterns check
-5. **Visual standards** - Follow standard output format in `../_shared/output-format.md`
+5. **Visual standards** - Follow standard output format in `references/output-format.md`
 
 ## Workflow
 

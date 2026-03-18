@@ -20,7 +20,7 @@ Coordinates qa, dev, and optionally security-engineer through structured debuggi
 3. **Test-driven fix** - Write failing test for bug, implement fix, verify test passes
 4. **No regressions** - Verify fix doesn't break existing functionality
 5. **Security lens** - Escalate to security-engineer if bug has security implications
-6. **Visual progress** - Follow `_shared/output-format.md` for diagnostic reporting
+6. **Visual progress** - Follow `references/output-format.md` for diagnostic reporting
 
 ## The Debug Cycle
 

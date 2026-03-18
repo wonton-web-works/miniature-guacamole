@@ -1,15 +1,15 @@
 {
   "framework": "miniature-guacamole",
-  "version": "3.0.0",
-  "installed_at": "2026-02-10T17:06:19Z",
-  "updated_at": "2026-02-10T17:06:19Z",
+  "version": "2.2.3",
+  "installed_at": "2026-03-18T20:53:38Z",
+  "updated_at": "2026-03-18T20:53:38Z",
   "source": "local-build",
-  "source_path": "/Users/brodieyazaki/work/agent-tools/miniature-guacamole/dist/miniature-guacamole",
+  "source_path": "/Users/byaizaki/.miniature-guacamole",
   "install_method": "install.sh",
   "components": {
-    "agents": 19,
-    "skills": 16,
-    "scripts": 11,
+    "agents": 20,
+    "skills": 18,
+    "scripts": 17,
     "shared": 6,
     "hooks": 1
   }

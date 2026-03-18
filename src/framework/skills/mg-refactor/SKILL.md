@@ -20,7 +20,7 @@ Coordinates qa and dev through structured refactoring workflow with comprehensiv
 3. **Small steps** - Refactor in small, verified increments with continuous test validation
 4. **No behavior changes** - Refactoring changes structure, never functionality
 5. **99% coverage maintained** - Coverage must stay at or above 99% throughout refactor
-6. **Visual progress** - Follow `_shared/output-format.md` for refactor tracking
+6. **Visual progress** - Follow `references/output-format.md` for refactor tracking
 
 ## The Refactor Cycle
 

@@ -217,13 +217,13 @@ describe('mg-ticket skill — structure contract', () => {
     expect(content()).toMatch(/^##\s+Constitution\s*$/m);
   });
 
-  it('has 5 constitution principles (Visual standards inherited from base)', () => {
+  it('has 6 constitution principles (Visual standards inherited from base)', () => {
     const constitutionSection = content().match(/##\s+Constitution\s*$([\s\S]*?)(?=^##)/m);
     expect(constitutionSection).toBeTruthy();
     if (constitutionSection) {
       const principles = constitutionSection[1].match(/^\d+\.\s+\*\*/gm);
       expect(principles).toBeTruthy();
-      expect(principles?.length).toBe(5);
+      expect(principles?.length).toBe(6);
     }
   });
 

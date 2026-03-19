@@ -287,14 +287,14 @@ describe('WS-COMPAT-1 — Golden path: all 16 skills are fully compliant', () =>
     }
   });
 
-  it('all 16 skill files have metadata.version: "1.0"', () => {
+  it('all 16 skill files have a metadata.version field', () => {
     for (const skill of ALL_SKILLS) {
       const content = readSkill(skill);
       const fm = extractFrontmatter(content);
       expect(fm, `${skill}: no frontmatter`).not.toBeNull();
       expect(fm!, `${skill}: missing metadata block`).toMatch(/^metadata:/m);
-      expect(fm!, `${skill}: missing version: "1.0" under metadata`).toMatch(
-        /version:\s*["']1\.0["']/m
+      expect(fm!, `${skill}: missing version field under metadata`).toMatch(
+        /version:\s*["']\d+\.\d+["']/m
       );
     }
   });

@@ -172,6 +172,16 @@ write: .claude/memory/tickets.json
 
 If `.claude/memory/` does not exist, skip the write silently (graceful degradation).
 
+## Output Format
+
+```
+[EM]    Context — mg-version {v}, workstream {id}
+[EM]    Preview — {title} [{label}]
+[EM]    Filed — {issue URL}                         {elapsed}
+```
+
+On error: `[EM]  BLOCKED — {reason}` with manual fallback URL if applicable.
+
 ## Boundaries
 
 **CAN:** Read package.json and .claude/memory/ for context, run `gh issue create` via Bash, apply templates, truncate titles to 100 chars, preview assembled issue body for user confirmation, write issue records to .claude/memory/tickets.json, return issue URL on success

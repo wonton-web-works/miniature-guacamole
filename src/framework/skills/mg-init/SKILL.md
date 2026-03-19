@@ -209,6 +209,16 @@ Next steps:
 5. **Project isolation** - All created files are project-local; no absolute paths in generated files
 6. **Follow output format** — See `references/output-format.md` for standard visual patterns
 
+## Output Format
+
+```
+[EM]    Detected — {tech stack summary}
+[EM]    Creating — .claude/memory/, .claude/shared/, .claude/rules/
+[EM]    Done — project initialized                  {elapsed}
+```
+
+Skipped files (already exist) are listed after the Done line. On error: `[EM]  BLOCKED — {reason}`.
+
 ## Boundaries
 
 **CAN:** Create `.claude/` directory structure, install shared protocols, detect tech stack, generate rules templates, run idempotently

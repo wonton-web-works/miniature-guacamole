@@ -21,6 +21,7 @@ Coordinates art-director and design for visual excellence.
 2. **Accessibility first** - WCAG AA minimum, no exceptions
 3. **Art Director approval** - All visual work needs sign-off
 4. **No generic AI aesthetics** - Distinctive, thoughtful design
+5. **Follow output format** — See `references/output-format.md` for standard visual patterns
 
 ## Workflow
 

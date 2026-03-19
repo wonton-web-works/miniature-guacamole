@@ -22,6 +22,7 @@ Unified workflow for feature intake and evaluation. Handles everything from roug
 3. **Three dimensions** - Evaluate scope, feasibility, and value
 4. **Risk-aware** - Identify dependencies and blockers early
 5. **Actionable outcomes** - Every assessment ends with clear next steps
+6. **Follow output format** — See `references/output-format.md` for standard visual patterns
 
 ## Workflow
 

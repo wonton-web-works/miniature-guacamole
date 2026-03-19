@@ -1,4 +1,18 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
+
+// Mock child_process.spawnSync for git operations in the orchestrator
+vi.mock('child_process', () => ({
+  spawnSync: vi.fn((cmd: string, args: string[]) => {
+    // git diff --cached --quiet should return 1 (changes exist)
+    if (cmd === 'git' && args?.includes('--cached') && args?.includes('--quiet')) {
+      return { status: 1, stdout: '', stderr: '' };
+    }
+    return { status: 0, stdout: '', stderr: '' };
+  }),
+  spawn: vi.fn(),
+  execSync: vi.fn(),
+}));
+
 import { processTicket, runPollCycle } from '../../src/orchestrator';
 import type { OrchestratorConfig } from '../../src/orchestrator';
 import type { NormalizedTicket, TicketProvider } from '../../src/providers/types';

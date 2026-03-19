@@ -498,6 +498,100 @@ describe('GitHubProvider write-back (WS-DAEMON-12)', () => {
   });
 
   // -------------------------------------------------------------------------
+  // addLabel()
+  // -------------------------------------------------------------------------
+
+  describe('addLabel()', () => {
+    describe('AC: Adds label via gh issue edit --add-label', () => {
+      it('GIVEN ticket "GH-42" and label "mg-daemon:needs-info" WHEN addLabel() called THEN invokes "gh issue edit"', async () => {
+        vi.mocked(spawnSync).mockReturnValue({ status: 0, stdout: '', stderr: '' } as any);
+
+        await provider.addLabel('GH-42', 'mg-daemon:needs-info');
+
+        expect(spawnSync).toHaveBeenCalledWith(
+          'gh',
+          expect.arrayContaining(['issue', 'edit']),
+          expect.any(Object)
+        );
+      });
+
+      it('GIVEN ticket "GH-42" WHEN addLabel() called THEN includes issue number 42 in args', async () => {
+        vi.mocked(spawnSync).mockReturnValue({ status: 0, stdout: '', stderr: '' } as any);
+
+        await provider.addLabel('GH-42', 'mg-daemon:needs-info');
+
+        const args = vi.mocked(spawnSync).mock.calls[0][1] as string[];
+        expect(args).toContain('42');
+      });
+
+      it('GIVEN repo "owner/test-repo" WHEN addLabel() called THEN includes --repo owner/test-repo', async () => {
+        vi.mocked(spawnSync).mockReturnValue({ status: 0, stdout: '', stderr: '' } as any);
+
+        await provider.addLabel('GH-42', 'mg-daemon:needs-info');
+
+        const args = vi.mocked(spawnSync).mock.calls[0][1] as string[];
+        expect(args).toContain('--repo');
+        expect(args).toContain('owner/test-repo');
+      });
+
+      it('GIVEN label "mg-daemon:needs-info" WHEN addLabel() called THEN includes --add-label mg-daemon:needs-info', async () => {
+        vi.mocked(spawnSync).mockReturnValue({ status: 0, stdout: '', stderr: '' } as any);
+
+        await provider.addLabel('GH-42', 'mg-daemon:needs-info');
+
+        const args = vi.mocked(spawnSync).mock.calls[0][1] as string[];
+        expect(args).toContain('--add-label');
+        expect(args).toContain('mg-daemon:needs-info');
+      });
+
+      it('GIVEN label "mg-daemon:rejected" WHEN addLabel() called THEN includes that label in args', async () => {
+        vi.mocked(spawnSync).mockReturnValue({ status: 0, stdout: '', stderr: '' } as any);
+
+        await provider.addLabel('GH-7', 'mg-daemon:rejected');
+
+        const args = vi.mocked(spawnSync).mock.calls[0][1] as string[];
+        expect(args).toContain('mg-daemon:rejected');
+      });
+
+      it('GIVEN addLabel() succeeds THEN resolves to undefined', async () => {
+        vi.mocked(spawnSync).mockReturnValue({ status: 0, stdout: '', stderr: '' } as any);
+
+        await expect(provider.addLabel('GH-42', 'mg-daemon:needs-info')).resolves.toBeUndefined();
+      });
+    });
+
+    describe('AC: Idempotency — gh CLI --add-label is safe to call twice', () => {
+      it('GIVEN two calls with same label WHEN addLabel() called twice THEN both use same --add-label flag', async () => {
+        vi.mocked(spawnSync).mockReturnValue({ status: 0, stdout: '', stderr: '' } as any);
+
+        await provider.addLabel('GH-42', 'mg-daemon:needs-info');
+        await provider.addLabel('GH-42', 'mg-daemon:needs-info');
+
+        const args1 = vi.mocked(spawnSync).mock.calls[0][1] as string[];
+        const args2 = vi.mocked(spawnSync).mock.calls[1][1] as string[];
+        expect(args1).toContain('mg-daemon:needs-info');
+        expect(args2).toContain('mg-daemon:needs-info');
+      });
+    });
+
+    describe('AC: Error handling', () => {
+      it('GIVEN invalid ticket ID "INVALID" WHEN addLabel() called THEN throws', async () => {
+        await expect(provider.addLabel('INVALID', 'mg-daemon:needs-info')).rejects.toThrow('Invalid GitHub ticket ID');
+      });
+
+      it('GIVEN gh CLI returns non-zero WHEN addLabel() called THEN propagates the error', async () => {
+        vi.mocked(spawnSync).mockReturnValue({
+          status: 1,
+          stdout: '',
+          stderr: 'gh: not authenticated',
+        } as any);
+
+        await expect(provider.addLabel('GH-42', 'mg-daemon:needs-info')).rejects.toThrow('gh: not authenticated');
+      });
+    });
+  });
+
+  // -------------------------------------------------------------------------
   // parseIssueNumber — edge cases
   // -------------------------------------------------------------------------
 

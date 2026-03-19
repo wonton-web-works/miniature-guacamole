@@ -65,6 +65,40 @@ interface LinearAttachmentResponse {
   errors?: Array<{ message: string }>;
 }
 
+interface LinearIssueLabelNode {
+  id: string;
+  name: string;
+}
+
+interface LinearIssueLabelsResponse {
+  data?: {
+    issueLabels: {
+      nodes: LinearIssueLabelNode[];
+    };
+  };
+  errors?: Array<{ message: string }>;
+}
+
+interface LinearIssueLabelCreateResponse {
+  data?: {
+    issueLabelCreate: {
+      issueLabel: { id: string };
+    };
+  };
+  errors?: Array<{ message: string }>;
+}
+
+interface LinearIssueDetailResponse {
+  data?: {
+    issue: {
+      labels: {
+        nodes: Array<{ id: string }>;
+      };
+    };
+  };
+  errors?: Array<{ message: string }>;
+}
+
 interface LinearWorkflowStateNode {
   id: string;
   name: string;
@@ -298,6 +332,96 @@ export class LinearProvider implements TicketProvider {
     });
 
     throwIfErrors(data.errors, 'transitionStatus');
+  }
+
+  async addLabel(ticketId: string, label: string): Promise<void> {
+    // Step 1: Find label by name
+    const findQuery = `
+      query FindLabel($filter: IssueLabelFilter) {
+        issueLabels(filter: $filter) {
+          nodes {
+            id
+            name
+          }
+        }
+      }
+    `;
+
+    const findData = await this.graphql<LinearIssueLabelsResponse>(findQuery, {
+      filter: { name: { eq: label } },
+    });
+    throwIfErrors(findData.errors, 'addLabel:findLabel');
+
+    let labelId: string;
+    const existingLabels = findData.data?.issueLabels?.nodes ?? [];
+
+    if (existingLabels.length > 0) {
+      labelId = existingLabels[0].id;
+    } else {
+      // Step 1b: Create label if it doesn't exist
+      const createQuery = `
+        mutation IssueLabelCreate($input: IssueLabelCreateInput!) {
+          issueLabelCreate(input: $input) {
+            issueLabel {
+              id
+            }
+          }
+        }
+      `;
+
+      const createData = await this.graphql<LinearIssueLabelCreateResponse>(createQuery, {
+        input: { name: label, teamId: this.config.teamId },
+      });
+      throwIfErrors(createData.errors, 'addLabel:createLabel');
+
+      const created = createData.data?.issueLabelCreate?.issueLabel;
+      if (!created) {
+        throw new Error(`Linear addLabel: failed to create label "${label}"`);
+      }
+      labelId = created.id;
+    }
+
+    // Step 2: Get issue's current labels
+    const issueQuery = `
+      query Issue($id: String!) {
+        issue(id: $id) {
+          labels {
+            nodes {
+              id
+            }
+          }
+        }
+      }
+    `;
+
+    const issueData = await this.graphql<LinearIssueDetailResponse>(issueQuery, {
+      id: ticketId,
+    });
+    throwIfErrors(issueData.errors, 'addLabel:getIssue');
+
+    const currentLabelIds = (issueData.data?.issue?.labels?.nodes ?? []).map((l) => l.id);
+
+    // Step 3: Skip if label already on issue (idempotent)
+    if (currentLabelIds.includes(labelId)) {
+      return;
+    }
+
+    // Step 4: Update issue with combined label IDs
+    const updateQuery = `
+      mutation IssueUpdate($id: String!, $labelIds: [String!]!) {
+        issueUpdate(id: $id, input: { labelIds: $labelIds }) {
+          issue {
+            id
+          }
+        }
+      }
+    `;
+
+    const updateData = await this.graphql<LinearUpdateIssueResponse>(updateQuery, {
+      id: ticketId,
+      labelIds: [...currentLabelIds, labelId],
+    });
+    throwIfErrors(updateData.errors, 'addLabel:updateIssue');
   }
 
   async addComment(ticketId: string, body: string): Promise<void> {

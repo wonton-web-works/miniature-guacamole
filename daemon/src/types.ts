@@ -41,6 +41,12 @@ export interface NotificationConfig {
   onFailure?: string;
 }
 
+export interface TriageConfig {
+  enabled: boolean;
+  autoReject: boolean;
+  maxTicketSizeChars: number;
+}
+
 export interface DaemonConfig {
   provider: 'jira' | 'linear' | 'github';
   jira?: JiraConfig;
@@ -49,6 +55,7 @@ export interface DaemonConfig {
   polling: PollingConfig;
   orchestration?: OrchestrationConfig;
   notifications?: NotificationConfig;
+  triage?: TriageConfig;
 }
 
 export interface ValidationError {

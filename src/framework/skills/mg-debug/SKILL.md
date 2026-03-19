@@ -105,11 +105,15 @@ Task:
 
 ## Output Format
 
-- **Pipeline diagram**: REPRODUCE → INVESTIGATE → FIX → VERIFY (always shown at start)
-- **Status box**: phase, root cause, fix status, tests, blocker
-- **Detailed progress**: symptoms, reproduction steps, root cause, fix applied, verification checklist
+```
+[DEV]   Reproducing — {confirmed | cannot reproduce}
+[DEV]   Root cause — {description}
+[DEV]   Fix — failing test written, implementation applied
+[DEV]   Verification — {PASS | FAIL}                {elapsed}
+[EM]    Done — ready for code review                {elapsed}
+```
 
-See `references/output-examples.md` for full template examples.
+On blocker: `[EM]  BLOCKED — {reason}`
 
 ## Boundaries
 

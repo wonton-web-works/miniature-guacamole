@@ -9,6 +9,24 @@ Versioning follows [Semantic Versioning](https://semver.org/): MAJOR.MINOR.PATCH
 
 ---
 
+## [3.1.0] - 2026-03-19 — State Reconciliation
+
+### Added
+- **`/mg-tidy` skill** — reconciles project state across GitHub issues and `.claude/memory/` workstream files (#89)
+  - Duplicate issue detection and bulk close (keeps highest-numbered)
+  - Orphaned memory detection and cleanup
+  - Missing memory stub creation
+  - Stale issue flagging (14+ days no activity)
+  - Modes: default (confirm), `--dry-run` (audit only), `--auto` (daemon-safe)
+- **`/mg` dispatcher** — routes `tidy`, `clean up state`, `reconcile`, `sync state` to `/mg-tidy`
+- **Workstream memory files** — initialized state for STUDIO, DAEMON, SECURITY, FRAMEWORK workstreams
+
+### Fixed
+- Closed 38 duplicate/stale GitHub issues from daemon test runs (#90)
+- Issue tracker reduced from 52 → 18 canonical open issues
+
+---
+
 ## [3.0.0] - 2026-03-19 — Autonomous Daemon Pipeline
 
 The daemon turns a Mac Mini into a 24/7 autonomous development pipeline. Point it at a ticket tracker, it plans work, writes code using the MG team, runs quality gates, and creates draft PRs for human review.

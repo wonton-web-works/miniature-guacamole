@@ -183,14 +183,56 @@ write: .claude/memory/workstream-{id}-state.json
   delegated_to: dev | qa | staff-engineer | leadership
   gate_status: pending | passed | failed
   blocker: {description if failed}
+  timing:
+    started_at: <ISO timestamp>
+    elapsed_ms: <total milliseconds>
+    steps:
+      - agent: <role>
+        elapsed_ms: <step milliseconds>
 ```
+
+## Timing
+
+Track wall-clock elapsed time throughout the build cycle.
+
+- Record `Date.now()` at invocation start
+- Each agent spawn completion: report `elapsed = now - start` formatted as:
+  - `Xs` for <60 seconds (e.g., `4.1s`)
+  - `Xm Ys` for >=60 seconds (e.g., `1m 09s`)
+- Final `[EM] Done` line includes total elapsed
+
+Timing is appended to each output line, right-aligned.
 
 ## Output Format
 
-- **Compact** (default): <=10 lines per build cycle — classification, progress lines, gate status only
-- **Full** (pass "verbose"): CAD pipeline diagram CLASSIFY → TEST → IMPL → VERIFY → REVIEW, status box, detailed progress
+MECHANICAL track:
 
-See `references/output-examples.md` for full template examples.
+```
+[EM]    Classifying... MECHANICAL                  0.2s
+[DEV]   Writing tests — 12 specs                   4.1s
+[DEV]   Implementing — all tests passing          18.7s
+[GATE]  Coverage 99.4% ✓  Lines 142 ✓              0.3s
+[EM]    Done                                      23.3s
+```
+
+ARCHITECTURAL track:
+
+```
+[EM]    Classifying... ARCHITECTURAL               0.3s
+
+[CEO]   Strategic fit — approved
+[CTO]   Technical approach — approved
+[ED]    Resources allocated — 2 workstreams         8.2s
+
+[QA]    Writing tests — 24 specs                   6.4s
+[DEV]   Implementing — all tests passing          34.1s
+[QA]    Verification — coverage 99.1%               3.2s
+
+[SE]    Code review — approved                    12.0s
+
+[CEO]   Final review — APPROVED                    5.1s
+[EM]    Done                                    1m 09s
+```
 
 ## Boundaries
 

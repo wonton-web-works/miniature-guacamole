@@ -9,6 +9,8 @@ metadata:
   spawn_cap: "6"
 ---
 
+> Inherits: [skill-base](../_base/skill-base.md)
+
 # Feature Assessment
 
 Unified workflow for feature intake and evaluation. Handles everything from rough feature ideas to fully structured requests through a single front door, then evaluates scope, feasibility, and value through structured multi-lens conversation.
@@ -19,9 +21,7 @@ Unified workflow for feature intake and evaluation. Handles everything from roug
 2. **Ask before assuming** - Clarify requirements through dialogue
 3. **Three dimensions** - Evaluate scope, feasibility, and value
 4. **Risk-aware** - Identify dependencies and blockers early
-5. **Memory-first** - Document decisions for downstream teams
-6. **Actionable outcomes** - Every assessment ends with clear next steps
-7. **Visual standards** - Follow standard output format in `references/output-format.md`
+5. **Actionable outcomes** - Every assessment ends with clear next steps
 
 ## Workflow
 
@@ -148,13 +148,11 @@ Combine inputs to produce:
 ## Memory Protocol
 
 ```yaml
-# Read strategic context
 read:
   - .claude/memory/product-roadmap.json
   - .claude/memory/architecture-decisions.json
   - .claude/memory/team-capacity.json
 
-# Write assessment results
 write: .claude/memory/mg-feature-assessments.json
   feature_id: <id>
   intake_mode: true|false

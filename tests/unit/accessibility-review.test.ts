@@ -45,14 +45,14 @@ describe('Accessibility Review - WS-11', () => {
       expect(content).toMatch(/^##\s+Constitution\s*$/m);
     });
 
-    it('should have 6 constitution principles', () => {
+    it('should have 4 constitution principles (Memory-first and Visual standards inherited from base)', () => {
       const content = fs.readFileSync(skillPath, 'utf-8');
       const constitutionSection = content.match(/##\s+Constitution\s*$([\s\S]*?)(?=^##)/m);
       expect(constitutionSection).toBeTruthy();
       if (constitutionSection) {
         const principles = constitutionSection[1].match(/^\d+\./gm);
         expect(principles).toBeTruthy();
-        expect(principles?.length).toBe(6);
+        expect(principles?.length).toBe(4);
       }
     });
 

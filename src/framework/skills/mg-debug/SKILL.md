@@ -9,6 +9,8 @@ metadata:
   spawn_cap: "6"
 ---
 
+> Inherits: [skill-base](../_base/skill-base.md)
+
 # mg-debug
 
 Coordinates qa, dev, and optionally security-engineer through structured debugging workflow to investigate, reproduce, and resolve bugs.
@@ -20,7 +22,6 @@ Coordinates qa, dev, and optionally security-engineer through structured debuggi
 3. **Test-driven fix** - Write failing test for bug, implement fix, verify test passes
 4. **No regressions** - Verify fix doesn't break existing functionality
 5. **Security lens** - Escalate to security-engineer if bug has security implications
-6. **Visual progress** - Follow `references/output-format.md` for diagnostic reporting
 
 ## The Debug Cycle
 
@@ -38,12 +39,10 @@ Ready for code review
 ## Memory Protocol
 
 ```yaml
-# Read bug context
 read:
   - .claude/memory/bug-{id}-context.json
   - .claude/memory/agent-leadership-decisions.json
 
-# Write debug progress
 write: .claude/memory/bug-{id}-status.json
   agent_id: mg-debug
   phase: reproduction | investigation | fixing | verification

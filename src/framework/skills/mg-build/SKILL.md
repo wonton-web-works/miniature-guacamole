@@ -9,6 +9,8 @@ metadata:
   spawn_cap: "6"
 ---
 
+> Inherits: [skill-base](../_base/skill-base.md)
+
 # mg-build
 
 Coordinates qa, dev, and staff-engineer through the complete CAD development cycle. This is the primary "build it" skill.
@@ -17,10 +19,8 @@ Coordinates qa, dev, and staff-engineer through the complete CAD development cyc
 
 1. **Tests before code** - QA writes tests before code, never start without failing tests
 2. **99% coverage** - Unit + integration combined, no exceptions
-3. **Memory-first** - Read workstream context, write phase transitions
-4. **Four-step cycle** - Test → Implement → Verify → Review (never skip)
-5. **Escalate blockers** - Surface issues early to engineering-manager
-6. **Visual standards** - Follow `references/output-format.md` for progress reporting
+3. **Four-step cycle** - Test → Implement → Verify → Review (never skip)
+4. **Escalate blockers** - Surface issues early to engineering-manager
 
 ## The CAD Cycle
 
@@ -39,12 +39,10 @@ Ready for mg-leadership-team approval
 ## Memory Protocol
 
 ```yaml
-# Read workstream context
 read:
   - .claude/memory/workstream-{id}-state.json
-  - .claude/memory/agent-leadership-decisions.json  # Requirements & acceptance criteria
+  - .claude/memory/agent-leadership-decisions.json
 
-# Write phase transitions
 write: .claude/memory/workstream-{id}-state.json
   agent_id: mg-build
   phase: step_1_test_spec | step_2_implementation | step_3_verification | step_4_review

@@ -2,19 +2,19 @@
 
 > A complete AI-powered product development organization for Claude Code.
 
-**Version:** 2.2.0 · **License:** MIT · [Documentation](https://wonton-web-works.github.io/miniature-guacamole/) · [Issues](https://github.com/wonton-web-works/miniature-guacamole/issues)
+**Version:** 3.1.0 · **License:** MIT · [Documentation](https://wonton-web-works.github.io/miniature-guacamole/) · [Issues](https://github.com/wonton-web-works/miniature-guacamole/issues)
 
 ---
 
-## What's New in v2.0.0
+## What's New in v3.1.0
 
-**`/mg` dispatcher and document templates** (March 2026):
-- `/mg` — single entry point to the skill system: shows all commands or routes by keyword
-- `/mg plan` and `/mg review` sub-commands for context-aware skill routing
-- PRD and Technical Design document templates (`mg-spec`, `mg-assess-tech`)
-- Brand kit template and wireframe capability (`mg-design --brand`)
-- Leadership planning now outputs document deliverables alongside workstreams
-- 18 skills, 20 agents
+**Autonomous daemon, security domains, and state reconciliation** (March 2026):
+- **Autonomous Daemon Pipeline** (v3.0.0) — turns a Mac Mini into a 24/7 ticket-to-PR machine. Supports Jira, Linear, and GitHub Issues
+- **Security Domain Expansion** — security-engineer agent now loads domain-specific checklists (web, systems, cloud, crypto) automatically
+- **`/mg-tidy`** — reconciles project state across GitHub issues and memory files. Closed 38 duplicate issues in its first run
+- **Ticket Triage Gate** — daemon now runs `/mg-assess` before planning, filtering low-value tickets
+- **Base Template Inheritance** — all 20 agents and 19 skills inherit from shared base protocols, eliminating duplication
+- 19 skills, 20 agents
 
 ---
 
@@ -27,8 +27,9 @@ Type a slash command. Get a team.
 - `/mg-leadership-team` coordinates CEO, CTO, and Engineering Director for planning and code approval
 - `/mg-assess` evaluates feature ideas with product and technical perspectives before you write a line of code
 - `/mg-ticket` files GitHub Issues directly from Claude Code, with workstream context attached
+- `/mg-tidy` reconciles project state — deduplicates issues, syncs memory, flags stale work
 
-**18 Skills**. **20 Specialized Agents**. One framework.
+**19 Skills**. **20 Specialized Agents**. One framework.
 
 ---
 
@@ -54,7 +55,7 @@ claude
 /mg
 ```
 
-Shows all 18 skills grouped by purpose, or pass a keyword to route directly — `/mg build auth system`.
+Shows all 19 skills grouped by purpose, or pass a keyword to route directly — `/mg build auth system`.
 
 ---
 
@@ -100,12 +101,12 @@ Every feature follows Constraint-Driven Agentic Development:
 
 | Component | Count | Description |
 |-----------|-------|-------------|
-| **Skills** | 18 | Slash-command workflows — `/mg` dispatcher, build, ticket, debug, and more |
+| **Skills** | 19 | Slash-command workflows — `/mg` dispatcher, build, ticket, tidy, debug, and more |
 | **Agents** | 20 | Specialized roles from CEO to QA, each with clear delegation authority |
 | **Scripts** | 17 | `mg-*` CLI utilities for memory, workstreams, Postgres, and git |
 | **Protocols** | 6 | Shared standards — CAD workflow, TDD, memory, handoff, engineering principles |
 
-[All 18 skills →](https://wonton-web-works.github.io/miniature-guacamole/workflows)
+[All 19 skills →](https://wonton-web-works.github.io/miniature-guacamole/workflows)
 [All 20 agents →](https://wonton-web-works.github.io/miniature-guacamole/agents)
 
 ---
@@ -148,23 +149,33 @@ dist/miniature-guacamole/install.sh /path/to/your-project
 - [Getting Started](https://wonton-web-works.github.io/miniature-guacamole/getting-started) — Install, initialize, first workflow
 - [Architecture](https://wonton-web-works.github.io/miniature-guacamole/architecture) — Agent hierarchy, delegation model, memory layer
 - [Agents](https://wonton-web-works.github.io/miniature-guacamole/agents) — All 20 agents and their roles
-- [Workflows](https://wonton-web-works.github.io/miniature-guacamole/workflows) — All 18 skills and the CAD cycle
+- [Workflows](https://wonton-web-works.github.io/miniature-guacamole/workflows) — All 19 skills and the CAD cycle
 - [Contributing](https://wonton-web-works.github.io/miniature-guacamole/contributing) — How to extend the framework
 
 ---
 
 ## Changelog
 
-**Version 2.0.0** (March 2026)
-- `/mg` dispatcher — single entry point to the skill system with grouped commands and smart routing
-- `/mg plan` and `/mg review` sub-commands for context-aware skill routing
-- PRD and Technical Design document templates (mg-spec, mg-assess-tech)
-- Brand kit template and wireframe capability (mg-design --brand)
-- Leadership planning now outputs document deliverables alongside workstreams
-- 18 skills, 20 agents
+**Version 3.1.0** (March 2026)
+- `/mg-tidy` — state reconciliation skill; deduplicates issues, syncs memory, flags stale work
+- Base template inheritance — all agents/skills inherit from shared `_base/` protocols
+- Security domain expansion — 4 specialized checklists (web, systems, cloud, crypto)
+- Ticket triage gate — daemon assesses tickets before planning
 
-**Version 1.3.0** (March 2026)
-- `/mg-ticket` skill — file GitHub Issues directly from Claude Code sessions
+**Version 3.0.0** (March 2026)
+- Autonomous daemon pipeline — 24/7 ticket-to-PR automation for Mac Mini
+- Jira, Linear, and GitHub Issues ticket providers
+- Security hardening (3 review passes), OS-level safeguards
+- 1082 tests passing, zero new npm dependencies
+
+**Version 2.2.0** (March 2026)
+- Two-phase install — global CLI installer + per-project init
+
+**Version 2.1.0** (March 2026)
+- MCP server removed, `mg` CLI router added as unified entrypoint
+
+**Version 2.0.0** (March 2026)
+- `/mg` dispatcher, PRD/tech design templates, 18 skills, 20 agents
 
 ---
 

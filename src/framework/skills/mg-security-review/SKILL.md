@@ -9,6 +9,8 @@ metadata:
   spawn_cap: "6"
 ---
 
+> Inherits: [skill-base](../_base/skill-base.md)
+
 # Security Review
 
 Coordinates security-engineer to perform comprehensive security audits and vulnerability assessments.
@@ -17,10 +19,8 @@ Coordinates security-engineer to perform comprehensive security audits and vulne
 
 1. **Security by default** - Every audit checks OWASP Top 10, authentication, authorization, and input validation
 2. **Severity-driven** - Prioritize findings by CRITICAL > HIGH > MEDIUM > LOW for remediation
-3. **Memory-first** - Read workstream context and security policies, write findings for team visibility
-4. **Actionable remediation** - Every vulnerability includes specific remediation steps
-5. **Defense in depth** - Check code, dependencies, secrets, and API security layers
-6. **Visual standards** - Follow standard output format in `references/output-format.md`
+3. **Actionable remediation** - Every vulnerability includes specific remediation steps
+4. **Defense in depth** - Check code, dependencies, secrets, and API security layers
 
 ## Security Audit Areas
 
@@ -36,18 +36,16 @@ Coordinates security-engineer to perform comprehensive security audits and vulne
 ## Memory Protocol
 
 ```yaml
-# Read before security audit
 read:
-  - .claude/memory/workstream-{id}-state.json  # What was built
-  - .claude/memory/security-policies.json       # Security standards
-  - .claude/memory/agent-dev-decisions.json     # Implementation details
+  - .claude/memory/workstream-{id}-state.json
+  - .claude/memory/security-policies.json
+  - .claude/memory/agent-dev-decisions.json
 
-# Write security findings
 write: .claude/memory/agent-security-review-decisions.json
   workstream_id: <id>
   phase: scanning | analysis | reporting
   audit_status: secure | vulnerable | needs_review
-  domains_reviewed: [web, systems, cloud, crypto]  # which security domains were assessed
+  domains_reviewed: [web, systems, cloud, crypto]
   findings:
     - severity: CRITICAL | HIGH | MEDIUM | LOW
       category: <OWASP category or type>

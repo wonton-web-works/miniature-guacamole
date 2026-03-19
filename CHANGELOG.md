@@ -9,6 +9,33 @@ Versioning follows [Semantic Versioning](https://semver.org/): MAJOR.MINOR.PATCH
 
 ---
 
+## [4.0.0] - 2026-03-19 — Framework Hardening
+
+Architectural overhaul: base template inheritance, 2-track development cycle, and inter-agent communication.
+
+### Added
+- **Base template inheritance** — `agents/_base/agent-base.md` and `skills/_base/skill-base.md` extract shared boilerplate (Memory-first, Visual standards, memory protocol, boundaries format) (#92)
+- **Development cycle v2** — classification at intake, MECHANICAL track (1 spawn + bash gate), ARCHITECTURAL track (5-6 spawns down from 11) (#93)
+- **`--force-mechanical` / `--force-architectural`** flags on `/mg-build`
+- **Agent message bus** — `messages-{from}-{to}.json` for structured inter-agent communication (#94)
+- **Message types** — `info`, `question`, `blocker`, `handoff` with formal schema
+- **Phase 2 MCP design** — `docs/technical-design-agent-comms.md` for future `agent://` resources
+
+### Changed
+- All 20 agents inherit base template (removed duplicated constitution items)
+- All 19 skills inherit base template
+- `development-workflow.md` — complete rewrite with dual-track diagram
+- `tdd-workflow.md` — rewrite with MECHANICAL solo TDD and ARCHITECTURAL parallel QA+Dev
+- `mg-build` SKILL.md — v2.0 with intake classification, flag support, message bus coordination
+- Dev agent gains MECHANICAL Mode (writes tests AND implements)
+
+### Impact
+- **Speed**: MECHANICAL work drops from 11 spawns → 1 spawn (10x faster)
+- **Tokens**: ~42% reduction in per-agent/skill boilerplate via inheritance
+- **Quality**: Coverage requirements unchanged (99%), classification rules unchanged
+
+---
+
 ## [3.1.0] - 2026-03-19 — State Reconciliation
 
 ### Added

@@ -166,8 +166,8 @@ describe('mg dispatcher — misuse cases (tested first)', () => {
 
 describe('mg dispatcher — boundary cases', () => {
   describe('skill count precision', () => {
-    it('no-args section must list exactly 17 skills (not 16, not 18)', () => {
-      // Acceptance criteria 9: the skill count is 17
+    it('no-args section must list exactly 18 skills (not 17, not 19)', () => {
+      // Acceptance criteria 9: the skill count is 18 (17 original + mg-tidy)
       // We count distinct mg-* skill names listed in the no-args section.
       // Strategy: find the no-args section and count mg-* occurrences there.
       const noArgsMatch = content().match(
@@ -181,8 +181,8 @@ describe('mg dispatcher — boundary cases', () => {
         const uniqueSkills = new Set(listedSkills);
         expect(
           uniqueSkills.size,
-          `Expected 17 unique skills in no-args section, found: ${[...uniqueSkills].join(', ')}`
-        ).toBe(17);
+          `Expected 18 unique skills in no-args section, found: ${[...uniqueSkills].join(', ')}`
+        ).toBe(18);
       }
     });
 

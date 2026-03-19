@@ -1,0 +1,55 @@
+name: Auto-update daemon branches
+
+# When main changes, auto-merge main into open daemon PR branches
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  update-branches:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Update open daemon PR branches
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # Find open PRs from daemon (feature/GH-* branches)
+          prs=$(gh pr list --state open --json number,headRefName --jq '.[] | select(.headRefName | startswith("feature/GH-")) | .headRefName')
+
+          if [ -z "$prs" ]; then
+            echo "No daemon PR branches to update"
+            exit 0
+          fi
+
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          for branch in $prs; do
+            echo "Updating $branch with latest main..."
+            git fetch origin "$branch"
+            git checkout "$branch"
+
+            if git merge origin/main --no-edit; then
+              git push origin "$branch"
+              echo "✓ $branch updated successfully"
+            else
+              git merge --abort
+              echo "✗ $branch has merge conflicts — skipping"
+              # Comment on the PR about the conflict
+              pr_num=$(gh pr list --head "$branch" --json number --jq '.[0].number')
+              if [ -n "$pr_num" ]; then
+                gh pr comment "$pr_num" --body "⚠️ This branch has merge conflicts with main. Please resolve manually or the daemon will recreate the branch on next run."
+              fi
+            fi
+
+            git checkout main
+          done

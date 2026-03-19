@@ -50,10 +50,33 @@ export function createWorktree(
 
   const worktreePath = `${WORKTREE_BASE}/${ticketId}`;
 
-  execSyncFn(
-    `git worktree add ${worktreePath} -b ${branchName} ${baseBranch}`,
-    { cwd: process.cwd() }
-  );
+  try {
+    // Try creating new branch + worktree
+    execSyncFn(
+      `git worktree add ${worktreePath} -b ${branchName} ${baseBranch}`,
+      { cwd: process.cwd() }
+    );
+  } catch (error) {
+    const msg = error instanceof Error ? error.message : String(error);
+
+    if (msg.includes('already exists')) {
+      // Branch or worktree already exists from a previous run.
+      // Clean up any stale worktree and re-create using the existing branch.
+      try {
+        execSyncFn(`git worktree remove ${worktreePath} --force`, { cwd: process.cwd() });
+      } catch {
+        // Worktree may not exist — that's fine, we just need the branch
+      }
+
+      // Add worktree using the existing branch (no -b flag)
+      execSyncFn(
+        `git worktree add ${worktreePath} ${branchName}`,
+        { cwd: process.cwd() }
+      );
+    } else {
+      throw error;
+    }
+  }
 
   return { worktreePath, branchName };
 }

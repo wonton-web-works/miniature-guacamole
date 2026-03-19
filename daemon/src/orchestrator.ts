@@ -270,6 +270,49 @@ export async function processTicket(
       executed.push(result);
     }
 
+    // Step 5b: Merge latest main into worktree before committing
+    const { spawnSync } = await import('child_process');
+    const gitOpts = { cwd: worktreePath, encoding: 'utf-8' as const };
+
+    spawnSync('git', ['fetch', 'origin', baseBranch], gitOpts);
+    const mergeResult = spawnSync('git', ['merge', `origin/${baseBranch}`, '--no-edit'], gitOpts);
+    if (mergeResult.status !== 0) {
+      // Merge conflict — abort and report failure
+      spawnSync('git', ['merge', '--abort'], gitOpts);
+      deps.tracker.markFailed(ticket.id, 'Merge conflict with main');
+      return { ticketId: ticket.id, planned, executed, success: false, error: 'Merge conflict with main' };
+    }
+
+    // Step 5c: Stage all changes
+    spawnSync('git', ['add', '-A'], gitOpts);
+
+    // Check if there are changes to commit
+    const diffResult = spawnSync('git', ['diff', '--cached', '--quiet'], gitOpts);
+    if (diffResult.status === 0) {
+      // No changes — execution produced nothing
+      deps.tracker.markFailed(ticket.id, 'No code changes produced');
+      return { ticketId: ticket.id, planned, executed, success: false, error: 'No code changes produced' };
+    }
+
+    // Step 5d: Run quality gates (tests + build) before committing
+    const npmOpts = { cwd: `${worktreePath}/daemon`, encoding: 'utf-8' as const, timeout: 120_000 };
+
+    const testResult = spawnSync('npx', ['vitest', 'run'], { ...npmOpts, env: { ...process.env, VOLTA_HOME: `${process.env.HOME}/.volta`, PATH: `${process.env.HOME}/.volta/bin:${process.env.PATH}` } });
+    if (testResult.status !== 0) {
+      // Tests failed — still commit and push so the PR shows what was attempted, but mark as draft with test failures
+      const testOutput = testResult.stdout?.substring(testResult.stdout.length - 500) ?? '';
+      executed.push({ workstream: 'quality-gate', success: false, output: testOutput, error: 'Tests failed', durationMs: 0 });
+    }
+
+    const buildResult = spawnSync('npx', ['tsc'], { ...npmOpts, env: { ...process.env, VOLTA_HOME: `${process.env.HOME}/.volta`, PATH: `${process.env.HOME}/.volta/bin:${process.env.PATH}` } });
+    if (buildResult.status !== 0) {
+      executed.push({ workstream: 'quality-gate', success: false, output: buildResult.stderr ?? '', error: 'Build failed', durationMs: 0 });
+    }
+
+    // Step 5e: Commit and push (even if tests fail — PR will show failures)
+    spawnSync('git', ['commit', '-m', `feat(${ticket.id}): ${ticket.title}\n\nWorkstreams: ${planned.map(ws => ws.name).join(', ')}\n\nCo-Authored-By: Claude Opus 4.6 (1M context) <noreply@anthropic.com>`], gitOpts);
+    spawnSync('git', ['push', '-u', 'origin', branchName], gitOpts);
+
     // Step 6: Create draft PR
     const prBody = buildPRDescription(ticket, planned, executed);
     const ticketData = {

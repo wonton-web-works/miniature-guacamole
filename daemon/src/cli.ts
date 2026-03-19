@@ -5,13 +5,17 @@
 // WS-DAEMON-14: Commands: dashboard, resume; --dry-run flag for start
 
 import { initConfig, loadConfig } from './config';
-import { startDaemon, stopDaemon, statusDaemon } from './process';
+import { startDaemon, stopDaemon, statusDaemon, setupSignalHandlers } from './process';
 import { installService, uninstallService } from './launchd';
 import { checkPrereqs, formatPrereqReport } from './prereqs';
 import { createDaemonUser, formatSetupInstructions } from './setup-user';
-import { isStale } from './heartbeat';
+import { isStale, writeHeartbeat } from './heartbeat';
 import { gatherDashboardData, formatDashboard } from './dashboard';
 import { ErrorBudget } from './error-budget';
+import { runPollCycle } from './orchestrator';
+import { createProvider } from './providers/factory';
+import { getProcessedTickets, markProcessing, markComplete, markFailed } from './tracker';
+import { appendLog } from './log-rotation';
 import { readFileSync, writeFileSync, existsSync, mkdirSync } from 'fs';
 import { join, basename } from 'path';
 
@@ -27,6 +31,97 @@ export function cmdInit(): void {
 }
 
 /**
+ * Run the main poll loop in foreground mode.
+ * Polls for tickets on the configured interval and processes them.
+ */
+async function runForegroundLoop(dryRun: boolean): Promise<void> {
+  const config = loadConfig();
+
+  // Override dry-run from CLI flag
+  if (!config.orchestration) {
+    (config as any).orchestration = { claudeTimeout: 1_800_000, concurrency: 1, delayBetweenTicketsMs: 5000, dryRun, errorBudget: 3 };
+  } else {
+    config.orchestration.dryRun = dryRun;
+  }
+
+  const provider = createProvider(config);
+  const intervalMs = (config.polling?.intervalSeconds ?? 300) * 1000;
+  const logConfig = { maxSizeBytes: 10 * 1024 * 1024, maxRotations: 5, logPath: join('.mg-daemon', 'daemon.log') };
+  const heartbeatConfig = { heartbeatPath: join('.mg-daemon', 'heartbeat'), intervalMs };
+  const errorBudgetPath = join('.mg-daemon', 'error-budget.json');
+  const errorBudget = ErrorBudget.load(errorBudgetPath, { threshold: config.orchestration?.errorBudget ?? 3 });
+
+  // Ensure .mg-daemon directory exists
+  if (!existsSync('.mg-daemon')) {
+    mkdirSync('.mg-daemon', { recursive: true });
+  }
+
+  const log = (msg: string) => {
+    const line = `[${new Date().toISOString()}] ${msg}`;
+    console.log(line);
+    appendLog(logConfig, msg);
+  };
+
+  const mode = dryRun ? 'DRY-RUN' : 'LIVE';
+  log(`Daemon started in ${mode} mode. Polling every ${config.polling?.intervalSeconds ?? 300}s.`);
+
+  // Setup graceful shutdown
+  let running = true;
+  setupSignalHandlers(() => { running = false; });
+
+  const deps = {
+    provider,
+    config,
+    tracker: { markProcessing, markComplete, markFailed, getProcessedTickets },
+  };
+
+  while (running) {
+    try {
+      // Check error budget
+      if (!errorBudget.canProcess) {
+        log('ERROR BUDGET EXHAUSTED — daemon paused. Run "mg-daemon resume" to continue.');
+        writeHeartbeat(heartbeatConfig);
+        await sleep(intervalMs);
+        continue;
+      }
+
+      log('Polling for tickets...');
+      const results = await runPollCycle(deps);
+
+      if (results.length === 0) {
+        log('No tickets to process.');
+      } else {
+        for (const r of results) {
+          if (r.success) {
+            log(`[${r.ticketId}] ${dryRun ? 'PLANNED' : 'COMPLETED'} — ${r.planned.length} workstreams${r.prUrl ? ` → ${r.prUrl}` : ''}`);
+            errorBudget.recordSuccess();
+          } else {
+            log(`[${r.ticketId}] FAILED — ${r.error ?? 'unknown error'}`);
+            errorBudget.recordFailure(r.error ?? 'unknown');
+          }
+        }
+      }
+
+      errorBudget.save(errorBudgetPath);
+      writeHeartbeat(heartbeatConfig);
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      log(`Poll cycle error: ${msg}`);
+      errorBudget.recordFailure(msg);
+      errorBudget.save(errorBudgetPath);
+    }
+
+    await sleep(intervalMs);
+  }
+
+  log('Daemon shutting down.');
+}
+
+function sleep(ms: number): Promise<void> {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+/**
  * Execute the start command
  * AC-3.2: Starts daemon and prints PID
  * AC-3.3: --foreground runs in foreground with stdout logs
@@ -35,31 +130,25 @@ export function cmdInit(): void {
 export function cmdStart(foreground: boolean = false, dryRun: boolean = false): void {
   const result = startDaemon();
 
-  // Persist dry-run flag to state file so the poll loop reads it
-  if (dryRun) {
-    try {
-      if (!existsSync('.mg-daemon')) {
-        mkdirSync('.mg-daemon', { recursive: true });
-      }
-      writeFileSync(DRY_RUN_STATE_FILE, 'true', 'utf-8');
-    } catch {
-      // Non-fatal — dry-run mode will still be set via config if loaded fresh
+  // Persist dry-run flag to state file
+  try {
+    if (!existsSync('.mg-daemon')) {
+      mkdirSync('.mg-daemon', { recursive: true });
     }
-    console.log(`Daemon running in dry-run mode (PID: ${result.pid}). No builds or PRs will be created.`);
-  } else {
-    // Clear any stale dry-run state file from a previous run
-    try {
-      if (existsSync(DRY_RUN_STATE_FILE)) {
-        writeFileSync(DRY_RUN_STATE_FILE, 'false', 'utf-8');
-      }
-    } catch {
-      // Non-fatal
-    }
-    if (foreground) {
-      console.log(`Daemon running in foreground mode (PID: ${result.pid})`);
-    } else {
-      console.log(`Daemon started with PID: ${result.pid}`);
-    }
+    writeFileSync(DRY_RUN_STATE_FILE, dryRun ? 'true' : 'false', 'utf-8');
+  } catch {
+    // Non-fatal
+  }
+
+  const mode = dryRun ? 'dry-run' : foreground ? 'foreground' : 'background';
+  console.log(`Daemon started (PID: ${result.pid}, mode: ${mode})`);
+
+  if (foreground) {
+    // Enter the poll loop — this blocks until SIGTERM/SIGINT
+    runForegroundLoop(dryRun).catch(err => {
+      console.error('Fatal error:', err);
+      process.exit(1);
+    });
   }
 }
 

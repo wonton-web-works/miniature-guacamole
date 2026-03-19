@@ -100,7 +100,12 @@ export async function execClaude(
     spawnOptions.cwd = options.cwd;
   }
 
-  const proc = spawnFn('claude', ['--print', prompt], spawnOptions);
+  const proc = spawnFn('claude', [
+    '--print',
+    '--permission-mode', 'bypassPermissions',
+    '--output-format', 'text',
+    prompt,
+  ], spawnOptions);
 
   let stdout = '';
   let stderr = '';

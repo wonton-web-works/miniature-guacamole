@@ -213,13 +213,13 @@ Once a project context is registered, agents can:
 
 ## Output Format
 
-Four modes with structured output:
-- **Add**: Registration confirmation with key files and agent usage instructions
-- **List**: Table of all registered contexts (alias, type, path, summary, date)
-- **Inspect**: Detailed info with file access examples (Read/Grep/Glob)
-- **Remove**: Confirmation with optional cache cleanup for GitHub clones
+```
+[EM]    Context — {alias} ({local | github})
+[EM]    Extracted — {project type}, {N} key files
+[EM]    Registered — {alias} available to agents    {elapsed}
+```
 
-See `references/output-examples.md` for full template examples.
+List mode outputs a table (alias, type, path, summary, date). Inspect mode shows key files and agent access examples. Remove mode confirms unregistration.
 
 ## Security Considerations
 

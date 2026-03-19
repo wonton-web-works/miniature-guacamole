@@ -1,0 +1,770 @@
+---
+import Base from '../layouts/Base.astro';
+import TerminalAnimation from '../components/TerminalAnimation.tsx';
+
+const characters = [
+  {
+    key: 'em',
+    role: 'Engineering Manager',
+    abbr: 'EM',
+    color: '#4A7C59',
+    bio: 'Runs the process. Has seen things.',
+  },
+  {
+    key: 'cto',
+    role: 'CTO',
+    abbr: 'CTO',
+    color: '#2E6E8E',
+    bio: 'Raises one eyebrow at your architecture.',
+  },
+  {
+    key: 'po',
+    role: 'Product Owner',
+    abbr: 'PO',
+    color: '#8B4A2E',
+    bio: 'Knows what the users actually want.',
+  },
+  {
+    key: 'qa',
+    role: 'QA Engineer',
+    abbr: 'QA',
+    color: '#7A5C8B',
+    bio: 'Writes tests first. Has opinions.',
+  },
+  {
+    key: 'se',
+    role: 'Staff Engineer',
+    abbr: 'SE',
+    color: '#3D5A6B',
+    bio: 'Knows where the bodies are buried.',
+  },
+  {
+    key: 'ceo',
+    role: 'CEO',
+    abbr: 'CEO',
+    color: '#2D2D2D',
+    bio: 'Composed. Has the 30,000-foot view.',
+  },
+];
+
+const commands = [
+  { cmd: '/mg-build', desc: 'Classify, test, implement, review, ship — the full CAD cycle.' },
+  { cmd: '/mg-assess', desc: 'Evaluate work quality before committing to a plan.' },
+  { cmd: '/mg-leadership-team', desc: 'Convene EM, CTO, and PO to review a workstream.' },
+];
+
+const workflow = [
+  { step: '01', label: 'Classify', detail: 'MECHANICAL, CREATIVE, or RESEARCH' },
+  { step: '02', label: 'Test', detail: 'QA writes failing specs first' },
+  { step: '03', label: 'Build', detail: 'DEV implements to pass' },
+  { step: '04', label: 'Review', detail: 'SE and QA gate the output' },
+  { step: '05', label: 'Ship', detail: 'EM signs off, memory written' },
+];
+
+const changelog = [
+  {
+    version: 'v4.0.1',
+    date: '2026-03-19',
+    title: 'Ticket Triage Gate',
+    notes: [
+      'WS-DAEMON-15: assess before planning — stops hallucinated scope',
+      'mg-tidy skill added for codebase hygiene pass',
+      'SME security agents replacing single adaptive agent',
+    ],
+  },
+  {
+    version: 'v4.0.0',
+    date: '2026-02-28',
+    title: 'Agent Skill Expansions',
+    notes: [
+      '19 specialized agents — security domain split into per-domain SMEs',
+      'CAD gate protocol enforced across all workstreams',
+      'Memory handoff protocol v2 with workstream state tracking',
+    ],
+  },
+  {
+    version: 'v3.1.0',
+    date: '2026-01-15',
+    title: 'NDA-Safe Architecture',
+    notes: [
+      'Project memory isolated to .claude/memory/ per project',
+      'Agents and skills share globally, data never leaves the project',
+      'team-config.yaml for per-project role configuration',
+    ],
+  },
+];
+
+const installCmd = 'curl -fsSL https://raw.githubusercontent.com/wonton-web-works/miniature-guacamole/main/install.sh | bash';
+---
+
+<Base>
+  <main>
+    <!-- ============================================================
+         HERO
+    ============================================================ -->
+    <section class="hero">
+      <div class="container">
+        <div class="hero-content">
+          <div class="hero-text">
+            <h1 class="hero-headline">
+              <span class="hero-headline-light">Turn Claude Code into</span>
+              <br />
+              <span class="hero-headline-bold">a team.</span>
+            </h1>
+
+            <p class="hero-subtitle">
+              miniature-guacamole gives Claude Code a complete product development org — Engineering Manager, QA, Staff Engineer, and more. Every agent has a role. Memory is project-local. No hallway meetings.
+            </p>
+
+            <div class="hero-actions">
+              <a
+                href="https://github.com/wonton-web-works/miniature-guacamole"
+                class="cta-primary"
+              >
+                Get Started
+              </a>
+            </div>
+
+            <p class="hero-stats">
+              <span class="mono">20 agents · 19 skills · 6 protocols</span>
+            </p>
+          </div>
+
+          <div class="hero-terminal">
+            <TerminalAnimation client:load />
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         WHAT IT DOES
+    ============================================================ -->
+    <section class="what-it-does">
+      <div class="container">
+        <p class="section-lead">
+          One command spawns the right agents for the job. They coordinate, gate their own output, and hand off results in memory — without you managing the process.
+        </p>
+
+        <div class="commands-list">
+          {commands.map(({ cmd, desc }) => (
+            <div class="command-row">
+              <span class="command-name mono">{cmd}</span>
+              <span class="command-desc">{desc}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         MEET THE TEAM
+    ============================================================ -->
+    <section class="meet-the-team">
+      <div class="container">
+        <h2 class="section-heading">Meet the team</h2>
+      </div>
+      <div class="cards-scroll-outer">
+        <div class="cards-track">
+          {characters.map(({ key, role, abbr, color, bio }) => (
+            <div class="character-card" style={`background-color: ${color};`}>
+              <span class="card-abbr mono">{abbr}</span>
+              <span class="card-role">{role}</span>
+              <p class="card-bio">{bio}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         HOW IT WORKS
+    ============================================================ -->
+    <section class="how-it-works">
+      <div class="container">
+        <h2 class="section-heading">How it works</h2>
+        <p class="section-sublabel mono">The CAD workflow — every build follows this sequence</p>
+
+        <div class="workflow-steps">
+          {workflow.map(({ step, label, detail }) => (
+            <div class="workflow-step">
+              <span class="step-number mono">{step}</span>
+              <span class="step-label">{label}</span>
+              <span class="step-detail mono">{detail}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         INSTALL
+    ============================================================ -->
+    <section class="install">
+      <div class="container">
+        <h2 class="section-heading">Install</h2>
+        <div class="install-block">
+          <code class="install-cmd mono" id="install-cmd">{installCmd}</code>
+          <button class="copy-btn mono" id="copy-btn" aria-label="Copy install command">
+            copy
+          </button>
+        </div>
+        <p class="install-note">Works anywhere Claude Code is installed.</p>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         CHANGELOG
+    ============================================================ -->
+    <section class="changelog">
+      <div class="container">
+        <h2 class="section-heading">Changelog</h2>
+
+        <div class="changelog-list">
+          {changelog.map(({ version, date, title, notes }) => (
+            <div class="changelog-entry">
+              <div class="changelog-meta">
+                <span class="changelog-version mono">{version}</span>
+                <span class="changelog-date mono">{date}</span>
+              </div>
+              <div class="changelog-body">
+                <h3 class="changelog-title">{title}</h3>
+                <ul class="changelog-notes">
+                  {notes.map((note) => (
+                    <li>{note}</li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         FOOTER
+    ============================================================ -->
+    <footer class="site-footer">
+      <div class="container footer-inner">
+        <div class="footer-links">
+          <a
+            href="https://github.com/wonton-web-works/miniature-guacamole"
+            class="footer-link"
+          >
+            GitHub
+          </a>
+          <a
+            href="https://github.com/wonton-web-works/miniature-guacamole/tree/main/docs"
+            class="footer-link"
+          >
+            Docs
+          </a>
+        </div>
+        <span class="footer-credit mono">Built by Wonton Web Works</span>
+      </div>
+    </footer>
+  </main>
+
+  <script>
+    const btn = document.getElementById('copy-btn');
+    const cmd = document.getElementById('install-cmd');
+
+    if (btn && cmd) {
+      btn.addEventListener('click', async () => {
+        try {
+          await navigator.clipboard.writeText(cmd.textContent ?? '');
+          const original = btn.textContent;
+          btn.textContent = 'copied';
+          btn.setAttribute('aria-label', 'Copied');
+          setTimeout(() => {
+            btn.textContent = original;
+            btn.setAttribute('aria-label', 'Copy install command');
+          }, 2000);
+        } catch {
+          // Clipboard not available — silently ignore
+        }
+      });
+    }
+  </script>
+</Base>
+
+<style>
+  /* -------------------------------------------------------
+     Shared utilities
+  ------------------------------------------------------- */
+  .container {
+    max-width: 1080px;
+    margin: 0 auto;
+    padding: 0 clamp(20px, 5vw, 80px);
+  }
+
+  .mono {
+    font-family: var(--font-mono);
+  }
+
+  /* -------------------------------------------------------
+     HERO
+  ------------------------------------------------------- */
+  .hero {
+    padding: clamp(80px, 12vw, 160px) 0 clamp(60px, 8vw, 120px);
+    border-bottom: 1px solid var(--mg-surface);
+  }
+
+  .hero-content {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: clamp(40px, 6vw, 80px);
+    align-items: center;
+  }
+
+  @media (max-width: 768px) {
+    .hero-content {
+      grid-template-columns: 1fr;
+    }
+    .hero-terminal {
+      order: -1;
+    }
+  }
+
+  .hero-headline {
+    font-family: var(--font-display);
+    font-size: clamp(52px, 7vw, 96px);
+    line-height: 0.95;
+    letter-spacing: -0.02em;
+    margin-bottom: 28px;
+  }
+
+  .hero-headline-light {
+    font-weight: 400;
+    color: var(--mg-text);
+  }
+
+  .hero-headline-bold {
+    font-weight: 800;
+    color: var(--mg-text);
+  }
+
+  .hero-subtitle {
+    font-size: clamp(15px, 1.8vw, 18px);
+    line-height: 1.65;
+    color: var(--mg-subtext);
+    max-width: 480px;
+    margin-bottom: 36px;
+  }
+
+  .hero-actions {
+    margin-bottom: 28px;
+  }
+
+  .cta-primary {
+    display: inline-block;
+    background: var(--mg-lime-zest);
+    color: #121820;
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 15px;
+    padding: 14px 28px;
+    border-radius: 4px;
+    text-decoration: none;
+    letter-spacing: 0.01em;
+    transition: opacity 0.15s ease;
+  }
+
+  .cta-primary:hover {
+    opacity: 0.88;
+  }
+
+  .hero-stats {
+    font-size: 13px;
+    color: var(--mg-subtext);
+    letter-spacing: 0.04em;
+  }
+
+  /* -------------------------------------------------------
+     WHAT IT DOES
+  ------------------------------------------------------- */
+  .what-it-does {
+    padding: clamp(60px, 8vw, 120px) 0;
+    border-bottom: 1px solid var(--mg-surface);
+  }
+
+  .section-lead {
+    font-size: clamp(16px, 2vw, 20px);
+    line-height: 1.6;
+    color: var(--mg-subtext);
+    max-width: 640px;
+    margin-bottom: 48px;
+  }
+
+  .commands-list {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .command-row {
+    display: grid;
+    grid-template-columns: 220px 1fr;
+    gap: 24px;
+    align-items: baseline;
+    padding: 18px 0;
+    border-top: 1px solid var(--mg-surface);
+  }
+
+  .command-row:last-child {
+    border-bottom: 1px solid var(--mg-surface);
+  }
+
+  .command-name {
+    font-size: 14px;
+    color: var(--mg-primary);
+    letter-spacing: 0.02em;
+  }
+
+  .command-desc {
+    font-size: 14px;
+    color: var(--mg-subtext);
+    line-height: 1.5;
+  }
+
+  @media (max-width: 560px) {
+    .command-row {
+      grid-template-columns: 1fr;
+      gap: 6px;
+    }
+  }
+
+  /* -------------------------------------------------------
+     MEET THE TEAM
+  ------------------------------------------------------- */
+  .meet-the-team {
+    padding: clamp(60px, 8vw, 120px) 0;
+    border-bottom: 1px solid var(--mg-surface);
+  }
+
+  .section-heading {
+    font-family: var(--font-display);
+    font-size: clamp(28px, 3.5vw, 42px);
+    font-weight: 800;
+    color: var(--mg-text);
+    letter-spacing: -0.02em;
+    margin-bottom: 40px;
+  }
+
+  .cards-scroll-outer {
+    overflow-x: auto;
+    padding: 0 clamp(20px, 5vw, 80px) 24px;
+    margin: 0 calc(-1 * clamp(20px, 5vw, 80px));
+    scrollbar-width: thin;
+    scrollbar-color: var(--mg-surface) transparent;
+  }
+
+  .cards-track {
+    display: flex;
+    gap: 16px;
+    padding: 4px 0;
+    width: max-content;
+  }
+
+  .character-card {
+    width: 200px;
+    flex-shrink: 0;
+    border-radius: 8px;
+    padding: 24px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .card-abbr {
+    font-size: 11px;
+    font-weight: 500;
+    color: rgba(255, 255, 255, 0.6);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+
+  .card-role {
+    font-family: var(--font-display);
+    font-size: 18px;
+    font-weight: 700;
+    color: #ffffff;
+    line-height: 1.2;
+    margin-top: 4px;
+  }
+
+  .card-bio {
+    font-size: 13px;
+    font-weight: 400;
+    color: rgba(255, 255, 255, 0.85);
+    line-height: 1.5;
+    margin-top: 8px;
+  }
+
+  /* -------------------------------------------------------
+     HOW IT WORKS
+  ------------------------------------------------------- */
+  .how-it-works {
+    padding: clamp(60px, 8vw, 120px) 0;
+    border-bottom: 1px solid var(--mg-surface);
+  }
+
+  .section-sublabel {
+    font-size: 12px;
+    color: var(--mg-subtext);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: 48px;
+    margin-top: -28px;
+  }
+
+  .workflow-steps {
+    display: flex;
+    flex-wrap: wrap;
+  }
+
+  .workflow-step {
+    flex: 1;
+    min-width: 160px;
+    padding: 28px 24px;
+    background: var(--mg-surface);
+    border: 1px solid #263040;
+    border-left: none;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .workflow-step:first-child {
+    border-left: 3px solid var(--mg-primary);
+    border-top-left-radius: 4px;
+    border-bottom-left-radius: 4px;
+  }
+
+  .workflow-step:last-child {
+    border-top-right-radius: 4px;
+    border-bottom-right-radius: 4px;
+  }
+
+  .step-number {
+    font-size: 11px;
+    color: var(--mg-primary);
+    letter-spacing: 0.1em;
+    display: block;
+    margin-bottom: 4px;
+  }
+
+  .step-label {
+    font-family: var(--font-display);
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--mg-text);
+    display: block;
+  }
+
+  .step-detail {
+    font-size: 11px;
+    color: var(--mg-subtext);
+    letter-spacing: 0.02em;
+    display: block;
+    line-height: 1.4;
+  }
+
+  @media (max-width: 640px) {
+    .workflow-steps {
+      flex-direction: column;
+    }
+    .workflow-step {
+      border-left: 1px solid #263040;
+      border-top: none;
+      border-radius: 0;
+      min-width: unset;
+    }
+    .workflow-step:first-child {
+      border-top: 1px solid #263040;
+      border-left: 3px solid var(--mg-primary);
+      border-top-left-radius: 4px;
+      border-top-right-radius: 4px;
+      border-bottom-left-radius: 0;
+    }
+    .workflow-step:last-child {
+      border-bottom-left-radius: 4px;
+      border-bottom-right-radius: 4px;
+    }
+  }
+
+  /* -------------------------------------------------------
+     INSTALL
+  ------------------------------------------------------- */
+  .install {
+    padding: clamp(80px, 12vw, 160px) 0;
+    border-bottom: 1px solid var(--mg-surface);
+  }
+
+  .install-block {
+    display: inline-flex;
+    align-items: center;
+    gap: 20px;
+    background: var(--mg-surface);
+    border: 1px solid #263040;
+    border-radius: 6px;
+    padding: 18px 24px;
+    margin: 0 0 20px;
+    flex-wrap: wrap;
+    max-width: 100%;
+  }
+
+  .install-cmd {
+    font-size: clamp(11px, 1.2vw, 13px);
+    color: var(--mg-text);
+    word-break: break-all;
+    flex: 1;
+    min-width: 0;
+    user-select: all;
+  }
+
+  .copy-btn {
+    background: none;
+    border: 1px solid var(--mg-subtext);
+    color: var(--mg-subtext);
+    font-size: 12px;
+    padding: 6px 14px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: border-color 0.15s, color 0.15s;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  .copy-btn:hover {
+    border-color: var(--mg-text);
+    color: var(--mg-text);
+  }
+
+  .install-note {
+    font-size: 13px;
+    color: var(--mg-subtext);
+  }
+
+  /* -------------------------------------------------------
+     CHANGELOG
+  ------------------------------------------------------- */
+  .changelog {
+    padding: clamp(60px, 8vw, 120px) 0;
+    border-bottom: 1px solid var(--mg-surface);
+  }
+
+  .changelog-list {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .changelog-entry {
+    display: grid;
+    grid-template-columns: 200px 1fr;
+    gap: 32px;
+    padding: 32px 0;
+    border-top: 1px solid var(--mg-surface);
+  }
+
+  .changelog-entry:last-child {
+    border-bottom: 1px solid var(--mg-surface);
+  }
+
+  .changelog-meta {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding-top: 3px;
+  }
+
+  .changelog-version {
+    font-size: 13px;
+    color: var(--mg-primary);
+    letter-spacing: 0.04em;
+  }
+
+  .changelog-date {
+    font-size: 12px;
+    color: var(--mg-subtext);
+  }
+
+  .changelog-title {
+    font-family: var(--font-display);
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--mg-text);
+    margin-bottom: 12px;
+  }
+
+  .changelog-notes {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding: 0;
+  }
+
+  .changelog-notes li {
+    font-size: 14px;
+    color: var(--mg-subtext);
+    line-height: 1.5;
+    padding-left: 16px;
+    position: relative;
+  }
+
+  .changelog-notes li::before {
+    content: '—';
+    position: absolute;
+    left: 0;
+    color: #263040;
+  }
+
+  @media (max-width: 560px) {
+    .changelog-entry {
+      grid-template-columns: 1fr;
+      gap: 12px;
+    }
+    .changelog-meta {
+      flex-direction: row;
+      align-items: center;
+      gap: 16px;
+    }
+  }
+
+  /* -------------------------------------------------------
+     FOOTER
+  ------------------------------------------------------- */
+  .site-footer {
+    padding: 40px 0;
+  }
+
+  .footer-inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+
+  .footer-links {
+    display: flex;
+    gap: 28px;
+  }
+
+  .footer-link {
+    font-size: 14px;
+    color: var(--mg-subtext);
+    text-decoration: none;
+    transition: color 0.15s;
+  }
+
+  .footer-link:hover {
+    color: var(--mg-text);
+  }
+
+  .footer-credit {
+    font-size: 12px;
+    color: var(--mg-subtext);
+    letter-spacing: 0.04em;
+  }
+</style>

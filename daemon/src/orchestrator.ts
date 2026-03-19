@@ -7,15 +7,18 @@ import type { WorkstreamPlan } from './planner';
 import type { ExecutionResult } from './executor';
 import type { ExecClaudeFn as PlannerExecClaudeFn } from './planner';
 import type { ExecClaudeFn as ExecutorExecClaudeFn } from './executor';
+import type { ExecClaudeFn as TriageExecClaudeFn, TriageResult, TriageConfig } from './triage';
 import type { ExecSyncFn } from './worktree';
 import type { PRResult } from './github';
 
 import { execClaude as defaultExecClaude } from './claude';
 import { planTicket as defaultPlanTicket } from './planner';
 import { executeWorkstream as defaultExecuteWorkstream } from './executor';
+import { triageTicket as defaultTriageTicket } from './triage';
 import { createWorktree as defaultCreateWorktree, removeWorktree as defaultRemoveWorktree } from './worktree';
 import { createPR as defaultCreatePR } from './github';
 import { ConcurrencyLimiter } from './concurrency';
+import { spawnSync } from 'child_process';
 import { existsSync, statfsSync } from 'fs';
 import { join } from 'path';
 
@@ -77,10 +80,16 @@ export interface OrchestratorConfig {
   removeWorktree?: (worktreePath: string, execSyncFn?: ExecSyncFn) => void;
   createPR?: (...args: Parameters<typeof defaultCreatePR>) => PRResult;
   execClaude?: PlannerExecClaudeFn;
+  triageTicket?: (
+    ticket: NormalizedTicket,
+    config: TriageConfig,
+    execClaudeFn: TriageExecClaudeFn
+  ) => Promise<TriageResult>;
 }
 
 export interface PipelineResult {
   ticketId: string;
+  triageResult?: TriageResult;
   planned: WorkstreamPlan[];
   executed: ExecutionResult[];
   prUrl?: string;
@@ -145,6 +154,7 @@ export async function processTicket(
   const timeout = orchestration.claudeTimeout;
   const baseBranch = deps.config.github.baseBranch;
 
+  const triageFn = deps.triageTicket ?? defaultTriageTicket;
   const planFn = deps.planTicket ?? defaultPlanTicket;
   const executeFn = deps.executeWorkstream ?? defaultExecuteWorkstream;
   const createWorktreeFn = deps.createWorktree ?? defaultCreateWorktree;
@@ -154,6 +164,46 @@ export async function processTicket(
 
   // Mark as processing in tracker
   deps.tracker.markProcessing(ticket.id);
+
+  // Step 0: Triage gate — assess ticket before planning
+  const triageConfig: TriageConfig = deps.config.triage ?? {
+    enabled: true,
+    autoReject: false,
+    maxTicketSizeChars: 10000,
+  };
+
+  const triageResult = await triageFn(ticket, triageConfig, passthrough);
+
+  if (triageResult.outcome !== 'GO') {
+    // Post comment to ticket explaining the triage decision
+    if (!dryRun) {
+      try {
+        const label = triageResult.outcome === 'REJECT'
+          ? 'mg-daemon:rejected'
+          : 'mg-daemon:needs-info';
+
+        let comment = `**Triage: ${triageResult.outcome}**\n\n${triageResult.reason}`;
+        if (triageResult.questions && triageResult.questions.length > 0) {
+          comment += '\n\n**Questions:**\n' + triageResult.questions.map(q => `- ${q}`).join('\n');
+        }
+
+        await deps.provider.addComment(ticket.id, comment);
+        await deps.provider.addLabel(ticket.id, label);
+      } catch {
+        // Best-effort — don't fail the pipeline on comment/label errors
+      }
+    }
+
+    deps.tracker.markFailed(ticket.id, `Triage: ${triageResult.outcome} — ${triageResult.reason}`);
+    return {
+      ticketId: ticket.id,
+      triageResult,
+      planned: [],
+      executed: [],
+      success: false,
+      error: `Triage: ${triageResult.outcome} — ${triageResult.reason}`,
+    };
+  }
 
   // Step 1: Transition to In Progress (write operation — skip in dry-run)
   if (!dryRun) {
@@ -173,6 +223,7 @@ export async function processTicket(
     deps.tracker.markFailed(ticket.id, error);
     return {
       ticketId: ticket.id,
+      triageResult,
       planned: [],
       executed: [],
       success: false,
@@ -184,6 +235,7 @@ export async function processTicket(
   if (planned.length === 0) {
     return {
       ticketId: ticket.id,
+      triageResult,
       planned: [],
       executed: [],
       success: false,
@@ -193,7 +245,7 @@ export async function processTicket(
 
   // Dry-run: return the plan without executing any write operations
   if (dryRun) {
-    return { ticketId: ticket.id, planned, executed: [], success: true };
+    return { ticketId: ticket.id, triageResult, planned, executed: [], success: true };
   }
 
   // Step 3: Create subtasks for each workstream
@@ -219,7 +271,6 @@ export async function processTicket(
     }
 
     // Step 5b: Merge latest main into worktree before committing
-    const { spawnSync } = await import('child_process');
     const gitOpts = { cwd: worktreePath, encoding: 'utf-8' as const };
 
     spawnSync('git', ['fetch', 'origin', baseBranch], gitOpts);
@@ -228,7 +279,7 @@ export async function processTicket(
       // Merge conflict — abort and report failure
       spawnSync('git', ['merge', '--abort'], gitOpts);
       deps.tracker.markFailed(ticket.id, 'Merge conflict with main');
-      return { ticketId: ticket.id, planned, executed, success: false, error: 'Merge conflict with main' };
+      return { ticketId: ticket.id, triageResult, planned, executed, success: false, error: 'Merge conflict with main' };
     }
 
     // Step 5c: Stage all changes
@@ -239,7 +290,7 @@ export async function processTicket(
     if (diffResult.status === 0) {
       // No changes — execution produced nothing
       deps.tracker.markFailed(ticket.id, 'No code changes produced');
-      return { ticketId: ticket.id, planned, executed, success: false, error: 'No code changes produced' };
+      return { ticketId: ticket.id, triageResult, planned, executed, success: false, error: 'No code changes produced' };
     }
 
     // Step 5d: Run quality gates (tests + build) before committing
@@ -302,6 +353,7 @@ export async function processTicket(
 
   return {
     ticketId: ticket.id,
+    triageResult,
     planned,
     executed,
     prUrl,

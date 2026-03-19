@@ -1,0 +1,70 @@
+---
+title: "Jira Flow"
+---
+flowchart TD
+    START(["Daemon Poll Cycle"])
+
+    subgraph POLL["1. Poll"]
+        JIRA_API["GET /rest/api/3/search<br/>?jql={config.jira.jql}<br/>&maxResults={batchSize}<br/><br/><i>Auth: Basic email:apiToken</i>"]
+        NORMALIZE["Normalize to NormalizedTicket<br/><i>id: PROJ-123<br/>source: jira<br/>priority: Highest→critical,<br/>High→high, Medium→medium,<br/>Low/Lowest→low</i>"]
+    end
+
+    subgraph FILTER["2. Filter"]
+        CHECK_PROCESSED{"In<br/>processed.json?"}
+        SKIP["Skip"]
+    end
+
+    subgraph TRIAGE_PHASE["3. Triage"]
+        TRIAGE_CLAUDE["claude --print<br/><i>Evaluate ticket</i>"]
+        TRIAGE_RESULT{"Verdict?"}
+        TRIAGE_GO["GO"]
+        TRIAGE_NEEDS["NEEDS_CLARIFICATION"]
+        JIRA_COMMENT_NEEDS["POST /rest/api/3/issue/{key}/comment<br/><i>ADF body: 'Please clarify...'</i>"]
+    end
+
+    subgraph PLAN_PHASE["4. Plan"]
+        PLAN_CLAUDE["claude --print<br/><i>Break into workstreams</i>"]
+        SUBTASKS["POST /rest/api/3/issue<br/><i>issuetype: Sub-task<br/>parent: { key: PROJ-123 }<br/>per workstream</i>"]
+        TRANSITION_PROGRESS["POST /rest/api/3/issue/{key}/transitions<br/><i>→ In Progress</i>"]
+    end
+
+    subgraph EXECUTE_PHASE["5. Execute"]
+        WORKTREE["git worktree add"]
+        EXEC_LOOP["For each workstream:<br/>claude --print<br/>--permission-mode bypassPermissions"]
+    end
+
+    subgraph QUALITY["6. Quality Gates"]
+        MERGE_MAIN["Merge latest main"]
+        TESTS["vitest run + tsc"]
+    end
+
+    subgraph DELIVER["7. Deliver"]
+        GIT_PUSH["git commit + push"]
+        GH_PR["gh pr create --draft"]
+        JIRA_LINK["POST /rest/api/3/issue/{key}/remotelink<br/><i>{ url: prUrl, title: 'Draft PR' }</i>"]
+        TRANSITION_REVIEW["POST /rest/api/3/issue/{key}/transitions<br/><i>→ In Review</i>"]
+        CLEANUP["Cleanup worktree"]
+    end
+
+    HUMAN(["Developer Reviews PR"])
+
+    %% Flow
+    START --> JIRA_API --> NORMALIZE --> CHECK_PROCESSED
+    CHECK_PROCESSED -->|Yes| SKIP
+    CHECK_PROCESSED -->|No| TRIAGE_CLAUDE
+
+    TRIAGE_CLAUDE --> TRIAGE_RESULT
+    TRIAGE_RESULT --> TRIAGE_GO
+    TRIAGE_RESULT --> TRIAGE_NEEDS
+    TRIAGE_NEEDS --> JIRA_COMMENT_NEEDS --> SKIP
+
+    TRIAGE_GO --> PLAN_CLAUDE --> SUBTASKS --> TRANSITION_PROGRESS
+    TRANSITION_PROGRESS --> WORKTREE --> EXEC_LOOP
+    EXEC_LOOP --> MERGE_MAIN --> TESTS
+    TESTS --> GIT_PUSH --> GH_PR --> JIRA_LINK --> TRANSITION_REVIEW --> CLEANUP --> HUMAN
+
+    style START fill:#0d6efd,color:#fff
+    style HUMAN fill:#28a745,color:#fff
+    style SKIP fill:#ffc107,color:#000
+    style TRIAGE_GO fill:#28a745,color:#fff
+    style TRIAGE_NEEDS fill:#ffc107,color:#000

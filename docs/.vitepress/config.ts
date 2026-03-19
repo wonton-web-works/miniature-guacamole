@@ -66,6 +66,7 @@ export default defineConfig({
       {
         text: 'Reference',
         items: [
+          { text: 'Glossary', link: '/glossary' },
           { text: 'Audit Logging', link: '/audit-logging' }
         ]
       },

@@ -163,16 +163,79 @@ const installCmd = 'curl -fsSL https://raw.githubusercontent.com/wonton-web-work
     <section class="meet-the-team">
       <div class="container">
         <h2 class="section-heading">Meet the team</h2>
-      </div>
-      <div class="cards-scroll-outer">
-        <div class="cards-track">
-          {characters.map(({ key, role, abbr, color, bio }) => (
-            <div class="character-card" style={`background-color: ${color};`}>
-              <span class="card-abbr mono">{abbr}</span>
-              <span class="card-role">{role}</span>
-              <p class="card-bio">{bio}</p>
+        <p class="section-sublead">20 agents, 4 levels — just like a real org.</p>
+
+        <!-- Tier 1: Executive -->
+        <div class="org-tier">
+          <span class="tier-label mono">Executive</span>
+          <div class="tier-row tier-1">
+            <div class="agent-card" style="border-color: #2D2D2D;">
+              <span class="agent-abbr mono" style="color: #2D2D2D;">CEO</span>
+              <span class="agent-role">CEO</span>
+              <p class="agent-bio">Composed. Has the 30,000-foot view.</p>
             </div>
-          ))}
+          </div>
+        </div>
+
+        <div class="org-connector-line"></div>
+
+        <!-- Tier 2: Leadership -->
+        <div class="org-tier">
+          <span class="tier-label mono">Leadership</span>
+          <div class="tier-row tier-2">
+            <div class="agent-card" style="border-color: #2E6E8E;">
+              <span class="agent-abbr mono" style="color: #2E6E8E;">CTO</span>
+              <span class="agent-role">CTO</span>
+              <p class="agent-bio">Raises one eyebrow at your architecture.</p>
+            </div>
+            <div class="agent-card" style="border-color: #4A7C59;">
+              <span class="agent-abbr mono" style="color: #4A7C59;">EM</span>
+              <span class="agent-role">Engineering Manager</span>
+              <p class="agent-bio">Runs the process. Has seen things.</p>
+            </div>
+            <div class="agent-card" style="border-color: #8B4A2E;">
+              <span class="agent-abbr mono" style="color: #8B4A2E;">PO</span>
+              <span class="agent-role">Product Owner</span>
+              <p class="agent-bio">Knows what the users actually want.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="org-connector-line"></div>
+
+        <!-- Tier 3: Senior ICs -->
+        <div class="org-tier">
+          <span class="tier-label mono">Senior ICs</span>
+          <div class="tier-row tier-3">
+            <div class="agent-card" style="border-color: #3D5A6B;">
+              <span class="agent-abbr mono" style="color: #3D5A6B;">SE</span>
+              <span class="agent-role">Staff Engineer</span>
+              <p class="agent-bio">Knows where the bodies are buried.</p>
+            </div>
+            <div class="agent-card" style="border-color: #7A5C8B;">
+              <span class="agent-abbr mono" style="color: #7A5C8B;">QA</span>
+              <span class="agent-role">QA Engineer</span>
+              <p class="agent-bio">Writes tests first. Has opinions.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="org-connector-line"></div>
+
+        <!-- Tier 4: Specialists -->
+        <div class="org-tier">
+          <span class="tier-label mono">Specialists</span>
+          <div class="tier-row tier-4">
+            <div class="agent-card-sm">Dev</div>
+            <div class="agent-card-sm">Designer</div>
+            <div class="agent-card-sm">Security</div>
+            <div class="agent-card-sm">DevOps</div>
+            <div class="agent-card-sm">API Design</div>
+            <div class="agent-card-sm">Data</div>
+            <div class="agent-card-sm">Tech Writer</div>
+            <div class="agent-card-sm">Copywriter</div>
+          </div>
+          <p class="tier-note mono">+ 12 more specialist agents</p>
         </div>
       </div>
     </section>
@@ -454,60 +517,127 @@ const installCmd = 'curl -fsSL https://raw.githubusercontent.com/wonton-web-work
     font-weight: 800;
     color: var(--mg-text);
     letter-spacing: -0.02em;
-    margin-bottom: 40px;
+    margin-bottom: 12px;
   }
 
-  .cards-scroll-outer {
-    overflow-x: auto;
-    padding: 0 clamp(20px, 5vw, 80px) 24px;
-    margin: 0 calc(-1 * clamp(20px, 5vw, 80px));
-    scrollbar-width: thin;
-    scrollbar-color: var(--mg-surface) transparent;
-    -webkit-overflow-scrolling: touch;
-    scroll-snap-type: x proximity;
+  .section-sublead {
+    font-size: 15px;
+    color: var(--mg-subtext);
+    margin-bottom: 48px;
   }
 
-  .cards-track {
+  /* Org tiers */
+  .org-tier {
+    position: relative;
+  }
+
+  .tier-label {
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--mg-subtext);
+    margin-bottom: 16px;
+    display: block;
+  }
+
+  .tier-row {
     display: flex;
     gap: 16px;
-    padding: 4px 0;
-    width: max-content;
+    flex-wrap: wrap;
   }
 
-  .character-card {
-    width: 200px;
-    flex-shrink: 0;
-    border-radius: 8px;
-    padding: 24px 20px;
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    scroll-snap-align: start;
+  .tier-1 {
+    justify-content: flex-start;
   }
 
-  .card-abbr {
+  .tier-2 {
+    justify-content: flex-start;
+  }
+
+  .tier-3 {
+    justify-content: flex-start;
+  }
+
+  .tier-4 {
+    justify-content: flex-start;
+    gap: 10px;
+  }
+
+  .org-connector-line {
+    width: 2px;
+    height: 28px;
+    background: #263040;
+    margin: 0 0 0 40px;
+  }
+
+  /* Agent cards — full bio cards for tiers 1-3 */
+  .agent-card {
+    background: var(--mg-surface);
+    border: 1px solid #263040;
+    border-top: 3px solid;
+    border-radius: 6px;
+    padding: 20px;
+    min-width: 200px;
+    max-width: 260px;
+    flex: 1;
+  }
+
+  .agent-abbr {
     font-size: 11px;
-    font-weight: 500;
-    color: rgba(255, 255, 255, 0.6);
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    display: block;
+    margin-bottom: 6px;
   }
 
-  .card-role {
+  .agent-role {
     font-family: var(--font-display);
-    font-size: 18px;
+    font-size: 16px;
     font-weight: 700;
-    color: #ffffff;
+    color: var(--mg-text);
+    display: block;
     line-height: 1.2;
-    margin-top: 4px;
   }
 
-  .card-bio {
+  .agent-bio {
     font-size: 13px;
-    font-weight: 400;
-    color: rgba(255, 255, 255, 0.85);
+    color: var(--mg-subtext);
     line-height: 1.5;
     margin-top: 8px;
+  }
+
+  /* Small agent pills for tier 4 */
+  .agent-card-sm {
+    background: var(--mg-surface);
+    border: 1px solid #263040;
+    border-radius: 4px;
+    padding: 8px 16px;
+    font-size: 13px;
+    font-family: var(--font-display);
+    font-weight: 500;
+    color: var(--mg-subtext);
+  }
+
+  .tier-note {
+    font-size: 12px;
+    color: #3A4A5C;
+    margin-top: 12px;
+  }
+
+  @media (max-width: 560px) {
+    .tier-row {
+      flex-direction: column;
+    }
+    .tier-4.tier-row {
+      flex-direction: row;
+      flex-wrap: wrap;
+    }
+    .agent-card {
+      max-width: 100%;
+    }
+    .org-connector-line {
+      margin-left: 24px;
+    }
   }
 
   /* -------------------------------------------------------

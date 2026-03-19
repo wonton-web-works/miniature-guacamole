@@ -84,6 +84,37 @@ Planning sessions write the following files alongside workstreams:
 - **PRD**: `docs/prd-{feature}.md` — product requirements (via `/mg-spec`)
 - **Technical Design**: `docs/technical-design-{feature}.md` — architecture and approach (via `/mg-assess-tech`)
 
+### Post-Approval State Sync
+
+After every APPROVED decision (planning or code review), leadership MUST execute the state sync checklist before handing off to execution. This is not optional.
+
+```
+## State Sync Checklist
+
+1. **Tracker updated**
+   - [ ] GH issues created for each workstream (or JIRA/Linear per project config)
+   - [ ] Issues have acceptance criteria in the body
+   - [ ] Issues labeled for daemon pickup (`mg-daemon`) if eligible
+   - [ ] Parent/child relationships linked where applicable
+
+2. **Memory updated**
+   - [ ] workstream-{id}-state.json created or updated
+   - [ ] Closed issues marked as closed in memory
+   - [ ] decisions.json updated with the approval decision
+
+3. **Workstreams specced**
+   - [ ] Each workstream has clear acceptance criteria
+   - [ ] Classification (MECHANICAL/ARCHITECTURAL) noted
+   - [ ] Dependencies between workstreams documented
+   - [ ] Priority order defined
+
+4. **Handoff**
+   - [ ] Ready for `/mg-build` (execution) or user verification
+   - [ ] State report output to user
+```
+
+The state sync ensures that planning decisions immediately propagate to the tracker, memory, and workstream specs — eliminating drift between what was decided and what the system knows.
+
 ### Code Review
 ```
 ## Code Review: {Workstream}

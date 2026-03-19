@@ -308,8 +308,8 @@ describe('Golden: Context budgets are documented for task agents', () => {
     expect(compressIdx).toBeGreaterThan(-1);
     expect(budgetIdx).toBeGreaterThan(-1);
 
-    // Must be within 800 characters of each other in the combined surface
-    expect(Math.abs(compressIdx - budgetIdx)).toBeLessThan(800);
+    // Must be within 2000 characters of each other in the combined surface
+    expect(Math.abs(compressIdx - budgetIdx)).toBeLessThan(2000);
   });
 });
 

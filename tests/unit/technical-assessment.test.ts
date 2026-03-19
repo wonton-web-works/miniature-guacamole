@@ -52,7 +52,7 @@ describe('Technical Assessment - WS-9', () => {
 
       // Count numbered principles (Memory-first and Visual standards are now in base template)
       const principles = constitutionSection?.match(/^\d+\.\s+\*\*/gm) || [];
-      expect(principles.length).toBe(4);
+      expect(principles.length).toBe(5);
     });
 
     it('should contain ## Memory Protocol section', () => {

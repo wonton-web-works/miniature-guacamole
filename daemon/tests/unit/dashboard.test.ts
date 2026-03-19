@@ -16,11 +16,18 @@ vi.mock('../../src/heartbeat', () => ({
   isStale: vi.fn(),
 }));
 
+// Mock triage-log module
+vi.mock('../../src/triage-log', () => ({
+  loadTriageLog: vi.fn().mockReturnValue([]),
+}));
+
 import { existsSync, readFileSync } from 'fs';
 import * as processModule from '../../src/process';
 import * as heartbeatModule from '../../src/heartbeat';
+import * as triageLogModule from '../../src/triage-log';
 import { gatherDashboardData, formatDashboard } from '../../src/dashboard';
 import type { DaemonConfig } from '../../src/types';
+import type { TriageLogEntry } from '../../src/triage-log';
 
 const baseConfig: DaemonConfig = {
   provider: 'github',
@@ -31,6 +38,8 @@ const baseConfig: DaemonConfig = {
 describe('Dashboard Module', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    // Restore default mock for loadTriageLog (cleared by clearAllMocks)
+    vi.mocked(triageLogModule.loadTriageLog).mockReturnValue([]);
   });
 
   // ─── gatherDashboardData ────────────────────────────────────────────────────
@@ -527,11 +536,82 @@ describe('Dashboard Module', () => {
           recentCompleted: [],
           recentFailed: [],
           errorBudget: { consecutive: 0, threshold: 3, paused: false },
+          triageCounts: { go: 0, needsInfo: 0, reject: 0 },
         };
 
         const output = formatDashboard(data);
         expect(output).toMatch(/2h|2 h/);
       });
+    });
+
+    describe('GIVEN triage counts WHEN formatDashboard called THEN shows GO/NEEDS_INFO/REJECT counts', () => {
+      it('GIVEN triageCounts with values THEN output contains triage section', () => {
+        const data = {
+          daemonStatus: { running: true, pid: 1, uptimeMs: 100 },
+          lastPollTime: null,
+          heartbeatStale: false,
+          inFlightTickets: [],
+          recentCompleted: [],
+          recentFailed: [],
+          errorBudget: { consecutive: 0, threshold: 3, paused: false },
+          triageCounts: { go: 5, needsInfo: 2, reject: 1 },
+        };
+
+        const output = formatDashboard(data);
+        expect(output).toContain('TRIAGE');
+        expect(output).toContain('5');
+        expect(output).toContain('2');
+        expect(output).toContain('1');
+      });
+
+      it('GIVEN triageCounts all zero THEN triage section still appears', () => {
+        const data = {
+          daemonStatus: { running: false },
+          lastPollTime: null,
+          heartbeatStale: false,
+          inFlightTickets: [],
+          recentCompleted: [],
+          recentFailed: [],
+          errorBudget: { consecutive: 0, threshold: 3, paused: false },
+          triageCounts: { go: 0, needsInfo: 0, reject: 0 },
+        };
+
+        const output = formatDashboard(data);
+        expect(output).toContain('TRIAGE');
+      });
+    });
+  });
+
+  // ─── gatherDashboardData triage counts ─────────────────────────────────────
+
+  describe('gatherDashboardData() triage counts (GH-81)', () => {
+    it('GIVEN triage log with mixed outcomes WHEN gatherDashboardData called THEN triageCounts tallied', () => {
+      vi.mocked(processModule.statusDaemon).mockReturnValue({ running: false });
+      vi.mocked(heartbeatModule.isStale).mockReturnValue(false);
+      vi.mocked(existsSync).mockReturnValue(false);
+
+      const triageEntries: TriageLogEntry[] = [
+        { ticketId: 'A', outcome: 'GO', reason: 'ok', timestamp: '2026-03-19T10:00:00.000Z' },
+        { ticketId: 'B', outcome: 'GO', reason: 'ok', timestamp: '2026-03-19T10:01:00.000Z' },
+        { ticketId: 'C', outcome: 'NEEDS_CLARIFICATION', reason: 'vague', timestamp: '2026-03-19T10:02:00.000Z' },
+        { ticketId: 'D', outcome: 'REJECT', reason: 'no', timestamp: '2026-03-19T10:03:00.000Z' },
+      ];
+      vi.mocked(triageLogModule.loadTriageLog).mockReturnValue(triageEntries);
+
+      const data = gatherDashboardData(baseConfig);
+
+      expect(data.triageCounts).toEqual({ go: 2, needsInfo: 1, reject: 1 });
+    });
+
+    it('GIVEN empty triage log WHEN gatherDashboardData called THEN triageCounts all zero', () => {
+      vi.mocked(processModule.statusDaemon).mockReturnValue({ running: false });
+      vi.mocked(heartbeatModule.isStale).mockReturnValue(false);
+      vi.mocked(existsSync).mockReturnValue(false);
+      vi.mocked(triageLogModule.loadTriageLog).mockReturnValue([]);
+
+      const data = gatherDashboardData(baseConfig);
+
+      expect(data.triageCounts).toEqual({ go: 0, needsInfo: 0, reject: 0 });
     });
   });
 });

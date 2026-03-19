@@ -9,6 +9,14 @@ Versioning follows [Semantic Versioning](https://semver.org/): MAJOR.MINOR.PATCH
 
 ---
 
+## [4.0.1] - 2026-03-19
+
+### Fixed
+- **Daemon launchd PATH** — plist now captures user's full PATH at install time, ensuring `gh`, `claude`, and `node` are accessible after system restart
+- **Test expectations** — updated test counts and assertions for v4.0.0 framework changes
+
+---
+
 ## [4.0.0] - 2026-03-19 — Framework Hardening
 
 Architectural overhaul: base template inheritance, 2-track development cycle, and inter-agent communication.

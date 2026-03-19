@@ -82,19 +82,11 @@ Task:
 ## Output Format
 
 ```
-## Documentation: {Feature/Module}
-
-### Generated
-- README: {status}
-- API Docs: {status}
-- User Guide: {status}
-- Inline Comments: {status}
-
-### Coverage
-{What's documented, what's missing}
-
-### Next Action
-{Approval or revision requests}
+[DOC]   README — {generated | updated | skipped}
+[DOC]   API docs — {generated | updated | skipped}
+[DOC]   User guide — {generated | updated | skipped}
+[DOC]   Inline comments — {generated | updated | skipped}   {elapsed}
+[EM]    Done — {coverage summary}                   {elapsed}
 ```
 
 ## Boundaries

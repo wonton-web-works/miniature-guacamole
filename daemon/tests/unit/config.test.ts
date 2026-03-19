@@ -536,5 +536,82 @@ describe('Configuration Module (Updated for multi-provider schema)', () => {
         });
       });
     });
+
+    describe('AC: triage section validation (WS-DAEMON-15)', () => {
+      it('GIVEN config with no triage key WHEN validateConfig() THEN returns no triage errors (backward compatible)', () => {
+        const config = validJiraConfig();
+        // No triage key at all
+        const errors = validateConfig(config);
+        const triageErrors = errors.filter((e: ValidationError) => e.field.startsWith('triage'));
+        expect(triageErrors).toHaveLength(0);
+      });
+
+      it('GIVEN config with valid triage section WHEN validateConfig() THEN returns no triage errors', () => {
+        const config = validJiraConfig();
+        config.triage = { enabled: true, autoReject: false, maxTicketSizeChars: 10000 };
+        const errors = validateConfig(config);
+        const triageErrors = errors.filter((e: ValidationError) => e.field.startsWith('triage'));
+        expect(triageErrors).toHaveLength(0);
+      });
+
+      it('GIVEN triage.enabled is not boolean WHEN validateConfig() THEN errors contain triage.enabled', () => {
+        const config = validJiraConfig();
+        config.triage = { enabled: 'yes' as unknown as boolean, autoReject: false, maxTicketSizeChars: 10000 };
+        const errors = validateConfig(config);
+        expect(errors.some((e: ValidationError) => e.field === 'triage.enabled')).toBe(true);
+      });
+
+      it('GIVEN triage.autoReject is not boolean WHEN validateConfig() THEN errors contain triage.autoReject', () => {
+        const config = validJiraConfig();
+        config.triage = { enabled: true, autoReject: 'no' as unknown as boolean, maxTicketSizeChars: 10000 };
+        const errors = validateConfig(config);
+        expect(errors.some((e: ValidationError) => e.field === 'triage.autoReject')).toBe(true);
+      });
+
+      it('GIVEN triage.maxTicketSizeChars is not a positive number WHEN validateConfig() THEN errors contain triage.maxTicketSizeChars', () => {
+        const config = validJiraConfig();
+        config.triage = { enabled: true, autoReject: false, maxTicketSizeChars: -1 };
+        const errors = validateConfig(config);
+        expect(errors.some((e: ValidationError) => e.field === 'triage.maxTicketSizeChars')).toBe(true);
+      });
+
+      it('GIVEN triage.maxTicketSizeChars is zero WHEN validateConfig() THEN errors contain triage.maxTicketSizeChars', () => {
+        const config = validJiraConfig();
+        config.triage = { enabled: true, autoReject: false, maxTicketSizeChars: 0 };
+        const errors = validateConfig(config);
+        expect(errors.some((e: ValidationError) => e.field === 'triage.maxTicketSizeChars')).toBe(true);
+      });
+
+      it('GIVEN triage.maxTicketSizeChars is not a number WHEN validateConfig() THEN errors contain triage.maxTicketSizeChars', () => {
+        const config = validJiraConfig();
+        config.triage = { enabled: true, autoReject: false, maxTicketSizeChars: 'big' as unknown as number };
+        const errors = validateConfig(config);
+        expect(errors.some((e: ValidationError) => e.field === 'triage.maxTicketSizeChars')).toBe(true);
+      });
+
+      it('GIVEN triage with defaults (enabled=true, autoReject=false, max=10000) WHEN validateConfig() THEN no errors', () => {
+        const config = validJiraConfig();
+        config.triage = { enabled: true, autoReject: false, maxTicketSizeChars: 10000 };
+        const errors = validateConfig(config);
+        expect(errors).toEqual([]);
+      });
+    });
+  });
+
+  describe('initConfig() — triage section (WS-DAEMON-15)', () => {
+    it('GIVEN no config exists WHEN initConfig() called THEN template includes triage section with defaults', () => {
+      vi.mocked(existsSync).mockReturnValue(false);
+      vi.mocked(writeFileSync).mockImplementation(() => {});
+
+      initConfig();
+
+      const writeCall = vi.mocked(writeFileSync).mock.calls[0];
+      const config = JSON.parse(writeCall[1] as string);
+
+      expect(config.triage).toBeDefined();
+      expect(config.triage.enabled).toBe(true);
+      expect(config.triage.autoReject).toBe(false);
+      expect(config.triage.maxTicketSizeChars).toBe(10000);
+    });
   });
 });

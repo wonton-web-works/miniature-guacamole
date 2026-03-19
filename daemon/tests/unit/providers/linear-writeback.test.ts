@@ -453,6 +453,170 @@ describe('LinearProvider write-back (WS-DAEMON-12)', () => {
   });
 
   // -------------------------------------------------------------------------
+  // addLabel()
+  // -------------------------------------------------------------------------
+
+  describe('addLabel()', () => {
+    describe('AC: Finds or creates label, then adds to issue via issueUpdate', () => {
+      it('GIVEN existing label "mg-daemon:needs-info" WHEN addLabel() called THEN queries issueLabels first', async () => {
+        mockFetch
+          .mockResolvedValueOnce({
+            ok: true, status: 200,
+            json: async () => ({ data: { issueLabels: { nodes: [{ id: 'lbl-1', name: 'mg-daemon:needs-info' }] } } }),
+          })
+          .mockResolvedValueOnce({
+            ok: true, status: 200,
+            json: async () => ({ data: { issue: { labels: { nodes: [] } } } }),
+          })
+          .mockResolvedValueOnce({
+            ok: true, status: 200,
+            json: async () => ({ data: { issueUpdate: { issue: { id: 'lin-id-1' } } } }),
+          });
+
+        await provider.addLabel('lin-id-1', 'mg-daemon:needs-info');
+
+        const firstBody = JSON.parse(mockFetch.mock.calls[0][1].body as string);
+        expect(firstBody.query).toContain('issueLabels');
+      });
+
+      it('GIVEN label does not exist WHEN addLabel() called THEN creates label via issueLabelCreate', async () => {
+        mockFetch
+          // Label not found
+          .mockResolvedValueOnce({
+            ok: true, status: 200,
+            json: async () => ({ data: { issueLabels: { nodes: [] } } }),
+          })
+          // Create label
+          .mockResolvedValueOnce({
+            ok: true, status: 200,
+            json: async () => ({ data: { issueLabelCreate: { issueLabel: { id: 'new-lbl-id' } } } }),
+          })
+          // Get issue labels
+          .mockResolvedValueOnce({
+            ok: true, status: 200,
+            json: async () => ({ data: { issue: { labels: { nodes: [] } } } }),
+          })
+          // Update issue
+          .mockResolvedValueOnce({
+            ok: true, status: 200,
+            json: async () => ({ data: { issueUpdate: { issue: { id: 'lin-id-1' } } } }),
+          });
+
+        await provider.addLabel('lin-id-1', 'mg-daemon:needs-info');
+
+        const createBody = JSON.parse(mockFetch.mock.calls[1][1].body as string);
+        expect(createBody.query).toContain('issueLabelCreate');
+        expect(createBody.variables.input.name).toBe('mg-daemon:needs-info');
+        expect(createBody.variables.input.teamId).toBe('team-abc123');
+      });
+
+      it('GIVEN label exists and issue has no labels WHEN addLabel() called THEN updates issue with labelIds', async () => {
+        mockFetch
+          .mockResolvedValueOnce({
+            ok: true, status: 200,
+            json: async () => ({ data: { issueLabels: { nodes: [{ id: 'lbl-1', name: 'mg-daemon:needs-info' }] } } }),
+          })
+          .mockResolvedValueOnce({
+            ok: true, status: 200,
+            json: async () => ({ data: { issue: { labels: { nodes: [] } } } }),
+          })
+          .mockResolvedValueOnce({
+            ok: true, status: 200,
+            json: async () => ({ data: { issueUpdate: { issue: { id: 'lin-id-1' } } } }),
+          });
+
+        await provider.addLabel('lin-id-1', 'mg-daemon:needs-info');
+
+        const updateBody = JSON.parse(mockFetch.mock.calls[2][1].body as string);
+        expect(updateBody.query).toContain('issueUpdate');
+        expect(updateBody.variables.labelIds).toContain('lbl-1');
+      });
+
+      it('GIVEN issue already has other labels WHEN addLabel() called THEN preserves existing labels and adds new one', async () => {
+        mockFetch
+          .mockResolvedValueOnce({
+            ok: true, status: 200,
+            json: async () => ({ data: { issueLabels: { nodes: [{ id: 'lbl-new', name: 'mg-daemon:rejected' }] } } }),
+          })
+          .mockResolvedValueOnce({
+            ok: true, status: 200,
+            json: async () => ({ data: { issue: { labels: { nodes: [{ id: 'lbl-existing' }] } } } }),
+          })
+          .mockResolvedValueOnce({
+            ok: true, status: 200,
+            json: async () => ({ data: { issueUpdate: { issue: { id: 'lin-id-1' } } } }),
+          });
+
+        await provider.addLabel('lin-id-1', 'mg-daemon:rejected');
+
+        const updateBody = JSON.parse(mockFetch.mock.calls[2][1].body as string);
+        expect(updateBody.variables.labelIds).toContain('lbl-existing');
+        expect(updateBody.variables.labelIds).toContain('lbl-new');
+      });
+
+      it('GIVEN addLabel() succeeds THEN resolves to undefined', async () => {
+        mockFetch
+          .mockResolvedValueOnce({
+            ok: true, status: 200,
+            json: async () => ({ data: { issueLabels: { nodes: [{ id: 'lbl-1', name: 'mg-daemon:needs-info' }] } } }),
+          })
+          .mockResolvedValueOnce({
+            ok: true, status: 200,
+            json: async () => ({ data: { issue: { labels: { nodes: [] } } } }),
+          })
+          .mockResolvedValueOnce({
+            ok: true, status: 200,
+            json: async () => ({ data: { issueUpdate: { issue: { id: 'lin-id-1' } } } }),
+          });
+
+        await expect(provider.addLabel('lin-id-1', 'mg-daemon:needs-info')).resolves.toBeUndefined();
+      });
+    });
+
+    describe('AC: Idempotency — does not duplicate label if already on issue', () => {
+      it('GIVEN issue already has the label WHEN addLabel() called THEN skips issueUpdate (no-op)', async () => {
+        mockFetch
+          .mockResolvedValueOnce({
+            ok: true, status: 200,
+            json: async () => ({ data: { issueLabels: { nodes: [{ id: 'lbl-1', name: 'mg-daemon:needs-info' }] } } }),
+          })
+          .mockResolvedValueOnce({
+            ok: true, status: 200,
+            json: async () => ({ data: { issue: { labels: { nodes: [{ id: 'lbl-1' }] } } } }),
+          });
+
+        await provider.addLabel('lin-id-1', 'mg-daemon:needs-info');
+
+        // Only 2 calls (find label + get issue labels), no update call
+        expect(mockFetch).toHaveBeenCalledTimes(2);
+      });
+    });
+
+    describe('AC: Error handling', () => {
+      it('GIVEN GraphQL errors on label query WHEN addLabel() called THEN throws', async () => {
+        mockFetch.mockResolvedValue({
+          ok: true, status: 200,
+          json: async () => ({ errors: [{ message: 'Unauthorized' }] }),
+        });
+
+        await expect(provider.addLabel('lin-id-1', 'mg-daemon:needs-info')).rejects.toThrow('Unauthorized');
+      });
+
+      it('GIVEN HTTP 401 WHEN addLabel() called THEN throws', async () => {
+        mockFetch.mockResolvedValue({ ok: false, status: 401 });
+
+        await expect(provider.addLabel('lin-id-1', 'mg-daemon:needs-info')).rejects.toThrow('401');
+      });
+
+      it('GIVEN network error WHEN addLabel() called THEN throws (does not swallow)', async () => {
+        mockFetch.mockRejectedValue(new Error('ECONNREFUSED'));
+
+        await expect(provider.addLabel('lin-id-1', 'mg-daemon:needs-info')).rejects.toThrow('ECONNREFUSED');
+      });
+    });
+  });
+
+  // -------------------------------------------------------------------------
   // linkPR()
   // -------------------------------------------------------------------------
 

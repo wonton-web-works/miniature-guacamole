@@ -136,6 +136,89 @@ describe('Security Review - WS-10', () => {
     });
   });
 
+  describe('Domain-Aware Spawn Pattern (GH-15)', () => {
+    const skillPath = path.join(SKILLS_DIR, 'mg-security-review', 'SKILL.md');
+
+    it('should contain a "Domain Context" or "Domain-Aware" section', () => {
+      const content = fs.readFileSync(skillPath, 'utf-8');
+      expect(content).toMatch(/^##\s+.*[Dd]omain/m);
+    });
+
+    it('should instruct the skill to infer domain from project context', () => {
+      const content = fs.readFileSync(skillPath, 'utf-8');
+      const lower = content.toLowerCase();
+      expect(lower).toMatch(/infer|detect|determine|identify/);
+      expect(lower).toMatch(/domain/);
+    });
+
+    it('should list all four security domains (web, systems, cloud, crypto)', () => {
+      const content = fs.readFileSync(skillPath, 'utf-8').toLowerCase();
+      expect(content).toMatch(/\bweb\b/);
+      expect(content).toMatch(/\bsystems?\b/);
+      expect(content).toMatch(/\bcloud\b/);
+      expect(content).toMatch(/\bcrypto/);
+    });
+
+    it('should include domain-specific file indicators for systems detection', () => {
+      const content = fs.readFileSync(skillPath, 'utf-8').toLowerCase();
+      // Systems domain should detect daemon/launchd/systemd patterns
+      expect(content).toMatch(/daemon|launchd|systemd|service/);
+    });
+
+    it('should include domain-specific file indicators for web detection', () => {
+      const content = fs.readFileSync(skillPath, 'utf-8').toLowerCase();
+      expect(content).toMatch(/http|api|endpoint|route/);
+    });
+
+    it('should include domain-specific file indicators for cloud detection', () => {
+      const content = fs.readFileSync(skillPath, 'utf-8').toLowerCase();
+      expect(content).toMatch(/docker|container|iam|ci\/cd|pipeline/);
+    });
+
+    it('should include domain-specific file indicators for crypto detection', () => {
+      const content = fs.readFileSync(skillPath, 'utf-8').toLowerCase();
+      expect(content).toMatch(/encrypt|tls|certificate|key.?management/);
+    });
+
+    it('spawn pattern should pass domain context to security-engineer', () => {
+      const content = fs.readFileSync(skillPath, 'utf-8');
+      // The spawn pattern should include domain in the prompt
+      const spawnMatch = content.match(
+        /##\s+.*Spawn Pattern\s*\n([\s\S]*?)(?=\n##|\n$|$)/i
+      );
+      expect(spawnMatch).toBeTruthy();
+      if (spawnMatch) {
+        const section = spawnMatch[1];
+        expect(section).toMatch(/domain/i);
+        // Should reference loading domain reference files
+        expect(section).toMatch(/domains?\//i);
+      }
+    });
+
+    it('spawn prompt should instruct agent to read domain reference files', () => {
+      const content = fs.readFileSync(skillPath, 'utf-8');
+      // Within the spawn prompt YAML block, domain file loading must be mentioned
+      expect(content).toMatch(
+        /Read.*domains?\/.*\.md|load.*domain.*reference|domain.*reference.*file/i
+      );
+    });
+
+    it('should provide domain inference rules (not just list domains)', () => {
+      const content = fs.readFileSync(skillPath, 'utf-8');
+      // Must have actual mapping rules, not just domain names
+      const domainSection = content.match(
+        /##\s+.*[Dd]omain.*\n([\s\S]*?)(?=\n##\s|$)/
+      );
+      expect(domainSection).toBeTruthy();
+      if (domainSection) {
+        const section = domainSection[1];
+        // Should contain mapping indicators (file patterns, keywords, or heuristics)
+        const lines = section.split('\n').filter((l) => l.trim().length > 0);
+        expect(lines.length).toBeGreaterThanOrEqual(5);
+      }
+    });
+  });
+
   describe('Boundaries Integrity', () => {
     const skillPath = path.join(SKILLS_DIR, 'mg-security-review', 'SKILL.md');
 

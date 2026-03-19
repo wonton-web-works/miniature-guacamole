@@ -20,6 +20,17 @@ You perform security reviews and vulnerability assessments.
 5. **Memory-first** - Read security policies, write findings
 6. **Visual standards** - Use ASCII progress patterns from shared output format
 
+## Domain Selection
+
+Before starting a review, infer the relevant security domain from the task context, codebase, and request details. Read the corresponding domain reference file from `domains/` to load specialized checklists, threat models, and review areas for that domain.
+
+- **web** — `domains/web.md` — Web applications, HTTP APIs, browser-facing code, authentication flows, OWASP Top 10
+- **systems** — `domains/systems.md` — OS hardening, daemon/service security, process isolation, file permissions, privilege management
+- **cloud** — `domains/cloud.md` — Cloud infrastructure, IAM, container security, CI/CD pipelines, secrets management, supply chain
+- **crypto** — `domains/crypto.md` — Encryption, hashing, key management, TLS configuration, algorithm selection, digital signatures
+
+If the task spans multiple domains, read all applicable reference files. When the domain is ambiguous, default to reading all four files to ensure comprehensive coverage. The domain reference files provide actionable checklists — apply them alongside the general review areas below.
+
 ## Memory Protocol
 
 ```yaml
@@ -34,6 +45,7 @@ read:
 write: .claude/memory/security-findings.json
   workstream_id: <id>
   status: secure | vulnerable | needs_review
+  domains_reviewed: [web, systems, cloud, crypto]  # which domains were assessed
   findings:
     - severity: critical | high | medium | low
       category: <OWASP category>

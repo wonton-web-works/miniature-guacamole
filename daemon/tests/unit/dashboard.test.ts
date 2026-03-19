@@ -251,6 +251,80 @@ describe('Dashboard Module', () => {
     });
   });
 
+  // ─── triageStats ─────────────────────────────────────────────────────────────
+
+  describe('GIVEN triage-log.json exists WHEN gatherDashboardData called THEN populates triageStats', () => {
+    it('GIVEN triage log with mixed outcomes THEN triageStats counts each outcome', () => {
+      vi.mocked(processModule.statusDaemon).mockReturnValue({ running: true, pid: 1, uptimeMs: 100 });
+      vi.mocked(heartbeatModule.isStale).mockReturnValue(false);
+      vi.mocked(existsSync).mockImplementation((p) => {
+        const filePath = String(p);
+        return filePath.includes('triage-log') || filePath.includes('processed');
+      });
+      vi.mocked(readFileSync).mockImplementation((p) => {
+        const filePath = String(p);
+        if (filePath.includes('triage-log')) {
+          return JSON.stringify([
+            { ticketId: 'P-1', outcome: 'GO', reason: 'ok', timestamp: '2026-03-19T00:00:00Z' },
+            { ticketId: 'P-2', outcome: 'GO', reason: 'ok', timestamp: '2026-03-19T00:01:00Z' },
+            { ticketId: 'P-3', outcome: 'NEEDS_CLARIFICATION', reason: 'vague', timestamp: '2026-03-19T00:02:00Z' },
+            { ticketId: 'P-4', outcome: 'REJECT', reason: 'out of scope', timestamp: '2026-03-19T00:03:00Z' },
+          ]);
+        }
+        return '{}';
+      });
+
+      const data = gatherDashboardData(baseConfig);
+
+      expect(data.triageStats).toBeDefined();
+      expect(data.triageStats!.go).toBe(2);
+      expect(data.triageStats!.needsInfo).toBe(1);
+      expect(data.triageStats!.rejected).toBe(1);
+    });
+
+    it('GIVEN no triage-log.json THEN triageStats is null', () => {
+      vi.mocked(processModule.statusDaemon).mockReturnValue({ running: false });
+      vi.mocked(heartbeatModule.isStale).mockReturnValue(false);
+      vi.mocked(existsSync).mockReturnValue(false);
+
+      const data = gatherDashboardData(baseConfig);
+
+      expect(data.triageStats).toBeNull();
+    });
+
+    it('GIVEN corrupted triage-log.json THEN triageStats is null', () => {
+      vi.mocked(processModule.statusDaemon).mockReturnValue({ running: false });
+      vi.mocked(heartbeatModule.isStale).mockReturnValue(false);
+      vi.mocked(existsSync).mockImplementation((p) => String(p).includes('triage-log'));
+      vi.mocked(readFileSync).mockReturnValue('not json!!!');
+
+      const data = gatherDashboardData(baseConfig);
+
+      expect(data.triageStats).toBeNull();
+    });
+
+    it('GIVEN empty triage log array THEN triageStats has all zeros', () => {
+      vi.mocked(processModule.statusDaemon).mockReturnValue({ running: true, pid: 1, uptimeMs: 100 });
+      vi.mocked(heartbeatModule.isStale).mockReturnValue(false);
+      vi.mocked(existsSync).mockImplementation((p) => {
+        const filePath = String(p);
+        return filePath.includes('triage-log') || filePath.includes('processed');
+      });
+      vi.mocked(readFileSync).mockImplementation((p) => {
+        const filePath = String(p);
+        if (filePath.includes('triage-log')) return '[]';
+        return '{}';
+      });
+
+      const data = gatherDashboardData(baseConfig);
+
+      expect(data.triageStats).toBeDefined();
+      expect(data.triageStats!.go).toBe(0);
+      expect(data.triageStats!.needsInfo).toBe(0);
+      expect(data.triageStats!.rejected).toBe(0);
+    });
+  });
+
   // ─── formatDashboard ────────────────────────────────────────────────────────
 
   describe('formatDashboard()', () => {
@@ -514,6 +588,61 @@ describe('Dashboard Module', () => {
 
         const output = formatDashboard(data);
         expect(output.toLowerCase()).toMatch(/never|--|none/);
+      });
+    });
+
+    describe('GIVEN triageStats WHEN formatDashboard called THEN shows triage section', () => {
+      it('GIVEN triageStats with counts THEN output contains TRIAGE header and counts', () => {
+        const data = {
+          daemonStatus: { running: true, pid: 1, uptimeMs: 100 },
+          lastPollTime: null,
+          heartbeatStale: false,
+          inFlightTickets: [],
+          recentCompleted: [],
+          recentFailed: [],
+          errorBudget: { consecutive: 0, threshold: 3, paused: false },
+          triageStats: { go: 5, needsInfo: 2, rejected: 1 },
+        };
+
+        const output = formatDashboard(data);
+        expect(output).toContain('TRIAGE');
+        expect(output).toContain('5');
+        expect(output).toContain('2');
+        expect(output).toContain('1');
+      });
+
+      it('GIVEN triageStats is null THEN output does not contain TRIAGE section', () => {
+        const data = {
+          daemonStatus: { running: false },
+          lastPollTime: null,
+          heartbeatStale: false,
+          inFlightTickets: [],
+          recentCompleted: [],
+          recentFailed: [],
+          errorBudget: { consecutive: 0, threshold: 3, paused: false },
+          triageStats: null,
+        };
+
+        const output = formatDashboard(data);
+        expect(output).not.toMatch(/TRIAGE\s+STATS/);
+      });
+
+      it('GIVEN triageStats with counts THEN all lines are at most 80 characters', () => {
+        const data = {
+          daemonStatus: { running: true, pid: 1, uptimeMs: 100 },
+          lastPollTime: null,
+          heartbeatStale: false,
+          inFlightTickets: [],
+          recentCompleted: [],
+          recentFailed: [],
+          errorBudget: { consecutive: 0, threshold: 3, paused: false },
+          triageStats: { go: 100, needsInfo: 50, rejected: 25 },
+        };
+
+        const output = formatDashboard(data);
+        for (const line of output.split('\n')) {
+          expect(line.length).toBeLessThanOrEqual(80);
+        }
       });
     });
 

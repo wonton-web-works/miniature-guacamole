@@ -12,6 +12,7 @@ export interface LaunchdConfig {
   daemonPath: string;  // absolute path to daemon dist/cli.js
   nodePath: string;    // absolute path to node binary
   username?: string;   // if set, adds UserName to plist so launchd runs as this user
+  extraPath?: string;  // additional PATH entries (launchd has minimal PATH by default)
 }
 
 /**
@@ -37,13 +38,19 @@ function getPlistPath(label: string): string {
  * and stdout/stderr log paths.
  */
 export function generatePlist(config: LaunchdConfig): string {
-  const { label, projectPath, daemonPath, nodePath, username } = config;
+  const { label, projectPath, daemonPath, nodePath, username, extraPath } = config;
   const stdoutPath = join(projectPath, '.mg-daemon', 'daemon.log');
   const stderrPath = join(projectPath, '.mg-daemon', 'daemon.err');
 
   const userNameBlock = username
     ? `    <key>UserName</key>\n    <string>${xmlEscape(username)}</string>\n`
     : '';
+
+  // launchd has a minimal PATH (/usr/bin:/bin:/usr/sbin:/sbin).
+  // Tools like gh, git, claude need Homebrew and Volta paths.
+  const pathValue = extraPath
+    ? `${extraPath}:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin`
+    : '/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin';
 
   return `<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
@@ -60,6 +67,13 @@ export function generatePlist(config: LaunchdConfig): string {
     </array>
     <key>WorkingDirectory</key>
     <string>${xmlEscape(projectPath)}</string>
+    <key>EnvironmentVariables</key>
+    <dict>
+        <key>PATH</key>
+        <string>${xmlEscape(pathValue)}</string>
+        <key>HOME</key>
+        <string>${xmlEscape(homedir())}</string>
+    </dict>
     <key>RunAtLoad</key>
     <true/>
     <key>KeepAlive</key>

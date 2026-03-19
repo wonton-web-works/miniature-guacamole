@@ -162,7 +162,7 @@ setup() {
     # README claims 16 skills in multiple places — verify the actual count
     local actual_count
     actual_count=$(find "$SKILLS_DIR" -maxdepth 1 -mindepth 1 -type d | grep -v "_shared" | wc -l | tr -d ' ')
-    [ "$actual_count" -eq 16 ]
+    [ "$actual_count" -eq 18 ]
 }
 
 @test "[BOUNDARY] README references skills directory that exists at .claude/skills" {

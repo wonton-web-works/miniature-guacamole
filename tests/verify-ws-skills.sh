@@ -178,19 +178,12 @@ for old_skill in "${OLD_SKILLS[@]}"; do
 done
 check_pass "All 15 old skill directories removed"
 
-# BOUNDARY-1.1: Exact skill count (16 + _shared = 17 total)
+# BOUNDARY-1.1: Exact skill count (18 skills total)
 skill_count=$(find "$SKILLS_DIR" -mindepth 1 -maxdepth 1 -type d ! -name "_shared" 2>/dev/null | wc -l | tr -d ' ')
-if [ "$skill_count" -ne 16 ]; then
-    check_fail "Exactly 16 skills exist" "Found $skill_count skills (expected 16)"
+if [ "$skill_count" -ne 18 ]; then
+    check_fail "Exactly 18 skills exist" "Found $skill_count skills (expected 18)"
 else
-    check_pass "Exactly 16 skills exist"
-fi
-
-# Verify _shared exists
-if [ ! -d "$SKILLS_DIR/_shared" ]; then
-    check_fail "_shared directory exists" "Directory not found"
-else
-    check_pass "_shared directory exists"
+    check_pass "Exactly 18 skills exist"
 fi
 
 # BOUNDARY-1.2: All new names follow mg- prefix convention
@@ -312,16 +305,23 @@ else
     check_pass "No old skill names in SKILL.md files"
 fi
 
-# MISUSE-3.3: _shared/output-format.md has old names
-OUTPUT_FORMAT="$SKILLS_DIR/_shared/output-format.md"
-if [ -f "$OUTPUT_FORMAT" ]; then
-    if grep -qE "$OLD_SKILL_PATTERN" "$OUTPUT_FORMAT"; then
-        check_fail "output-format.md updated with new names" "Found old skill names"
-    else
-        check_pass "output-format.md updated with new names"
+# MISUSE-3.3: Per-skill references/output-format.md files exist and have no old names
+output_format_issues=0
+for skill_dir in "$SKILLS_DIR"/mg-*; do
+    if [ -d "$skill_dir" ]; then
+        skill_name=$(basename "$skill_dir")
+        ref_file="$skill_dir/references/output-format.md"
+        if [ ! -f "$ref_file" ]; then
+            check_fail "$skill_name/references/output-format.md exists" "File not found"
+            output_format_issues=$((output_format_issues + 1))
+        elif grep -qE "$OLD_SKILL_PATTERN" "$ref_file"; then
+            check_fail "$skill_name/references/output-format.md has no old names" "Found old skill names"
+            output_format_issues=$((output_format_issues + 1))
+        fi
     fi
-else
-    check_fail "output-format.md exists" "File not found"
+done
+if [ "$output_format_issues" -eq 0 ]; then
+    check_pass "All per-skill references/output-format.md files exist and are up to date"
 fi
 
 # GOLDEN-3.1: All skill-to-skill references valid

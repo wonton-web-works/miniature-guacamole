@@ -61,10 +61,17 @@ export interface MCPConfig {
   servers: MCPServer[];
 }
 
+export interface TriageConfig {
+  enabled: boolean;
+  autoReject: boolean;
+  maxTicketSizeChars: number;
+}
+
 export interface DaemonConfig {
   version: string;
   jira: JiraConfig;
   slack: SlackConfig;
   github: GitHubConfig;
   mcp: MCPConfig;
+  triage?: TriageConfig;
 }

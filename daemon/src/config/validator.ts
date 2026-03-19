@@ -57,6 +57,18 @@ export function validateConfig(config: DaemonConfig): ValidationError[] {
     validateMCPConfig(config.mcp, errors);
   }
 
+  // Validate optional triage section
+  if (config.triage !== undefined) {
+    if (typeof config.triage !== 'object' || Array.isArray(config.triage)) {
+      errors.push({
+        field: 'triage',
+        message: 'triage must be an object when provided'
+      });
+    } else {
+      validateTriageConfig(config.triage, errors);
+    }
+  }
+
   return errors;
 }
 
@@ -277,6 +289,29 @@ function validateGitHubConfig(github: any, errors: ValidationError[]): void {
           message: 'github.contextRepos cloneDepth must be a positive number greater than 0'
         });
       }
+    });
+  }
+}
+
+function validateTriageConfig(triage: any, errors: ValidationError[]): void {
+  if (typeof triage.enabled !== 'boolean') {
+    errors.push({
+      field: 'triage.enabled',
+      message: 'triage.enabled must be a boolean (true or false)'
+    });
+  }
+
+  if (typeof triage.autoReject !== 'boolean') {
+    errors.push({
+      field: 'triage.autoReject',
+      message: 'triage.autoReject must be a boolean (true or false)'
+    });
+  }
+
+  if (typeof triage.maxTicketSizeChars !== 'number' || triage.maxTicketSizeChars <= 0) {
+    errors.push({
+      field: 'triage.maxTicketSizeChars',
+      message: 'triage.maxTicketSizeChars must be a positive number greater than 0'
     });
   }
 }

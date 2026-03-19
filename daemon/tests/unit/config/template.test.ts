@@ -487,4 +487,100 @@ describe('Config Template (AC-1.6: Example config template)', () => {
       expect(() => createConfigTemplate(mockProjectPath)).toThrow(/directory|permission/i);
     });
   });
+
+  describe('Triage section in template', () => {
+    it('WHEN createConfigTemplate() called THEN template includes triage section', () => {
+      // Arrange
+      vi.mocked(existsSync).mockReturnValue(false);
+      let writtenContent = '';
+      vi.mocked(writeFileSync).mockImplementation((path, content) => {
+        writtenContent = content.toString();
+      });
+
+      // Act
+      createConfigTemplate(mockProjectPath);
+
+      // Assert
+      expect(writtenContent).toMatch(/triage:/i);
+    });
+
+    it('WHEN createConfigTemplate() called THEN template includes triage.enabled', () => {
+      // Arrange
+      vi.mocked(existsSync).mockReturnValue(false);
+      let writtenContent = '';
+      vi.mocked(writeFileSync).mockImplementation((path, content) => {
+        writtenContent = content.toString();
+      });
+
+      // Act
+      createConfigTemplate(mockProjectPath);
+
+      // Assert
+      expect(writtenContent).toMatch(/enabled:/i);
+    });
+
+    it('WHEN createConfigTemplate() called THEN template includes triage.autoReject', () => {
+      // Arrange
+      vi.mocked(existsSync).mockReturnValue(false);
+      let writtenContent = '';
+      vi.mocked(writeFileSync).mockImplementation((path, content) => {
+        writtenContent = content.toString();
+      });
+
+      // Act
+      createConfigTemplate(mockProjectPath);
+
+      // Assert
+      expect(writtenContent).toMatch(/autoReject:/i);
+    });
+
+    it('WHEN createConfigTemplate() called THEN template includes triage.maxTicketSizeChars', () => {
+      // Arrange
+      vi.mocked(existsSync).mockReturnValue(false);
+      let writtenContent = '';
+      vi.mocked(writeFileSync).mockImplementation((path, content) => {
+        writtenContent = content.toString();
+      });
+
+      // Act
+      createConfigTemplate(mockProjectPath);
+
+      // Assert
+      expect(writtenContent).toMatch(/maxTicketSizeChars:/i);
+    });
+  });
+
+  describe('getDefaultConfig() triage defaults', () => {
+    it('WHEN getDefaultConfig() called THEN triage section is present', () => {
+      // Act
+      const config = getDefaultConfig();
+
+      // Assert
+      expect(config.triage).toBeDefined();
+    });
+
+    it('WHEN getDefaultConfig() called THEN triage.enabled is true', () => {
+      // Act
+      const config = getDefaultConfig();
+
+      // Assert
+      expect(config.triage?.enabled).toBe(true);
+    });
+
+    it('WHEN getDefaultConfig() called THEN triage.autoReject is false', () => {
+      // Act
+      const config = getDefaultConfig();
+
+      // Assert
+      expect(config.triage?.autoReject).toBe(false);
+    });
+
+    it('WHEN getDefaultConfig() called THEN triage.maxTicketSizeChars is 10000', () => {
+      // Act
+      const config = getDefaultConfig();
+
+      // Assert
+      expect(config.triage?.maxTicketSizeChars).toBe(10000);
+    });
+  });
 });

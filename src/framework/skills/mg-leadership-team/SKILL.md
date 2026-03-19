@@ -63,18 +63,14 @@ write: .claude/memory/agent-leadership-decisions.json
 
 ### Executive Review
 ```
-## Executive Review: {Initiative}
+[CEO]   Business alignment — {assessment}
+[CTO]   Technical approach — {assessment}
+[ED]    Operational readiness — {assessment}         {elapsed}
+[EM]    Decision: {APPROVED FOR DEVELOPMENT | NEEDS CLARIFICATION}   {elapsed}
+```
 
-### Strategic Assessment
-- **CEO (Business)**: {value, ROI, alignment}
-- **CTO (Technical)**: {approach, risks, standards}
-- **Eng Dir (Operations)**: {resources, timeline, dependencies}
-- **Art Director (Creative)**: {if requested by CEO: visual quality, brand alignment}
-
-### Decision
-{APPROVED FOR DEVELOPMENT | NEEDS CLARIFICATION}
-
-### Workstreams
+Workstreams are listed after the decision block:
+```
 WS-1: {name} - {acceptance criteria}
 WS-2: {name} - {acceptance criteria}
 ```
@@ -117,15 +113,10 @@ The state sync ensures that planning decisions immediately propagate to the trac
 
 ### Code Review
 ```
-## Code Review: {Workstream}
-
-- CEO: {business alignment - PASS/FAIL}
-- CTO: {technical quality - PASS/FAIL}
-- Eng Dir: {operational readiness - PASS/FAIL}
-- Art Director: {if visual workstream: design quality - PASS/FAIL}
-
-**Decision**: {APPROVED | REQUEST CHANGES}
-**Next**: {/deployment-engineer merge | Return to /mg-build}
+[CEO]   Business alignment — {PASS | FAIL}
+[CTO]   Technical quality — {PASS | FAIL}
+[ED]    Operational readiness — {PASS | FAIL}        {elapsed}
+[EM]    Decision: {APPROVED | REQUEST CHANGES}       {elapsed}
 ```
 
 ## Boundaries

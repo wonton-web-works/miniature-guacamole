@@ -94,25 +94,10 @@ write: .claude/memory/agent-mg-spec-decisions.json
 ## Output Format
 
 ```
-## Product Spec: {Feature}
-
-### Vision (Product Owner)
-{Why this matters, strategic fit, priority}
-
-### Requirements (Product Manager)
-**User Stories:**
-- As a {user}, I want {goal} so that {benefit}
-
-**Acceptance Criteria:**
-- [ ] {criterion}
-
-### Design (Designer)
-{UX approach, accessibility, visual direction}
-
-### Ready for Engineering
-Priority: {high|medium|low}
-External Dependencies Validated: {yes|no|n/a}
-Next: /mg-build
+[PO]    Vision — {strategic fit, priority}
+[PM]    Stories — {N} user stories, {N} acceptance criteria
+[PM]    Dependencies — {validated | spike required}  {elapsed}
+[EM]    Ready for engineering — {priority: high | medium | low}   {elapsed}
 ```
 
 ## Document Output

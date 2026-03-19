@@ -234,6 +234,8 @@ ARCHITECTURAL track:
 [EM]    Done                                    1m 09s
 ```
 
+See `shared/visual-formatting.md` for the full line format spec.
+
 ## Boundaries
 
 **CAN:** Classify workstreams, execute full CAD cycle, spawn qa/dev/staff-engineer, track gates, coordinate handoffs, report progress

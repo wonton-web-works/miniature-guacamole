@@ -124,37 +124,15 @@ Output the canonical workstream list and a summary of what was changed.
 
 ## Output Format
 
-Follow `references/output-format.md`. Use the Audit/Reconcile pattern:
-
-```markdown
-## mg-tidy: State Reconciliation
-
-### Preflight
-- gh: installed + authenticated
-- .claude/memory/: found (N files)
-
-### Audit Results
-- Open issues: N
-- Duplicates detected: N sets
-- Stale issues: N
-- Workstream state files: N
-- Orphaned memory: N
-- Missing memory: N
-
-### Changes Applied
-- Closed N duplicate issues
-- Removed N orphaned memory files
-- Created N missing memory files
-
-### Canonical Workstream List
-| ID    | Issue | Status | Memory File |
-|-------|-------|--------|-------------|
-| WS-42 | #47   | open   | workstream-WS-42-state.json |
-| WS-55 | #55   | open   | workstream-WS-55-state.json (created) |
-
-### Stale Issues (no action taken)
-- #31 "WS-10: Old feature" — last activity: 21 days ago
 ```
+[TIDY]  Preflight — gh authenticated ✓
+[TIDY]  Audit — {N} open issues, {N} duplicates, {N} stale
+[TIDY]  Memory — {N} state files, {N} orphaned, {N} missing
+[TIDY]  Plan — {N} closes, {N} removes, {N} creates
+[TIDY]  Done — state is clean                      {elapsed}
+```
+
+The canonical workstream list and stale issue report follow the Done line.
 
 ## Error Handling
 

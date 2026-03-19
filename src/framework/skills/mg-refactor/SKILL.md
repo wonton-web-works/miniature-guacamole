@@ -109,11 +109,14 @@ Task:
 
 ## Output Format
 
-- **Pipeline diagram**: CHARACTERIZE → REFACTOR → VERIFY → REVIEW (always shown at start)
-- **Status box**: phase, tests (with baseline), coverage (with baseline), green/red bar, blocker
-- **Detailed progress**: scope, refactor goals, baseline metrics, current metrics, next action
+```
+[DEV]   Characterization — {N} tests, coverage {baseline}%
+[SE]    Refactor — incremental, tests green
+[DEV]   Verification — coverage {current}%, no regressions   {elapsed}
+[EM]    Done — ready for code review                {elapsed}
+```
 
-See `references/output-examples.md` for full template examples.
+On blocker: `[EM]  BLOCKED — {reason}`
 
 ## Boundaries
 

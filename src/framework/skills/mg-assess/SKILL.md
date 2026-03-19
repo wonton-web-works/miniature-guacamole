@@ -184,10 +184,20 @@ write: .claude/memory/mg-feature-assessments.json
 
 ## Output Format
 
-- **Phase 0**: Intake flow diagram + structured brief (problem, users, success criteria, constraints)
-- **Phase 1-4**: Full assessment with scope definition, feasibility, value assessment, effort estimate, GO/NO-GO recommendation
+Phase 0 (intake):
+```
+[EM]    Intake — {rough | semi-structured | structured} request detected
+[PO]    Problem framed — {brief summary}
+[EM]    Brief ready — proceeding to evaluation       {elapsed}
+```
 
-See `references/output-examples.md` for full template examples.
+Phase 1-4 (evaluation):
+```
+[PO]    Strategic fit — {HIGH | MEDIUM | LOW}
+[PO]    User stories — {N} stories defined
+[EM]    Feasibility — {assessment summary}
+[EM]    Decision: {GO | NO-GO | NEEDS MORE INFO}     {elapsed}
+```
 
 ## Delegation
 

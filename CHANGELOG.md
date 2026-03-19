@@ -9,6 +9,50 @@ Versioning follows [Semantic Versioning](https://semver.org/): MAJOR.MINOR.PATCH
 
 ---
 
+## [3.0.0] - 2026-03-19 — Autonomous Daemon Pipeline
+
+The daemon turns a Mac Mini into a 24/7 autonomous development pipeline. Point it at a ticket tracker, it plans work, writes code using the MG team, runs quality gates, and creates draft PRs for human review.
+
+### Added
+- **Daemon pipeline** — complete ticket-to-PR automation (WS-DAEMON-10 through 14)
+  - **Ticket providers** — Jira (REST API v3), Linear (GraphQL), GitHub Issues (gh CLI)
+  - **`TicketProvider` interface** with `NormalizedTicket` abstraction — all three providers behind one contract
+  - **Orchestration engine** — planner (workstream breakdown via `/mg-leadership-team`), executor (implementation via `/mg-build`), worktree isolation per ticket
+  - **Ticket write-back** — creates subtasks, transitions status, posts comments, links PRs back to source tracker
+  - **Mac Mini hardening** — launchd plist generation with ThrottleInterval/Background/LowPriorityIO, log rotation, heartbeat monitoring, prerequisite validator
+  - **Observability** — dashboard, concurrency limiter, error budget with auto-pause, notification hooks, dry-run mode
+- **Security hardening** (3 review passes: web, CTO, systems)
+  - All `execSync` replaced with `spawnSync` argv arrays (no shell injection)
+  - `<UNTRUSTED_TICKET_CONTENT>` prompt injection protection
+  - Environment variable scrubbing before Claude subprocess spawn
+  - Process group kill on timeout (prevents orphaned processes)
+  - Claude stdout/stderr capped at 50MB
+  - Config file written with 0o600 permissions
+  - Dedicated `mg-daemon` system user support
+  - Ticket ID validation, XML escaping in plist
+- **OS-level safeguards** — STOP sentinel kill switch, 5GB disk space guard, launchd crash-loop prevention
+- **Quality gates** — tests + build run in worktree before PR creation; branch synced with main before commit
+- **GitHub Action** — `auto-update-branches.yml` merges main into open daemon PR branches
+- **Architecture diagrams** — Mermaid diagrams for daemon architecture, GitHub/Jira/Linear flows
+- **4 PRDs** — daemon pipeline, daemon triage gate, agent skill expansion, CLI primary architecture
+
+### Changed
+- **Skills** — shared references (model-escalation.md, output-format.md) moved from `_shared/` into each skill's `references/` directory for self-contained definitions
+- **Daemon planner** — now uses `/mg-leadership-team` skill for workstream breakdown
+- **Daemon executor** — now uses `/mg-build` skill with full CAD workflow (QA → dev → staff-engineer)
+- **Framework scripts** — updated for CLI-primary architecture (DEC-003)
+
+### Stats
+- 35 daemon source files, 38 test files, 1082 tests passing
+- Zero new npm dependencies (native fetch for Linear, gh CLI for GitHub)
+- 3 security review passes, all CRITICAL/HIGH findings resolved
+
+### Issues
+- #15 — Agent skill expansion (PRD written, implementation pending)
+- #16 — WS-DAEMON-15: Triage Gate (PRD written, PR #67 open)
+
+---
+
 ## [2.2.0] - 2026-03-18 — Two-Phase Install
 
 Global CLI installer + per-project init. Install once, init anywhere.

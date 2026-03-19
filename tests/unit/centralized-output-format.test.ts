@@ -8,7 +8,7 @@
  *
  * Acceptance Criteria:
  * - Shared output-format.md exists with standard patterns
- * - All 17 skills reference shared output format in their constitution
+ * - All 18 skills reference shared output format in their constitution
  * - All existing tests pass
  * - Output formatting is consistent across all skills
  *
@@ -19,7 +19,7 @@ import { describe, it, expect, beforeAll } from 'vitest';
 import * as fs from 'fs';
 import * as path from 'path';
 
-// Test data: All 17 skills that need output format standardization
+// Test data: All 18 skills that need output format standardization
 const ALL_SKILLS = [
   'mg',
   'mg-accessibility-review',
@@ -38,17 +38,17 @@ const ALL_SKILLS = [
   'mg-security-review',
   'mg-spec',
   'mg-ticket',
+  'mg-tidy',
   'mg-write',
 ] as const;
 
 const SKILLS_DIR = path.resolve(__dirname, '../../src/framework/skills');
 // Output format moved from _shared/ to per-skill references/ in v3.0.0
-const SHARED_DIR = path.join(SKILLS_DIR, '_shared');
 const OUTPUT_FORMAT_FILE = path.join(SKILLS_DIR, 'mg', 'references', 'output-format.md');
 
 describe('WS-15: Centralized Skill Visual Output', () => {
   describe('Feature: Shared Output Format Documentation', () => {
-    describe('Given: A product development team using 17 skills', () => {
+    describe('Given: A product development team using 18 skills', () => {
       describe('When: Creating a standardized output format specification', () => {
         it('Then: each skill should have references/output-format.md', () => {
           for (const skill of ALL_SKILLS) {
@@ -134,16 +134,16 @@ describe('WS-15: Centralized Skill Visual Output', () => {
   });
 
   describe('Feature: Skills Reference Shared Output Format', () => {
-    describe('Given: All 17 skills need consistent output', () => {
+    describe('Given: All 18 skills need consistent output', () => {
       describe('When: Skills are configured with output format guidance', () => {
-        it('Then: All 17 skills should have SKILL.md files', () => {
+        it('Then: All 18 skills should have SKILL.md files', () => {
           for (const skill of ALL_SKILLS) {
             const skillFile = path.join(SKILLS_DIR, skill, 'SKILL.md');
             expect(fs.existsSync(skillFile), `${skill}/SKILL.md should exist`).toBe(true);
           }
         });
 
-        it('Then: All 17 skills should have readable markdown content', () => {
+        it('Then: All 18 skills should have readable markdown content', () => {
           for (const skill of ALL_SKILLS) {
             const skillFile = path.join(SKILLS_DIR, skill, 'SKILL.md');
             const content = fs.readFileSync(skillFile, 'utf-8');
@@ -153,7 +153,7 @@ describe('WS-15: Centralized Skill Visual Output', () => {
           }
         });
 
-        it('Then: All 17 skills should have Constitution sections', () => {
+        it('Then: All 18 skills should have Constitution sections', () => {
           for (const skill of ALL_SKILLS) {
             const skillFile = path.join(SKILLS_DIR, skill, 'SKILL.md');
             const content = fs.readFileSync(skillFile, 'utf-8');
@@ -163,7 +163,7 @@ describe('WS-15: Centralized Skill Visual Output', () => {
           }
         });
 
-        it('Then: All 17 skills should reference shared output format', () => {
+        it('Then: All 18 skills should reference shared output format', () => {
           for (const skill of ALL_SKILLS) {
             const skillFile = path.join(SKILLS_DIR, skill, 'SKILL.md');
             const content = fs.readFileSync(skillFile, 'utf-8');
@@ -204,7 +204,8 @@ describe('WS-15: Centralized Skill Visual Output', () => {
               const hasOutputDirective =
                 /output.*format/i.test(constitutionSection) ||
                 /format.*output/i.test(constitutionSection) ||
-                /_shared\/output-format\.md/.test(constitutionSection);
+                /_shared\/output-format\.md/.test(constitutionSection) ||
+                /references\/output-format\.md/.test(constitutionSection);
 
               expect(
                 hasOutputDirective,
@@ -222,7 +223,7 @@ describe('WS-15: Centralized Skill Visual Output', () => {
             const content = fs.readFileSync(skillFile, 'utf-8');
 
             // Extract the output format reference pattern
-            // Skills may use relative path (../_shared/output-format.md) or short form (_shared/output-format.md)
+            // Skills may use per-skill references/ path or legacy _shared/ path
             const patterns = [
               /See\s+`?\.\.\/(_shared\/output-format\.md)`?/i,
               /Follow\s+standard\s+output\s+format/i,
@@ -230,6 +231,7 @@ describe('WS-15: Centralized Skill Visual Output', () => {
               /\[output format\]\(\.\.\/(_shared\/output-format\.md)\)/i,
               /Follow\s+`_shared\/output-format\.md`/i,
               /_shared\/output-format\.md/,
+              /references\/output-format\.md/,
             ];
 
             for (const pattern of patterns) {
@@ -241,13 +243,14 @@ describe('WS-15: Centralized Skill Visual Output', () => {
             }
           }
 
-          // All 17 skills should have found a reference
+          // All 18 skills should have found a reference
           expect(references.length).toBe(ALL_SKILLS.length);
 
           // References should follow similar patterns
           // (allowing for slight variations in wording but consistent structure)
           const hasConsistentStructure = references.every(ref =>
             ref.includes('_shared/output-format.md') ||
+            ref.includes('references/output-format.md') ||
             /output\s+format/i.test(ref)
           );
 
@@ -525,19 +528,10 @@ describe('WS-15: Centralized Skill Visual Output', () => {
   describe('Feature: Integration Validation', () => {
     describe('Given: Centralized output format implemented', () => {
       describe('When: Verifying end-to-end consistency', () => {
-        it('Then: _shared directory should only contain approved shared files', () => {
-          const sharedFiles = fs.readdirSync(SHARED_DIR);
-
-          // Should contain output-format.md at minimum
-          expect(sharedFiles).toContain('output-format.md');
-
-          // All files should be markdown or documentation
-          for (const file of sharedFiles) {
-            const ext = path.extname(file);
-            expect(
-              ['.md', '.txt', ''].includes(ext),
-              `${file} should be documentation file`
-            ).toBe(true);
+        it('Then: Each skill should have its own output-format reference file', () => {
+          for (const skill of ALL_SKILLS) {
+            const refFile = path.join(SKILLS_DIR, skill, 'references', 'output-format.md');
+            expect(fs.existsSync(refFile), `${skill} missing references/output-format.md`).toBe(true);
           }
         });
 

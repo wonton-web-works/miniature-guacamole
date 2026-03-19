@@ -43,7 +43,7 @@
 
 **PASSING:**
 - ✓ All 15 old skill directories removed
-- ✓ _shared directory exists
+- ✓ Per-skill references/ directories exist
 - ✓ All skills use mg- prefix
 
 **FAILING:**
@@ -97,13 +97,13 @@
 
 **FAILING:**
 - ✗ Old skill names found in 14 SKILL.md files
-- ✗ output-format.md has old skill names
+- ✗ per-skill references/output-format.md files have old skill names
 
 **BLOCKER:** SKILL.md files NOT UPDATED with new skill name cross-references
 
 **Files Requiring Updates:**
 - All 14 mg-* skill SKILL.md files
-- `src/framework/skills/_shared/output-format.md`
+- Each skill's `src/framework/skills/{skill}/references/output-format.md`
 
 ---
 
@@ -188,7 +188,7 @@
   - Spawn cap of 6
   - Agent orchestration documentation
   - Domain-specific keywords (debugging/refactoring)
-  - Reference to _shared/output-format.md
+  - Reference to references/output-format.md
 
 ---
 
@@ -311,7 +311,7 @@
 | AC-SKILLS-2.3 | Agents unchanged | ✓ PASS | None |
 | AC-SKILLS-3.1 | No old names in SKILL.md | ✗ FAIL | 14 files not updated |
 | AC-SKILLS-3.2 | Escalations use mg- | ✗ FAIL | Old names present |
-| AC-SKILLS-3.3 | output-format.md updated | ✗ FAIL | Old names present |
+| AC-SKILLS-3.3 | references/output-format.md updated | ✗ FAIL | Old names present |
 | AC-SKILLS-4.1 | No old names in CLAUDE.md | ✗ FAIL | File not found |
 | AC-SKILLS-4.2 | No old names in README.md | ✗ FAIL | Old refs present |
 | AC-SKILLS-4.3 | Skill count 16 | ✓ PASS | None |
@@ -325,7 +325,7 @@
 | AC-SKILLS-6.3 | No skill permissions | ✓ PASS | None |
 | AC-SKILLS-7.1 | mg-debug/refactor exist | ✗ FAIL | Not implemented |
 | AC-SKILLS-7.2 | Constitution 4-6 | ✗ FAIL | Not implemented |
-| AC-SKILLS-7.3 | References _shared | ✗ FAIL | Not implemented |
+| AC-SKILLS-7.3 | References references/ | ✗ FAIL | Not implemented |
 | AC-SKILLS-7.4 | Spawn cap 6 | ✗ FAIL | Not implemented |
 | AC-SKILLS-7.5 | Boundaries section | ✗ FAIL | Not implemented |
 | AC-SKILLS-7.6 | Orchestration docs | ✗ FAIL | Not implemented |

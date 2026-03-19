@@ -18,6 +18,7 @@ import { triageTicket as defaultTriageTicket } from './triage';
 import { createWorktree as defaultCreateWorktree, removeWorktree as defaultRemoveWorktree } from './worktree';
 import { createPR as defaultCreatePR } from './github';
 import { ConcurrencyLimiter } from './concurrency';
+import { appendTriageLog } from './triage-log';
 import { spawnSync } from 'child_process';
 import { existsSync, statfsSync } from 'fs';
 import { join } from 'path';
@@ -173,6 +174,18 @@ export async function processTicket(
   };
 
   const triageResult = await triageFn(ticket, triageConfig, passthrough);
+
+  // Log triage outcome — never disrupt pipeline on logging failure
+  try {
+    appendTriageLog({
+      ticketId: ticket.id,
+      outcome: triageResult.outcome,
+      reason: triageResult.reason,
+      timestamp: new Date().toISOString(),
+    });
+  } catch {
+    // Swallow — triage logging must never disrupt the pipeline
+  }
 
   if (triageResult.outcome !== 'GO') {
     // Post comment to ticket explaining the triage decision

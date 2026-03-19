@@ -212,6 +212,26 @@ export class JiraProvider implements TicketProvider {
     }
   }
 
+  async addLabel(ticketId: string, label: string): Promise<void> {
+    const url = `${this.config.host}/rest/api/3/issue/${ticketId}`;
+
+    const payload = {
+      update: {
+        labels: [{ add: label }],
+      },
+    };
+
+    const response = await this.fetchFn(url, {
+      method: 'PUT',
+      headers: this.baseHeaders,
+      body: JSON.stringify(payload),
+    });
+
+    if (!response.ok) {
+      throw new Error(`Jira addLabel failed: ${response.status}`);
+    }
+  }
+
   async linkPR(ticketId: string, prUrl: string): Promise<void> {
     const url = `${this.config.host}/rest/api/3/issue/${ticketId}/remotelink`;
 

@@ -327,3 +327,88 @@ describe('Contract: linkPR() resolves without value', () => {
     await expect(provider.linkPR('GH-42', 'https://github.com/pr/1')).resolves.toBeUndefined();
   });
 });
+
+// --- Contract: addLabel() ---
+
+describe('Contract: addLabel() resolves without value', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it('JiraProvider.addLabel() resolves to undefined', async () => {
+    const { provider, mockFetch } = makeJiraProvider();
+    mockFetch.mockResolvedValue({
+      ok: true, status: 204,
+      json: async () => ({}),
+    });
+
+    await expect(provider.addLabel('TEST-1', 'mg-daemon:needs-info')).resolves.toBeUndefined();
+  });
+
+  it('LinearProvider.addLabel() resolves to undefined', async () => {
+    const { provider, mockFetch } = makeLinearProvider();
+    // First call: find label by name
+    mockFetch
+      .mockResolvedValueOnce({
+        ok: true, status: 200,
+        json: async () => ({ data: { issueLabels: { nodes: [{ id: 'label-id-1', name: 'mg-daemon:needs-info' }] } } }),
+      })
+      // Second call: get issue's current labels
+      .mockResolvedValueOnce({
+        ok: true, status: 200,
+        json: async () => ({ data: { issue: { labels: { nodes: [] } } } }),
+      })
+      // Third call: update issue with label
+      .mockResolvedValueOnce({
+        ok: true, status: 200,
+        json: async () => ({ data: { issueUpdate: { issue: { id: 'lin-id' } } } }),
+      });
+
+    await expect(provider.addLabel('lin-id', 'mg-daemon:needs-info')).resolves.toBeUndefined();
+  });
+
+  it('GitHubProvider.addLabel() resolves to undefined', async () => {
+    const { provider } = makeGitHubProvider();
+    vi.mocked(spawnSync).mockReturnValue({ status: 0, stdout: '', stderr: '' } as any);
+
+    await expect(provider.addLabel('GH-42', 'mg-daemon:needs-info')).resolves.toBeUndefined();
+  });
+
+  it('JiraProvider.addLabel() does not duplicate existing label', async () => {
+    const { provider, mockFetch } = makeJiraProvider();
+    // First call succeeds, second call succeeds — Jira handles dedup via update semantics
+    mockFetch.mockResolvedValue({
+      ok: true, status: 204,
+      json: async () => ({}),
+    });
+
+    await provider.addLabel('TEST-1', 'mg-daemon:needs-info');
+    await expect(provider.addLabel('TEST-1', 'mg-daemon:needs-info')).resolves.toBeUndefined();
+  });
+
+  it('LinearProvider.addLabel() does not duplicate existing label', async () => {
+    const { provider, mockFetch } = makeLinearProvider();
+    // Label exists on the team
+    mockFetch
+      .mockResolvedValueOnce({
+        ok: true, status: 200,
+        json: async () => ({ data: { issueLabels: { nodes: [{ id: 'label-id-1', name: 'mg-daemon:needs-info' }] } } }),
+      })
+      // Issue already has this label
+      .mockResolvedValueOnce({
+        ok: true, status: 200,
+        json: async () => ({ data: { issue: { labels: { nodes: [{ id: 'label-id-1' }] } } } }),
+      });
+
+    // Should return without making an update call
+    await expect(provider.addLabel('lin-id', 'mg-daemon:needs-info')).resolves.toBeUndefined();
+  });
+
+  it('GitHubProvider.addLabel() does not duplicate existing label (gh handles idempotently)', async () => {
+    const { provider } = makeGitHubProvider();
+    vi.mocked(spawnSync).mockReturnValue({ status: 0, stdout: '', stderr: '' } as any);
+
+    await provider.addLabel('GH-42', 'mg-daemon:needs-info');
+    await expect(provider.addLabel('GH-42', 'mg-daemon:needs-info')).resolves.toBeUndefined();
+  });
+});

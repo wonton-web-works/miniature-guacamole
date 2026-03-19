@@ -87,6 +87,19 @@ export function validateConfig(config: DaemonConfig): ValidationError[] {
   validatePositiveNumber(config.polling?.intervalSeconds, 'polling.intervalSeconds', errors);
   validatePositiveNumber(config.polling?.batchSize, 'polling.batchSize', errors);
 
+  // Validate optional triage section (WS-DAEMON-15)
+  if (config.triage !== undefined) {
+    if (typeof config.triage.enabled !== 'boolean') {
+      errors.push({ field: 'triage.enabled', message: 'triage.enabled must be a boolean' });
+    }
+    if (typeof config.triage.autoReject !== 'boolean') {
+      errors.push({ field: 'triage.autoReject', message: 'triage.autoReject must be a boolean' });
+    }
+    if (typeof config.triage.maxTicketSizeChars !== 'number' || config.triage.maxTicketSizeChars <= 0) {
+      errors.push({ field: 'triage.maxTicketSizeChars', message: 'triage.maxTicketSizeChars must be a positive number' });
+    }
+  }
+
   return errors;
 }
 
@@ -157,6 +170,11 @@ export function initConfig(): void {
     polling: {
       intervalSeconds: 300,
       batchSize: 5,
+    },
+    triage: {
+      enabled: true,
+      autoReject: false,
+      maxTicketSizeChars: 10000,
     },
   };
 

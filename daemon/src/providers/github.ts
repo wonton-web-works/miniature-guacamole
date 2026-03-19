@@ -162,6 +162,20 @@ export class GitHubProvider implements TicketProvider {
     }
   }
 
+  async addLabel(ticketId: string, label: string): Promise<void> {
+    const issueNumber = parseIssueNumber(ticketId);
+
+    const result = spawnSync('gh', [
+      'issue', 'edit', String(issueNumber),
+      '--repo', this.config.repo,
+      '--add-label', label,
+    ], { encoding: 'utf-8' });
+
+    if (result.status !== 0) {
+      throw new Error(result.stderr?.trim() || 'gh issue edit failed');
+    }
+  }
+
   async linkPR(_ticketId: string, _prUrl: string): Promise<void> {
     // GitHub cross-references are automatic when a PR body mentions #N
     // No explicit action needed — the PR body mentioning the issue number creates the link

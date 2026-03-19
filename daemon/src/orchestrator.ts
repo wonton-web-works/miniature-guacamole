@@ -17,6 +17,7 @@ import { executeWorkstream as defaultExecuteWorkstream } from './executor';
 import { triageTicket as defaultTriageTicket } from './triage';
 import { createWorktree as defaultCreateWorktree, removeWorktree as defaultRemoveWorktree } from './worktree';
 import { createPR as defaultCreatePR } from './github';
+import { formatTriageFeedback, triageLabelFor } from './feedback';
 import { ConcurrencyLimiter } from './concurrency';
 import { appendTriageLog } from './triage-log';
 import { spawnSync } from 'child_process';
@@ -188,23 +189,14 @@ export async function processTicket(
   }
 
   if (triageResult.outcome !== 'GO') {
-    // Post comment to ticket explaining the triage decision
+    // Post comment to ticket explaining the triage decision (GH-105)
+    // Each call is independent best-effort — one failing must not block the other
     if (!dryRun) {
-      try {
-        const label = triageResult.outcome === 'REJECT'
-          ? 'mg-daemon:rejected'
-          : 'mg-daemon:needs-info';
+      const comment = formatTriageFeedback(triageResult);
+      const label = triageLabelFor(triageResult.outcome);
 
-        let comment = `**Triage: ${triageResult.outcome}**\n\n${triageResult.reason}`;
-        if (triageResult.questions && triageResult.questions.length > 0) {
-          comment += '\n\n**Questions:**\n' + triageResult.questions.map(q => `- ${q}`).join('\n');
-        }
-
-        await deps.provider.addComment(ticket.id, comment);
-        await deps.provider.addLabel(ticket.id, label);
-      } catch {
-        // Best-effort — don't fail the pipeline on comment/label errors
-      }
+      try { await deps.provider.addComment(ticket.id, comment); } catch { /* best-effort */ }
+      try { await deps.provider.addLabel(ticket.id, label); } catch { /* best-effort */ }
     }
 
     deps.tracker.markFailed(ticket.id, `Triage: ${triageResult.outcome} — ${triageResult.reason}`);

@@ -1,335 +1,108 @@
 # Visual Formatting Standards
 
-All agents should use these visual elements for consistent terminal feedback.
+All agent output follows the compact terminal format. Output is scannable by design — one line per event, no ASCII boxes, no markdown decoration.
 
-## Output Modes
-
-All visual output supports an `output_mode` flag:
+## Line Format
 
 ```
-output_mode: full | compact | silent
+[ROLE]  Status message                          elapsed
 ```
 
-- `full` — current behavior: all banners, ASCII art, status boxes, progress bars. Use for verbose/debug sessions or when explicitly requested.
-- `compact` — single-line per event, no banners, no ASCII art (exception: errors always use the full box regardless of mode). Default. Reduces per-build output from ~60 lines to ≤10 lines. Unknown or undefined `output_mode` values default to compact.
-- `silent` — errors only. All non-error output is suppressed. Errors are always shown regardless of mode — silent mode never suppresses error output.
+Every output line has three parts:
 
-To request full mode: include "verbose" or `output_mode: full` in your invocation. Unknown values default to compact.
-
-## Status Replacement
-
-Agents replace their previous status output instead of appending. Each status update overwrites the prior one.
-
-**Applies to:** Status boxes, progress indicators, and workstream status boards.
-
-**Error exception:** Error output is NEVER replaced — errors accumulate. This is consistent with the error-always-shown rule in Output Modes and the Error Display section. Errors are additive regardless of mode.
-
-**Compact mode:** Each agent's single-line status output replaces its previous line.
-
-**Full mode:** Replacement is still the default. Full mode may optionally retain history for verbose debugging when explicitly requested, but replacement is the baseline behavior — not the exception.
-
-**Silent mode:** Status replacement is N/A in silent mode. Silent mode produces no status output, only errors, which always accumulate. There is no prior status line to replace.
-
-**First render:** When there is no prior status to replace, render normally. No prior output is not an error condition.
-
-## Agent Invocation Banner
-
-When an agent starts, display:
+**Prefix** — `[ROLE]` where ROLE is the agent abbreviation. The bracket + content is always 6 chars wide, left-padded with spaces:
 
 ```
-┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
-┃  🎯 AGENT: [Agent Name]                                       ┃
-┃  📋 TASK: [Brief task description]                            ┃
-┃  ⏱️  STATUS: [Starting | In Progress | Complete]              ┃
-┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+[EM]    (4 chars + 2 spaces)
+[DEV]   (5 chars + 1 space)
+[GATE]  (6 chars, no pad needed)
+[CEO]   (5 chars + 1 space)
+[CTO]   (5 chars + 1 space)
+[QA]    (4 chars + 2 spaces)
+[SE]    (4 chars + 2 spaces)
+[ED]    (4 chars + 2 spaces)
+[PO]    (4 chars + 2 spaces)
+[TIDY]  (6 chars, no pad needed)
 ```
 
-**Compact variant** (exactly 1 line):
-```
->> [Agent Name]: [task description]
-```
+**Two spaces** after the closing bracket before the status message.
 
-## Team Invocation Banner
+**Status message** — Verb + detail, single line, no markdown. Use em dash (—) to separate clauses. Max ~60 chars.
 
-For composite teams:
+**Timing** — Right-aligned to the terminal width. Format: `Xs` for under 60 seconds, `Xm Ys` for 60 seconds or more. Omit for instant operations.
 
-```
-╔══════════════════════════════════════════════════════════════╗
-║  👥 TEAM: [Team Name]                                        ║
-╠══════════════════════════════════════════════════════════════╣
-║  Members: [Agent 1] • [Agent 2] • [Agent 3]                  ║
-║  Mode: [Planning | Execution | Review]                       ║
-╚══════════════════════════════════════════════════════════════╝
-```
+## Structure Rules
 
-**Compact variant** (exactly 1 line):
-```
->> team:[Team Name] members:[Agent 1, Agent 2, Agent 3] mode:[mode]
-```
+- Blank line between major phases. No horizontal rules, no ASCII boxes.
+- Completion: `[ROLE]  Done` with total elapsed time.
+- Error/blocked: `[ROLE]  BLOCKED — reason` in place of Done.
+- Errors always appear regardless of output mode — they are never suppressed.
 
-## Progress Indicators
+## ANSI Color Codes
 
-### Stage Progress
-```
-═══════════════════════════════════════════════════════════════
-  WORKFLOW PROGRESS
-═══════════════════════════════════════════════════════════════
-
-  [✅] Step 1: Test Specification     ████████████████████ 100%
-  [🔄] Step 2: Implementation         ████████░░░░░░░░░░░░  40%
-  [⏳] Step 3: Verification           ░░░░░░░░░░░░░░░░░░░░   0%
-  [⏳] Step 4: Review                 ░░░░░░░░░░░░░░░░░░░░   0%
-
-═══════════════════════════════════════════════════════════════
-```
-
-**Compact variant** (exactly 1 line):
-```
-progress: Step [n]/4 [status]
-```
-
-### Delegation Chain
-```
-┌─────────────────────────────────────────────────────────────┐
-│  📊 DELEGATION CHAIN                                        │
-├─────────────────────────────────────────────────────────────┤
-│                                                             │
-│  [USER] ──▶ [mg-leadership-team] ──▶ [mg-build]       │
-│                                          │                  │
-│                                          ├──▶ [qa] ✅       │
-│                                          └──▶ [dev] 🔄      │
-│                                                             │
-│  Depth: 2/3  •  Status: In Progress                        │
-└─────────────────────────────────────────────────────────────┘
-```
-
-**Compact variant** (exactly 1 line):
-```
-[parent] -> [child]: [task]
-```
-
-## Status Icons
-
-| Icon | Meaning |
-|------|---------|
-| ⏳ | Pending / Waiting |
-| 🔄 | In Progress |
-| ✅ | Complete / Success |
-| ❌ | Failed / Error |
-| ⚠️ | Warning / Attention |
-| 🚫 | Blocked |
-| 🎯 | Current Target |
-| 📋 | Task |
-| 👥 | Team |
-| 🔧 | Dev / Implementation |
-| 🧪 | QA / Testing |
-| 🎨 | Design |
-| 👔 | Leadership |
-| 📊 | Analytics / Status |
-| 🚀 | Deployment |
-| 💾 | Memory / State |
-
-## Section Headers
+Each prefix renders in a brand color. Reset after each prefix with `\033[0m`.
 
 ```
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  📋 SECTION TITLE
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+[EM]    #4A7C59  guac green    \033[38;2;74;124;89m
+[CTO]   #2E6E8E  slate blue    \033[38;2;46;110;142m
+[CEO]   #8A9BB0  silver        \033[38;2;138;155;176m
+[PO]    #8B4A2E  burnt sienna  \033[38;2;139;74;46m
+[QA]    #7A5C8B  muted plum    \033[38;2;122;92;139m
+[SE]    #3D5A6B  deep slate    \033[38;2;61;90;107m
+[DEV]   #E8E8E8  text white    \033[38;2;232;232;232m
+[GATE]  #4A7C59  guac green    \033[38;2;74;124;89m
+[TIDY]  #4A7C59  guac green    \033[38;2;74;124;89m
+[ED]    #4A7C59  guac green    \033[38;2;74;124;89m
 ```
 
-**Compact variant** (exactly 1 line):
+Fallback: when color is not available, prefixes remain readable as plain `[EM]`, `[DEV]`, etc. Respect `NO_COLOR` env and `prefers-reduced-motion` where applicable to the rendering context.
+
+## Examples
+
+**MECHANICAL /mg-build:**
 ```
---- [SECTION TITLE] ---
-```
-
-## Agent Spawning Feedback
-
-Three styles available based on context:
-
-### Style 1: Live Activity Feed (for Teams)
-
-Use this for team skills (mg-build, mg-leadership-team, mg-design):
-
-```
-┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
-┃  LIVE AGENT ACTIVITY                                        ┃
-┣━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┫
-┃                                                              ┃
-┃  13:45:01  >> SPAWN   qa (sonnet)                           ┃
-┃            |  Task: Write test specifications                ┃
-┃            |  Parent: mg-build                       ┃
-┃            |  Depth: 2/3                                     ┃
-┃                                                              ┃
-┃  13:45:32  << RETURN  qa -> mg-build                ┃
-┃            |  Status: completed                              ┃
-┃            |  Result: 28 tests created                       ┃
-┃            |  Duration: 31s                                  ┃
-┃                                                              ┃
-┃  13:45:33  >> SPAWN   dev (sonnet)                          ┃
-┃            |  Task: Implement to pass tests                  ┃
-┃            |  Parent: mg-build                       ┃
-┃            |  Depth: 2/3                                     ┃
-┃                                                              ┃
-┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+[EM]    Classifying... MECHANICAL                  0.2s
+[DEV]   Writing tests — 12 specs                   4.1s
+[DEV]   Implementing — all tests passing          18.7s
+[GATE]  Coverage 99.4% ✓  Lines 142 ✓              0.3s
+[EM]    Done                                      23.3s
 ```
 
-### Style 2: Minimal Inline (for ICs)
-
-Use this for IC agents (dev, qa, design, etc.):
-
+**ARCHITECTURAL /mg-build:**
 ```
-  >> spawn: qa (sonnet) -> "Write test specs for auth"
-  << recv:  qa completed in 45s -> 28 tests created
-  >> spawn: dev (sonnet) -> "Implement auth feature"
-  .. running: dev (sonnet) [████████░░░░░░░░░░░░] 40%
-  << recv:  dev completed in 120s -> impl ready
-```
+[EM]    Classifying... ARCHITECTURAL               0.3s
 
-### Style 3: Debug Dashboard (for verbose/debug mode)
+[CEO]   Strategic fit — approved
+[CTO]   Technical approach — approved
+[ED]    Resources allocated — 2 workstreams         8.2s
 
-Use when DEBUG=true or --verbose flag. ASCII-focused, data-rich:
+[QA]    Writing tests — 24 specs                   6.4s
+[DEV]   Implementing — all tests passing          34.1s
+[QA]    Verification — coverage 99.1%               3.2s
 
-```
-+===============================================================+
-|                     AGENT DASHBOARD [DEBUG]                    |
-+===============+===============+===============+================+
-| AGENT         | MODEL         | STATUS        | TASK           |
-+---------------+---------------+---------------+----------------+
-| leadership    | opus          | idle          | --             |
-| engineering   | sonnet        | active        | coordinating   |
-| dev           | sonnet        | running       | implementing   |
-| qa            | sonnet        | complete      | 28 tests       |
-| design        | sonnet        | waiting       | --             |
-| deploy        | haiku         | idle          | --             |
-+---------------+---------------+---------------+----------------+
-| SPAWN HISTORY                                                  |
-+---------------+---------------+---------------+----------------+
-| TIME          | ACTION        | AGENT         | PARENT         |
-+---------------+---------------+---------------+----------------+
-| 13:45:01.234  | spawn         | qa            | engineering    |
-| 13:45:32.891  | return        | qa            | engineering    |
-| 13:45:33.102  | spawn         | dev           | engineering    |
-+---------------+---------------+---------------+----------------+
-| METRICS                                                        |
-+---------------+---------------+---------------+----------------+
-| Total Spawns: 3    | Active: 1    | Completed: 1  | Failed: 0  |
-| Avg Duration: 31s  | Max Depth: 2 | Token Est: ~50k            |
-+===============================================================+
+[SE]    Code review — approved                    12.0s
+
+[CEO]   Final review — APPROVED                    5.1s
+[EM]    Done                                    1m 09s
 ```
 
-## Legacy Delegation Notices (deprecated, use above)
-
-Simple delegation notice (still supported):
-
+**LEADERSHIP /mg-leadership-team:**
 ```
-  >> delegating: [agent-name] -> "[task]"
-```
-
-Simple return notice:
-
-```
-  << received: [agent-name] ([status]) -> "[summary]"
+[CEO]   Business alignment — PASS
+[CTO]   Technical quality — PASS
+[ED]    Operational readiness — PASS                6.4s
+[EM]    Decision: APPROVED                          6.4s
 ```
 
-## Gate Check Display
-
+**TIDY /mg-tidy:**
 ```
-┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
-┃  🚦 QUALITY GATE: [Gate Name]                               ┃
-┣━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┫
-┃  ✅ Tests passing: 47/47                                    ┃
-┃  ✅ Coverage: 99.2% (target: 99%)                           ┃
-┃  ✅ No linting errors                                       ┃
-┃  ⚠️  Visual changes detected (pending design review)        ┃
-┣━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┫
-┃  RESULT: ⚠️ CONDITIONAL PASS (awaiting design approval)     ┃
-┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+[TIDY]  Preflight — gh authenticated ✓
+[TIDY]  Audit — 28 open issues, 0 duplicates
+[TIDY]  Memory — 6 state files, 0 orphaned
+[TIDY]  Done — state is clean                      2.1s
 ```
 
-**Compact variant** (exactly 1 line):
+**Error:**
 ```
-gate:[Gate Name] [PASS|FAIL] tests:[n/n] coverage:[n%]
-```
-
-## Workstream Status Board
-
-```
-╔══════════════════════════════════════════════════════════════╗
-║                    WORKSTREAM STATUS                         ║
-╠══════════════════════════════════════════════════════════════╣
-║                                                              ║
-║  WS-1: Shared Memory         [✅ COMPLETE]    ████████████  ║
-║  WS-2: Role Anchors          [🔄 IN PROGRESS] ████████░░░░  ║
-║  WS-3: Structured Returns    [🔄 IN PROGRESS] ██████░░░░░░  ║
-║  WS-4: Supervisor Agent      [🚫 BLOCKED]     ░░░░░░░░░░░░  ║
-║                                                              ║
-╠══════════════════════════════════════════════════════════════╣
-║  Overall Progress: 45%  •  Active: 2  •  Blocked: 1         ║
-╚══════════════════════════════════════════════════════════════╝
-```
-
-**Compact variant** (single line per workstream):
-```
-[WS-id]: [name] [[STATUS]]
-```
-
-## Error Display
-
-```
-┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
-┃  ❌ ERROR: [Error Type]                                     ┃
-┣━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┫
-┃  Message: [Error message]                                   ┃
-┃  Location: [file:line or agent]                             ┃
-┃  Action: [What to do next]                                  ┃
-┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
-```
-
-**Note:** Error display uses the full box in all modes, including silent. Errors are always shown — silent mode suppresses non-error output only.
-
-## Escalation Notice
-
-```
-  ⚠️ ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-     ESCALATION REQUIRED
-
-     Reason: [Why escalation is needed]
-     From: [current-agent]
-     To: [escalation-target]
-
-     Decision needed: [What needs to be decided]
-
-  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ ⚠️
-```
-
-**Compact variant** (exactly 1 line):
-```
-⚠ ESCALATION: [reason] → [target]
-```
-
-## Completion Summary
-
-```
-╔══════════════════════════════════════════════════════════════╗
-║                    ✅ TASK COMPLETE                          ║
-╠══════════════════════════════════════════════════════════════╣
-║                                                              ║
-║  Agent: [agent-name]                                         ║
-║  Task: [task description]                                    ║
-║  Duration: [time]                                            ║
-║                                                              ║
-║  Deliverables:                                               ║
-║  • [deliverable 1]                                           ║
-║  • [deliverable 2]                                           ║
-║                                                              ║
-║  Next: [recommended next action]                             ║
-║                                                              ║
-╚══════════════════════════════════════════════════════════════╝
-```
-
-**Compact variant** (exactly 2 lines):
-```
-✓ [agent-name]: [task] ([duration])
-  next: [recommended next action]
+[DEV]   BLOCKED — test suite missing entry point
 ```

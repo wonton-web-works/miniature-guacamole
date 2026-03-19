@@ -208,6 +208,65 @@ For decision files (`agent-*-decisions.json`, `architecture-decisions.json`): ke
 For feature spec files (`*-feature-specs.json`): keep the most recent **10 entries** in the live file.
 In both cases, in-progress workstream entries are always preserved regardless of the count limit.
 
+## Agent Message Bus
+
+Agents can send structured messages to other agents via memory files.
+
+### Message Format
+
+Messages are written to `.claude/memory/messages-{from}-{to}.json`:
+
+```json
+{
+  "messages": [
+    {
+      "id": "msg-001",
+      "from": "qa",
+      "to": "dev",
+      "workstream_id": "WS-42",
+      "timestamp": "2026-03-19T15:00:00Z",
+      "type": "info|question|blocker|handoff",
+      "subject": "Test spec clarification",
+      "body": "The acceptance criteria for edge case X is ambiguous. Using strict validation.",
+      "requires_response": false
+    }
+  ]
+}
+```
+
+### Message Types
+
+| Type | Purpose | Requires Response |
+|------|---------|-------------------|
+| `info` | Status update, FYI | No |
+| `question` | Needs clarification | Yes |
+| `blocker` | Blocked, needs help | Yes |
+| `handoff` | Task complete, passing to next agent | No |
+
+### Reading Messages
+
+Before starting work, agents SHOULD check for pending messages:
+```yaml
+read: .claude/memory/messages-*-{my-role}.json
+```
+
+### Writing Messages
+
+After completing work or encountering a blocker:
+```yaml
+write: .claude/memory/messages-{my-role}-{target-role}.json
+```
+
+### Agent State Query
+
+Any agent can read another agent's decision file to understand their state:
+```yaml
+# Query another agent's state
+read: .claude/memory/agent-{role}-decisions.json
+```
+
+This replaces fire-and-forget consultation with structured state sharing.
+
 ## Hybrid Storage Lifecycle
 
 Agents write to `.claude/memory/` files during execution (fast, no dependencies).

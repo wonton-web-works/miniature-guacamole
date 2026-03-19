@@ -9,6 +9,9 @@ import type { ExecClaudeFn as PlannerExecClaudeFn } from './planner';
 import type { ExecClaudeFn as ExecutorExecClaudeFn } from './executor';
 import type { ExecSyncFn } from './worktree';
 import type { PRResult } from './github';
+import type { TriageResult, TriageConfig, ExecClaudeFn as TriageExecClaudeFn } from './triage';
+import { triageTicket as defaultTriageTicket } from './triage';
+import { appendTriageLog } from './dashboard';
 
 import { execClaude as defaultExecClaude } from './claude';
 import { planTicket as defaultPlanTicket } from './planner';
@@ -77,10 +80,17 @@ export interface OrchestratorConfig {
   removeWorktree?: (worktreePath: string, execSyncFn?: ExecSyncFn) => void;
   createPR?: (...args: Parameters<typeof defaultCreatePR>) => PRResult;
   execClaude?: PlannerExecClaudeFn;
+  triageTicket?: (
+    ticket: NormalizedTicket,
+    config: TriageConfig,
+    execClaudeFn: TriageExecClaudeFn,
+    options?: { timeout?: number }
+  ) => Promise<TriageResult>;
 }
 
 export interface PipelineResult {
   ticketId: string;
+  triageVerdict?: TriageResult['verdict'];
   planned: WorkstreamPlan[];
   executed: ExecutionResult[];
   prUrl?: string;
@@ -120,15 +130,16 @@ ${resultLines}
 
 /**
  * Process a single ticket through the full pipeline:
- * 1. Transition ticket to In Progress
- * 2. Plan workstreams via Claude
- * 3. Create subtasks in tracker for each workstream
- * 4. Create worktree
- * 5. Execute each workstream via Claude
- * 6. Commit, push, create draft PR
- * 7. Link PR to ticket
- * 8. Transition ticket to In Review
- * 9. Clean up worktree
+ * 1. Triage ticket (if enabled) — assess before planning
+ * 2. Transition ticket to In Progress
+ * 3. Plan workstreams via Claude
+ * 4. Create subtasks in tracker for each workstream
+ * 5. Create worktree
+ * 6. Execute each workstream via Claude
+ * 7. Commit, push, create draft PR
+ * 8. Link PR to ticket
+ * 9. Transition ticket to In Review
+ * 10. Clean up worktree
  */
 export async function processTicket(
   ticket: NormalizedTicket,
@@ -151,11 +162,50 @@ export async function processTicket(
   const removeWorktreeFn = deps.removeWorktree ?? defaultRemoveWorktree;
   const createPRFn = deps.createPR ?? defaultCreatePR;
   const passthrough: PlannerExecClaudeFn = deps.execClaude ?? defaultExecClaude;
+  const triageFn = deps.triageTicket ?? defaultTriageTicket;
 
   // Mark as processing in tracker
   deps.tracker.markProcessing(ticket.id);
 
-  // Step 1: Transition to In Progress (write operation — skip in dry-run)
+  // Step 1: Triage gate — assess ticket before planning (if enabled)
+  const triageConfig = deps.config.triage;
+  let triageVerdict: TriageResult['verdict'] | undefined;
+
+  if (triageConfig && triageConfig.enabled) {
+    const triageResult = await triageFn(ticket, triageConfig, passthrough, { timeout });
+    triageVerdict = triageResult.verdict;
+
+    // Persist triage result to log
+    appendTriageLog({
+      ticketId: ticket.id,
+      verdict: triageResult.verdict,
+      reasons: triageResult.reasons,
+      timestamp: new Date().toISOString(),
+    });
+
+    if (triageResult.verdict !== 'GO') {
+      // Post comment explaining the decision
+      try {
+        await deps.provider.addComment(ticket.id, triageResult.suggestedComment);
+      } catch {
+        // Best-effort — don't fail pipeline on comment failure
+      }
+
+      const error = `Triage ${triageResult.verdict.toLowerCase()}: ${triageResult.reasons.join('; ')}`;
+      deps.tracker.markFailed(ticket.id, error);
+
+      return {
+        ticketId: ticket.id,
+        triageVerdict,
+        planned: [],
+        executed: [],
+        success: false,
+        error,
+      };
+    }
+  }
+
+  // Step 2: Transition to In Progress (write operation — skip in dry-run)
   if (!dryRun) {
     try {
       await deps.provider.transitionStatus(ticket.id, 'in_progress');
@@ -173,6 +223,7 @@ export async function processTicket(
     deps.tracker.markFailed(ticket.id, error);
     return {
       ticketId: ticket.id,
+      triageVerdict,
       planned: [],
       executed: [],
       success: false,
@@ -184,6 +235,7 @@ export async function processTicket(
   if (planned.length === 0) {
     return {
       ticketId: ticket.id,
+      triageVerdict,
       planned: [],
       executed: [],
       success: false,
@@ -193,7 +245,7 @@ export async function processTicket(
 
   // Dry-run: return the plan without executing any write operations
   if (dryRun) {
-    return { ticketId: ticket.id, planned, executed: [], success: true };
+    return { ticketId: ticket.id, triageVerdict, planned, executed: [], success: true };
   }
 
   // Step 3: Create subtasks for each workstream
@@ -259,6 +311,7 @@ export async function processTicket(
 
   return {
     ticketId: ticket.id,
+    triageVerdict,
     planned,
     executed,
     prUrl,

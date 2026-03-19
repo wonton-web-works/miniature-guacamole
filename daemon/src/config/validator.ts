@@ -57,6 +57,18 @@ export function validateConfig(config: DaemonConfig): ValidationError[] {
     validateMCPConfig(config.mcp, errors);
   }
 
+  // Validate optional triage section
+  if ((config as any).triage !== undefined) {
+    if (typeof (config as any).triage !== 'object' || (config as any).triage === null || Array.isArray((config as any).triage)) {
+      errors.push({
+        field: 'triage',
+        message: 'triage must be an object'
+      });
+    } else {
+      validateTriageConfig((config as any).triage, errors);
+    }
+  }
+
   return errors;
 }
 
@@ -340,6 +352,43 @@ function validateMCPConfig(mcp: any, errors: ValidationError[]): void {
           message: 'mcp.servers args must be an array of strings'
         });
       }
+    });
+  }
+}
+
+function validateTriageConfig(triage: any, errors: ValidationError[]): void {
+  // Apply defaults for undefined fields
+  if (triage.enabled === undefined) {
+    triage.enabled = true;
+  }
+  if (triage.autoReject === undefined) {
+    triage.autoReject = false;
+  }
+  if (triage.maxTicketSizeChars === undefined) {
+    triage.maxTicketSizeChars = 10000;
+  }
+
+  // Validate enabled
+  if (typeof triage.enabled !== 'boolean') {
+    errors.push({
+      field: 'triage.enabled',
+      message: 'triage.enabled must be a boolean (true or false)'
+    });
+  }
+
+  // Validate autoReject
+  if (typeof triage.autoReject !== 'boolean') {
+    errors.push({
+      field: 'triage.autoReject',
+      message: 'triage.autoReject must be a boolean (true or false)'
+    });
+  }
+
+  // Validate maxTicketSizeChars
+  if (typeof triage.maxTicketSizeChars !== 'number' || triage.maxTicketSizeChars < 1) {
+    errors.push({
+      field: 'triage.maxTicketSizeChars',
+      message: 'triage.maxTicketSizeChars must be a positive number greater than 0'
     });
   }
 }

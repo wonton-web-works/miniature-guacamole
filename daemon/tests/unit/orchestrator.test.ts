@@ -5,6 +5,7 @@ import type { NormalizedTicket, TicketProvider } from '../../src/providers/types
 import type { DaemonConfig } from '../../src/types';
 import type { WorkstreamPlan } from '../../src/planner';
 import type { ExecutionResult } from '../../src/executor';
+import type { TriageResult } from '../../src/triage';
 
 // ---------------------------------------------------------------------------
 // Fixtures
@@ -33,7 +34,7 @@ const OK_RESULT: ExecutionResult = {
   durationMs: 5000,
 };
 
-function makeConfig(overrides?: Partial<DaemonConfig['orchestration']>): DaemonConfig {
+function makeConfig(overrides?: Partial<DaemonConfig['orchestration']>, triageOverrides?: Partial<DaemonConfig['triage']>): DaemonConfig {
   return {
     provider: 'jira',
     jira: { host: 'https://example.atlassian.net', apiToken: 'tok', project: 'PROJ', jql: '' },
@@ -47,6 +48,12 @@ function makeConfig(overrides?: Partial<DaemonConfig['orchestration']>): DaemonC
       errorBudget: 3,
       ...overrides,
     },
+    triage: triageOverrides !== undefined ? {
+      enabled: true,
+      autoReject: false,
+      maxTicketSizeChars: 10000,
+      ...triageOverrides,
+    } : undefined,
   };
 }
 
@@ -56,19 +63,40 @@ function makeProvider(overrides?: Partial<TicketProvider>): TicketProvider {
     createSubtask: vi.fn().mockResolvedValue('SUB-1'),
     transitionStatus: vi.fn().mockResolvedValue(undefined),
     addComment: vi.fn().mockResolvedValue(undefined),
+    addLabel: vi.fn().mockResolvedValue(undefined),
     linkPR: vi.fn().mockResolvedValue(undefined),
     ...overrides,
   };
 }
 
+const GO_RESULT: TriageResult = {
+  verdict: 'GO',
+  reasons: ['Well-scoped', 'Clear requirements'],
+  suggestedComment: 'Ticket is ready for implementation.',
+};
+
+const NEEDS_CLARIFICATION_RESULT: TriageResult = {
+  verdict: 'NEEDS_CLARIFICATION',
+  reasons: ['Missing acceptance criteria'],
+  suggestedComment: 'Please add acceptance criteria before this can be implemented.',
+};
+
+const REJECT_RESULT: TriageResult = {
+  verdict: 'REJECT',
+  reasons: ['Out of scope for this repo'],
+  suggestedComment: 'This ticket is out of scope for autonomous implementation.',
+};
+
 function makeDeps(overrides?: {
   providerOverrides?: Partial<TicketProvider>;
   configOverrides?: Partial<DaemonConfig['orchestration']>;
+  triageOverrides?: Partial<DaemonConfig['triage']>;
   planTicket?: ReturnType<typeof vi.fn>;
   executeWorkstream?: ReturnType<typeof vi.fn>;
   createWorktree?: ReturnType<typeof vi.fn>;
   removeWorktree?: ReturnType<typeof vi.fn>;
   createPR?: ReturnType<typeof vi.fn>;
+  triageTicket?: ReturnType<typeof vi.fn>;
   tracker?: {
     markProcessing: ReturnType<typeof vi.fn>;
     markComplete: ReturnType<typeof vi.fn>;
@@ -85,7 +113,7 @@ function makeDeps(overrides?: {
 
   return {
     provider: makeProvider(overrides?.providerOverrides),
-    config: makeConfig(overrides?.configOverrides),
+    config: makeConfig(overrides?.configOverrides, overrides?.triageOverrides),
     tracker,
     planTicket: overrides?.planTicket ?? vi.fn().mockResolvedValue(WORKSTREAMS),
     executeWorkstream:
@@ -106,6 +134,7 @@ function makeDeps(overrides?: {
     createPR:
       overrides?.createPR ??
       vi.fn().mockReturnValue({ success: true, prUrl: 'https://github.com/owner/repo/pull/42' }),
+    triageTicket: overrides?.triageTicket ?? vi.fn().mockResolvedValue(GO_RESULT),
   };
 }
 
@@ -375,6 +404,197 @@ describe('processTicket() (WS-DAEMON-11)', () => {
       const deps = makeDeps();
       const result = await processTicket(TICKET, deps);
       expect(result.planned).toHaveLength(WORKSTREAMS.length);
+    });
+  });
+});
+
+// ---------------------------------------------------------------------------
+// processTicket() triage gate tests (WS-DAEMON-15 / GH-16)
+// ---------------------------------------------------------------------------
+
+describe('processTicket() triage gate (GH-16)', () => {
+  describe('AC: On GO, proceeds to planning unchanged', () => {
+    it('GIVEN triage returns GO WHEN processTicket called THEN planTicket is called', async () => {
+      const deps = makeDeps({
+        triageOverrides: { enabled: true },
+        triageTicket: vi.fn().mockResolvedValue(GO_RESULT),
+      });
+      const result = await processTicket(TICKET, deps);
+      expect(deps.triageTicket).toHaveBeenCalledOnce();
+      expect(deps.planTicket).toHaveBeenCalledOnce();
+      expect(result.triageVerdict).toBe('GO');
+      expect(result.success).toBe(true);
+    });
+
+    it('GIVEN triage returns GO WHEN processTicket called THEN full pipeline runs (PR created)', async () => {
+      const deps = makeDeps({
+        triageOverrides: { enabled: true },
+        triageTicket: vi.fn().mockResolvedValue(GO_RESULT),
+      });
+      const result = await processTicket(TICKET, deps);
+      expect(deps.createPR).toHaveBeenCalled();
+      expect(result.prUrl).toBeDefined();
+    });
+  });
+
+  describe('AC: On NEEDS_CLARIFICATION, posts comment and applies label', () => {
+    it('GIVEN triage returns NEEDS_CLARIFICATION WHEN processTicket called THEN posts comment via provider.addComment', async () => {
+      const deps = makeDeps({
+        triageOverrides: { enabled: true },
+        triageTicket: vi.fn().mockResolvedValue(NEEDS_CLARIFICATION_RESULT),
+      });
+      await processTicket(TICKET, deps);
+      expect(deps.provider.addComment).toHaveBeenCalledWith(
+        TICKET.id,
+        NEEDS_CLARIFICATION_RESULT.suggestedComment
+      );
+    });
+
+    it('GIVEN triage returns NEEDS_CLARIFICATION WHEN processTicket called THEN skips planning', async () => {
+      const deps = makeDeps({
+        triageOverrides: { enabled: true },
+        triageTicket: vi.fn().mockResolvedValue(NEEDS_CLARIFICATION_RESULT),
+      });
+      await processTicket(TICKET, deps);
+      expect(deps.planTicket).not.toHaveBeenCalled();
+    });
+
+    it('GIVEN triage returns NEEDS_CLARIFICATION WHEN processTicket called THEN skips execution and PR', async () => {
+      const deps = makeDeps({
+        triageOverrides: { enabled: true },
+        triageTicket: vi.fn().mockResolvedValue(NEEDS_CLARIFICATION_RESULT),
+      });
+      await processTicket(TICKET, deps);
+      expect(deps.executeWorkstream).not.toHaveBeenCalled();
+      expect(deps.createWorktree).not.toHaveBeenCalled();
+      expect(deps.createPR).not.toHaveBeenCalled();
+    });
+
+    it('GIVEN triage returns NEEDS_CLARIFICATION WHEN processTicket called THEN result has triageVerdict and success=false', async () => {
+      const deps = makeDeps({
+        triageOverrides: { enabled: true },
+        triageTicket: vi.fn().mockResolvedValue(NEEDS_CLARIFICATION_RESULT),
+      });
+      const result = await processTicket(TICKET, deps);
+      expect(result.triageVerdict).toBe('NEEDS_CLARIFICATION');
+      expect(result.success).toBe(false);
+      expect(result.error).toMatch(/triage/i);
+    });
+
+    it('GIVEN triage returns NEEDS_CLARIFICATION WHEN processTicket called THEN tracker.markFailed is called', async () => {
+      const deps = makeDeps({
+        triageOverrides: { enabled: true },
+        triageTicket: vi.fn().mockResolvedValue(NEEDS_CLARIFICATION_RESULT),
+      });
+      await processTicket(TICKET, deps);
+      expect(deps.tracker.markFailed).toHaveBeenCalledWith(TICKET.id, expect.stringMatching(/triage/i));
+    });
+  });
+
+  describe('AC: On REJECT, posts comment and applies label', () => {
+    it('GIVEN triage returns REJECT WHEN processTicket called THEN posts comment via provider.addComment', async () => {
+      const deps = makeDeps({
+        triageOverrides: { enabled: true, autoReject: true },
+        triageTicket: vi.fn().mockResolvedValue(REJECT_RESULT),
+      });
+      await processTicket(TICKET, deps);
+      expect(deps.provider.addComment).toHaveBeenCalledWith(
+        TICKET.id,
+        REJECT_RESULT.suggestedComment
+      );
+    });
+
+    it('GIVEN triage returns REJECT WHEN processTicket called THEN skips planning, execution, and PR', async () => {
+      const deps = makeDeps({
+        triageOverrides: { enabled: true, autoReject: true },
+        triageTicket: vi.fn().mockResolvedValue(REJECT_RESULT),
+      });
+      await processTicket(TICKET, deps);
+      expect(deps.planTicket).not.toHaveBeenCalled();
+      expect(deps.executeWorkstream).not.toHaveBeenCalled();
+      expect(deps.createPR).not.toHaveBeenCalled();
+    });
+
+    it('GIVEN triage returns REJECT WHEN processTicket called THEN result has triageVerdict=REJECT and success=false', async () => {
+      const deps = makeDeps({
+        triageOverrides: { enabled: true, autoReject: true },
+        triageTicket: vi.fn().mockResolvedValue(REJECT_RESULT),
+      });
+      const result = await processTicket(TICKET, deps);
+      expect(result.triageVerdict).toBe('REJECT');
+      expect(result.success).toBe(false);
+    });
+
+    it('GIVEN triage returns REJECT WHEN processTicket called THEN tracker.markFailed is called', async () => {
+      const deps = makeDeps({
+        triageOverrides: { enabled: true, autoReject: true },
+        triageTicket: vi.fn().mockResolvedValue(REJECT_RESULT),
+      });
+      await processTicket(TICKET, deps);
+      expect(deps.tracker.markFailed).toHaveBeenCalledWith(TICKET.id, expect.stringMatching(/triage|reject/i));
+    });
+  });
+
+  describe('AC: triage.enabled=false skips triage entirely', () => {
+    it('GIVEN triage.enabled=false WHEN processTicket called THEN triageTicket is NOT called', async () => {
+      const deps = makeDeps({
+        triageOverrides: { enabled: false },
+      });
+      await processTicket(TICKET, deps);
+      expect(deps.triageTicket).not.toHaveBeenCalled();
+    });
+
+    it('GIVEN triage.enabled=false WHEN processTicket called THEN proceeds to planning normally', async () => {
+      const deps = makeDeps({
+        triageOverrides: { enabled: false },
+      });
+      const result = await processTicket(TICKET, deps);
+      expect(deps.planTicket).toHaveBeenCalled();
+      expect(result.success).toBe(true);
+    });
+
+    it('GIVEN triage.enabled=false WHEN processTicket called THEN triageVerdict is undefined', async () => {
+      const deps = makeDeps({
+        triageOverrides: { enabled: false },
+      });
+      const result = await processTicket(TICKET, deps);
+      expect(result.triageVerdict).toBeUndefined();
+    });
+  });
+
+  describe('AC: No triage config skips triage (backward compatible)', () => {
+    it('GIVEN no triage config WHEN processTicket called THEN triageTicket is NOT called', async () => {
+      const deps = makeDeps(); // no triageOverrides → config.triage is undefined
+      await processTicket(TICKET, deps);
+      expect(deps.triageTicket).not.toHaveBeenCalled();
+    });
+
+    it('GIVEN no triage config WHEN processTicket called THEN proceeds to planning normally', async () => {
+      const deps = makeDeps();
+      const result = await processTicket(TICKET, deps);
+      expect(deps.planTicket).toHaveBeenCalled();
+      expect(result.success).toBe(true);
+      expect(result.triageVerdict).toBeUndefined();
+    });
+  });
+
+  describe('AC: Triage verdict is included in PipelineResult', () => {
+    it('GIVEN triage enabled and GO WHEN processTicket resolves THEN result.triageVerdict is GO', async () => {
+      const deps = makeDeps({
+        triageOverrides: { enabled: true },
+        triageTicket: vi.fn().mockResolvedValue(GO_RESULT),
+      });
+      const result = await processTicket(TICKET, deps);
+      expect(result.triageVerdict).toBe('GO');
+    });
+
+    it('GIVEN triage enabled and NEEDS_CLARIFICATION WHEN processTicket resolves THEN result.triageVerdict is NEEDS_CLARIFICATION', async () => {
+      const deps = makeDeps({
+        triageOverrides: { enabled: true },
+        triageTicket: vi.fn().mockResolvedValue(NEEDS_CLARIFICATION_RESULT),
+      });
+      const result = await processTicket(TICKET, deps);
+      expect(result.triageVerdict).toBe('NEEDS_CLARIFICATION');
     });
   });
 });

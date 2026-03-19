@@ -319,6 +319,59 @@ export class LinearProvider implements TicketProvider {
     throwIfErrors(data.errors, 'addComment');
   }
 
+  async addLabel(ticketId: string, label: string): Promise<void> {
+    // Step 1: Find the label ID by name
+    const findQuery = `
+      query FindLabel($filter: IssueLabelFilter) {
+        issueLabels(filter: $filter) {
+          nodes {
+            id
+            name
+          }
+        }
+      }
+    `;
+
+    interface LinearFindLabelResponse {
+      data?: {
+        issueLabels: {
+          nodes: Array<{ id: string; name: string }>;
+        };
+      };
+      errors?: Array<{ message: string }>;
+    }
+
+    const findData = await this.graphql<LinearFindLabelResponse>(findQuery, {
+      filter: { name: { eq: label } },
+    });
+
+    throwIfErrors(findData.errors, 'addLabel (find)');
+
+    const labelNode = findData.data?.issueLabels?.nodes?.[0];
+    if (!labelNode) {
+      // Label doesn't exist in this workspace — skip silently
+      return;
+    }
+
+    // Step 2: Add label to issue via issueUpdate mutation
+    const updateQuery = `
+      mutation IssueAddLabel($id: String!, $labelIds: [String!]!) {
+        issueUpdate(id: $id, input: { labelIds: $labelIds }) {
+          issue {
+            id
+          }
+        }
+      }
+    `;
+
+    const updateData = await this.graphql<LinearUpdateIssueResponse>(updateQuery, {
+      id: ticketId,
+      labelIds: [labelNode.id],
+    });
+
+    throwIfErrors(updateData.errors, 'addLabel (update)');
+  }
+
   async linkPR(ticketId: string, prUrl: string): Promise<void> {
     const query = `
       mutation AttachmentCreate($issueId: String!, $url: String!, $title: String!) {

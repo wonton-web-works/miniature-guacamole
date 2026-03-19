@@ -1,8 +1,8 @@
 // Pipeline dashboard for the mg-daemon
 // WS-DAEMON-14: Pipeline Observability & Safety
 
-import { existsSync, readFileSync } from 'fs';
-import { join } from 'path';
+import { existsSync, readFileSync, writeFileSync, mkdirSync } from 'fs';
+import { join, dirname } from 'path';
 import { statusDaemon } from './process';
 import { isStale } from './heartbeat';
 import type { DaemonConfig, ProcessedTicket } from './types';
@@ -25,6 +25,19 @@ export interface FailedTicket {
   failedAt: string;
 }
 
+export interface TriageStats {
+  go: number;
+  needsInfo: number;
+  rejected: number;
+}
+
+export interface TriageLogEntry {
+  ticketId: string;
+  verdict: string;
+  reasons: string[];
+  timestamp: string;
+}
+
 export interface DashboardData {
   daemonStatus: { running: boolean; pid?: number; uptimeMs?: number };
   lastPollTime: string | null;
@@ -33,6 +46,7 @@ export interface DashboardData {
   recentCompleted: CompletedTicket[];
   recentFailed: FailedTicket[];
   errorBudget: { consecutive: number; threshold: number; paused: boolean };
+  triageStats?: TriageStats;
 }
 
 // ─── File paths ──────────────────────────────────────────────────────────────
@@ -42,6 +56,7 @@ const PROCESSED_FILE = join(MG_DIR, 'processed.json');
 const ERROR_BUDGET_FILE = join(MG_DIR, 'error-budget.json');
 const LAST_POLL_FILE = join(MG_DIR, 'last-poll.json');
 const HEARTBEAT_PATH = join(MG_DIR, 'heartbeat');
+const TRIAGE_LOG_FILE = join(MG_DIR, 'triage-log.json');
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -103,6 +118,16 @@ export function gatherDashboardData(config: DaemonConfig): DashboardData {
   const pollRaw = readJsonFile<{ timestamp: string }>(LAST_POLL_FILE);
   const lastPollTime = pollRaw?.timestamp ?? null;
 
+  // Triage stats from triage-log.json
+  const triageLogRaw = readJsonFile<TriageLogEntry[]>(TRIAGE_LOG_FILE);
+  const triageLog = Array.isArray(triageLogRaw) ? triageLogRaw : [];
+  const triageStats: TriageStats = { go: 0, needsInfo: 0, rejected: 0 };
+  for (const entry of triageLog) {
+    if (entry.verdict === 'GO') triageStats.go++;
+    else if (entry.verdict === 'NEEDS_CLARIFICATION') triageStats.needsInfo++;
+    else if (entry.verdict === 'REJECT') triageStats.rejected++;
+  }
+
   return {
     daemonStatus,
     lastPollTime,
@@ -111,7 +136,24 @@ export function gatherDashboardData(config: DaemonConfig): DashboardData {
     recentCompleted,
     recentFailed,
     errorBudget,
+    triageStats,
   };
+}
+
+// ─── appendTriageLog ────────────────────────────────────────────────────────
+
+/**
+ * Append a triage result entry to the triage log file.
+ * Creates the file if it doesn't exist, appends if it does.
+ */
+export function appendTriageLog(entry: TriageLogEntry): void {
+  const existing = readJsonFile<TriageLogEntry[]>(TRIAGE_LOG_FILE) ?? [];
+  existing.push(entry);
+  const dir = dirname(TRIAGE_LOG_FILE);
+  if (!existsSync(dir)) {
+    mkdirSync(dir, { recursive: true });
+  }
+  writeFileSync(TRIAGE_LOG_FILE, JSON.stringify(existing, null, 2));
 }
 
 // ─── formatDashboard ─────────────────────────────────────────────────────────
@@ -197,6 +239,14 @@ export function formatDashboard(data: DashboardData): string {
     ? `PAUSED (${errorBudget.consecutive}/${errorBudget.threshold} failures)`
     : `${errorBudget.consecutive}/${errorBudget.threshold} (budget OK)`;
   lines.push(row(`Errors:    ${budgetStr}`));
+
+  // TRIAGE
+  if (data.triageStats) {
+    lines.push(BORDER_MID);
+    lines.push(row('TRIAGE'));
+    const { triageStats } = data;
+    lines.push(row(`  GO: ${triageStats.go}  │  Needs Info: ${triageStats.needsInfo}  │  Rejected: ${triageStats.rejected}`));
+  }
 
   // IN-FLIGHT
   lines.push(BORDER_MID);

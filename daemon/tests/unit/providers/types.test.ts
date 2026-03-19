@@ -150,12 +150,13 @@ describe('Provider Types (WS-DAEMON-10: Type definitions)', () => {
   });
 
   describe('TicketProvider interface contract', () => {
-    it('GIVEN an object implementing TicketProvider THEN all five methods are present', () => {
+    it('GIVEN an object implementing TicketProvider THEN all six methods are present', () => {
       const provider: TicketProvider = {
         poll: async (_since?: Date) => [],
         createSubtask: async (_parent: string, _task: SubtaskInput) => 'NEW-1',
         transitionStatus: async (_ticketId: string, _status: TicketStatus) => {},
         addComment: async (_ticketId: string, _body: string) => {},
+        addLabel: async (_ticketId: string, _label: string) => {},
         linkPR: async (_ticketId: string, _prUrl: string) => {},
       };
 
@@ -163,7 +164,22 @@ describe('Provider Types (WS-DAEMON-10: Type definitions)', () => {
       expect(typeof provider.createSubtask).toBe('function');
       expect(typeof provider.transitionStatus).toBe('function');
       expect(typeof provider.addComment).toBe('function');
+      expect(typeof provider.addLabel).toBe('function');
       expect(typeof provider.linkPR).toBe('function');
+    });
+
+    it('GIVEN TicketProvider.addLabel() THEN it accepts ticketId and label strings and returns Promise<void>', async () => {
+      const provider: TicketProvider = {
+        poll: async () => [],
+        createSubtask: async () => '',
+        transitionStatus: async () => {},
+        addComment: async () => {},
+        addLabel: async () => {},
+        linkPR: async () => {},
+      };
+
+      await expect(provider.addLabel('PROJ-1', 'mg-daemon:needs-info')).resolves.toBeUndefined();
+      await expect(provider.addLabel('PROJ-1', 'mg-daemon:rejected')).resolves.toBeUndefined();
     });
 
     it('GIVEN TicketProvider.poll() THEN it accepts an optional Date parameter', async () => {
@@ -172,6 +188,7 @@ describe('Provider Types (WS-DAEMON-10: Type definitions)', () => {
         createSubtask: async () => '',
         transitionStatus: async () => {},
         addComment: async () => {},
+        addLabel: async () => {},
         linkPR: async () => {},
       };
 
@@ -200,6 +217,7 @@ describe('Provider Types (WS-DAEMON-10: Type definitions)', () => {
         createSubtask: async () => '',
         transitionStatus: async () => {},
         addComment: async () => {},
+        addLabel: async () => {},
         linkPR: async () => {},
       };
 
@@ -214,6 +232,7 @@ describe('Provider Types (WS-DAEMON-10: Type definitions)', () => {
         createSubtask: async (_parent, _task) => 'PROJ-456',
         transitionStatus: async () => {},
         addComment: async () => {},
+        addLabel: async () => {},
         linkPR: async () => {},
       };
 

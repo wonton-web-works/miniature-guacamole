@@ -128,6 +128,13 @@ mcp:
   #   command: mcp-server-filesystem
   #   args:
   #     - /path/to/project
+
+# Triage Configuration
+# Optional: Quality gate that evaluates tickets before planning
+# triage:
+#   enabled: true                # Toggle triage on/off (default: true)
+#   autoReject: false            # When false, questionable tickets get needs-info instead of reject (default: false)
+#   maxTicketSizeChars: 10000   # Tickets exceeding this limit are auto-flagged for review
 `;
 
   // Write to file

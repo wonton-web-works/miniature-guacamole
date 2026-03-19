@@ -405,6 +405,55 @@ describe('GitHubProvider (WS-DAEMON-10)', () => {
     });
   });
 
+  describe('addLabel()', () => {
+    it('GIVEN ticket and label WHEN addLabel() called THEN invokes gh issue edit with --add-label', async () => {
+      vi.mocked(spawnSync).mockReturnValue({ status: 0, stdout: '', stderr: '' } as any);
+
+      await provider.addLabel('GH-42', 'mg-daemon:needs-info');
+
+      expect(spawnSync).toHaveBeenCalledWith(
+        'gh',
+        expect.arrayContaining(['issue', 'edit']),
+        expect.any(Object)
+      );
+    });
+
+    it('GIVEN addLabel() WHEN called THEN includes issue number in command', async () => {
+      vi.mocked(spawnSync).mockReturnValue({ status: 0, stdout: '', stderr: '' } as any);
+
+      await provider.addLabel('GH-42', 'mg-daemon:rejected');
+
+      const args = vi.mocked(spawnSync).mock.calls[0][1] as string[];
+      expect(args).toContain('42');
+    });
+
+    it('GIVEN addLabel() WHEN called THEN passes the label via --add-label flag', async () => {
+      vi.mocked(spawnSync).mockReturnValue({ status: 0, stdout: '', stderr: '' } as any);
+
+      await provider.addLabel('GH-42', 'mg-daemon:needs-info');
+
+      const args = vi.mocked(spawnSync).mock.calls[0][1] as string[];
+      expect(args).toContain('--add-label');
+      expect(args).toContain('mg-daemon:needs-info');
+    });
+
+    it('GIVEN addLabel() WHEN called THEN includes --repo flag', async () => {
+      vi.mocked(spawnSync).mockReturnValue({ status: 0, stdout: '', stderr: '' } as any);
+
+      await provider.addLabel('GH-42', 'mg-daemon:rejected');
+
+      const args = vi.mocked(spawnSync).mock.calls[0][1] as string[];
+      expect(args).toContain('--repo');
+      expect(args).toContain('owner/test-repo');
+    });
+
+    it('GIVEN addLabel() WHEN gh command returns non-zero THEN throws an error', async () => {
+      vi.mocked(spawnSync).mockReturnValue({ status: 1, stdout: '', stderr: 'label error' } as any);
+
+      await expect(provider.addLabel('GH-42', 'mg-daemon:needs-info')).rejects.toThrow();
+    });
+  });
+
   describe('linkPR()', () => {
     it('GIVEN ticket and PR URL WHEN linkPR() called THEN does not throw (PR body mention is automatic)', async () => {
       await expect(provider.linkPR('GH-42', 'https://github.com/owner/repo/pull/99')).resolves.not.toThrow();

@@ -630,6 +630,188 @@ describe('Config Validation (AC-1.4: validateConfig function)', () => {
     });
   });
 
+  describe('Given triage configuration', () => {
+    it('WHEN triage is omitted THEN validation passes (backward compatible)', () => {
+      // Arrange: no triage field at all
+      delete (validConfig as any).triage;
+
+      // Act
+      const errors = validateConfig(validConfig);
+
+      // Assert
+      expect(errors).toEqual([]);
+    });
+
+    it('WHEN triage has all valid fields THEN validation passes', () => {
+      // Arrange
+      (validConfig as any).triage = {
+        enabled: true,
+        autoReject: false,
+        maxTicketSizeChars: 10000,
+      };
+
+      // Act
+      const errors = validateConfig(validConfig);
+
+      // Assert
+      expect(errors).toEqual([]);
+    });
+
+    it('WHEN triage.enabled is not boolean THEN validation error is returned', () => {
+      // Arrange
+      (validConfig as any).triage = {
+        enabled: 'yes',
+        autoReject: false,
+        maxTicketSizeChars: 10000,
+      };
+
+      // Act
+      const errors = validateConfig(validConfig);
+
+      // Assert
+      const triageErrors = errors.filter(e => e.field.startsWith('triage'));
+      expect(triageErrors).toHaveLength(1);
+      expect(triageErrors[0].field).toBe('triage.enabled');
+      expect(triageErrors[0].message).toMatch(/boolean/i);
+    });
+
+    it('WHEN triage.autoReject is not boolean THEN validation error is returned', () => {
+      // Arrange
+      (validConfig as any).triage = {
+        enabled: true,
+        autoReject: 'no',
+        maxTicketSizeChars: 10000,
+      };
+
+      // Act
+      const errors = validateConfig(validConfig);
+
+      // Assert
+      const triageErrors = errors.filter(e => e.field.startsWith('triage'));
+      expect(triageErrors).toHaveLength(1);
+      expect(triageErrors[0].field).toBe('triage.autoReject');
+      expect(triageErrors[0].message).toMatch(/boolean/i);
+    });
+
+    it('WHEN triage.maxTicketSizeChars is not a number THEN validation error is returned', () => {
+      // Arrange
+      (validConfig as any).triage = {
+        enabled: true,
+        autoReject: false,
+        maxTicketSizeChars: 'big',
+      };
+
+      // Act
+      const errors = validateConfig(validConfig);
+
+      // Assert
+      const triageErrors = errors.filter(e => e.field.startsWith('triage'));
+      expect(triageErrors).toHaveLength(1);
+      expect(triageErrors[0].field).toBe('triage.maxTicketSizeChars');
+      expect(triageErrors[0].message).toMatch(/positive number/i);
+    });
+
+    it('WHEN triage.maxTicketSizeChars is zero THEN validation error is returned', () => {
+      // Arrange
+      (validConfig as any).triage = {
+        enabled: true,
+        autoReject: false,
+        maxTicketSizeChars: 0,
+      };
+
+      // Act
+      const errors = validateConfig(validConfig);
+
+      // Assert
+      const triageErrors = errors.filter(e => e.field.startsWith('triage'));
+      expect(triageErrors).toHaveLength(1);
+      expect(triageErrors[0].field).toBe('triage.maxTicketSizeChars');
+      expect(triageErrors[0].message).toMatch(/positive number/i);
+    });
+
+    it('WHEN triage.maxTicketSizeChars is negative THEN validation error is returned', () => {
+      // Arrange
+      (validConfig as any).triage = {
+        enabled: true,
+        autoReject: false,
+        maxTicketSizeChars: -100,
+      };
+
+      // Act
+      const errors = validateConfig(validConfig);
+
+      // Assert
+      const triageErrors = errors.filter(e => e.field.startsWith('triage'));
+      expect(triageErrors).toHaveLength(1);
+      expect(triageErrors[0].field).toBe('triage.maxTicketSizeChars');
+      expect(triageErrors[0].message).toMatch(/positive number/i);
+    });
+
+    it('WHEN triage is not an object THEN validation error is returned', () => {
+      // Arrange
+      (validConfig as any).triage = 'invalid';
+
+      // Act
+      const errors = validateConfig(validConfig);
+
+      // Assert
+      const triageErrors = errors.filter(e => e.field.startsWith('triage'));
+      expect(triageErrors).toHaveLength(1);
+      expect(triageErrors[0].field).toBe('triage');
+      expect(triageErrors[0].message).toMatch(/object/i);
+    });
+
+    it('WHEN triage has defaults applied THEN enabled=true, autoReject=false, maxTicketSizeChars=10000', () => {
+      // Arrange: empty triage object — defaults should be applied
+      (validConfig as any).triage = {};
+
+      // Act
+      const errors = validateConfig(validConfig);
+
+      // Assert: no errors because defaults are applied
+      expect(errors).toEqual([]);
+
+      // Verify defaults were applied
+      expect((validConfig as any).triage.enabled).toBe(true);
+      expect((validConfig as any).triage.autoReject).toBe(false);
+      expect((validConfig as any).triage.maxTicketSizeChars).toBe(10000);
+    });
+
+    it('WHEN triage.enabled is provided but others are omitted THEN defaults fill in', () => {
+      // Arrange
+      (validConfig as any).triage = { enabled: false };
+
+      // Act
+      const errors = validateConfig(validConfig);
+
+      // Assert
+      expect(errors).toEqual([]);
+      expect((validConfig as any).triage.enabled).toBe(false);
+      expect((validConfig as any).triage.autoReject).toBe(false);
+      expect((validConfig as any).triage.maxTicketSizeChars).toBe(10000);
+    });
+
+    it('WHEN triage has multiple invalid fields THEN all errors are reported', () => {
+      // Arrange
+      (validConfig as any).triage = {
+        enabled: 'yes',
+        autoReject: 42,
+        maxTicketSizeChars: -1,
+      };
+
+      // Act
+      const errors = validateConfig(validConfig);
+
+      // Assert
+      const triageErrors = errors.filter(e => e.field.startsWith('triage'));
+      expect(triageErrors).toHaveLength(3);
+      const fields = triageErrors.map(e => e.field);
+      expect(fields).toContain('triage.enabled');
+      expect(fields).toContain('triage.autoReject');
+      expect(fields).toContain('triage.maxTicketSizeChars');
+    });
+  });
+
   describe('Given edge cases', () => {
     it('WHEN config has null values THEN validation handles gracefully', () => {
       // Arrange

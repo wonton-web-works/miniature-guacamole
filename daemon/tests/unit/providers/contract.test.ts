@@ -294,6 +294,75 @@ describe('Contract: addComment() resolves without value', () => {
   });
 });
 
+// --- Contract: addLabel() ---
+
+describe('Contract: addLabel() resolves without value', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it('JiraProvider.addLabel() resolves to undefined', async () => {
+    const { provider, mockFetch } = makeJiraProvider();
+    mockFetch.mockResolvedValue({
+      ok: true, status: 204,
+      json: async () => ({}),
+    });
+
+    await expect(provider.addLabel('TEST-1', 'mg-daemon:needs-info')).resolves.toBeUndefined();
+  });
+
+  it('JiraProvider.addLabel() calls Jira API with label in request', async () => {
+    const { provider, mockFetch } = makeJiraProvider();
+    mockFetch.mockResolvedValue({
+      ok: true, status: 204,
+      json: async () => ({}),
+    });
+
+    await provider.addLabel('TEST-1', 'mg-daemon:rejected');
+
+    expect(mockFetch).toHaveBeenCalledWith(
+      expect.stringContaining('/rest/api/3/issue/TEST-1'),
+      expect.objectContaining({ method: 'PUT' })
+    );
+  });
+
+  it('LinearProvider.addLabel() resolves to undefined', async () => {
+    const { provider, mockFetch } = makeLinearProvider();
+    // First call: query to find label ID, second call: mutation to add label
+    mockFetch
+      .mockResolvedValueOnce({
+        ok: true, status: 200,
+        json: async () => ({ data: { issueLabels: { nodes: [{ id: 'label-id-1', name: 'mg-daemon:needs-info' }] } } }),
+      })
+      .mockResolvedValueOnce({
+        ok: true, status: 200,
+        json: async () => ({ data: { issueUpdate: { issue: { id: 'lin-id' } } } }),
+      });
+
+    await expect(provider.addLabel('lin-id', 'mg-daemon:needs-info')).resolves.toBeUndefined();
+  });
+
+  it('GitHubProvider.addLabel() resolves to undefined', async () => {
+    const { provider } = makeGitHubProvider();
+    vi.mocked(spawnSync).mockReturnValue({ status: 0, stdout: '', stderr: '' } as any);
+
+    await expect(provider.addLabel('GH-42', 'mg-daemon:needs-info')).resolves.toBeUndefined();
+  });
+
+  it('GitHubProvider.addLabel() invokes gh issue edit --add-label', async () => {
+    const { provider } = makeGitHubProvider();
+    vi.mocked(spawnSync).mockReturnValue({ status: 0, stdout: '', stderr: '' } as any);
+
+    await provider.addLabel('GH-42', 'mg-daemon:rejected');
+
+    const args = vi.mocked(spawnSync).mock.calls[0][1] as string[];
+    expect(args).toContain('issue');
+    expect(args).toContain('edit');
+    expect(args).toContain('--add-label');
+    expect(args).toContain('mg-daemon:rejected');
+  });
+});
+
 // --- Contract: linkPR() ---
 
 describe('Contract: linkPR() resolves without value', () => {

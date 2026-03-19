@@ -4,6 +4,8 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 vi.mock('fs', () => ({
   existsSync: vi.fn(),
   readFileSync: vi.fn(),
+  writeFileSync: vi.fn(),
+  mkdirSync: vi.fn(),
 }));
 
 // Mock process module
@@ -16,11 +18,12 @@ vi.mock('../../src/heartbeat', () => ({
   isStale: vi.fn(),
 }));
 
-import { existsSync, readFileSync } from 'fs';
+import { existsSync, readFileSync, writeFileSync } from 'fs';
 import * as processModule from '../../src/process';
 import * as heartbeatModule from '../../src/heartbeat';
-import { gatherDashboardData, formatDashboard } from '../../src/dashboard';
+import { gatherDashboardData, formatDashboard, appendTriageLog } from '../../src/dashboard';
 import type { DaemonConfig } from '../../src/types';
+import type { TriageLogEntry } from '../../src/dashboard';
 
 const baseConfig: DaemonConfig = {
   provider: 'github',
@@ -247,6 +250,91 @@ describe('Dashboard Module', () => {
 
         const data = gatherDashboardData(baseConfig);
         expect(data.inFlightTickets).toHaveLength(0);
+      });
+    });
+
+    // ─── triageStats ───────────────────────────────────────────────────────────
+
+    describe('GIVEN triage-log.json exists WHEN gatherDashboardData called THEN populates triageStats', () => {
+      it('GIVEN triage-log with mixed verdicts THEN triageStats counts each', () => {
+        vi.mocked(processModule.statusDaemon).mockReturnValue({ running: true, pid: 1, uptimeMs: 100 });
+        vi.mocked(heartbeatModule.isStale).mockReturnValue(false);
+        vi.mocked(existsSync).mockImplementation((p) => {
+          const path = String(p);
+          return path.includes('triage-log') || path.includes('processed');
+        });
+        vi.mocked(readFileSync).mockImplementation((p) => {
+          const path = String(p);
+          if (path.includes('triage-log')) {
+            return JSON.stringify([
+              { ticketId: 'T-1', verdict: 'GO', reasons: [], timestamp: '2026-03-18T10:00:00Z' },
+              { ticketId: 'T-2', verdict: 'GO', reasons: [], timestamp: '2026-03-18T10:01:00Z' },
+              { ticketId: 'T-3', verdict: 'NEEDS_CLARIFICATION', reasons: ['vague'], timestamp: '2026-03-18T10:02:00Z' },
+              { ticketId: 'T-4', verdict: 'REJECT', reasons: ['out of scope'], timestamp: '2026-03-18T10:03:00Z' },
+            ]);
+          }
+          return '{}';
+        });
+
+        const data = gatherDashboardData(baseConfig);
+
+        expect(data.triageStats).toEqual({ go: 2, needsInfo: 1, rejected: 1 });
+      });
+
+      it('GIVEN triage-log with only GO verdicts THEN needsInfo and rejected are 0', () => {
+        vi.mocked(processModule.statusDaemon).mockReturnValue({ running: true, pid: 1, uptimeMs: 100 });
+        vi.mocked(heartbeatModule.isStale).mockReturnValue(false);
+        vi.mocked(existsSync).mockImplementation((p) => {
+          const path = String(p);
+          return path.includes('triage-log') || path.includes('processed');
+        });
+        vi.mocked(readFileSync).mockImplementation((p) => {
+          const path = String(p);
+          if (path.includes('triage-log')) {
+            return JSON.stringify([
+              { ticketId: 'T-1', verdict: 'GO', reasons: [], timestamp: '2026-03-18T10:00:00Z' },
+            ]);
+          }
+          return '{}';
+        });
+
+        const data = gatherDashboardData(baseConfig);
+
+        expect(data.triageStats).toEqual({ go: 1, needsInfo: 0, rejected: 0 });
+      });
+    });
+
+    describe('GIVEN no triage-log.json WHEN gatherDashboardData called THEN triageStats are all zeros', () => {
+      it('GIVEN file does not exist THEN triageStats defaults to all zeros', () => {
+        vi.mocked(processModule.statusDaemon).mockReturnValue({ running: false });
+        vi.mocked(heartbeatModule.isStale).mockReturnValue(false);
+        vi.mocked(existsSync).mockReturnValue(false);
+
+        const data = gatherDashboardData(baseConfig);
+
+        expect(data.triageStats).toEqual({ go: 0, needsInfo: 0, rejected: 0 });
+      });
+    });
+
+    describe('GIVEN corrupted triage-log.json WHEN gatherDashboardData called THEN triageStats defaults', () => {
+      it('GIVEN invalid JSON THEN triageStats defaults to all zeros', () => {
+        vi.mocked(processModule.statusDaemon).mockReturnValue({ running: false });
+        vi.mocked(heartbeatModule.isStale).mockReturnValue(false);
+        vi.mocked(existsSync).mockImplementation((p) => {
+          const path = String(p);
+          return path.includes('triage-log');
+        });
+        vi.mocked(readFileSync).mockImplementation((p) => {
+          const path = String(p);
+          if (path.includes('triage-log')) {
+            return 'not-valid{{{';
+          }
+          return '{}';
+        });
+
+        const data = gatherDashboardData(baseConfig);
+
+        expect(data.triageStats).toEqual({ go: 0, needsInfo: 0, rejected: 0 });
       });
     });
   });
@@ -517,6 +605,62 @@ describe('Dashboard Module', () => {
       });
     });
 
+    describe('GIVEN triageStats WHEN formatDashboard called THEN displays triage counts', () => {
+      it('GIVEN triageStats with counts THEN output contains TRIAGE section with counts', () => {
+        const data = {
+          daemonStatus: { running: true, pid: 1, uptimeMs: 100 },
+          lastPollTime: null,
+          heartbeatStale: false,
+          inFlightTickets: [],
+          recentCompleted: [],
+          recentFailed: [],
+          errorBudget: { consecutive: 0, threshold: 3, paused: false },
+          triageStats: { go: 5, needsInfo: 2, rejected: 1 },
+        };
+
+        const output = formatDashboard(data);
+        expect(output).toContain('TRIAGE');
+        expect(output).toMatch(/GO.*5/);
+        expect(output).toMatch(/Needs Info.*2/i);
+        expect(output).toMatch(/Rejected.*1/i);
+      });
+
+      it('GIVEN triageStats all zeros THEN output shows zeros', () => {
+        const data = {
+          daemonStatus: { running: false },
+          lastPollTime: null,
+          heartbeatStale: false,
+          inFlightTickets: [],
+          recentCompleted: [],
+          recentFailed: [],
+          errorBudget: { consecutive: 0, threshold: 3, paused: false },
+          triageStats: { go: 0, needsInfo: 0, rejected: 0 },
+        };
+
+        const output = formatDashboard(data);
+        expect(output).toContain('TRIAGE');
+      });
+
+      it('GIVEN triageStats THEN each output line is at most 80 characters', () => {
+        const data = {
+          daemonStatus: { running: true, pid: 1, uptimeMs: 100 },
+          lastPollTime: null,
+          heartbeatStale: false,
+          inFlightTickets: [],
+          recentCompleted: [],
+          recentFailed: [],
+          errorBudget: { consecutive: 0, threshold: 3, paused: false },
+          triageStats: { go: 999, needsInfo: 888, rejected: 777 },
+        };
+
+        const output = formatDashboard(data);
+        const lines = output.split('\n');
+        for (const line of lines) {
+          expect(line.length).toBeLessThanOrEqual(80);
+        }
+      });
+    });
+
     describe('GIVEN uptime in ms WHEN formatDashboard called THEN formats human-readable', () => {
       it('GIVEN 8100000ms uptime THEN output shows hours and minutes', () => {
         const data = {
@@ -531,6 +675,73 @@ describe('Dashboard Module', () => {
 
         const output = formatDashboard(data);
         expect(output).toMatch(/2h|2 h/);
+      });
+    });
+  });
+
+  // ─── appendTriageLog ─────────────────────────────────────────────────────
+
+  describe('appendTriageLog()', () => {
+    describe('GIVEN no existing triage-log.json WHEN appendTriageLog called THEN creates file with entry', () => {
+      it('GIVEN file does not exist THEN writes array with single entry', () => {
+        vi.mocked(existsSync).mockReturnValue(false);
+
+        const entry: TriageLogEntry = {
+          ticketId: 'T-1',
+          verdict: 'GO',
+          reasons: ['Well-scoped'],
+          timestamp: '2026-03-18T10:00:00Z',
+        };
+
+        appendTriageLog(entry);
+
+        expect(writeFileSync).toHaveBeenCalledOnce();
+        const written = JSON.parse(vi.mocked(writeFileSync).mock.calls[0][1] as string);
+        expect(written).toHaveLength(1);
+        expect(written[0].ticketId).toBe('T-1');
+        expect(written[0].verdict).toBe('GO');
+      });
+    });
+
+    describe('GIVEN existing triage-log.json WHEN appendTriageLog called THEN appends entry', () => {
+      it('GIVEN file with one entry THEN writes array with two entries', () => {
+        const existing = [{ ticketId: 'T-0', verdict: 'REJECT', reasons: ['out of scope'], timestamp: '2026-03-18T09:00:00Z' }];
+        vi.mocked(existsSync).mockReturnValue(true);
+        vi.mocked(readFileSync).mockReturnValue(JSON.stringify(existing));
+
+        const entry: TriageLogEntry = {
+          ticketId: 'T-1',
+          verdict: 'NEEDS_CLARIFICATION',
+          reasons: ['vague'],
+          timestamp: '2026-03-18T10:00:00Z',
+        };
+
+        appendTriageLog(entry);
+
+        expect(writeFileSync).toHaveBeenCalledOnce();
+        const written = JSON.parse(vi.mocked(writeFileSync).mock.calls[0][1] as string);
+        expect(written).toHaveLength(2);
+        expect(written[1].ticketId).toBe('T-1');
+      });
+    });
+
+    describe('GIVEN corrupted triage-log.json WHEN appendTriageLog called THEN starts fresh', () => {
+      it('GIVEN invalid JSON THEN writes array with single entry', () => {
+        vi.mocked(existsSync).mockReturnValue(true);
+        vi.mocked(readFileSync).mockReturnValue('bad-json{{{');
+
+        const entry: TriageLogEntry = {
+          ticketId: 'T-1',
+          verdict: 'GO',
+          reasons: [],
+          timestamp: '2026-03-18T10:00:00Z',
+        };
+
+        appendTriageLog(entry);
+
+        expect(writeFileSync).toHaveBeenCalledOnce();
+        const written = JSON.parse(vi.mocked(writeFileSync).mock.calls[0][1] as string);
+        expect(written).toHaveLength(1);
       });
     });
   });

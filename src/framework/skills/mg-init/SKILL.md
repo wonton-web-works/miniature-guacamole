@@ -207,6 +207,7 @@ Next steps:
 3. **Preserve user content** - Existing `.claude/` files are never overwritten
 4. **Lightweight detection** - Tech stack detection checks file existence only, no parsing
 5. **Project isolation** - All created files are project-local; no absolute paths in generated files
+6. **Follow output format** — See `references/output-format.md` for standard visual patterns
 
 ## Boundaries
 

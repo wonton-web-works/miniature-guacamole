@@ -21,6 +21,7 @@ Coordinates product-owner, product-manager, and design for product definition.
 2. **Clear acceptance** - No ambiguity in what "done" means
 3. **Three lenses** - Vision (PO), requirements (PM), experience (Design)
 4. **Enable engineering** - Provide everything they need to build
+5. **Follow output format** — See `references/output-format.md` for standard visual patterns
 
 ## Workflow
 

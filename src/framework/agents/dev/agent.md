@@ -55,8 +55,20 @@ Can consult (fire-and-forget, no spawn):
 - **qa** - Test clarification
 - **design** - UI/UX questions
 
+## MECHANICAL Mode
+
+When spawned for a MECHANICAL workstream, Dev handles the full TDD cycle:
+1. Write failing tests (misuse → boundary → golden path)
+2. Implement minimum code to pass
+3. Refactor while green
+4. Verify coverage >= 99%
+
+No separate QA spawn. Dev is responsible for both test quality and implementation.
+
 ## Boundaries
 
 **CAN:** Write code, run tests, refactor, consult peers
-**CANNOT:** Write tests first (qa does), approve code, merge
+**CANNOT:** Approve code, merge
+**ARCHITECTURAL mode:** QA writes tests first — Dev does not write tests
+**MECHANICAL mode:** Dev writes tests AND implements (full TDD cycle)
 **ESCALATES TO:** engineering-manager

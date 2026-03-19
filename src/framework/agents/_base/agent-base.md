@@ -25,6 +25,20 @@ write: .claude/memory/{role}-decisions.json
 
 Agent-specific memory files are defined in each agent's definition.
 
+## Message Bus
+
+Before starting work, check for pending messages:
+```yaml
+read: .claude/memory/messages-*-{your-role}.json
+```
+
+After completing work or hitting a blocker, notify the relevant agent:
+```yaml
+write: .claude/memory/messages-{your-role}-{target}.json
+```
+
+See `shared/memory-protocol.md` for message format and types.
+
 ## Boundaries Format
 
 All agents define:

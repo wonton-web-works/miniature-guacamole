@@ -73,6 +73,8 @@ Task:
           modifications only (no new files except tests), single src/ dir + tests/.
 ```
 
+When Dev completes, it writes a `handoff` message to `messages-dev-gate.json` before the bash gate runs.
+
 ### Bash Gate (no spawn)
 
 Run automated verification. If any check fails, route back to Dev with failure details.
@@ -120,6 +122,8 @@ QA and Dev can run in parallel once QA has committed initial test stubs.
 
 ### Step 3: Dev Implementation
 
+QA writes a `handoff` message to `messages-qa-dev.json` when test specs are committed. Dev reads this message before starting implementation — this enables QA and Dev to run in parallel, with Dev starting as soon as QA's handoff message appears.
+
 ```yaml
 Task:
   subagent_type: dev
@@ -129,6 +133,8 @@ Task:
     Principles: Test-first, DRY, config-over-composition.
     Run Red → Green → Refactor cycle.
 ```
+
+When Dev completes, it writes a `handoff` message to `messages-dev-staff-engineer.json`.
 
 ### Step 3.5: Dual-Specialist Review (conditional)
 

@@ -320,9 +320,16 @@ const installCmd = 'curl -fsSL https://raw.githubusercontent.com/wonton-web-work
   @media (max-width: 768px) {
     .hero-content {
       grid-template-columns: 1fr;
+      gap: 40px;
     }
     .hero-terminal {
       order: -1;
+    }
+    .hero-headline {
+      font-size: clamp(40px, 10vw, 56px);
+    }
+    .hero-subtitle {
+      max-width: 100%;
     }
   }
 
@@ -456,6 +463,8 @@ const installCmd = 'curl -fsSL https://raw.githubusercontent.com/wonton-web-work
     margin: 0 calc(-1 * clamp(20px, 5vw, 80px));
     scrollbar-width: thin;
     scrollbar-color: var(--mg-surface) transparent;
+    -webkit-overflow-scrolling: touch;
+    scroll-snap-type: x proximity;
   }
 
   .cards-track {
@@ -473,6 +482,7 @@ const installCmd = 'curl -fsSL https://raw.githubusercontent.com/wonton-web-work
     display: flex;
     flex-direction: column;
     gap: 8px;
+    scroll-snap-align: start;
   }
 
   .card-abbr {
@@ -574,17 +584,17 @@ const installCmd = 'curl -fsSL https://raw.githubusercontent.com/wonton-web-work
       flex-direction: column;
     }
     .workflow-step {
-      border-left: 1px solid #263040;
+      border-left: 3px solid var(--mg-primary);
+      border-right: 1px solid #263040;
       border-top: none;
+      border-bottom: 1px solid #263040;
       border-radius: 0;
       min-width: unset;
     }
     .workflow-step:first-child {
       border-top: 1px solid #263040;
-      border-left: 3px solid var(--mg-primary);
       border-top-left-radius: 4px;
       border-top-right-radius: 4px;
-      border-bottom-left-radius: 0;
     }
     .workflow-step:last-child {
       border-bottom-left-radius: 4px;
@@ -601,7 +611,7 @@ const installCmd = 'curl -fsSL https://raw.githubusercontent.com/wonton-web-work
   }
 
   .install-block {
-    display: inline-flex;
+    display: flex;
     align-items: center;
     gap: 20px;
     background: var(--mg-surface);
@@ -609,8 +619,18 @@ const installCmd = 'curl -fsSL https://raw.githubusercontent.com/wonton-web-work
     border-radius: 6px;
     padding: 18px 24px;
     margin: 0 0 20px;
-    flex-wrap: wrap;
     max-width: 100%;
+  }
+
+  @media (max-width: 560px) {
+    .install-block {
+      flex-direction: column;
+      align-items: stretch;
+      gap: 12px;
+    }
+    .copy-btn {
+      align-self: flex-start;
+    }
   }
 
   .install-cmd {
@@ -766,5 +786,13 @@ const installCmd = 'curl -fsSL https://raw.githubusercontent.com/wonton-web-work
     font-size: 12px;
     color: var(--mg-subtext);
     letter-spacing: 0.04em;
+  }
+
+  @media (max-width: 560px) {
+    .footer-inner {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 12px;
+    }
   }
 </style>

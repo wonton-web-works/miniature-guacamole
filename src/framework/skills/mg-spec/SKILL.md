@@ -9,6 +9,8 @@ metadata:
   spawn_cap: "6"
 ---
 
+> Inherits: [skill-base](../_base/skill-base.md)
+
 # Product Team
 
 Coordinates product-owner, product-manager, and design for product definition.
@@ -17,10 +19,8 @@ Coordinates product-owner, product-manager, and design for product definition.
 
 1. **User-first** - Every feature must solve a real user problem
 2. **Clear acceptance** - No ambiguity in what "done" means
-3. **Memory-first** - Write specs for engineering consumption
-4. **Three lenses** - Vision (PO), requirements (PM), experience (Design)
-5. **Enable engineering** - Provide everything they need to build
-6. **Visual standards** - Follow standard output format in `references/output-format.md`
+3. **Three lenses** - Vision (PO), requirements (PM), experience (Design)
+4. **Enable engineering** - Provide everything they need to build
 
 ## Workflow
 
@@ -36,12 +36,10 @@ Write to memory → Hand off to /mg-build
 ## Memory Protocol
 
 ```yaml
-# Read strategic context
 read:
-  - .claude/memory/agent-leadership-decisions.json  # Business strategy
-  - .claude/memory/workstream-{id}-state.json       # Current context
+  - .claude/memory/agent-leadership-decisions.json
+  - .claude/memory/workstream-{id}-state.json
 
-# Write product specs
 write: .claude/memory/agent-mg-spec-decisions.json
   workstream_id: <id>
   product_vision: <PO input>

@@ -9,6 +9,8 @@ metadata:
   spawn_cap: "6"
 ---
 
+> Inherits: [skill-base](../_base/skill-base.md)
+
 # Design Review
 
 Workflow skill for comprehensive visual quality and UX assessment.
@@ -20,7 +22,6 @@ Workflow skill for comprehensive visual quality and UX assessment.
 3. **UX patterns over aesthetics** - Usability trumps visual preference
 4. **Responsive validation** - Mobile, tablet, desktop must all be verified
 5. **Spawn specialists** - Leverage art-director for brand, design for UX patterns
-6. **Visual standards** - Follow standard output format in `references/output-format.md`
 
 ## Workflow
 
@@ -36,13 +37,11 @@ Workflow skill for comprehensive visual quality and UX assessment.
 ## Memory Protocol
 
 ```yaml
-# Read context
 read:
-  - .claude/memory/workstream-{id}-state.json       # Implementation details
-  - .claude/memory/agent-mg-design-decisions.json # Design specs
-  - .claude/memory/agent-art-director-decisions.json # Brand guidelines
+  - .claude/memory/workstream-{id}-state.json
+  - .claude/memory/agent-mg-design-decisions.json
+  - .claude/memory/agent-art-director-decisions.json
 
-# Write review decisions
 write: .claude/memory/agent-design-review-decisions.json
   workstream_id: <id>
   phase: brand_review | ux_review | responsive_review | final_approval

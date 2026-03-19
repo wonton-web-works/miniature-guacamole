@@ -8,6 +8,8 @@ metadata:
   version: "1.0"
 ---
 
+> Inherits: [skill-base](../_base/skill-base.md)
+
 # /mg
 
 Lightweight front door to the miniature-guacamole skill system. Use it when you're not sure which skill to run, or when you want a quick reference of what's available.
@@ -21,7 +23,6 @@ This skill only routes. It does not delegate to subagents, execute work, or run 
 3. **Keywords first** — Match keywords before trying natural language interpretation.
 4. **Suggest, don't assume** — For natural language input, suggest a skill and ask for confirmation. Don't silently route.
 5. **Be explicit** — Always tell the user which skill you're routing to and why.
-6. **Visual standards** — Follow `references/output-format.md` for output format and presentation.
 
 ## No-Args Mode
 

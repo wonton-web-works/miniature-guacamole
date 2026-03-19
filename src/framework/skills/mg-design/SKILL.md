@@ -9,6 +9,8 @@ metadata:
   spawn_cap: "6"
 ---
 
+> Inherits: [skill-base](../_base/skill-base.md)
+
 # Design Team
 
 Coordinates art-director and design for visual excellence.
@@ -17,10 +19,8 @@ Coordinates art-director and design for visual excellence.
 
 1. **Design + code unity** - Designs must be buildable; code must be beautiful
 2. **Accessibility first** - WCAG AA minimum, no exceptions
-3. **Memory-first** - Write specs for engineering, read feedback from QA
-4. **Art Director approval** - All visual work needs sign-off
-5. **No generic AI aesthetics** - Distinctive, thoughtful design
-6. **Visual standards** - Follow standard output format in `references/output-format.md`
+3. **Art Director approval** - All visual work needs sign-off
+4. **No generic AI aesthetics** - Distinctive, thoughtful design
 
 ## Workflow
 
@@ -34,12 +34,10 @@ Coordinates art-director and design for visual excellence.
 ## Memory Protocol
 
 ```yaml
-# Read context
 read:
-  - .claude/memory/workstream-{id}-state.json       # Requirements
-  - .claude/memory/agent-qa-decisions.json          # Visual regression results
+  - .claude/memory/workstream-{id}-state.json
+  - .claude/memory/agent-qa-decisions.json
 
-# Write design decisions
 write: .claude/memory/agent-mg-design-decisions.json
   workstream_id: <id>
   phase: creative_direction | design_specs | visual_review

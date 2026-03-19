@@ -3,10 +3,12 @@
 Detailed reference for the Test-First Development workflow enhanced with Constraint-Driven Agentic Development (CAD) methodology. This is the authoritative process for all engineering work.
 
 **CAD Enhancements:**
+- Classification at intake (Step 0) — before any agent spawns
 - Misuse-first test ordering (security before happy paths)
 - Artifact bundles with curated context for task agents
+- MECHANICAL: Dev handles full TDD cycle solo (1 spawn)
+- ARCHITECTURAL: QA writes tests, Dev implements (separate spawns, can overlap)
 - Mechanical gates for routine verification
-- Conditional architectural review for complex changes
 
 ## The Cycle
 
@@ -17,18 +19,89 @@ Detailed reference for the Test-First Development workflow enhanced with Constra
 │                                                                  │
 │    ┌─────────┐     ┌─────────┐     ┌─────────┐                  │
 │    │   RED   │────▶│  GREEN  │────▶│REFACTOR │                  │
-│    │ (fail) │     │ (pass)  │     │(clean)  │                  │
+│    │ (fail)  │     │ (pass)  │     │(clean)  │                  │
 │    └─────────┘     └─────────┘     └─────────┘                  │
-│         │                               │                        │
-│         │                               │                        │
-│         ▼                               ▼                        │
-│    QA writes                       Dev refactors                │
-│    failing tests                   while green                  │
+│                                                                  │
+│  MECHANICAL: Dev handles all three phases in one spawn           │
+│  ARCHITECTURAL: QA writes RED, Dev handles GREEN + REFACTOR      │
 │                                                                  │
 └─────────────────────────────────────────────────────────────────┘
 ```
 
-## Workflow Steps
+## Step 0: Classification at Intake
+
+**Owner:** mg-build orchestrator (before any agent spawns)
+
+Classification is applied to the ticket or request description using rules R1-R8 and M1-M5.
+
+- Any R-rule match → **ARCHITECTURAL** track
+- All M-rules match → **MECHANICAL** track
+- Uncertain → default **ARCHITECTURAL**
+- User can override with `--force-mechanical` or `--force-architectural`
+
+This step produces the track assignment. No agent spawn required.
+
+## MECHANICAL Track: Dev Solo TDD
+
+**When:** Classified as MECHANICAL at intake.
+
+**Owner:** Senior Fullstack Engineer (single spawn)
+
+Dev handles the full TDD cycle without a separate QA spawn:
+
+### Step 1: Write Failing Tests
+
+**Misuse-First Ordering (CAD Requirement):**
+Tests MUST be written in this order:
+1. **Misuse cases** — Security exploits, injection attacks, auth bypasses
+2. **Boundary cases** — Empty inputs, null values, edge conditions
+3. **Golden path** — Normal happy-path scenarios
+
+**Outputs:**
+- Failing unit tests (Vitest/Jest)
+- Failing integration tests (Testing Library)
+- E2E test skeletons (Playwright, if applicable)
+
+**Gate:** Tests exist and fail
+
+### Step 2: Implement (Green)
+
+1. Run tests, confirm they fail
+2. Write minimum code to pass ONE test
+3. Run tests again
+4. Repeat until all tests pass
+
+**Gate:** All tests passing
+
+### Step 3: Refactor
+
+1. Refactor while tests stay green
+2. Extract duplication
+3. Check coverage >= 99%
+4. Commit
+
+**Gate:** `tests_pass_and_coverage_met`
+
+**Artifact Bundle (CAD):**
+Dev receives pre-computed context (~12K tokens):
+- **INPUTS:** Acceptance criteria, relevant context
+- **GATE:** Pass criteria (99% coverage, all tests green, line limits)
+- **CONSTRAINTS:** Applicable standards (DRY, config-over-composition, security patterns)
+
+### Step 4: Bash Gate (automated, no spawn)
+
+- [ ] All tests pass
+- [ ] Coverage >= 99%
+- [ ] Total changes < 200 lines (< 500 if single-module)
+- [ ] Modifications only (no new files except tests)
+- [ ] Single src/ directory + tests/
+- [ ] No package.json, framework, or CI/CD changes
+
+Pass → Done. No further review steps.
+
+## ARCHITECTURAL Track: QA then Dev
+
+**When:** Classified as ARCHITECTURAL at intake.
 
 ### Step 1: Test Specification (QA + PM)
 
@@ -46,9 +119,9 @@ Detailed reference for the Test-First Development workflow enhanced with Constra
 
 **Misuse-First Ordering (CAD Requirement):**
 Tests MUST be written in this order:
-1. **Misuse cases** - Security exploits, injection attacks, auth bypasses
-2. **Boundary cases** - Empty inputs, null values, edge conditions
-3. **Golden path** - Normal happy-path scenarios
+1. **Misuse cases** — Security exploits, injection attacks, auth bypasses
+2. **Boundary cases** — Empty inputs, null values, edge conditions
+3. **Golden path** — Normal happy-path scenarios
 
 **Rationale:** Security-first approach catches abuse patterns before validating normal behavior. Misuse tests prevent regression on security fixes.
 
@@ -58,7 +131,7 @@ QA receives curated context (~8K tokens):
 - Applicable security standards (2-3 rules)
 - Related test patterns (1-2 examples)
 
-**Gate:** `tests_written` - Tests exist and fail
+**Gate:** `tests_written` — Tests exist and fail
 
 ### Step 2: Implementation (Dev)
 
@@ -89,6 +162,8 @@ This curated bundle reduces context from ~75K to ~12K tokens (84% reduction), im
 
 **Gate:** `tests_pass_and_coverage_met`
 
+**Note:** QA and Dev can run in parallel once QA has committed initial test stubs and Dev has the test file paths. Dev does not need QA to finish all tests before starting.
+
 ### Step 3: Verification (QA)
 
 **Owner:** QA Engineer
@@ -112,32 +187,7 @@ For complex verification checks, verification scripts MUST be written via Write 
 
 **Gate:** `qa_approved`
 
-### Step 4: Code Review (Conditional)
-
-**Classification First (CAD):**
-Before Step 4, workstream is classified as MECHANICAL or ARCHITECTURAL using rules below. Classification determines review path.
-
-#### Step 4A: Mechanical Gate (Automated)
-
-**Trigger:** Workstream classified as MECHANICAL (rules M1-M5)
-
-**Owner:** Automated bash verification
-
-**Verification:**
-- [ ] All tests pass
-- [ ] Coverage >= 99%
-- [ ] Total changes < 200 lines (< 500 if single-module)
-- [ ] Modifications only (no new files except tests)
-- [ ] Single src/ directory + tests/
-- [ ] No package.json, framework, or CI/CD changes
-
-**Gate:** `mechanical_gate_passed`
-
-**Impact:** Eliminates 1 staff-engineer spawn for 60%+ of workstreams. Mechanical verification accuracy: 85%+.
-
-#### Step 4B: Staff Engineer Review (Architectural)
-
-**Trigger:** Workstream classified as ARCHITECTURAL (rules R1-R8)
+### Step 4: Staff Engineer Review
 
 **Owner:** Staff Engineer
 
@@ -153,7 +203,7 @@ Before Step 4, workstream is classified as MECHANICAL or ARCHITECTURAL using rul
 
 ## Classification Rules (CAD)
 
-**ARCHITECTURAL workstreams (rules R1-R8)** - Require Staff Engineer review (Step 4B):
+**ARCHITECTURAL workstreams (rules R1-R8)** — Require Staff Engineer review:
 
 - **R1:** package.json changes (dependencies, scripts)
 - **R2:** Framework files (.claude/, core infrastructure)
@@ -164,7 +214,7 @@ Before Step 4, workstream is classified as MECHANICAL or ARCHITECTURAL using rul
 - **R7:** CI/CD files (.github/workflows/, .gitlab-ci.yml)
 - **R8:** Database migrations or schema changes
 
-**MECHANICAL workstreams (rules M1-M5)** - Use automated gate (Step 4A):
+**MECHANICAL workstreams (rules M1-M5)** — Use automated gate:
 
 - **M1:** All tests pass + coverage >= 99%
 - **M2:** Total changes < 200 lines (< 500 if single-module, same directory)
@@ -178,7 +228,7 @@ Before Step 4, workstream is classified as MECHANICAL or ARCHITECTURAL using rul
 - All M-rules must match → MECHANICAL
 
 **Validation:**
-Classification rules validated at 100% accuracy on 38 historical workstreams. Parallel run mode recommended for new projects until confidence established.
+Classification rules validated at 100% accuracy on 38 historical workstreams.
 
 ## Coverage Requirements
 
@@ -214,15 +264,20 @@ Scenario: Failed login
 git checkout main && git pull
 git checkout -b feature/ws-1-auth-system
 
-# After tests written (Step 1)
+# MECHANICAL: single commit after Dev completes full TDD cycle
+git add tests/ src/
+git commit -m "feat: Implement auth system with tests"
+
+# ARCHITECTURAL — separate commits per step
+# After QA writes tests (Step 1)
 git add tests/
 git commit -m "test: Add auth test specifications"
 
-# After implementation (Step 2)
+# After Dev implements (Step 2)
 git add src/
 git commit -m "feat: Implement auth system"
 
-# After verification (Step 3)
+# After QA verification (Step 3)
 git commit -m "test: Verify auth implementation"
 
 # Ready for review
@@ -232,7 +287,7 @@ git push -u origin feature/ws-1-auth-system
 ## Handoff Commands
 
 ```
-# After Step 4 passes:
+# After ARCHITECTURAL Step 4 passes:
 /mg-leadership-team review workstream WS-1
 
 # After leadership approves:

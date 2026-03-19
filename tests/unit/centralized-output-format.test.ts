@@ -420,16 +420,16 @@ describe('WS-15: Centralized Skill Visual Output', () => {
   });
 
   describe('Feature: Comprehensive Skill Validation', () => {
-    describe('Given: All 18 skills configured', () => {
+    describe('Given: All 19 skills configured', () => {
       describe('When: Validating complete implementation', () => {
-        it('Then: Exactly 18 skills should exist in skills directory', () => {
+        it('Then: Exactly 19 skills should exist in skills directory', () => {
           const skillDirs = fs.readdirSync(SKILLS_DIR)
             .filter(item => {
               const itemPath = path.join(SKILLS_DIR, item);
               return fs.statSync(itemPath).isDirectory() && !item.startsWith('_');
             });
 
-          expect(skillDirs.length).toBe(18);
+          expect(skillDirs.length).toBe(ALL_SKILLS.length);
           expect(skillDirs.sort()).toEqual([...ALL_SKILLS].sort());
         });
 

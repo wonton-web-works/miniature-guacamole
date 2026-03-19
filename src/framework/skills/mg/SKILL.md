@@ -25,12 +25,13 @@ This skill only routes. It does not delegate to subagents, execute work, or run 
 
 ## No-Args Mode
 
-When invoked as `/mg` with no arguments, display all 17 skills grouped by workflow stage:
+When invoked as `/mg` with no arguments, display all 18 skills grouped by workflow stage:
 
 **Planning:** `/mg-assess`, `/mg-assess-tech`, `/mg-spec`, `/mg-leadership-team`
 **Building:** `/mg-build`, `/mg-debug`, `/mg-refactor`
 **Reviewing:** `/mg-code-review`, `/mg-security-review`, `/mg-design-review`, `/mg-accessibility-review`
 **Shipping:** `/mg-ticket`, `/mg-write`, `/mg-init`, `/mg-add-context`, `/mg-design`, `/mg-document`
+**Housekeeping:** `/mg-tidy`
 
 ## Routing Table
 
@@ -38,6 +39,7 @@ When invoked with arguments, match keywords and route:
 
 | Keywords | Routes to |
 |----------|-----------|
+| `tidy`, `clean up state`, `reconcile`, `sync state` | `/mg-tidy` |
 | `build`, `implement`, `execute` | `/mg-build` |
 | `plan` | See `/mg plan` sub-command below |
 | `leadership`, `executive` | `/mg-leadership-team` |

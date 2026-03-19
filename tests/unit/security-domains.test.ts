@@ -535,3 +535,653 @@ describe('GH-15: Domain Detection Heuristics — Daemon Codebase', () => {
     expect(threats).toMatch(/supply chain/);
   });
 });
+
+// ============================================================================
+// TEST SECTION 12: GH-84 — Systems Domain Completeness Validation
+// ============================================================================
+
+describe('GH-84: systems.md — Critical Systems Security Area Coverage', () => {
+  let systemsContent: string;
+  let checklist: string;
+  let threats: string;
+  let reviewAreas: string;
+
+  beforeAll(() => {
+    systemsContent = fs.readFileSync(
+      path.join(DOMAINS_DIR, 'systems.md'),
+      'utf-8'
+    );
+    const checklistMatch = systemsContent.match(
+      /##\s+.*Checklist\s*\n([\s\S]*?)(?=\n##|\n$|$)/i
+    );
+    checklist = checklistMatch ? checklistMatch[1].toLowerCase() : '';
+    const threatMatch = systemsContent.match(
+      /##\s+.*Threat Model\s*\n([\s\S]*?)(?=\n##|\n$|$)/i
+    );
+    threats = threatMatch ? threatMatch[1].toLowerCase() : '';
+    const reviewMatch = systemsContent.match(
+      /##\s+.*Review Areas\s*\n([\s\S]*?)(?=\n##|\n$|$)/i
+    );
+    reviewAreas = reviewMatch ? reviewMatch[1].toLowerCase() : '';
+  });
+
+  // --- Acceptance Criteria: process isolation ---
+  it('review areas should cover process isolation', () => {
+    expect(reviewAreas).toMatch(/process isolation/);
+  });
+
+  it('review areas should mention sandboxing mechanisms', () => {
+    expect(reviewAreas).toMatch(/seccomp|apparmor|sandbox/);
+  });
+
+  it('review areas should cover namespace isolation', () => {
+    expect(reviewAreas).toMatch(/namespace/);
+  });
+
+  // --- Acceptance Criteria: file permissions ---
+  it('review areas should cover file permissions', () => {
+    expect(reviewAreas).toMatch(/file.*permission|permission/);
+  });
+
+  it('checklist should include specific permission values', () => {
+    expect(checklist).toMatch(/600|640|700/);
+  });
+
+  it('review areas should address path traversal', () => {
+    expect(reviewAreas).toMatch(/path traversal/);
+  });
+
+  it('review areas should address TOCTOU race conditions', () => {
+    expect(reviewAreas).toMatch(/toctou|race condition/);
+  });
+
+  // --- Acceptance Criteria: daemon hardening ---
+  it('review areas should cover daemon/service security', () => {
+    expect(reviewAreas).toMatch(/daemon.*security|service.*security/);
+  });
+
+  it('checklist should include launchd/systemd hardening directives', () => {
+    expect(checklist).toMatch(/launchd|systemd/);
+    expect(checklist).toMatch(/nonewprivileges|protecthome|hardening/);
+  });
+
+  it('review areas should cover PID/lock file handling', () => {
+    expect(reviewAreas).toMatch(/pid|lock.*file/);
+  });
+
+  it('review areas should cover cron/scheduled task security', () => {
+    expect(reviewAreas).toMatch(/cron|scheduled.*task/);
+  });
+
+  // --- Acceptance Criteria: privilege escalation prevention ---
+  it('review areas should cover privilege escalation prevention', () => {
+    expect(reviewAreas).toMatch(/privilege escalation/);
+  });
+
+  it('review areas should address SUID/SGID binaries', () => {
+    expect(reviewAreas).toMatch(/suid|sgid/);
+  });
+
+  it('review areas should cover sudo configuration', () => {
+    expect(reviewAreas).toMatch(/sudo/);
+  });
+
+  it('review areas should address capability leaks', () => {
+    expect(reviewAreas).toMatch(/capability.*leak|environment.*variable|file.*descriptor/);
+  });
+
+  // --- Acceptance Criteria: system hardening ---
+  it('review areas should cover system hardening', () => {
+    expect(reviewAreas).toMatch(/system hardening/);
+  });
+
+  it('review areas should address kernel parameters', () => {
+    expect(reviewAreas).toMatch(/kernel.*parameter|sysctl/);
+  });
+
+  it('review areas should address network listener exposure', () => {
+    expect(reviewAreas).toMatch(/network.*listener|open.*port/);
+  });
+
+  it('review areas should cover memory protections', () => {
+    expect(reviewAreas).toMatch(/aslr|stack.*canari|nx|dep|memory.*protection/);
+  });
+
+  // --- GH-84 additions: IPC and resource controls ---
+  it('review areas should cover IPC security', () => {
+    expect(reviewAreas).toMatch(/ipc|unix.*socket|shared.*memory|d-bus/);
+  });
+
+  it('review areas should cover resource limits', () => {
+    expect(reviewAreas).toMatch(/ulimit|cgroup|resource.*limit/);
+  });
+
+  it('review areas should cover audit logging', () => {
+    expect(reviewAreas).toMatch(/audit.*log/);
+  });
+
+  // --- Threat model completeness ---
+  it('threat model should cover resource exhaustion', () => {
+    expect(threats).toMatch(/resource exhaustion/);
+  });
+
+  it('threat model should cover IPC abuse', () => {
+    expect(threats).toMatch(/ipc.*abuse|ipc.*exploit/i);
+  });
+
+  it('threat model should have at least 6 threats for systems domain', () => {
+    const items = threats.match(/^\d+\.\s+/gm);
+    expect(items).toBeTruthy();
+    expect(items!.length).toBeGreaterThanOrEqual(6);
+  });
+
+  // --- Checklist completeness ---
+  it('checklist should cover resource limits', () => {
+    expect(checklist).toMatch(/ulimit|cgroup|resource.*limit/);
+  });
+
+  it('checklist should cover IPC channel permissions', () => {
+    expect(checklist).toMatch(/unix.*socket|ipc.*channel|ipc.*permission/);
+  });
+
+  it('checklist should cover audit logging', () => {
+    expect(checklist).toMatch(/audit.*log/);
+  });
+
+  it('checklist should cover cron job security', () => {
+    expect(checklist).toMatch(/cron.*job|scheduled.*task/);
+  });
+
+  it('checklist should cover memory protections', () => {
+    expect(checklist).toMatch(/aslr|nx|dep|stack.*canari|memory.*protection/);
+  });
+
+  it('checklist should have at least 13 items', () => {
+    const items = checklist.match(/^[\s]*-\s+\[/gm);
+    expect(items).toBeTruthy();
+    expect(items!.length).toBeGreaterThanOrEqual(13);
+  });
+
+  // --- Review area count ---
+  it('should have at least 6 review areas covering all critical domains', () => {
+    const items = reviewAreas.match(/^\d+\.\s+/gm);
+    expect(items).toBeTruthy();
+    expect(items!.length).toBeGreaterThanOrEqual(6);
+  });
+});
+
+// ============================================================================
+// TEST SECTION 13: GH-84 — Cloud Domain Completeness Validation
+// ============================================================================
+
+describe('GH-84: cloud.md — Critical Cloud Security Area Coverage', () => {
+  let cloudContent: string;
+  let checklist: string;
+  let threats: string;
+  let reviewAreas: string;
+
+  beforeAll(() => {
+    cloudContent = fs.readFileSync(
+      path.join(DOMAINS_DIR, 'cloud.md'),
+      'utf-8'
+    );
+    const checklistMatch = cloudContent.match(
+      /##\s+.*Checklist\s*\n([\s\S]*?)(?=\n##|\n$|$)/i
+    );
+    checklist = checklistMatch ? checklistMatch[1].toLowerCase() : '';
+    const threatMatch = cloudContent.match(
+      /##\s+.*Threat Model\s*\n([\s\S]*?)(?=\n##|\n$|$)/i
+    );
+    threats = threatMatch ? threatMatch[1].toLowerCase() : '';
+    const reviewMatch = cloudContent.match(
+      /##\s+.*Review Areas\s*\n([\s\S]*?)(?=\n##|\n$|$)/i
+    );
+    reviewAreas = reviewMatch ? reviewMatch[1].toLowerCase() : '';
+  });
+
+  // --- Acceptance Criteria: IAM ---
+  it('review areas should cover IAM', () => {
+    expect(reviewAreas).toMatch(/iam|identity.*access/);
+  });
+
+  it('review areas should address least privilege for IAM policies', () => {
+    expect(reviewAreas).toMatch(/least privilege|no.*wildcard/);
+  });
+
+  it('review areas should cover MFA enforcement', () => {
+    expect(reviewAreas).toMatch(/mfa/);
+  });
+
+  it('review areas should address temporary credentials over long-lived keys', () => {
+    expect(reviewAreas).toMatch(/temporary.*credential|long-lived.*key/);
+  });
+
+  it('checklist should enforce no wildcard IAM policies', () => {
+    expect(checklist).toMatch(/no.*wildcard|specific.*action/);
+  });
+
+  it('checklist should require dedicated service account roles', () => {
+    expect(checklist).toMatch(/service account|dedicated.*role/);
+  });
+
+  // --- Acceptance Criteria: Secrets Management ---
+  it('review areas should cover secrets management', () => {
+    expect(reviewAreas).toMatch(/secrets? management/);
+  });
+
+  it('review areas should mention vault or secrets manager', () => {
+    expect(reviewAreas).toMatch(/vault|secrets? manager/);
+  });
+
+  it('review areas should address secret rotation', () => {
+    expect(reviewAreas).toMatch(/rotation/);
+  });
+
+  it('checklist should require secrets in vault (not repos or images)', () => {
+    expect(checklist).toMatch(/vault|secrets? manager/);
+    expect(checklist).toMatch(/not.*repo|not.*image|not.*env/);
+  });
+
+  it('checklist should require automated secret rotation', () => {
+    expect(checklist).toMatch(/rotation.*automat|automat.*rotation/);
+  });
+
+  // --- Acceptance Criteria: Network Isolation ---
+  it('review areas should cover network isolation', () => {
+    expect(reviewAreas).toMatch(/network.*isolation|network.*segmentation|vpc/);
+  });
+
+  it('review areas should address security groups', () => {
+    expect(reviewAreas).toMatch(/security group/);
+  });
+
+  it('review areas should cover private subnets', () => {
+    expect(reviewAreas).toMatch(/private subnet/);
+  });
+
+  it('review areas should address overly permissive ingress rules', () => {
+    expect(reviewAreas).toMatch(/0\.0\.0\.0|permissive.*ingress|ingress.*permissive/);
+  });
+
+  it('checklist should enforce private subnet deployment for internal services', () => {
+    expect(checklist).toMatch(/private subnet/);
+  });
+
+  it('checklist should restrict security group ingress', () => {
+    expect(checklist).toMatch(/security group.*restrict|restrict.*ingress|required.*port/);
+  });
+
+  // --- Acceptance Criteria: Container Security ---
+  it('review areas should cover container security', () => {
+    expect(reviewAreas).toMatch(/container/);
+  });
+
+  it('review areas should address non-root containers', () => {
+    expect(reviewAreas).toMatch(/root.*container|non-root/);
+  });
+
+  it('review areas should address minimal base images', () => {
+    expect(reviewAreas).toMatch(/minimal.*base.*image|distroless|alpine/);
+  });
+
+  it('review areas should cover image scanning', () => {
+    expect(reviewAreas).toMatch(/image.*scan/);
+  });
+
+  it('review areas should address Kubernetes security', () => {
+    expect(reviewAreas).toMatch(/kubernetes|k8s|rbac|pod.*security/);
+  });
+
+  it('checklist should require non-root containers', () => {
+    expect(checklist).toMatch(/non-root/);
+  });
+
+  it('checklist should require container image scanning', () => {
+    expect(checklist).toMatch(/image.*scan.*cve|scan.*cve|cve/);
+  });
+
+  // --- Acceptance Criteria: Supply Chain ---
+  it('review areas should cover supply chain security', () => {
+    expect(reviewAreas).toMatch(/supply chain/);
+  });
+
+  it('review areas should address dependency lock files', () => {
+    expect(reviewAreas).toMatch(/lock file/);
+  });
+
+  it('review areas should cover artifact signing', () => {
+    expect(reviewAreas).toMatch(/artifact.*sign|signing/);
+  });
+
+  it('review areas should address image pinning to digest', () => {
+    expect(reviewAreas).toMatch(/pin.*digest|digest/);
+  });
+
+  it('checklist should require dependency pinning and auditing', () => {
+    expect(checklist).toMatch(/lock file|pinned/);
+    expect(checklist).toMatch(/audit|vulnerabilit/);
+  });
+
+  it('checklist should require CI/CD artifact signing', () => {
+    expect(checklist).toMatch(/signed|signing/);
+  });
+
+  // --- Acceptance Criteria: Data Storage ---
+  it('review areas should cover data and storage security', () => {
+    expect(reviewAreas).toMatch(/data.*storage|storage.*security/);
+  });
+
+  it('review areas should address public bucket access', () => {
+    expect(reviewAreas).toMatch(/public.*access|publicly accessible/);
+  });
+
+  it('review areas should cover encryption at rest', () => {
+    expect(reviewAreas).toMatch(/encryption.*rest/);
+  });
+
+  it('review areas should cover audit trails for data access', () => {
+    expect(reviewAreas).toMatch(/audit.*trail|logging/);
+  });
+
+  it('checklist should deny public access to storage buckets', () => {
+    expect(checklist).toMatch(/public.*access/);
+  });
+
+  it('checklist should require audit logging for cloud APIs', () => {
+    expect(checklist).toMatch(/audit.*log/);
+  });
+
+  // --- Structural completeness ---
+  it('threat model should have at least 6 threats for cloud domain', () => {
+    const items = threats.match(/^\d+\.\s+/gm);
+    expect(items).toBeTruthy();
+    expect(items!.length).toBeGreaterThanOrEqual(6);
+  });
+
+  it('checklist should have at least 12 items', () => {
+    const items = checklist.match(/^[\s]*-\s+\[/gm);
+    expect(items).toBeTruthy();
+    expect(items!.length).toBeGreaterThanOrEqual(12);
+  });
+
+  it('should have at least 6 review areas covering all critical cloud domains', () => {
+    const items = reviewAreas.match(/^\d+\.\s+/gm);
+    expect(items).toBeTruthy();
+    expect(items!.length).toBeGreaterThanOrEqual(6);
+  });
+
+  // --- Threat model specific coverage ---
+  it('threat model should cover IAM misconfiguration', () => {
+    expect(threats).toMatch(/iam.*misconfig|iam.*polic/);
+  });
+
+  it('threat model should cover exposed secrets', () => {
+    expect(threats).toMatch(/exposed.*secret|secret.*leak|credential.*leak/);
+  });
+
+  it('threat model should cover network exposure', () => {
+    expect(threats).toMatch(/network.*expos/);
+  });
+
+  it('threat model should cover container escape', () => {
+    expect(threats).toMatch(/container.*escape/);
+  });
+
+  it('threat model should cover supply chain compromise', () => {
+    expect(threats).toMatch(/supply chain.*compromise/);
+  });
+
+  it('threat model should cover data exfiltration', () => {
+    expect(threats).toMatch(/data.*exfiltration/);
+  });
+
+  // --- IaC coverage ---
+  it('checklist should require infrastructure-as-code with peer review', () => {
+    expect(checklist).toMatch(/iac|infrastructure.*code/);
+  });
+});
+
+// ============================================================================
+// TEST SECTION 14: GH-84 — Crypto Domain Completeness Validation
+// ============================================================================
+
+describe('GH-84: crypto.md — Critical Cryptographic Security Area Coverage', () => {
+  let cryptoContent: string;
+  let checklist: string;
+  let threats: string;
+  let reviewAreas: string;
+
+  beforeAll(() => {
+    cryptoContent = fs.readFileSync(
+      path.join(DOMAINS_DIR, 'crypto.md'),
+      'utf-8'
+    );
+    const checklistMatch = cryptoContent.match(
+      /##\s+.*Checklist\s*\n([\s\S]*?)(?=\n##|\n$|$)/i
+    );
+    checklist = checklistMatch ? checklistMatch[1].toLowerCase() : '';
+    const threatMatch = cryptoContent.match(
+      /##\s+.*Threat Model\s*\n([\s\S]*?)(?=\n##|\n$|$)/i
+    );
+    threats = threatMatch ? threatMatch[1].toLowerCase() : '';
+    const reviewMatch = cryptoContent.match(
+      /##\s+.*Review Areas\s*\n([\s\S]*?)(?=\n##|\n$|$)/i
+    );
+    reviewAreas = reviewMatch ? reviewMatch[1].toLowerCase() : '';
+  });
+
+  // --- Acceptance Criteria: Key Management ---
+  it('review areas should cover key management', () => {
+    expect(reviewAreas).toMatch(/key management/);
+  });
+
+  it('review areas should address key rotation', () => {
+    expect(reviewAreas).toMatch(/key rotation/);
+  });
+
+  it('review areas should mention HSM or KMS', () => {
+    expect(reviewAreas).toMatch(/hsm|kms|key management service/);
+  });
+
+  it('review areas should address key derivation functions', () => {
+    expect(reviewAreas).toMatch(/key derivation|kdf/);
+  });
+
+  it('review areas should address key material exposure prevention', () => {
+    expect(reviewAreas).toMatch(/never.*log|not.*log|key.*expos/);
+  });
+
+  it('checklist should require KMS/HSM for key storage', () => {
+    expect(checklist).toMatch(/kms|hsm/);
+  });
+
+  it('checklist should require key rotation policy', () => {
+    expect(checklist).toMatch(/key rotation/);
+  });
+
+  // --- Acceptance Criteria: TLS Configuration ---
+  it('review areas should cover TLS configuration', () => {
+    expect(reviewAreas).toMatch(/tls/);
+  });
+
+  it('review areas should specify TLS version requirements', () => {
+    expect(reviewAreas).toMatch(/tls 1\.2|tls 1\.0|tls 1\.1/);
+  });
+
+  it('review areas should address cipher suite configuration', () => {
+    expect(reviewAreas).toMatch(/cipher suite/);
+  });
+
+  it('review areas should address certificate validation', () => {
+    expect(reviewAreas).toMatch(/certificate.*valid|chain.*verif/);
+  });
+
+  it('review areas should mention HSTS', () => {
+    expect(reviewAreas).toMatch(/hsts/);
+  });
+
+  it('checklist should enforce TLS 1.2+', () => {
+    expect(checklist).toMatch(/tls 1\.2/);
+  });
+
+  it('checklist should require AEAD cipher suites', () => {
+    expect(checklist).toMatch(/aead/);
+  });
+
+  it('checklist should require certificate validation (no skip-verify)', () => {
+    expect(checklist).toMatch(/certificate.*valid|skip.*verify/);
+  });
+
+  // --- Acceptance Criteria: Algorithm Selection ---
+  it('review areas should cover algorithm selection', () => {
+    expect(reviewAreas).toMatch(/algorithm|cipher.*selection/);
+  });
+
+  it('review areas should list deprecated algorithms to avoid', () => {
+    expect(reviewAreas).toMatch(/md5|sha-1|des|rc4|ecb/);
+  });
+
+  it('review areas should mention modern algorithms', () => {
+    expect(reviewAreas).toMatch(/aes-256|ed25519|x25519/);
+  });
+
+  it('review areas should address CSPRNG requirements', () => {
+    expect(reviewAreas).toMatch(/csprng|random.*number.*generat/);
+  });
+
+  it('review areas should mention authenticated encryption', () => {
+    expect(reviewAreas).toMatch(/authenticated encryption/);
+  });
+
+  it('checklist should ban deprecated algorithms', () => {
+    expect(checklist).toMatch(/md5.*sha-1|deprecated.*algorithm|no.*md5/);
+  });
+
+  it('checklist should require CSPRNG for security-sensitive randomness', () => {
+    expect(checklist).toMatch(/csprng/);
+  });
+
+  // --- Acceptance Criteria: Password Hashing ---
+  it('review areas should cover password hashing', () => {
+    expect(reviewAreas).toMatch(/password.*hash|hashing/);
+  });
+
+  it('review areas should mention memory-hard functions', () => {
+    expect(reviewAreas).toMatch(/argon2|bcrypt|scrypt|memory-hard/);
+  });
+
+  it('review areas should address unique salts', () => {
+    expect(reviewAreas).toMatch(/salt/);
+  });
+
+  it('review areas should address constant-time comparison', () => {
+    expect(reviewAreas).toMatch(/constant.time/);
+  });
+
+  it('checklist should require argon2id/bcrypt/scrypt for passwords', () => {
+    expect(checklist).toMatch(/argon2|bcrypt|scrypt/);
+  });
+
+  it('checklist should require constant-time comparison', () => {
+    expect(checklist).toMatch(/constant.time/);
+  });
+
+  // --- Acceptance Criteria: Digital Signatures ---
+  it('review areas should cover digital signatures', () => {
+    expect(reviewAreas).toMatch(/digital signature/);
+  });
+
+  it('review areas should mention signature algorithms', () => {
+    expect(reviewAreas).toMatch(/ed25519|ecdsa|rsa-pss/);
+  });
+
+  it('review areas should address signature verification', () => {
+    expect(reviewAreas).toMatch(/signature.*verif/);
+  });
+
+  it('review areas should address replay attack prevention', () => {
+    expect(reviewAreas).toMatch(/replay.*attack|nonce|timestamp/);
+  });
+
+  it('checklist should require signature verification before trust', () => {
+    expect(checklist).toMatch(/signature.*verif/);
+  });
+
+  // --- Threat model completeness ---
+  it('threat model should cover weak algorithm usage', () => {
+    expect(threats).toMatch(/weak.*algorithm|deprecated.*algorithm/);
+  });
+
+  it('threat model should cover key exposure', () => {
+    expect(threats).toMatch(/key.*expos|key.*leak/);
+  });
+
+  it('threat model should cover improper randomness', () => {
+    expect(threats).toMatch(/improper.*random|predictable.*random/);
+  });
+
+  it('threat model should cover downgrade attacks', () => {
+    expect(threats).toMatch(/downgrade.*attack/);
+  });
+
+  it('threat model should cover padding oracle attacks', () => {
+    expect(threats).toMatch(/padding.*oracle/);
+  });
+
+  it('threat model should cover replay attacks', () => {
+    expect(threats).toMatch(/replay.*attack/);
+  });
+
+  it('threat model should cover side-channel attacks', () => {
+    expect(threats).toMatch(/side.channel|timing.*attack/);
+  });
+
+  it('threat model should cover cryptographic agility failures', () => {
+    expect(threats).toMatch(/crypto.*agility|algorithm.*migration|algorithm.*transition/);
+  });
+
+  it('threat model should have at least 8 threats for crypto domain', () => {
+    const items = threats.match(/^\d+\.\s+/gm);
+    expect(items).toBeTruthy();
+    expect(items!.length).toBeGreaterThanOrEqual(8);
+  });
+
+  // --- Checklist structural completeness ---
+  it('checklist should have at least 15 items', () => {
+    const items = checklist.match(/^[\s]*-\s+\[/gm);
+    expect(items).toBeTruthy();
+    expect(items!.length).toBeGreaterThanOrEqual(15);
+  });
+
+  it('checklist should require minimum key sizes', () => {
+    expect(checklist).toMatch(/2048.*bit|256.*bit|key.*size/);
+  });
+
+  it('checklist should address forward secrecy', () => {
+    expect(checklist).toMatch(/forward secrecy|ecdhe/);
+  });
+
+  // --- Review area structural completeness ---
+  it('should have at least 6 review areas covering all critical crypto domains', () => {
+    const items = reviewAreas.match(/^\d+\.\s+/gm);
+    expect(items).toBeTruthy();
+    expect(items!.length).toBeGreaterThanOrEqual(6);
+  });
+
+  // --- GH-84 additions: side-channel, crypto agility, IV/nonce ---
+  it('review areas should address IV/nonce management', () => {
+    expect(reviewAreas).toMatch(/iv|nonce.*manag|nonce.*reuse/);
+  });
+
+  it('checklist should address IV/nonce uniqueness', () => {
+    expect(checklist).toMatch(/iv|nonce.*unique|nonce.*reuse/);
+  });
+
+  it('checklist should address side-channel mitigations', () => {
+    expect(checklist).toMatch(/side.channel|timing.*safe|constant.time/);
+  });
+
+  it('review areas should address cryptographic agility', () => {
+    expect(reviewAreas).toMatch(/crypto.*agility|algorithm.*migrat|algorithm.*transition/);
+  });
+});

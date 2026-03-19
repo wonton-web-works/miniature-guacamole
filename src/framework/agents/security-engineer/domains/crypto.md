@@ -9,6 +9,7 @@ Domain reference for cryptographic implementation and key management security re
 3. **Algorithm and Cipher Selection** — Verify modern algorithms are used (AES-256-GCM, Ed25519, X25519), check for deprecated or broken algorithms (MD5, SHA-1, DES, RC4, ECB mode), review random number generation (CSPRNG), confirm appropriate key sizes, and validate authenticated encryption modes.
 4. **Hashing and Password Storage** — Verify password hashing uses memory-hard functions (argon2id, bcrypt, scrypt), check hash function selection for integrity (SHA-256/SHA-3), review HMAC usage for message authentication, confirm unique salts per password, and validate constant-time hash digest comparison.
 5. **Digital Signatures and Verification** — Verify signature algorithms (Ed25519, ECDSA P-256, RSA-PSS), check signature verification on all received signed data, review code signing and artifact verification in CI/CD, and confirm nonce/timestamp inclusion to prevent replay attacks.
+6. **Cryptographic Agility and IV/Nonce Management** — Review ability to migrate algorithms without code rewrites (crypto agility), verify IV/nonce uniqueness guarantees (never reuse a nonce with the same key), check for algorithm transition plans when deprecations occur, and confirm nonce management prevents catastrophic failures in AEAD modes.
 
 ## Threat Model
 
@@ -18,6 +19,8 @@ Domain reference for cryptographic implementation and key management security re
 4. **Downgrade attacks** — Attacker forces negotiation of weaker TLS versions or cipher suites. Mitigate with strict TLS configuration, disabling legacy protocols, and testing with tools like testssl.sh.
 5. **Padding oracle attacks** — Attacker exploits error messages from CBC-mode decryption to recover plaintext. Mitigate by using AEAD modes (GCM) and constant-time error handling.
 6. **Replay attacks** — Attacker resubmits valid signed messages to perform duplicate operations. Mitigate with nonces, timestamps, and sequence numbers in signed payloads.
+7. **Side-channel attacks** — Attacker exploits timing differences, cache behavior, or power analysis to extract key material from cryptographic operations. Mitigate with constant-time implementations, timing-safe comparison functions, and blinding techniques.
+8. **Cryptographic agility failures** — Application is locked to a single algorithm with no migration path, preventing timely response when an algorithm is broken or deprecated. Mitigate by abstracting crypto behind configurable interfaces, maintaining algorithm transition plans, and versioning encrypted data.
 
 ## Checklist
 
@@ -34,3 +37,5 @@ Domain reference for cryptographic implementation and key management security re
 - [ ] No deprecated algorithms in use (MD5, SHA-1, DES, 3DES, RC4, Blowfish)
 - [ ] Digital signatures verified before trusting any signed payload
 - [ ] Certificate validation enabled (no skip-verify flags in production)
+- [ ] IV/nonce values are unique per encryption operation (never reuse with same key)
+- [ ] Side-channel mitigations in place (constant-time operations for all secret-dependent logic)

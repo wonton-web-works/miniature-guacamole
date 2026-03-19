@@ -102,6 +102,12 @@ TRIAGE_REASON: Second reason`;
     const result = parseTriageResponse('TRIAGE_OUTCOME: APPROVE\nTRIAGE_REASON: Looks good', false);
     expect(result.outcome).toBe('NEEDS_CLARIFICATION');
   });
+
+  it('GIVEN valid outcome but no TRIAGE_REASON line WHEN parsed THEN reason defaults to "No reason provided"', () => {
+    const result = parseTriageResponse('TRIAGE_OUTCOME: GO', false);
+    expect(result.outcome).toBe('GO');
+    expect(result.reason).toBe('No reason provided');
+  });
 });
 
 // ---------------------------------------------------------------------------
@@ -182,6 +188,13 @@ describe('triageTicket() — Claude failure modes', () => {
     const result = await triageTicket(TICKET, DEFAULT_CONFIG, execClaudeFn);
     expect(result.outcome).toBe('NEEDS_CLARIFICATION');
     expect(result.reason).toMatch(/spawn failed/i);
+  });
+
+  it('GIVEN execClaudeFn throws non-Error value WHEN triaged THEN stringifies it in reason', async () => {
+    const execClaudeFn = vi.fn().mockRejectedValue('socket hang up');
+    const result = await triageTicket(TICKET, DEFAULT_CONFIG, execClaudeFn);
+    expect(result.outcome).toBe('NEEDS_CLARIFICATION');
+    expect(result.reason).toMatch(/socket hang up/);
   });
 });
 

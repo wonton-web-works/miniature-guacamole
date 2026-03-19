@@ -25,6 +25,12 @@ export interface FailedTicket {
   failedAt: string;
 }
 
+export interface TriageStats {
+  go: number;
+  needsInfo: number;
+  rejected: number;
+}
+
 export interface DashboardData {
   daemonStatus: { running: boolean; pid?: number; uptimeMs?: number };
   lastPollTime: string | null;
@@ -33,6 +39,7 @@ export interface DashboardData {
   recentCompleted: CompletedTicket[];
   recentFailed: FailedTicket[];
   errorBudget: { consecutive: number; threshold: number; paused: boolean };
+  triageStats?: TriageStats | null;
 }
 
 // ─── File paths ──────────────────────────────────────────────────────────────
@@ -42,6 +49,7 @@ const PROCESSED_FILE = join(MG_DIR, 'processed.json');
 const ERROR_BUDGET_FILE = join(MG_DIR, 'error-budget.json');
 const LAST_POLL_FILE = join(MG_DIR, 'last-poll.json');
 const HEARTBEAT_PATH = join(MG_DIR, 'heartbeat');
+const TRIAGE_LOG_FILE = join(MG_DIR, 'triage-log.json');
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -103,6 +111,18 @@ export function gatherDashboardData(config: DaemonConfig): DashboardData {
   const pollRaw = readJsonFile<{ timestamp: string }>(LAST_POLL_FILE);
   const lastPollTime = pollRaw?.timestamp ?? null;
 
+  // Triage stats
+  const triageLog = readJsonFile<Array<{ outcome: string }>>(TRIAGE_LOG_FILE);
+  let triageStats: TriageStats | null = null;
+  if (triageLog && Array.isArray(triageLog)) {
+    triageStats = { go: 0, needsInfo: 0, rejected: 0 };
+    for (const entry of triageLog) {
+      if (entry.outcome === 'GO') triageStats.go++;
+      else if (entry.outcome === 'NEEDS_CLARIFICATION') triageStats.needsInfo++;
+      else if (entry.outcome === 'REJECT') triageStats.rejected++;
+    }
+  }
+
   return {
     daemonStatus,
     lastPollTime,
@@ -111,6 +131,7 @@ export function gatherDashboardData(config: DaemonConfig): DashboardData {
     recentCompleted,
     recentFailed,
     errorBudget,
+    triageStats,
   };
 }
 
@@ -221,6 +242,14 @@ export function formatDashboard(data: DashboardData): string {
       const line = truncate(`  ${ticket.id}  │ ${ticket.prUrl}`, WIDTH - 2);
       lines.push(row(line));
     }
+  }
+
+  // TRIAGE STATS
+  if (data.triageStats) {
+    const { go, needsInfo, rejected } = data.triageStats;
+    lines.push(BORDER_MID);
+    lines.push(row('TRIAGE STATS'));
+    lines.push(row(`  Go: ${go}  │  Needs Info: ${needsInfo}  │  Rejected: ${rejected}`));
   }
 
   // RECENT FAILED

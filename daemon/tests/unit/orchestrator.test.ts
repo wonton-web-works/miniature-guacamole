@@ -13,6 +13,11 @@ vi.mock('child_process', () => ({
   execSync: vi.fn(),
 }));
 
+// Mock triage-log module (must be before import)
+vi.mock('../../src/triage-log', () => ({
+  appendTriageLog: vi.fn().mockResolvedValue(undefined),
+}));
+
 import { processTicket, runPollCycle } from '../../src/orchestrator';
 import type { OrchestratorConfig } from '../../src/orchestrator';
 import type { NormalizedTicket, TicketProvider } from '../../src/providers/types';
@@ -20,6 +25,7 @@ import type { DaemonConfig } from '../../src/types';
 import type { WorkstreamPlan } from '../../src/planner';
 import type { ExecutionResult } from '../../src/executor';
 import type { TriageResult } from '../../src/triage';
+import { appendTriageLog } from '../../src/triage-log';
 
 // Mock child_process.spawnSync for git operations in processTicket
 import { spawnSync } from 'child_process';
@@ -576,6 +582,90 @@ describe('processTicket() triage gate (WS-DAEMON-15)', () => {
         TICKET.id,
         expect.stringContaining('NEEDS_CLARIFICATION')
       );
+    });
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Triage log integration tests (WS-DAEMON-79)
+// ---------------------------------------------------------------------------
+
+describe('processTicket() triage log (WS-DAEMON-79)', () => {
+  beforeEach(() => {
+    vi.mocked(spawnSync).mockImplementation((_cmd: unknown, args: unknown) => {
+      const argsList = args as string[] | undefined;
+      if (argsList?.includes('--cached') && argsList?.includes('--quiet')) {
+        return { status: 1, stdout: '', stderr: '', pid: 0, output: [], signal: null } as ReturnType<typeof spawnSync>;
+      }
+      return { status: 0, stdout: '', stderr: '', pid: 0, output: [], signal: null } as ReturnType<typeof spawnSync>;
+    });
+    vi.mocked(appendTriageLog).mockClear();
+  });
+
+  describe('AC: orchestrator Step 0 appends triage result to triage log', () => {
+    it('GIVEN triage returns GO WHEN processTicket called THEN appendTriageLog is called with GO entry', async () => {
+      const deps = makeDeps();
+      await processTicket(TICKET, deps);
+      expect(appendTriageLog).toHaveBeenCalledOnce();
+      expect(appendTriageLog).toHaveBeenCalledWith(
+        expect.objectContaining({
+          ticketId: 'PROJ-123',
+          outcome: 'GO',
+          reason: expect.any(String),
+          timestamp: expect.any(String),
+        }),
+        expect.any(String)
+      );
+    });
+
+    it('GIVEN triage returns NEEDS_CLARIFICATION WHEN processTicket called THEN appendTriageLog is called before returning', async () => {
+      const deps = makeDeps({
+        triageTicket: vi.fn().mockResolvedValue({
+          outcome: 'NEEDS_CLARIFICATION',
+          reason: 'Missing details',
+        } as TriageResult),
+      });
+      await processTicket(TICKET, deps);
+      expect(appendTriageLog).toHaveBeenCalledOnce();
+      expect(appendTriageLog).toHaveBeenCalledWith(
+        expect.objectContaining({
+          ticketId: 'PROJ-123',
+          outcome: 'NEEDS_CLARIFICATION',
+        }),
+        expect.any(String)
+      );
+    });
+
+    it('GIVEN triage returns REJECT WHEN processTicket called THEN appendTriageLog is called with REJECT entry', async () => {
+      const deps = makeDeps({
+        triageTicket: vi.fn().mockResolvedValue({
+          outcome: 'REJECT',
+          reason: 'Out of scope',
+        } as TriageResult),
+      });
+      await processTicket(TICKET, deps);
+      expect(appendTriageLog).toHaveBeenCalledOnce();
+      expect(appendTriageLog).toHaveBeenCalledWith(
+        expect.objectContaining({
+          ticketId: 'PROJ-123',
+          outcome: 'REJECT',
+        }),
+        expect.any(String)
+      );
+    });
+
+    it('GIVEN triage log append fails WHEN processTicket called THEN pipeline continues (best-effort)', async () => {
+      vi.mocked(appendTriageLog).mockRejectedValueOnce(new Error('disk full'));
+      const deps = makeDeps();
+      const result = await processTicket(TICKET, deps);
+      expect(result.success).toBe(true);
+    });
+
+    it('GIVEN triage result WHEN appendTriageLog called THEN timestamp is a valid ISO string', async () => {
+      const deps = makeDeps();
+      await processTicket(TICKET, deps);
+      const entry = vi.mocked(appendTriageLog).mock.calls[0][0];
+      expect(() => new Date(entry.timestamp).toISOString()).not.toThrow();
     });
   });
 });

@@ -699,5 +699,167 @@ describe('execClaude() — P0-4: Output buffer limiting', () => {
       const truncationCount = (result.stderr.match(/\[OUTPUT TRUNCATED/g) || []).length;
       expect(truncationCount).toBe(1);
     });
+
+    it('GIVEN stderr exactly at limit WHEN another chunk arrives THEN truncation message is appended (lines 147-150)', async () => {
+      const stdout = new EventEmitter() as NodeJS.ReadableStream & EventEmitter;
+      const stderr = new EventEmitter() as NodeJS.ReadableStream & EventEmitter;
+      const proc = new EventEmitter() as unknown as ChildProcess;
+      (proc as unknown as Record<string, unknown>).stdout = stdout;
+      (proc as unknown as Record<string, unknown>).stderr = stderr;
+      mockSpawn.mockReturnValue(proc);
+
+      const promise = execClaude('prompt', { maxOutputBytes: 5 }, mockSpawn as SpawnFn);
+      // First chunk fills stderr to exactly the limit (5 bytes)
+      stderr.emit('data', Buffer.from('hello'));
+      // Second chunk arrives when remaining <= 0 — hits lines 147-150
+      stderr.emit('data', Buffer.from('world'));
+      proc.emit('close', 0);
+      const result = await promise;
+
+      expect(result.stderr).toContain('[OUTPUT TRUNCATED');
+      // Only one truncation marker — the early-return prevents double-appending
+      const truncationCount = (result.stderr.match(/\[OUTPUT TRUNCATED/g) || []).length;
+      expect(truncationCount).toBe(1);
+    });
+  });
+});
+
+describe('execClaude() — timeout kill edge cases (P0-3)', () => {
+  let mockSpawn: ReturnType<typeof vi.fn>;
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mockSpawn = vi.fn();
+  });
+
+  it('GIVEN process has no pid WHEN timeout fires THEN falls back to proc.kill() (lines 173-175)', async () => {
+    vi.useFakeTimers();
+
+    const stdout = new EventEmitter() as NodeJS.ReadableStream & EventEmitter;
+    const stderr = new EventEmitter() as NodeJS.ReadableStream & EventEmitter;
+    const proc = new EventEmitter() as unknown as ChildProcess;
+    (proc as unknown as Record<string, unknown>).stdout = stdout;
+    (proc as unknown as Record<string, unknown>).stderr = stderr;
+    // Deliberately no pid — proc.pid is undefined
+    (proc as unknown as Record<string, unknown>).pid = undefined;
+    const killFn = vi.fn();
+    (proc as unknown as Record<string, unknown>).kill = killFn;
+    mockSpawn.mockReturnValue(proc);
+
+    const promise = execClaude('prompt', { timeout: 100 }, mockSpawn as SpawnFn);
+
+    vi.advanceTimersByTime(150);
+    proc.emit('close', null);
+    const result = await promise;
+
+    expect(result.timedOut).toBe(true);
+    // proc.kill() fallback should have been called
+    expect(killFn).toHaveBeenCalled();
+
+    vi.useRealTimers();
+  });
+
+  it('GIVEN process.kill(-pid) throws WHEN timeout fires THEN falls back to proc.kill() (lines 177-184)', async () => {
+    vi.useFakeTimers();
+
+    const stdout = new EventEmitter() as NodeJS.ReadableStream & EventEmitter;
+    const stderr = new EventEmitter() as NodeJS.ReadableStream & EventEmitter;
+    const proc = new EventEmitter() as unknown as ChildProcess;
+    (proc as unknown as Record<string, unknown>).stdout = stdout;
+    (proc as unknown as Record<string, unknown>).stderr = stderr;
+    (proc as unknown as Record<string, unknown>).pid = 55555;
+    const killFn = vi.fn();
+    (proc as unknown as Record<string, unknown>).kill = killFn;
+    mockSpawn.mockReturnValue(proc);
+
+    // Make process.kill throw on first call (SIGTERM to process group)
+    const mockProcessKill = vi.spyOn(process, 'kill').mockImplementationOnce(() => {
+      throw new Error('ESRCH: no such process');
+    }).mockImplementation(() => true);
+
+    const promise = execClaude('prompt', { timeout: 100 }, mockSpawn as SpawnFn);
+
+    vi.advanceTimersByTime(150);
+    proc.emit('close', null);
+    const result = await promise;
+
+    expect(result.timedOut).toBe(true);
+    // Fallback proc.kill() should have been called after process.kill threw
+    expect(killFn).toHaveBeenCalled();
+
+    mockProcessKill.mockRestore();
+    vi.useRealTimers();
+  });
+
+  it('GIVEN process.kill(-pid) throws AND proc.kill() also throws WHEN timeout fires THEN no error propagates (lines 182-183)', async () => {
+    vi.useFakeTimers();
+
+    const stdout = new EventEmitter() as NodeJS.ReadableStream & EventEmitter;
+    const stderr = new EventEmitter() as NodeJS.ReadableStream & EventEmitter;
+    const proc = new EventEmitter() as unknown as ChildProcess;
+    (proc as unknown as Record<string, unknown>).stdout = stdout;
+    (proc as unknown as Record<string, unknown>).stderr = stderr;
+    (proc as unknown as Record<string, unknown>).pid = 66666;
+    // proc.kill() itself throws — process already gone
+    const killFn = vi.fn().mockImplementation(() => {
+      throw new Error('ESRCH: no such process');
+    });
+    (proc as unknown as Record<string, unknown>).kill = killFn;
+    mockSpawn.mockReturnValue(proc);
+
+    // process.kill(-pid, 'SIGTERM') also throws
+    const mockProcessKill = vi.spyOn(process, 'kill').mockImplementation(() => {
+      throw new Error('ESRCH: no such process');
+    });
+
+    const promise = execClaude('prompt', { timeout: 100 }, mockSpawn as SpawnFn);
+
+    // Should not throw despite both kill paths throwing
+    vi.advanceTimersByTime(150);
+    proc.emit('close', null);
+    const result = await promise;
+
+    expect(result.timedOut).toBe(true);
+    // killFn was attempted in the fallback
+    expect(killFn).toHaveBeenCalled();
+
+    mockProcessKill.mockRestore();
+    vi.useRealTimers();
+  });
+
+  it('GIVEN process already gone WHEN SIGKILL escalation fires THEN no error propagates (lines 193-194)', async () => {
+    vi.useFakeTimers();
+
+    const stdout = new EventEmitter() as NodeJS.ReadableStream & EventEmitter;
+    const stderr = new EventEmitter() as NodeJS.ReadableStream & EventEmitter;
+    const proc = new EventEmitter() as unknown as ChildProcess;
+    (proc as unknown as Record<string, unknown>).stdout = stdout;
+    (proc as unknown as Record<string, unknown>).stderr = stderr;
+    (proc as unknown as Record<string, unknown>).pid = 77777;
+    (proc as unknown as Record<string, unknown>).kill = vi.fn();
+    mockSpawn.mockReturnValue(proc);
+
+    // SIGTERM succeeds but SIGKILL throws (process already gone)
+    const mockProcessKill = vi.spyOn(process, 'kill')
+      .mockImplementationOnce(() => true)  // SIGTERM — succeeds
+      .mockImplementationOnce(() => {       // SIGKILL — throws as if process already gone
+        throw new Error('ESRCH: no such process');
+      });
+
+    const promise = execClaude('prompt', { timeout: 100 }, mockSpawn as SpawnFn);
+
+    vi.advanceTimersByTime(150);
+    proc.emit('close', null);
+    const result = await promise;
+
+    // Advance past grace period to trigger SIGKILL escalation
+    vi.advanceTimersByTime(5000);
+
+    // The promise should have resolved cleanly — no error thrown
+    expect(result.timedOut).toBe(true);
+    expect(mockProcessKill).toHaveBeenCalledWith(-77777, 'SIGKILL');
+
+    mockProcessKill.mockRestore();
+    vi.useRealTimers();
   });
 });

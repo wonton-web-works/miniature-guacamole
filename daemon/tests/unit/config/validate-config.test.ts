@@ -630,6 +630,186 @@ describe('Config Validation (AC-1.4: validateConfig function)', () => {
     });
   });
 
+  describe('Given uncovered branch coverage', () => {
+    // Lines 107-111: jira.apiToken too short (length < 3)
+    it('GIVEN jira.apiToken is only 2 chars WHEN validateConfig called THEN error reports token too short', () => {
+      validConfig.jira.apiToken = 'ab';
+      const errors = validateConfig(validConfig);
+      expect(errors.length).toBeGreaterThan(0);
+      const tokenError = errors.find(e => e.field === 'jira.apiToken');
+      expect(tokenError).toBeDefined();
+      expect(tokenError!.message).toMatch(/too short|minimum/i);
+    });
+
+    // Lines 120-124: jira.statusTransitions is not an object (array triggers the !object || Array.isArray branch)
+    it('GIVEN jira.statusTransitions is an array WHEN validateConfig called THEN error reports it must be an object', () => {
+      (validConfig.jira as any).statusTransitions = ['in_progress'];
+      const errors = validateConfig(validConfig);
+      const stError = errors.find(e => e.field === 'jira.statusTransitions');
+      expect(stError).toBeDefined();
+      expect(stError!.message).toMatch(/object/i);
+    });
+
+    // Lines 129-133: jira.commentOnStart is defined but not boolean
+    it('GIVEN jira.commentOnStart is a string WHEN validateConfig called THEN error reports must be boolean', () => {
+      (validConfig.jira as any).commentOnStart = 'yes';
+      const errors = validateConfig(validConfig);
+      const cosError = errors.find(e => e.field === 'jira.commentOnStart');
+      expect(cosError).toBeDefined();
+      expect(cosError!.message).toMatch(/boolean/i);
+    });
+
+    // Lines 136-140: jira.commentOnComplete is defined but not boolean
+    it('GIVEN jira.commentOnComplete is a number WHEN validateConfig called THEN error reports must be boolean', () => {
+      (validConfig.jira as any).commentOnComplete = 1;
+      const errors = validateConfig(validConfig);
+      const cocError = errors.find(e => e.field === 'jira.commentOnComplete');
+      expect(cocError).toBeDefined();
+      expect(cocError!.message).toMatch(/boolean/i);
+    });
+
+    // Lines 171-174: slack.dmContacts is not an array (set to a string after the undefined default)
+    it('GIVEN slack.dmContacts is a string WHEN validateConfig called THEN error reports must be an array', () => {
+      (validConfig.slack as any).dmContacts = 'U123';
+      const errors = validateConfig(validConfig);
+      const dcError = errors.find(e => e.field === 'slack.dmContacts');
+      expect(dcError).toBeDefined();
+      expect(dcError!.message).toMatch(/array/i);
+    });
+
+    // Lines 185-188: slack.dmContacts[i].notifyOn is not an array
+    it('GIVEN slack.dmContacts[0].notifyOn is a string WHEN validateConfig called THEN error reports must be an array', () => {
+      validConfig.slack.dmContacts = [
+        { userId: 'U123', notifyOn: 'blocked' as any },
+      ];
+      const errors = validateConfig(validConfig);
+      const notifyError = errors.find(e => e.field === 'slack.dmContacts[0].notifyOn');
+      expect(notifyError).toBeDefined();
+      expect(notifyError!.message).toMatch(/array/i);
+    });
+
+    // Lines 220-223: github.primaryRepo is missing / not an object
+    it('GIVEN github.primaryRepo is null WHEN validateConfig called THEN error reports it is required', () => {
+      (validConfig.github as any).primaryRepo = null;
+      const errors = validateConfig(validConfig);
+      const prError = errors.find(e => e.field === 'github.primaryRepo');
+      expect(prError).toBeDefined();
+      expect(prError!.message).toMatch(/required|object/i);
+    });
+
+    // Lines 254-257: github.contextRepos is not an array
+    it('GIVEN github.contextRepos is a string WHEN validateConfig called THEN error reports must be an array', () => {
+      (validConfig.github as any).contextRepos = 'org/repo';
+      const errors = validateConfig(validConfig);
+      const crError = errors.find(e => e.field === 'github.contextRepos');
+      expect(crError).toBeDefined();
+      expect(crError!.message).toMatch(/array/i);
+    });
+
+    // Lines 268-272: github.contextRepos[i].name is missing
+    it('GIVEN github.contextRepos[0].name is empty WHEN validateConfig called THEN error reports name required', () => {
+      validConfig.github.contextRepos = [
+        { owner: 'myorg', name: '', description: 'A repo' },
+      ];
+      const errors = validateConfig(validConfig);
+      const nameError = errors.find(e => e.field === 'github.contextRepos[0].name');
+      expect(nameError).toBeDefined();
+      expect(nameError!.message).toMatch(/required/i);
+    });
+
+    // Lines 300-303: mcp.servers is not an array
+    it('GIVEN mcp.servers is a string WHEN validateConfig called THEN error reports must be an array', () => {
+      (validConfig.mcp as any).servers = 'my-server';
+      const errors = validateConfig(validConfig);
+      const srvError = errors.find(e => e.field === 'mcp.servers');
+      expect(srvError).toBeDefined();
+      expect(srvError!.message).toMatch(/array/i);
+    });
+
+    // Lines 330-334: mcp.servers[i].env is defined but not an object (set to an array)
+    it('GIVEN mcp.servers[0].env is an array WHEN validateConfig called THEN error reports env must be an object', () => {
+      validConfig.mcp.enabled = true;
+      validConfig.mcp.servers = [
+        { name: 'my-server', command: 'run', env: ['KEY=VALUE'] as any },
+      ];
+      const errors = validateConfig(validConfig);
+      const envError = errors.find(e => e.field === 'mcp.servers[0].env');
+      expect(envError).toBeDefined();
+      expect(envError!.message).toMatch(/object/i);
+    });
+
+    // Lines 338-342: mcp.servers[i].args is defined but not an array
+    it('GIVEN mcp.servers[0].args is a string WHEN validateConfig called THEN error reports args must be an array', () => {
+      validConfig.mcp.enabled = true;
+      validConfig.mcp.servers = [
+        { name: 'my-server', command: 'run', args: '--flag' as any },
+      ];
+      const errors = validateConfig(validConfig);
+      const argsError = errors.find(e => e.field === 'mcp.servers[0].args');
+      expect(argsError).toBeDefined();
+      expect(argsError!.message).toMatch(/array/i);
+    });
+
+    // Lines 32-35: slack section missing entirely
+    it('GIVEN slack section is undefined WHEN validateConfig called THEN error reports slack is required', () => {
+      (validConfig as any).slack = undefined;
+      const errors = validateConfig(validConfig);
+      const slackError = errors.find(e => e.field === 'slack');
+      expect(slackError).toBeDefined();
+      expect(slackError!.message).toMatch(/required/i);
+    });
+
+    // Lines 42-45: github section missing entirely
+    it('GIVEN github section is undefined WHEN validateConfig called THEN error reports github is required', () => {
+      (validConfig as any).github = undefined;
+      const errors = validateConfig(validConfig);
+      const githubError = errors.find(e => e.field === 'github');
+      expect(githubError).toBeDefined();
+      expect(githubError!.message).toMatch(/required/i);
+    });
+
+    // Lines 52-55: mcp section missing entirely
+    it('GIVEN mcp section is undefined WHEN validateConfig called THEN error reports mcp is required', () => {
+      (validConfig as any).mcp = undefined;
+      const errors = validateConfig(validConfig);
+      const mcpError = errors.find(e => e.field === 'mcp');
+      expect(mcpError).toBeDefined();
+      expect(mcpError!.message).toMatch(/required/i);
+    });
+
+    // Line 115: jira.statusTransitions defaults to {} when undefined
+    it('GIVEN jira.statusTransitions is undefined WHEN validateConfig called THEN no error for statusTransitions', () => {
+      (validConfig.jira as any).statusTransitions = undefined;
+      const errors = validateConfig(validConfig);
+      const stError = errors.find(e => e.field === 'jira.statusTransitions');
+      expect(stError).toBeUndefined();
+    });
+
+    // Line 167: slack.dmContacts defaults to [] when undefined
+    it('GIVEN slack.dmContacts is undefined WHEN validateConfig called THEN no error for dmContacts', () => {
+      (validConfig.slack as any).dmContacts = undefined;
+      const errors = validateConfig(validConfig);
+      const dcError = errors.find(e => e.field === 'slack.dmContacts');
+      expect(dcError).toBeUndefined();
+    });
+
+    // Lines 249-250: github.contextRepos defaults to [] when undefined
+    it('GIVEN github.contextRepos is undefined WHEN validateConfig called THEN no error for contextRepos', () => {
+      (validConfig.github as any).contextRepos = undefined;
+      const errors = validateConfig(validConfig);
+      const crError = errors.find(e => e.field === 'github.contextRepos');
+      expect(crError).toBeUndefined();
+    });
+
+    // Lines 295-296: mcp.servers defaults to [] when undefined
+    it('GIVEN mcp.servers is undefined WHEN validateConfig called THEN no error for servers array', () => {
+      (validConfig.mcp as any).servers = undefined;
+      const errors = validateConfig(validConfig);
+      const srvError = errors.find(e => e.field === 'mcp.servers');
+      expect(srvError).toBeUndefined();
+    });
+  });
+
   describe('Given edge cases', () => {
     it('WHEN config has null values THEN validation handles gracefully', () => {
       // Arrange

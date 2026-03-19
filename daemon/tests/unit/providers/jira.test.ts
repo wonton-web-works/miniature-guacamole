@@ -504,4 +504,29 @@ describe('JiraProvider (WS-DAEMON-10)', () => {
       await expect(provider.linkPR('TEST-1', 'https://github.com/pr/1')).rejects.toThrow();
     });
   });
+
+  describe('Coverage gap tests', () => {
+    // Lines 109-110: poll() returns [] when response has no issues or issues is not array
+    it('GIVEN API response with no issues field WHEN poll() called THEN returns empty array', async () => {
+      mockFetch.mockResolvedValue({
+        ok: true,
+        status: 200,
+        json: async () => ({}), // no issues field
+      });
+
+      const result = await provider.poll();
+      expect(result).toEqual([]);
+    });
+
+    it('GIVEN API response where issues is not an array WHEN poll() called THEN returns empty array', async () => {
+      mockFetch.mockResolvedValue({
+        ok: true,
+        status: 200,
+        json: async () => ({ issues: 'not-an-array' }),
+      });
+
+      const result = await provider.poll();
+      expect(result).toEqual([]);
+    });
+  });
 });

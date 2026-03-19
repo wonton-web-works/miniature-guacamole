@@ -198,6 +198,28 @@ describe('prereqs module', () => {
       expect(ghResult!.found).toBe(false);
       expect(nodeResult!.found).toBe(true);
     });
+
+    // Lines 31-32: version check fails but tool is found via which
+    it('GIVEN tool found via which but --version throws WHEN checkPrereqs() called THEN found is true with no version', () => {
+      // First call (which node) succeeds, second call (node --version) throws
+      vi.mocked(execSync)
+        .mockReturnValueOnce(Buffer.from('/usr/local/bin/node'))  // which node
+        .mockImplementationOnce(() => { throw new Error('version command failed'); }) // node --version
+        .mockReturnValueOnce(Buffer.from('/usr/local/bin/gh'))    // which gh
+        .mockImplementationOnce(() => { throw new Error('version command failed'); }) // gh --version
+        .mockReturnValueOnce(Buffer.from('/usr/local/bin/claude'))// which claude
+        .mockImplementationOnce(() => { throw new Error('version command failed'); }) // claude --version
+        .mockReturnValueOnce(Buffer.from('/usr/local/bin/git'))   // which git
+        .mockImplementationOnce(() => { throw new Error('version command failed'); }); // git --version
+
+      const results = checkPrereqs();
+
+      const nodeResult = results.find((r) => r.name === 'node');
+      expect(nodeResult).toBeDefined();
+      expect(nodeResult!.found).toBe(true);
+      expect(nodeResult!.path).toBe('/usr/local/bin/node');
+      expect(nodeResult!.version).toBeUndefined();
+    });
   });
 
   describe('formatPrereqReport()', () => {
@@ -267,6 +289,28 @@ describe('prereqs module', () => {
       const report = formatPrereqReport([]);
 
       expect(typeof report).toBe('string');
+    });
+
+    // Line 69: found=true but no version — uses path ?? ''
+    it('GIVEN tool found with path but no version WHEN formatPrereqReport() called THEN shows path without version', () => {
+      const results: PrereqResult[] = [
+        { name: 'node', found: true, path: '/usr/local/bin/node' }, // no version
+      ];
+
+      const report = formatPrereqReport(results);
+
+      expect(report).toContain('/usr/local/bin/node');
+      // Should not contain parentheses around version since there is none
+      expect(report).not.toMatch(/\/usr\/local\/bin\/node \(/);
+    });
+
+    // Line 69: found=true but path is also undefined — uses ''
+    it('GIVEN tool found with neither path nor version WHEN formatPrereqReport() called THEN does not throw', () => {
+      const results: PrereqResult[] = [
+        { name: 'node', found: true }, // no path, no version
+      ];
+
+      expect(() => formatPrereqReport(results)).not.toThrow();
     });
 
     it('GIVEN results WHEN formatPrereqReport() called THEN output fits in 80 columns', () => {

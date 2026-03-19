@@ -474,6 +474,20 @@ describe('Config Template (AC-1.6: Example config template)', () => {
       expect(() => createConfigTemplate(mockProjectPath)).toThrow(/permission|write/i);
     });
 
+    // Lines 138-139: writeFileSync throws with EACCES code — wrapped in descriptive error
+    it('WHEN createConfigTemplate() fails to write with EACCES code THEN throws Permission denied error', () => {
+      // Arrange
+      vi.mocked(existsSync).mockReturnValue(false);
+      vi.mocked(writeFileSync).mockImplementation(() => {
+        const err: NodeJS.ErrnoException = new Error('EACCES: permission denied, open /path/to/file');
+        err.code = 'EACCES';
+        throw err;
+      });
+
+      // Act & Assert
+      expect(() => createConfigTemplate(mockProjectPath)).toThrow(/Permission denied writing config file/);
+    });
+
     it('WHEN createConfigTemplate() fails to create directory THEN error is descriptive', () => {
       // Arrange
       vi.mocked(existsSync).mockReturnValue(false);
@@ -485,6 +499,20 @@ describe('Config Template (AC-1.6: Example config template)', () => {
 
       // Act & Assert
       expect(() => createConfigTemplate(mockProjectPath)).toThrow(/directory|permission/i);
+    });
+
+    // Lines 61-62: mkdirSync throws with non-EACCES error code — re-thrown as-is
+    it('WHEN createConfigTemplate() mkdirSync throws non-EACCES error THEN original error is rethrown', () => {
+      // Arrange
+      vi.mocked(existsSync).mockReturnValue(false);
+      vi.mocked(mkdirSync).mockImplementation(() => {
+        const err: NodeJS.ErrnoException = new Error('ENOSPC: no space left on device');
+        err.code = 'ENOSPC';
+        throw err;
+      });
+
+      // Act & Assert
+      expect(() => createConfigTemplate(mockProjectPath)).toThrow('ENOSPC: no space left on device');
     });
   });
 });

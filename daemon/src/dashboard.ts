@@ -5,6 +5,7 @@ import { existsSync, readFileSync } from 'fs';
 import { join } from 'path';
 import { statusDaemon } from './process';
 import { isStale } from './heartbeat';
+import { loadTriageLog } from './triage-log';
 import type { DaemonConfig, ProcessedTicket } from './types';
 
 export interface InFlightTicket {
@@ -25,6 +26,12 @@ export interface FailedTicket {
   failedAt: string;
 }
 
+export interface TriageCounts {
+  go: number;
+  needsInfo: number;
+  reject: number;
+}
+
 export interface DashboardData {
   daemonStatus: { running: boolean; pid?: number; uptimeMs?: number };
   lastPollTime: string | null;
@@ -33,6 +40,7 @@ export interface DashboardData {
   recentCompleted: CompletedTicket[];
   recentFailed: FailedTicket[];
   errorBudget: { consecutive: number; threshold: number; paused: boolean };
+  triageCounts: TriageCounts;
 }
 
 // ─── File paths ──────────────────────────────────────────────────────────────
@@ -103,6 +111,15 @@ export function gatherDashboardData(config: DaemonConfig): DashboardData {
   const pollRaw = readJsonFile<{ timestamp: string }>(LAST_POLL_FILE);
   const lastPollTime = pollRaw?.timestamp ?? null;
 
+  // Triage counts from triage-log.json
+  const triageLog = loadTriageLog();
+  const triageCounts: TriageCounts = { go: 0, needsInfo: 0, reject: 0 };
+  for (const entry of triageLog) {
+    if (entry.outcome === 'GO') triageCounts.go++;
+    else if (entry.outcome === 'NEEDS_CLARIFICATION') triageCounts.needsInfo++;
+    else if (entry.outcome === 'REJECT') triageCounts.reject++;
+  }
+
   return {
     daemonStatus,
     lastPollTime,
@@ -111,6 +128,7 @@ export function gatherDashboardData(config: DaemonConfig): DashboardData {
     recentCompleted,
     recentFailed,
     errorBudget,
+    triageCounts,
   };
 }
 
@@ -197,6 +215,12 @@ export function formatDashboard(data: DashboardData): string {
     ? `PAUSED (${errorBudget.consecutive}/${errorBudget.threshold} failures)`
     : `${errorBudget.consecutive}/${errorBudget.threshold} (budget OK)`;
   lines.push(row(`Errors:    ${budgetStr}`));
+
+  // Triage counts
+  if (data.triageCounts) {
+    const { go, needsInfo, reject } = data.triageCounts;
+    lines.push(row(`TRIAGE:    GO: ${go}  NEEDS_INFO: ${needsInfo}  REJECT: ${reject}`));
+  }
 
   // IN-FLIGHT
   lines.push(BORDER_MID);

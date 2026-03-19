@@ -18,6 +18,7 @@ import { triageTicket as defaultTriageTicket } from './triage';
 import { createWorktree as defaultCreateWorktree, removeWorktree as defaultRemoveWorktree } from './worktree';
 import { createPR as defaultCreatePR } from './github';
 import { ConcurrencyLimiter } from './concurrency';
+import { appendTriageLog } from './triage-log';
 import { spawnSync } from 'child_process';
 import { existsSync, statfsSync } from 'fs';
 import { join } from 'path';
@@ -128,7 +129,7 @@ ${resultLines}
 }
 
 /**
- * Process a single ticket through the full pipeline:
+ * Process a single ticket through the full pipeline (post-triage):
  * 1. Transition ticket to In Progress
  * 2. Plan workstreams via Claude
  * 3. Create subtasks in tracker for each workstream
@@ -138,10 +139,14 @@ ${resultLines}
  * 7. Link PR to ticket
  * 8. Transition ticket to In Review
  * 9. Clean up worktree
+ *
+ * Triage is performed by runPollCycle before calling this function.
+ * The triageResult is passed through to be included in PipelineResult.
  */
 export async function processTicket(
   ticket: NormalizedTicket,
-  deps: OrchestratorConfig
+  deps: OrchestratorConfig,
+  triageResult?: TriageResult
 ): Promise<PipelineResult> {
   const orchestration = deps.config.orchestration ?? {
     claudeTimeout: 1_800_000,
@@ -154,7 +159,6 @@ export async function processTicket(
   const timeout = orchestration.claudeTimeout;
   const baseBranch = deps.config.github.baseBranch;
 
-  const triageFn = deps.triageTicket ?? defaultTriageTicket;
   const planFn = deps.planTicket ?? defaultPlanTicket;
   const executeFn = deps.executeWorkstream ?? defaultExecuteWorkstream;
   const createWorktreeFn = deps.createWorktree ?? defaultCreateWorktree;
@@ -164,46 +168,6 @@ export async function processTicket(
 
   // Mark as processing in tracker
   deps.tracker.markProcessing(ticket.id);
-
-  // Step 0: Triage gate — assess ticket before planning
-  const triageConfig: TriageConfig = deps.config.triage ?? {
-    enabled: true,
-    autoReject: false,
-    maxTicketSizeChars: 10000,
-  };
-
-  const triageResult = await triageFn(ticket, triageConfig, passthrough);
-
-  if (triageResult.outcome !== 'GO') {
-    // Post comment to ticket explaining the triage decision
-    if (!dryRun) {
-      try {
-        const label = triageResult.outcome === 'REJECT'
-          ? 'mg-daemon:rejected'
-          : 'mg-daemon:needs-info';
-
-        let comment = `**Triage: ${triageResult.outcome}**\n\n${triageResult.reason}`;
-        if (triageResult.questions && triageResult.questions.length > 0) {
-          comment += '\n\n**Questions:**\n' + triageResult.questions.map(q => `- ${q}`).join('\n');
-        }
-
-        await deps.provider.addComment(ticket.id, comment);
-        await deps.provider.addLabel(ticket.id, label);
-      } catch {
-        // Best-effort — don't fail the pipeline on comment/label errors
-      }
-    }
-
-    deps.tracker.markFailed(ticket.id, `Triage: ${triageResult.outcome} — ${triageResult.reason}`);
-    return {
-      ticketId: ticket.id,
-      triageResult,
-      planned: [],
-      executed: [],
-      success: false,
-      error: `Triage: ${triageResult.outcome} — ${triageResult.reason}`,
-    };
-  }
 
   // Step 1: Transition to In Progress (write operation — skip in dry-run)
   if (!dryRun) {
@@ -362,7 +326,8 @@ export async function processTicket(
 }
 
 /**
- * Main poll loop: poll for tickets, process each one.
+ * Main poll loop: poll for tickets, triage each one, then process GO tickets.
+ * Triage runs between poll filtering and processTicket.
  * Respects concurrency and delay settings.
  */
 export async function runPollCycle(deps: OrchestratorConfig): Promise<PipelineResult[]> {
@@ -381,6 +346,23 @@ export async function runPollCycle(deps: OrchestratorConfig): Promise<PipelineRe
 
   const pending = tickets.filter((t) => !processedKeys.includes(t.id));
 
+  const orchestration = deps.config.orchestration ?? {
+    claudeTimeout: 1_800_000,
+    concurrency: 1,
+    delayBetweenTicketsMs: 0,
+    dryRun: false,
+    errorBudget: 3,
+  };
+  const dryRun = orchestration.dryRun;
+
+  const triageFn = deps.triageTicket ?? defaultTriageTicket;
+  const passthrough: PlannerExecClaudeFn = deps.execClaude ?? defaultExecClaude;
+  const triageConfig: TriageConfig = deps.config.triage ?? {
+    enabled: true,
+    autoReject: false,
+    maxTicketSizeChars: 10000,
+  };
+
   const limiter = new ConcurrencyLimiter({
     maxConcurrent: deps.config.orchestration?.concurrency ?? 1,
     delayBetweenTicketsMs: deps.config.orchestration?.delayBetweenTicketsMs ?? 5000,
@@ -390,7 +372,55 @@ export async function runPollCycle(deps: OrchestratorConfig): Promise<PipelineRe
   const promises = pending.map(async (ticket) => {
     await limiter.acquire();
     try {
-      const result = await processTicket(ticket, deps);
+      // Triage gate — runs between poll filtering and processTicket
+      const triageResult = await triageFn(ticket, triageConfig, passthrough);
+
+      // Persist triage outcome to triage-log.json (best-effort, never blocks pipeline)
+      try {
+        appendTriageLog({
+          ticketId: ticket.id,
+          outcome: triageResult.outcome,
+          reason: triageResult.reason,
+          timestamp: new Date().toISOString(),
+        });
+      } catch {
+        // appendTriageLog failures must not disrupt the pipeline
+      }
+
+      if (triageResult.outcome !== 'GO') {
+        // Post comment and label for non-GO outcomes (skip in dry-run)
+        if (!dryRun) {
+          try {
+            const label = triageResult.outcome === 'REJECT'
+              ? 'mg-daemon:rejected'
+              : 'mg-daemon:needs-info';
+
+            let comment = `**Triage: ${triageResult.outcome}**\n\n${triageResult.reason}`;
+            if (triageResult.questions && triageResult.questions.length > 0) {
+              comment += '\n\n**Questions:**\n' + triageResult.questions.map(q => `- ${q}`).join('\n');
+            }
+
+            await deps.provider.addComment(ticket.id, comment);
+            await deps.provider.addLabel(ticket.id, label);
+          } catch {
+            // Best-effort — don't fail the pipeline on comment/label errors
+          }
+        }
+
+        deps.tracker.markFailed(ticket.id, `Triage: ${triageResult.outcome} — ${triageResult.reason}`);
+        results.push({
+          ticketId: ticket.id,
+          triageResult,
+          planned: [],
+          executed: [],
+          success: false,
+          error: `Triage: ${triageResult.outcome} — ${triageResult.reason}`,
+        });
+        return;
+      }
+
+      // GO — proceed to full pipeline
+      const result = await processTicket(ticket, deps, triageResult);
       results.push(result);
     } finally {
       limiter.release();

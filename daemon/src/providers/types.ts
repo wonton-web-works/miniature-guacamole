@@ -27,5 +27,6 @@ export interface TicketProvider {
   createSubtask(parent: string, task: SubtaskInput): Promise<string>;
   transitionStatus(ticketId: string, status: TicketStatus): Promise<void>;
   addComment(ticketId: string, body: string): Promise<void>;
+  addLabel(ticketId: string, label: string): Promise<void>;
   linkPR(ticketId: string, prUrl: string): Promise<void>;
 }

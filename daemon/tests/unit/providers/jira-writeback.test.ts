@@ -571,6 +571,109 @@ describe('JiraProvider write-back (WS-DAEMON-12)', () => {
   });
 
   // -------------------------------------------------------------------------
+  // addLabel()
+  // -------------------------------------------------------------------------
+
+  describe('addLabel()', () => {
+    describe('AC: PUTs label update to Jira issue endpoint', () => {
+      it('GIVEN ticket "TEST-99" and label WHEN addLabel() called THEN PUTs to /rest/api/3/issue/TEST-99', async () => {
+        mockFetch.mockResolvedValue({
+          ok: true, status: 204,
+          json: async () => ({}),
+        });
+
+        await provider.addLabel('TEST-99', 'mg-daemon:needs-info');
+
+        expect(mockFetch.mock.calls[0][0]).toBe(
+          'https://test.atlassian.net/rest/api/3/issue/TEST-99'
+        );
+        expect(mockFetch.mock.calls[0][1].method).toBe('PUT');
+      });
+
+      it('GIVEN label "mg-daemon:needs-info" WHEN addLabel() called THEN sends update.labels[{add}] payload', async () => {
+        mockFetch.mockResolvedValue({
+          ok: true, status: 204,
+          json: async () => ({}),
+        });
+
+        await provider.addLabel('TEST-1', 'mg-daemon:needs-info');
+
+        const body = JSON.parse(mockFetch.mock.calls[0][1].body as string);
+        expect(body.update.labels).toEqual([{ add: 'mg-daemon:needs-info' }]);
+      });
+
+      it('GIVEN label "mg-daemon:rejected" WHEN addLabel() called THEN sends that label in payload', async () => {
+        mockFetch.mockResolvedValue({
+          ok: true, status: 204,
+          json: async () => ({}),
+        });
+
+        await provider.addLabel('TEST-1', 'mg-daemon:rejected');
+
+        const body = JSON.parse(mockFetch.mock.calls[0][1].body as string);
+        expect(body.update.labels).toEqual([{ add: 'mg-daemon:rejected' }]);
+      });
+
+      it('GIVEN addLabel() called THEN uses Authorization header', async () => {
+        mockFetch.mockResolvedValue({
+          ok: true, status: 204,
+          json: async () => ({}),
+        });
+
+        await provider.addLabel('TEST-1', 'mg-daemon:needs-info');
+
+        const headers = mockFetch.mock.calls[0][1].headers as Record<string, string>;
+        expect(headers['Authorization']).toMatch(/^Basic /);
+        expect(headers['Content-Type']).toBe('application/json');
+      });
+
+      it('GIVEN addLabel() succeeds THEN resolves to undefined', async () => {
+        mockFetch.mockResolvedValue({
+          ok: true, status: 204,
+          json: async () => ({}),
+        });
+
+        await expect(provider.addLabel('TEST-1', 'mg-daemon:needs-info')).resolves.toBeUndefined();
+      });
+    });
+
+    describe('AC: Idempotency — Jira add operation is idempotent (does not duplicate)', () => {
+      it('GIVEN two addLabel() calls for the same label THEN both POST to the same endpoint (Jira deduplicates via add semantics)', async () => {
+        mockFetch.mockResolvedValue({
+          ok: true, status: 204,
+          json: async () => ({}),
+        });
+
+        await provider.addLabel('TEST-1', 'mg-daemon:needs-info');
+        await provider.addLabel('TEST-1', 'mg-daemon:needs-info');
+
+        expect(mockFetch).toHaveBeenCalledTimes(2);
+        expect(mockFetch.mock.calls[0][0]).toBe(mockFetch.mock.calls[1][0]);
+      });
+    });
+
+    describe('AC: Error handling', () => {
+      it('GIVEN 400 response WHEN addLabel() called THEN throws with status', async () => {
+        mockFetch.mockResolvedValue({ ok: false, status: 400 });
+
+        await expect(provider.addLabel('TEST-1', 'mg-daemon:needs-info')).rejects.toThrow('400');
+      });
+
+      it('GIVEN 403 forbidden WHEN addLabel() called THEN throws', async () => {
+        mockFetch.mockResolvedValue({ ok: false, status: 403 });
+
+        await expect(provider.addLabel('TEST-1', 'mg-daemon:needs-info')).rejects.toThrow();
+      });
+
+      it('GIVEN network error WHEN addLabel() called THEN throws (does not swallow)', async () => {
+        mockFetch.mockRejectedValue(new Error('ECONNREFUSED'));
+
+        await expect(provider.addLabel('TEST-1', 'mg-daemon:needs-info')).rejects.toThrow('ECONNREFUSED');
+      });
+    });
+  });
+
+  // -------------------------------------------------------------------------
   // Auth header encoding
   // -------------------------------------------------------------------------
 

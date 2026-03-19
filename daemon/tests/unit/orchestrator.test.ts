@@ -19,6 +19,14 @@ import type { NormalizedTicket, TicketProvider } from '../../src/providers/types
 import type { DaemonConfig } from '../../src/types';
 import type { WorkstreamPlan } from '../../src/planner';
 import type { ExecutionResult } from '../../src/executor';
+import type { TriageResult } from '../../src/triage';
+
+// Mock child_process.spawnSync for git operations in processTicket
+import { spawnSync } from 'child_process';
+vi.mock('child_process', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('child_process')>();
+  return { ...actual, spawnSync: vi.fn() };
+});
 
 // ---------------------------------------------------------------------------
 // Fixtures
@@ -70,6 +78,7 @@ function makeProvider(overrides?: Partial<TicketProvider>): TicketProvider {
     createSubtask: vi.fn().mockResolvedValue('SUB-1'),
     transitionStatus: vi.fn().mockResolvedValue(undefined),
     addComment: vi.fn().mockResolvedValue(undefined),
+    addLabel: vi.fn().mockResolvedValue(undefined),
     linkPR: vi.fn().mockResolvedValue(undefined),
     ...overrides,
   };
@@ -78,11 +87,13 @@ function makeProvider(overrides?: Partial<TicketProvider>): TicketProvider {
 function makeDeps(overrides?: {
   providerOverrides?: Partial<TicketProvider>;
   configOverrides?: Partial<DaemonConfig['orchestration']>;
+  triageConfigOverrides?: Partial<DaemonConfig['triage']>;
   planTicket?: ReturnType<typeof vi.fn>;
   executeWorkstream?: ReturnType<typeof vi.fn>;
   createWorktree?: ReturnType<typeof vi.fn>;
   removeWorktree?: ReturnType<typeof vi.fn>;
   createPR?: ReturnType<typeof vi.fn>;
+  triageTicket?: ReturnType<typeof vi.fn>;
   tracker?: {
     markProcessing: ReturnType<typeof vi.fn>;
     markComplete: ReturnType<typeof vi.fn>;
@@ -97,10 +108,16 @@ function makeDeps(overrides?: {
     getProcessedTickets: vi.fn().mockReturnValue([]),
   };
 
+  const config = makeConfig(overrides?.configOverrides);
+  if (overrides?.triageConfigOverrides) {
+    config.triage = { enabled: true, autoReject: false, maxTicketSizeChars: 10000, ...overrides.triageConfigOverrides };
+  }
+
   return {
     provider: makeProvider(overrides?.providerOverrides),
-    config: makeConfig(overrides?.configOverrides),
+    config,
     tracker,
+    triageTicket: overrides?.triageTicket ?? vi.fn().mockResolvedValue({ outcome: 'GO', reason: 'All checks pass' } as TriageResult),
     planTicket: overrides?.planTicket ?? vi.fn().mockResolvedValue(WORKSTREAMS),
     executeWorkstream:
       overrides?.executeWorkstream ??
@@ -128,6 +145,18 @@ function makeDeps(overrides?: {
 // ---------------------------------------------------------------------------
 
 describe('processTicket() (WS-DAEMON-11)', () => {
+  beforeEach(() => {
+    // Re-apply spawnSync mock implementation (mockReset clears it between tests)
+    vi.mocked(spawnSync).mockImplementation((_cmd: unknown, args: unknown) => {
+      const argsList = args as string[] | undefined;
+      // git diff --cached --quiet returns 1 when there ARE changes
+      if (argsList?.includes('--cached') && argsList?.includes('--quiet')) {
+        return { status: 1, stdout: '', stderr: '', pid: 0, output: [], signal: null } as ReturnType<typeof spawnSync>;
+      }
+      return { status: 0, stdout: '', stderr: '', pid: 0, output: [], signal: null } as ReturnType<typeof spawnSync>;
+    });
+  });
+
   describe('AC: Transitions ticket to In Progress', () => {
     it('GIVEN a ticket WHEN processTicket called THEN transitions ticket to in_progress', async () => {
       const deps = makeDeps();
@@ -394,10 +423,178 @@ describe('processTicket() (WS-DAEMON-11)', () => {
 });
 
 // ---------------------------------------------------------------------------
+// Triage gate integration tests (WS-DAEMON-15)
+// ---------------------------------------------------------------------------
+
+describe('processTicket() triage gate (WS-DAEMON-15)', () => {
+  beforeEach(() => {
+    vi.mocked(spawnSync).mockImplementation((_cmd: unknown, args: unknown) => {
+      const argsList = args as string[] | undefined;
+      if (argsList?.includes('--cached') && argsList?.includes('--quiet')) {
+        return { status: 1, stdout: '', stderr: '', pid: 0, output: [], signal: null } as ReturnType<typeof spawnSync>;
+      }
+      return { status: 0, stdout: '', stderr: '', pid: 0, output: [], signal: null } as ReturnType<typeof spawnSync>;
+    });
+  });
+
+  describe('AC: Triage runs before planning', () => {
+    it('GIVEN triage returns GO WHEN processTicket called THEN planTicket is called', async () => {
+      const deps = makeDeps();
+      await processTicket(TICKET, deps);
+      expect(deps.triageTicket).toHaveBeenCalledOnce();
+      expect(deps.planTicket).toHaveBeenCalledOnce();
+    });
+
+    it('GIVEN triage returns NEEDS_CLARIFICATION WHEN processTicket called THEN planTicket is NOT called', async () => {
+      const deps = makeDeps({
+        triageTicket: vi.fn().mockResolvedValue({
+          outcome: 'NEEDS_CLARIFICATION',
+          reason: 'Missing acceptance criteria',
+          questions: ['What should the behavior be?'],
+        } as TriageResult),
+      });
+      const result = await processTicket(TICKET, deps);
+      expect(deps.planTicket).not.toHaveBeenCalled();
+      expect(result.success).toBe(false);
+      expect(result.error).toContain('NEEDS_CLARIFICATION');
+    });
+
+    it('GIVEN triage returns REJECT WHEN processTicket called THEN planTicket is NOT called', async () => {
+      const deps = makeDeps({
+        triageTicket: vi.fn().mockResolvedValue({
+          outcome: 'REJECT',
+          reason: 'Out of scope',
+        } as TriageResult),
+      });
+      const result = await processTicket(TICKET, deps);
+      expect(deps.planTicket).not.toHaveBeenCalled();
+      expect(result.success).toBe(false);
+      expect(result.error).toContain('REJECT');
+    });
+  });
+
+  describe('AC: Triage failure posts comment and label', () => {
+    it('GIVEN triage returns NEEDS_CLARIFICATION WHEN processTicket called THEN addComment is called', async () => {
+      const deps = makeDeps({
+        triageTicket: vi.fn().mockResolvedValue({
+          outcome: 'NEEDS_CLARIFICATION',
+          reason: 'Unclear',
+          questions: ['What endpoint?'],
+        } as TriageResult),
+      });
+      await processTicket(TICKET, deps);
+      expect(deps.provider.addComment).toHaveBeenCalledWith(
+        TICKET.id,
+        expect.stringContaining('NEEDS_CLARIFICATION')
+      );
+    });
+
+    it('GIVEN triage returns NEEDS_CLARIFICATION WHEN processTicket called THEN adds needs-info label', async () => {
+      const deps = makeDeps({
+        triageTicket: vi.fn().mockResolvedValue({
+          outcome: 'NEEDS_CLARIFICATION',
+          reason: 'Unclear',
+        } as TriageResult),
+      });
+      await processTicket(TICKET, deps);
+      expect(deps.provider.addLabel).toHaveBeenCalledWith(TICKET.id, 'mg-daemon:needs-info');
+    });
+
+    it('GIVEN triage returns REJECT WHEN processTicket called THEN adds rejected label', async () => {
+      const deps = makeDeps({
+        triageTicket: vi.fn().mockResolvedValue({
+          outcome: 'REJECT',
+          reason: 'Out of scope',
+        } as TriageResult),
+      });
+      await processTicket(TICKET, deps);
+      expect(deps.provider.addLabel).toHaveBeenCalledWith(TICKET.id, 'mg-daemon:rejected');
+    });
+
+    it('GIVEN triage fails and addComment throws WHEN processTicket called THEN pipeline still returns (best-effort)', async () => {
+      const deps = makeDeps({
+        providerOverrides: {
+          addComment: vi.fn().mockRejectedValue(new Error('API error')),
+          addLabel: vi.fn().mockRejectedValue(new Error('API error')),
+        },
+        triageTicket: vi.fn().mockResolvedValue({
+          outcome: 'NEEDS_CLARIFICATION',
+          reason: 'Unclear',
+        } as TriageResult),
+      });
+      const result = await processTicket(TICKET, deps);
+      expect(result.success).toBe(false);
+      expect(result.triageResult?.outcome).toBe('NEEDS_CLARIFICATION');
+    });
+  });
+
+  describe('AC: Triage result in PipelineResult', () => {
+    it('GIVEN triage returns GO WHEN processTicket resolves THEN triageResult is in result', async () => {
+      const deps = makeDeps();
+      const result = await processTicket(TICKET, deps);
+      expect(result.triageResult).toBeDefined();
+      expect(result.triageResult?.outcome).toBe('GO');
+    });
+
+    it('GIVEN triage returns NEEDS_CLARIFICATION WHEN processTicket resolves THEN triageResult reflects it', async () => {
+      const deps = makeDeps({
+        triageTicket: vi.fn().mockResolvedValue({
+          outcome: 'NEEDS_CLARIFICATION',
+          reason: 'Missing details',
+        } as TriageResult),
+      });
+      const result = await processTicket(TICKET, deps);
+      expect(result.triageResult?.outcome).toBe('NEEDS_CLARIFICATION');
+    });
+  });
+
+  describe('AC: dryRun skips comment/label but still triages', () => {
+    it('GIVEN dryRun=true and triage rejects WHEN processTicket called THEN addComment is NOT called', async () => {
+      const deps = makeDeps({
+        configOverrides: { dryRun: true },
+        triageTicket: vi.fn().mockResolvedValue({
+          outcome: 'NEEDS_CLARIFICATION',
+          reason: 'Vague',
+        } as TriageResult),
+      });
+      await processTicket(TICKET, deps);
+      expect(deps.provider.addComment).not.toHaveBeenCalled();
+      expect(deps.provider.addLabel).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('AC: Tracker updated on triage failure', () => {
+    it('GIVEN triage returns NEEDS_CLARIFICATION WHEN processTicket called THEN markFailed is called', async () => {
+      const deps = makeDeps({
+        triageTicket: vi.fn().mockResolvedValue({
+          outcome: 'NEEDS_CLARIFICATION',
+          reason: 'Vague ticket',
+        } as TriageResult),
+      });
+      await processTicket(TICKET, deps);
+      expect(deps.tracker.markFailed).toHaveBeenCalledWith(
+        TICKET.id,
+        expect.stringContaining('NEEDS_CLARIFICATION')
+      );
+    });
+  });
+});
+
+// ---------------------------------------------------------------------------
 // runPollCycle() tests
 // ---------------------------------------------------------------------------
 
 describe('runPollCycle() (WS-DAEMON-11)', () => {
+  beforeEach(() => {
+    vi.mocked(spawnSync).mockImplementation((_cmd: unknown, args: unknown) => {
+      const argsList = args as string[] | undefined;
+      if (argsList?.includes('--cached') && argsList?.includes('--quiet')) {
+        return { status: 1, stdout: '', stderr: '', pid: 0, output: [], signal: null } as ReturnType<typeof spawnSync>;
+      }
+      return { status: 0, stdout: '', stderr: '', pid: 0, output: [], signal: null } as ReturnType<typeof spawnSync>;
+    });
+  });
+
   describe('AC: Polls for tickets', () => {
     it('GIVEN a provider WHEN runPollCycle called THEN provider.poll is called', async () => {
       const deps = makeDeps();

@@ -136,78 +136,15 @@ Task:
 ## Output Format
 
 ```
-## Security Audit: {Workstream}
-
-### Executive Summary
-- Total Vulnerabilities: {count}
-- CRITICAL: {count}
-- HIGH: {count}
-- MEDIUM: {count}
-- LOW: {count}
-
-### OWASP Top 10 Compliance
-- [x] A01: Broken Access Control
-- [x] A02: Cryptographic Failures
-- [x] A03: Injection
-- [x] A04: Insecure Design
-- [x] A05: Security Misconfiguration
-- [x] A06: Vulnerable Components
-- [x] A07: Authentication Failures
-- [x] A08: Data Integrity Failures
-- [x] A09: Logging Failures
-- [x] A10: SSRF
-
-### Findings
-
-#### CRITICAL
-1. **{Vulnerability Name}**
-   - Location: {file:line}
-   - Category: {OWASP category}
-   - Description: {details}
-   - Remediation: {specific steps}
-
-#### HIGH
-{findings}
-
-#### MEDIUM
-{findings}
-
-#### LOW
-{findings}
-
-### Authentication & Authorization Review
-- Password policies: {status}
-- Session management: {status}
-- RBAC implementation: {status}
-- JWT validation: {status}
-
-### Input Validation Review
-- SQL injection protection: {status}
-- XSS protection: {status}
-- Command injection prevention: {status}
-- Path traversal prevention: {status}
-
-### Secrets Management Review
-- Hardcoded credentials: {found/not found}
-- API key exposure: {status}
-- Environment variable usage: {status}
-
-### API Security Review
-- CORS configuration: {status}
-- Rate limiting: {status}
-- Content Security Policy: {status}
-- Authentication headers: {status}
-
-### Dependency Security
-npm audit results:
-{vulnerabilities found}
-
-### Recommendation
-{APPROVED FOR DEPLOYMENT | BLOCK DEPLOYMENT | REQUIRES FIXES}
-
-### Next Action
-{What needs to happen next}
+[SEC]   OWASP scan — {N} findings (CRITICAL: {n}, HIGH: {n}, MEDIUM: {n}, LOW: {n})
+[SEC]   Auth/authz — {PASS | FAIL}
+[SEC]   Input validation — {PASS | FAIL}
+[SEC]   Secrets — {clean | {n} exposed}
+[SEC]   Dependencies — {clean | {n} vulnerable}     {elapsed}
+[EM]    Decision: {APPROVED | BLOCK DEPLOYMENT | REQUIRES FIXES}   {elapsed}
 ```
+
+Findings follow the decision line, severity-ranked: CRITICAL, HIGH, MEDIUM, LOW. Each finding includes location, category, and remediation steps.
 
 See `references/model-escalation-guidance.md` for escalation criteria.
 

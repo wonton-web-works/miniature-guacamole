@@ -415,4 +415,32 @@ describe('GitHubProvider (WS-DAEMON-10)', () => {
       await expect(result).resolves.toBeUndefined();
     });
   });
+
+  describe('Coverage gap tests', () => {
+    // Lines 53-54: extractIssueNumberFromUrl throws when URL format is unexpected
+    it('GIVEN createSubtask() returns URL without /issues/ pattern WHEN called THEN throws error', async () => {
+      vi.mocked(spawnSync).mockReturnValue({
+        status: 0,
+        // URL that doesn't match /issues/(\d+) — not a GitHub issues URL
+        stdout: 'https://github.com/owner/repo/pull/100\n',
+        stderr: '',
+      } as any);
+
+      await expect(
+        provider.createSubtask('GH-42', { title: 'Sub', description: 'Desc', parentId: 'GH-42' })
+      ).rejects.toThrow('Could not extract issue number from URL');
+    });
+
+    // Lines 96-97: poll() catch block — JSON.parse throws on invalid stdout
+    it('GIVEN gh CLI returns invalid JSON WHEN poll() called THEN returns empty array', async () => {
+      vi.mocked(spawnSync).mockReturnValue({
+        status: 0,
+        stdout: 'this is not valid JSON {{{',
+        stderr: '',
+      } as any);
+
+      const result = await provider.poll();
+      expect(result).toEqual([]);
+    });
+  });
 });

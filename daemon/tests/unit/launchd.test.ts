@@ -371,5 +371,52 @@ describe('launchd module', () => {
       expect(result.loaded).toBe(false);
       expect(result.running).toBe(false);
     });
+
+    // Lines 163-164: PID column is not "-" but is non-numeric (isNaN check)
+    it('GIVEN service line has non-numeric non-dash PID WHEN getServiceStatus() called THEN returns loaded: true, running: false', () => {
+      vi.mocked(spawnSync).mockReturnValue({
+        status: 0,
+        stdout: 'notanumber\t0\tcom.mg-daemon.my-project\n',
+        stderr: '',
+      } as any);
+
+      const result = getServiceStatus(label);
+
+      expect(result.loaded).toBe(true);
+      expect(result.running).toBe(false);
+      expect(result.pid).toBeUndefined();
+    });
+
+    // Lines 168-169: spawnSync throws (catch block)
+    it('GIVEN spawnSync throws an error WHEN getServiceStatus() called THEN returns loaded: false, running: false', () => {
+      vi.mocked(spawnSync).mockImplementation(() => {
+        throw new Error('spawnSync failed');
+      });
+
+      const result = getServiceStatus(label);
+
+      expect(result.loaded).toBe(false);
+      expect(result.running).toBe(false);
+    });
+  });
+
+  describe('generatePlist() with extraPath', () => {
+    // Line 52: extraPath branch for PATH value
+    it('GIVEN config with extraPath WHEN generatePlist() called THEN PATH includes extraPath prefix', () => {
+      const configWithExtraPath: LaunchdConfig = {
+        ...mockConfig,
+        extraPath: '/opt/homebrew/opt/volta/bin',
+      };
+
+      const result = generatePlist(configWithExtraPath);
+
+      expect(result).toContain('/opt/homebrew/opt/volta/bin:/usr/local/bin:/usr/bin:/bin');
+    });
+
+    it('GIVEN config without extraPath WHEN generatePlist() called THEN PATH uses default Homebrew prefix', () => {
+      const result = generatePlist(mockConfig);
+
+      expect(result).toContain('/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin');
+    });
   });
 });

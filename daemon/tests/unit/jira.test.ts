@@ -749,6 +749,24 @@ describe('Jira Client Module', () => {
       });
     });
 
+    describe('AC-4.0: Guard against missing jira config', () => {
+      // Lines 44-45: config.jira is undefined
+      it('GIVEN config with no jira section WHEN pollJira() called THEN returns empty array without calling fetch', async () => {
+        // Arrange: config without jira section
+        const configWithoutJira: DaemonConfig = {
+          github: { repo: 'owner/repo', baseBranch: 'main' },
+          polling: { intervalSeconds: 300, batchSize: 1 },
+        } as any;
+
+        // Act
+        const result = await pollJira(configWithoutJira, mockFetch);
+
+        // Assert
+        expect(result).toEqual([]);
+        expect(mockFetch).not.toHaveBeenCalled();
+      });
+    });
+
     describe('Edge cases and error handling', () => {
       it('GIVEN malformed JSON response WHEN pollJira called THEN returns empty array', async () => {
         // Arrange

@@ -172,14 +172,16 @@ Task:
 
 ## Output Format
 
-Structured report with sections:
-- WCAG Compliance status (AA | AAA, Compliant | Non-Compliant | Partial)
-- Critical Violations (block merge) with location and fix
-- Warnings (should fix) with location and fix
-- Recommendations list
-- Summary (counts + overall PASS | FAIL | NEEDS WORK) and Next Action
+```
+[A11Y]  WCAG level — {AA | AAA}
+[A11Y]  Keyboard nav — {PASS | FAIL}
+[A11Y]  Screen reader — {PASS | FAIL}
+[A11Y]  Color contrast — {PASS | FAIL}
+[A11Y]  ARIA compliance — {PASS | FAIL}             {elapsed}
+[EM]    Decision: {PASS | FAIL | NEEDS WORK}        {elapsed}
+```
 
-See `references/output-examples.md` for full template examples.
+Violations follow the decision line: critical violations (block merge) then warnings, each with location and fix.
 
 ## Testing Tools
 

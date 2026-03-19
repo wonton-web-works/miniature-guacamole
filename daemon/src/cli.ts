@@ -212,7 +212,10 @@ export function cmdInstall(username?: string): void {
   const projectPath = join(process.cwd(), '..');
   const label = `com.mg-daemon.${basename(projectPath)}`;
 
-  const config = { label, projectPath, daemonPath, nodePath, username };
+  // Capture the user's current PATH so launchd inherits access to gh, claude, etc.
+  const extraPath = process.env.PATH ?? '';
+
+  const config = { label, projectPath, daemonPath, nodePath, username, extraPath };
   installService(config);
   console.log(`Service installed: ${label}`);
   console.log(`Plist written to ~/Library/LaunchAgents/${label}.plist`);

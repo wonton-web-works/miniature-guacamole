@@ -56,7 +56,7 @@ describe('execClaude() — Claude subprocess wrapper (WS-DAEMON-11)', () => {
 
       expect(mockSpawn).toHaveBeenCalledWith(
         'claude',
-        ['--print', 'hello world'],
+        ['--print', '--permission-mode', 'bypassPermissions', '--output-format', 'text', 'hello world'],
         expect.any(Object)
       );
     });

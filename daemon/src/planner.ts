@@ -53,24 +53,49 @@ export function parseWorkstreamPlan(output: string): WorkstreamPlan[] {
 
   const plans: WorkstreamPlan[] = [];
 
-  // Split on --- separator
+  // Strategy 1: Look for "WS: name / AC: criteria / ---" format
   const sections = output.split(/---/);
-
   for (const section of sections) {
     const trimmed = section.trim();
     if (!trimmed) continue;
 
-    // Look for WS: line
     const wsMatch = trimmed.match(/^WS:\s*(.+?)$/m);
     if (!wsMatch) continue;
 
     const name = wsMatch[1].trim();
-
-    // Look for AC: line
     const acMatch = trimmed.match(/^AC:\s*(.+?)$/m);
     const acceptanceCriteria = acMatch ? acMatch[1].trim() : '';
 
     plans.push({ name, acceptanceCriteria });
+  }
+
+  // Strategy 2: If strategy 1 found nothing, try "WS-N: name — criteria" format
+  if (plans.length === 0) {
+    const wsLinePattern = /^(?:WS-?\d+|Workstream\s*\d+)[:\s]+(.+?)(?:\s*[-—]\s*(.+))?$/gm;
+    let match;
+    while ((match = wsLinePattern.exec(output)) !== null) {
+      plans.push({
+        name: match[1].trim(),
+        acceptanceCriteria: match[2]?.trim() ?? '',
+      });
+    }
+  }
+
+  // Strategy 3: If still nothing, try bullet points under a "Workstreams" header
+  if (plans.length === 0) {
+    const workstreamSection = output.match(/##\s*Workstreams?\s*\n([\s\S]*?)(?=\n##|\n---|\n\*\*|$)/i);
+    if (workstreamSection) {
+      const bullets = workstreamSection[1].matchAll(/^[-*]\s+(?:\*\*)?(.+?)(?:\*\*)?(?:\s*[-—:]\s*(.+))?$/gm);
+      for (const bullet of bullets) {
+        const name = bullet[1].replace(/\*\*/g, '').trim();
+        if (name && name.length > 3) {
+          plans.push({
+            name,
+            acceptanceCriteria: bullet[2]?.trim() ?? '',
+          });
+        }
+      }
+    }
   }
 
   return plans;

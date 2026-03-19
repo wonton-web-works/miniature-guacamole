@@ -9,6 +9,24 @@ Versioning follows [Semantic Versioning](https://semver.org/): MAJOR.MINOR.PATCH
 
 ---
 
+## [4.1.0] - 2026-03-19 — Output Parity
+
+Runtime output now matches the marketing site terminal animation.
+
+### Added
+- **Compact output protocol** — `[ROLE]  Status message    elapsed` format across all 19 skills
+- **Timing instrumentation** — per-step and total elapsed time in mg-build output
+- **ANSI color codes** — agent prefixes colored to brand palette (with NO_COLOR fallback)
+- **Marketing site** — Astro dark-first single-page site with terminal hero, org chart, changelog
+
+### Changed
+- `visual-formatting.md` rewritten — removed ASCII box art, defined compact protocol
+- All 19 skill output format sections updated to compact [ROLE] prefix blocks
+- Agent base template gains "Compact output" constitution item
+- Terminal animation updated to show real mg-build output with timing
+
+---
+
 ## [4.0.1] - 2026-03-19
 
 ### Fixed

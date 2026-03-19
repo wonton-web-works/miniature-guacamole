@@ -8,12 +8,12 @@ interface Line {
 
 const LINES: Line[] = [
   { text: '$ /mg-build implement payment-flow' },
-  { text: '  Planning workstream WS-42...', prefix: '[EM] ', prefixColor: '#4A7C59' },
-  { text: '  Writing failing tests for PaymentForm...', prefix: '[QA] ', prefixColor: '#7A5C8B' },
-  { text: '  Implementing... 47 tests passing', prefix: '[DEV]', prefixColor: '#E8E8E8' },
-  { text: '  Coverage: 99.2% ✓', prefix: '[QA] ', prefixColor: '#7A5C8B' },
-  { text: '  Code review approved', prefix: '[SE] ', prefixColor: '#3D5A6B' },
-  { text: '  WS-42 complete in 4m 23s', prefix: '[EM] ', prefixColor: '#4A7C59' },
+  { text: '', prefix: '', prefixColor: 'transparent' },
+  { text: '  Classifying... MECHANICAL                 0.2s', prefix: '[EM]  ', prefixColor: '#4A7C59' },
+  { text: '  Writing tests — 12 specs                  4.1s', prefix: '[DEV] ', prefixColor: '#E8E8E8' },
+  { text: '  Implementing — all tests passing         18.7s', prefix: '[DEV] ', prefixColor: '#E8E8E8' },
+  { text: '  Coverage 99.4% ✓  Lines 142 ✓             0.3s', prefix: '[GATE]', prefixColor: '#4A7C59' },
+  { text: '  Done                                     23.3s', prefix: '[EM]  ', prefixColor: '#4A7C59' },
 ];
 
 const CHAR_DELAY_MS = 30;

@@ -9,6 +9,8 @@ metadata:
   spawn_cap: "6"
 ---
 
+> Inherits: [skill-base](../_base/skill-base.md)
+
 # Code Review
 
 Coordinates comprehensive code review for implementation quality assurance.
@@ -19,8 +21,6 @@ Coordinates comprehensive code review for implementation quality assurance.
 2. **Test quality matters** - Coverage numbers without quality are meaningless
 3. **Teach through review** - Explain why changes are needed, not just what
 4. **Performance consciousness** - Identify anti-patterns before they reach production
-5. **Memory-first** - Read implementation context, write review decisions
-6. **Visual standards** - Follow standard output format in `references/output-format.md`
 
 ## Review Areas
 
@@ -62,14 +62,12 @@ Coordinates comprehensive code review for implementation quality assurance.
 ## Memory Protocol
 
 ```yaml
-# Read before review
 read:
   - .claude/memory/workstream-{id}-state.json
   - .claude/memory/technical-standards.json
   - .claude/memory/agent-dev-decisions.json
   - .claude/memory/agent-qa-decisions.json
 
-# Write review results
 write: .claude/memory/mg-code-review-results.json
   workstream_id: <id>
   status: approved | request_changes

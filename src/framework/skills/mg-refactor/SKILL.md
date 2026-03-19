@@ -9,6 +9,8 @@ metadata:
   spawn_cap: "6"
 ---
 
+> Inherits: [skill-base](../_base/skill-base.md)
+
 # mg-refactor
 
 Coordinates qa and dev through structured refactoring workflow with comprehensive test coverage to ensure no functional changes or regressions.
@@ -20,7 +22,6 @@ Coordinates qa and dev through structured refactoring workflow with comprehensiv
 3. **Small steps** - Refactor in small, verified increments with continuous test validation
 4. **No behavior changes** - Refactoring changes structure, never functionality
 5. **99% coverage maintained** - Coverage must stay at or above 99% throughout refactor
-6. **Visual progress** - Follow `references/output-format.md` for refactor tracking
 
 ## The Refactor Cycle
 
@@ -38,12 +39,10 @@ Ready for merge
 ## Memory Protocol
 
 ```yaml
-# Read refactor context
 read:
   - .claude/memory/refactor-{id}-scope.json
   - .claude/memory/agent-leadership-decisions.json
 
-# Write refactor progress
 write: .claude/memory/refactor-{id}-status.json
   agent_id: mg-refactor
   phase: characterization | refactoring | verification | review

@@ -9,6 +9,8 @@ metadata:
   spawn_cap: "6"
 ---
 
+> Inherits: [skill-base](../_base/skill-base.md)
+
 # Leadership Team
 
 Coordinates CEO, CTO, and Engineering Director for strategic alignment.
@@ -18,10 +20,8 @@ Coordinates CEO, CTO, and Engineering Director for strategic alignment.
 1. **Three perspectives** - Every decision needs business (CEO), technical (CTO), and operational (Eng Dir) assessment
    - **Optional: Art Director** - CEO may bring in art-director for visual/design-heavy workstreams
 2. **Approve or reject** - No middle ground on code reviews; be decisive with clear reasoning
-3. **Memory-first** - Read engineering context before reviewing, write decisions for team visibility
-4. **Workstream clarity** - Break initiatives into clear, testable workstreams with acceptance criteria
-5. **Unblock teams** - Leadership exists to enable, not bottleneck
-6. **Visual standards** - Follow standard output format in `references/output-format.md`
+3. **Workstream clarity** - Break initiatives into clear, testable workstreams with acceptance criteria
+4. **Unblock teams** - Leadership exists to enable, not bottleneck
 
 ## Modes
 
@@ -33,13 +33,11 @@ Coordinates CEO, CTO, and Engineering Director for strategic alignment.
 ## Memory Protocol
 
 ```yaml
-# Read before reviewing
 read:
-  - .claude/memory/workstream-{id}-state.json  # Current phase
-  - .claude/memory/agent-dev-decisions.json    # Implementation details
-  - .claude/memory/agent-qa-decisions.json     # Test results, coverage
+  - .claude/memory/workstream-{id}-state.json
+  - .claude/memory/agent-dev-decisions.json
+  - .claude/memory/agent-qa-decisions.json
 
-# Write strategic decisions
 write: .claude/memory/agent-leadership-decisions.json
   phase: planning | code_review_complete | code_review_feedback
   workstream_id: <id>

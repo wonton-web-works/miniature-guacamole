@@ -491,6 +491,9 @@ communication protocols.
 
 | Version | Date       | Codename               | Key Milestone                              |
 |---------|------------|------------------------|--------------------------------------------|
+| **3.1.0** | **2026-03-19** | **State Reconciliation** | **`/mg-tidy`, base template inheritance, security domain expansion** |
+| **3.0.0** | **2026-03-19** | **Autonomous Daemon** | **24/7 ticket-to-PR pipeline, Jira/Linear/GitHub, 1082 tests** |
+| **2.2.0** | **2026-03-18** | **Two-Phase Install** | **Global CLI installer + per-project init** |
 | **2.1.0** | **2026-03-16** | **CLI-Primary** | **MCP server removed, mg router added, --json output** |
 | **1.2.0** | **2026-03-10** | **Platform Expansion** | **MCP server, token audit log, Docker Compose, skill spec compliance** |
 | **1.1.0** | **2026-02-10** | **Enterprise Adapter** | **registerAdapter() plugin boundary, CI hardening** |

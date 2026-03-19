@@ -9,6 +9,8 @@ metadata:
   spawn_cap: "6"
 ---
 
+> Inherits: [skill-base](../_base/skill-base.md)
+
 # Add Project Context
 
 Registers external projects as read-only context references for miniature-guacamole agents.
@@ -19,8 +21,6 @@ Registers external projects as read-only context references for miniature-guacam
 2. **No shared memory** - Each project's .claude/memory/ is private and isolated
 3. **Context, not coupling** - References are informational, not dependencies
 4. **Explicit boundaries** - Clear separation between read and write operations
-5. **Memory-first** - Store context summaries for efficient agent access
-6. **Visual standards** - Follow standard output format in `references/output-format.md`
 
 ## Purpose
 
@@ -101,11 +101,9 @@ Unregisters a project context. For GitHub clones, optionally removes cached file
 ## Memory Protocol
 
 ```yaml
-# Read existing contexts
 read:
   - .claude/memory/project-contexts.json
 
-# Write context registry
 write: .claude/memory/project-contexts.json
   contexts:
     - alias: <name>

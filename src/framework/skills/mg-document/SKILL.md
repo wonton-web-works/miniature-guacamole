@@ -9,6 +9,8 @@ metadata:
   spawn_cap: "6"
 ---
 
+> Inherits: [skill-base](../_base/skill-base.md)
+
 # Documentation Team
 
 Coordinates technical-writer for comprehensive documentation generation.
@@ -17,10 +19,8 @@ Coordinates technical-writer for comprehensive documentation generation.
 
 1. **Clarity first** - Write for the reader, not the writer
 2. **Show, don't tell** - Code examples over long explanations
-3. **Memory-first** - Read codebase context, write documentation decisions
-4. **Progressive disclosure** - Quick start → advanced → reference
-5. **Keep current** - Documentation is code; update it with features
-6. **Visual standards** - Follow standard output format in `references/output-format.md`
+3. **Progressive disclosure** - Quick start → advanced → reference
+4. **Keep current** - Documentation is code; update it with features
 
 ## Documentation Types
 
@@ -34,13 +34,11 @@ Coordinates technical-writer for comprehensive documentation generation.
 ## Memory Protocol
 
 ```yaml
-# Read context
 read:
-  - .claude/memory/workstream-{id}-state.json  # What was built
-  - .claude/memory/agent-dev-decisions.json    # Implementation details
-  - .claude/memory/agent-qa-decisions.json     # Test coverage
+  - .claude/memory/workstream-{id}-state.json
+  - .claude/memory/agent-dev-decisions.json
+  - .claude/memory/agent-qa-decisions.json
 
-# Write documentation decisions
 write: .claude/memory/agent-mg-document-decisions.json
   workstream_id: <id>
   phase: analysis | generation | review

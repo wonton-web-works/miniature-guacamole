@@ -9,6 +9,8 @@ metadata:
   spawn_cap: "6"
 ---
 
+> Inherits: [skill-base](../_base/skill-base.md)
+
 # Technical Assessment
 
 Coordinates technical evaluation through CTO, staff-engineer, api-designer, and data-engineer to provide comprehensive architecture and technical approach recommendations.
@@ -18,9 +20,7 @@ Coordinates technical evaluation through CTO, staff-engineer, api-designer, and 
 1. **Context-first** - Analyze existing codebase and constraints before recommending
 2. **Alternatives matter** - Evaluate multiple approaches with clear trade-offs
 3. **Risk transparency** - Identify technical risks, scalability limits, security concerns
-4. **Memory-first** - Read technical context, write assessment decisions
-5. **Evidence-based** - Recommendations backed by performance, maintainability, technical debt analysis
-6. **Visual standards** - Follow standard output format in `references/output-format.md`
+4. **Evidence-based** - Recommendations backed by performance, maintainability, technical debt analysis
 
 ## Evaluation Workflow
 
@@ -39,13 +39,11 @@ Coordinates technical evaluation through CTO, staff-engineer, api-designer, and 
 ## Memory Protocol
 
 ```yaml
-# Read context
 read:
-  - .claude/memory/workstream-{id}-state.json  # Current workstream
-  - .claude/memory/agent-product-decisions.json  # Requirements
-  - .claude/memory/technical-standards.json     # Standards
+  - .claude/memory/workstream-{id}-state.json
+  - .claude/memory/agent-product-decisions.json
+  - .claude/memory/technical-standards.json
 
-# Write assessment
 write: .claude/memory/agent-mg-assess-tech-decisions.json
   workstream_id: <id>
   phase: analysis | evaluation | recommendation

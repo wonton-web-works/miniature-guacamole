@@ -9,6 +9,8 @@ metadata:
   spawn_cap: "6"
 ---
 
+> Inherits: [skill-base](../_base/skill-base.md)
+
 # Accessibility Review
 
 Comprehensive accessibility audit workflow for WCAG 2.1 compliance and inclusive design.
@@ -19,8 +21,6 @@ Comprehensive accessibility audit workflow for WCAG 2.1 compliance and inclusive
 2. **Test with real assistive tech** - Screen readers, keyboard-only, voice control
 3. **Inclusive by default** - Design for permanent, temporary, and situational disabilities
 4. **Document violations** - Reference specific WCAG criteria (e.g., 1.4.3, 2.1.1, 4.1.2)
-5. **Memory-first** - Read design specs, write detailed A11y reports
-6. **Visual standards** - Follow standard output format in `references/output-format.md`
 
 ## Review Process
 
@@ -38,13 +38,11 @@ Comprehensive accessibility audit workflow for WCAG 2.1 compliance and inclusive
 ## Memory Protocol
 
 ```yaml
-# Read context
 read:
-  - .claude/memory/workstream-{id}-state.json       # Implementation details
-  - .claude/memory/agent-mg-design-decisions.json # Design specifications
-  - .claude/memory/agent-qa-decisions.json          # Test results
+  - .claude/memory/workstream-{id}-state.json
+  - .claude/memory/agent-mg-design-decisions.json
+  - .claude/memory/agent-qa-decisions.json
 
-# Write accessibility findings
 write: .claude/memory/agent-mg-accessibility-review-decisions.json
   workstream_id: <id>
   phase: initial_review | remediation | final_audit

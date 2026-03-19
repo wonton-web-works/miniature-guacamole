@@ -8,6 +8,8 @@ metadata:
   version: "1.0.0"
 ---
 
+> Inherits: [skill-base](../_base/skill-base.md)
+
 # mg-tidy
 
 Housekeeping skill that reconciles project state across GitHub issues, `.claude/memory/`, and workstream files. Detects drift between what GitHub tracks and what memory knows — closes duplicates, creates missing memory, removes orphaned state, and produces a canonical state report.
@@ -20,7 +22,6 @@ Housekeeping skill that reconciles project state across GitHub issues, `.claude/
 4. **Preserve user data** - Memory files are project state. Only remove a memory file when its workstream issue is confirmed closed or deleted on GitHub. Otherwise report the orphan and leave it.
 5. **Dry-run by default** - Show the full plan before making any writes or closes. Wait for confirmation unless `--auto` flag is passed.
 6. **gh dependency** - This skill requires `gh` (GitHub CLI). Check it is installed and authenticated before proceeding.
-7. **Visual standards** - Follow `references/output-format.md` for all output.
 
 ## Usage
 

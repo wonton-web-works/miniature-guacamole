@@ -9,6 +9,8 @@ metadata:
   spawn_cap: "6"
 ---
 
+> Inherits: [skill-base](../_base/skill-base.md)
+
 # Content Team
 
 Coordinates art direction and copywriting for authentic, on-brand content.
@@ -17,9 +19,7 @@ Coordinates art direction and copywriting for authentic, on-brand content.
 
 1. **Art Director leads** - Brand vision, creative direction, quality gate
 2. **Human voice mandatory** - No AI-isms, no generic copy
-3. **Memory-first** - Read brand guidelines, write decisions
-4. **Quality over speed** - Reject copy that fails anti-AI-patterns check
-5. **Visual standards** - Follow standard output format in `references/output-format.md`
+3. **Quality over speed** - Reject copy that fails anti-AI-patterns check
 
 ## Workflow
 
@@ -34,13 +34,11 @@ Coordinates art direction and copywriting for authentic, on-brand content.
 ## Memory Protocol
 
 ```yaml
-# Read context
 read:
-  - .claude/memory/brand-guidelines.json           # Brand voice and style
-  - .claude/memory/workstream-{id}-state.json      # Project requirements
-  - .claude/memory/agent-copywriter-decisions.json # Copywriter output
+  - .claude/memory/brand-guidelines.json
+  - .claude/memory/workstream-{id}-state.json
+  - .claude/memory/agent-copywriter-decisions.json
 
-# Write team decisions
 write: .claude/memory/agent-mg-write-decisions.json
   workstream_id: <id>
   phase: brand_direction | copywriting | review | approved

@@ -47,6 +47,7 @@ write: .claude/memory/agent-security-review-decisions.json
   workstream_id: <id>
   phase: scanning | analysis | reporting
   audit_status: secure | vulnerable | needs_review
+  domains_reviewed: [web, systems, cloud, crypto]  # which security domains were assessed
   findings:
     - severity: CRITICAL | HIGH | MEDIUM | LOW
       category: <OWASP category or type>
@@ -58,34 +59,59 @@ write: .claude/memory/agent-security-review-decisions.json
   next_owner: dev | engineering-manager
 ```
 
+## Domain Inference
+
+Before spawning the security-engineer, infer the relevant security domain(s) from project signals. Scan the codebase and task context for these heuristics to auto-detect the applicable domain without requiring user intervention.
+
+| Domain | Signal Keywords & File Patterns | Examples |
+|--------|---------------------------------|----------|
+| **web** | HTTP server, API route/endpoint, Express/Fastify/Koa, `req`/`res`, CORS config, cookie/session, OAuth, HTML template | `server.ts`, `routes/`, `middleware/`, `.env` with `PORT` |
+| **systems** | daemon, launchd plist, systemd unit, process spawn, `child_process`, file permissions, PID/lock files, CLI entrypoint, signal handlers, `chmod`/`chown` | `launchd/`, `*.plist`, `daemon.ts`, `Makefile`, shell scripts |
+| **cloud** | Dockerfile, docker-compose, CI/CD pipeline, IAM policy, Terraform/CloudFormation, Kubernetes manifest, container registry, secrets manager | `Dockerfile`, `.github/workflows/`, `k8s/`, `terraform/` |
+| **crypto** | encryption/decryption calls, TLS certificate config, key generation, HMAC, digital signature, hash function usage, `crypto` module imports | `crypto.ts`, `certs/`, `*.pem`, `keystore/` |
+
+When multiple domains apply, include all matching domains. When no clear signal is found, default to all four domains to ensure comprehensive coverage.
+
 ## Workflow
 
 ```
-1. Analyze codebase for security vulnerabilities
-2. Run dependency security scans (npm audit)
-3. Check for hardcoded secrets and credentials
-4. Spawn security-engineer for deep security assessment
-5. Compile findings with severity ratings
-6. Provide actionable remediation steps
-7. Escalate CRITICAL/HIGH findings immediately
+1. Infer security domain(s) from project signals and task context
+2. Analyze codebase for security vulnerabilities
+3. Run dependency security scans (npm audit)
+4. Check for hardcoded secrets and credentials
+5. Spawn security-engineer with inferred domain context
+6. Compile findings with severity ratings
+7. Provide actionable remediation steps
+8. Escalate CRITICAL/HIGH findings immediately
 ```
 
 ## Delegation
 
 | Need | Action |
 |------|--------|
-| Deep security assessment | Spawn `security-engineer` |
+| Deep security assessment | Spawn `security-engineer` with domain context |
 | Code remediation | Recommend `/mg-build` with findings |
 | Infrastructure security | Consult `devops-engineer` |
 
 ## Spawn Pattern
 
 ```yaml
-# Security assessment
+# Domain-aware security assessment
 Task:
   subagent_type: security-engineer
   prompt: |
     Perform security audit for workstream {id}.
+
+    **Domain context:** {inferred_domains}
+    Read the domain reference files from domains/ for each applicable domain:
+    - domains/web.md — if web domain applies
+    - domains/systems.md — if systems domain applies
+    - domains/cloud.md — if cloud domain applies
+    - domains/crypto.md — if crypto domain applies
+
+    Load the domain-specific checklists, threat models, and review areas
+    before beginning the audit. Apply them alongside the general review areas.
+
     Focus areas:
     - OWASP Top 10 compliance
     - Authentication/Authorization vulnerabilities
@@ -93,6 +119,7 @@ Task:
     - Secrets management
     - API security
     - Dependency vulnerabilities
+    - Domain-specific threats from loaded reference files
 
     Provide findings with severity (CRITICAL/HIGH/MEDIUM/LOW)
     and specific remediation steps.

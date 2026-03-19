@@ -71,24 +71,11 @@ When QA detects visual changes:
 ## Output Format
 
 ```
-## Design: {Component/Feature}
-
-### Creative Direction (Art Director)
-{Vision, brand, constraints}
-
-### Specifications (Designer)
-- Components: {list}
-- Colors: {palette}
-- Typography: {fonts}
-- Spacing: {system}
-
-### Accessibility
-- WCAG Level: AA
-- Keyboard: Yes
-- Contrast: Verified
-
-### Status
-{APPROVED | Ready for /frontend-design | Changes needed}
+[ART]   Creative direction — {vision, constraints}
+[ART]   Specs — {N} components, colors, typography, spacing
+[ART]   Accessibility — WCAG AA, contrast verified
+[ART]   Decision: {APPROVED | CHANGES NEEDED}       {elapsed}
+[EM]    Ready for /frontend-design                  {elapsed}
 ```
 
 ## Brand Kit Mode

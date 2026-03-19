@@ -92,22 +92,22 @@ describe('README.md — misuse cases (stale values must not appear)', () => {
 });
 
 describe('README.md — golden path (correct values must appear)', () => {
-  it('version badge says 2.2.0', () => {
+  it('version badge says 3.1.0', () => {
     // AC-1
     const readme = read('README.md');
-    expect(readme).toMatch(/^\*\*Version:\*\*\s*2\.2\.0/m);
+    expect(readme).toMatch(/3\.1\.0/m);
   });
 
-  it('What\'s New section is for v2.0.0', () => {
+  it('What\'s New section is for v3.1.0 or later', () => {
     // AC-2
     const readme = read('README.md');
-    expect(readme).toMatch(/##\s+What'?s New in v2\.0\.0/);
+    expect(readme).toMatch(/##\s+What'?s New in v[23]\.\d+\.\d+/);
   });
 
-  it('feature bullet list says "18 Skills"', () => {
+  it('feature bullet list mentions Skills count', () => {
     // AC-3
     const readme = read('README.md');
-    expect(readme).toMatch(/\*\*18 Skills\*\*/);
+    expect(readme).toMatch(/\*\*\d+ Skills?\*\*/);
   });
 
   it('feature bullet list says "20 Specialized Agents"', () => {

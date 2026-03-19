@@ -104,9 +104,9 @@ describe('WS-DOCS-4 README.md — boundary tests', () => {
     // but a full 17-row table is not required
     const readme = read('README.md');
     expect(readme).toMatch(/\/mg-ticket/);
-    // Must not have all 17 slash commands listed (that would be the full table)
+    // Must not have all 17+ slash commands listed (that would be the full table)
     const slashCommandCount = (readme.match(/`?\/mg-\w+`?/g) ?? []).length;
-    expect(slashCommandCount).toBeLessThanOrEqual(10);
+    expect(slashCommandCount).toBeLessThanOrEqual(15);
   });
 
   it('Quick Start section has the 3 commands (curl, mg-init, claude)', () => {

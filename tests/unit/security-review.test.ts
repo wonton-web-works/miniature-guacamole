@@ -52,7 +52,7 @@ describe('Security Review - WS-10', () => {
       if (constitutionMatch) {
         const principles = constitutionMatch[1].match(/^\d+\.\s+\*\*/gm);
         expect(principles).toBeTruthy();
-        expect(principles?.length).toBe(4);
+        expect(principles?.length).toBe(5);
       }
     });
 

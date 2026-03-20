@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { formatDryRunReport } from '../../src/dry-run';
 import type { DryRunResult } from '../../src/dry-run';
+import type { TriageResult } from '../../src/triage';
 
 describe('Dry Run Module', () => {
   // ─── formatDryRunReport ─────────────────────────────────────────────────────
@@ -167,6 +168,100 @@ describe('Dry Run Module', () => {
           plannedWorkstreams: [],
           wouldCreatePR: true,
           wouldCreateSubtasks: 0,
+        }];
+
+        const output = formatDryRunReport(results);
+        const lines = output.split('\n');
+        for (const line of lines) {
+          expect(line.length).toBeLessThanOrEqual(80);
+        }
+      });
+    });
+
+    describe('GIVEN result with triageResult WHEN formatDryRunReport called THEN shows triage info (GH-107)', () => {
+      it('GIVEN triageResult with GO outcome THEN output contains outcome and reason', () => {
+        const triageResult: TriageResult = {
+          outcome: 'GO',
+          reason: 'Ticket is well-defined',
+        };
+        const results: DryRunResult[] = [{
+          ticketId: 'PROJ-123',
+          ticketTitle: 'Add login feature',
+          plannedWorkstreams: [],
+          wouldCreatePR: true,
+          wouldCreateSubtasks: 0,
+          triageResult,
+        }];
+
+        const output = formatDryRunReport(results);
+        expect(output).toContain('GO');
+        expect(output).toContain('Ticket is well-defined');
+      });
+
+      it('GIVEN triageResult with REJECT outcome THEN output contains REJECT and reason', () => {
+        const triageResult: TriageResult = {
+          outcome: 'REJECT',
+          reason: 'Out of scope for this project',
+        };
+        const results: DryRunResult[] = [{
+          ticketId: 'PROJ-456',
+          ticketTitle: 'Invalid request',
+          plannedWorkstreams: [],
+          wouldCreatePR: false,
+          wouldCreateSubtasks: 0,
+          triageResult,
+        }];
+
+        const output = formatDryRunReport(results);
+        expect(output).toContain('REJECT');
+        expect(output).toContain('Out of scope for this project');
+      });
+
+      it('GIVEN triageResult with NEEDS_CLARIFICATION outcome THEN output contains outcome and reason', () => {
+        const triageResult: TriageResult = {
+          outcome: 'NEEDS_CLARIFICATION',
+          reason: 'Missing acceptance criteria',
+          questions: ['What is the expected behavior?'],
+        };
+        const results: DryRunResult[] = [{
+          ticketId: 'PROJ-789',
+          ticketTitle: 'Vague feature',
+          plannedWorkstreams: [],
+          wouldCreatePR: false,
+          wouldCreateSubtasks: 0,
+          triageResult,
+        }];
+
+        const output = formatDryRunReport(results);
+        expect(output).toContain('NEEDS_CLARIFICATION');
+        expect(output).toContain('Missing acceptance criteria');
+      });
+
+      it('GIVEN no triageResult THEN output does not contain Triage line', () => {
+        const results: DryRunResult[] = [{
+          ticketId: 'PROJ-123',
+          ticketTitle: 'Feature',
+          plannedWorkstreams: [],
+          wouldCreatePR: true,
+          wouldCreateSubtasks: 0,
+        }];
+
+        const output = formatDryRunReport(results);
+        expect(output).not.toMatch(/Triage:/);
+      });
+
+      it('GIVEN triageResult with long reason THEN lines are truncated to 80 chars', () => {
+        const triageResult: TriageResult = {
+          outcome: 'NEEDS_CLARIFICATION',
+          reason: 'R'.repeat(100),
+        };
+        const results: DryRunResult[] = [{
+          ticketId: 'PROJ-123',
+          ticketTitle: 'Feature',
+          plannedWorkstreams: [],
+          wouldCreatePR: false,
+          wouldCreateSubtasks: 0,
+          triageResult,
         }];
 
         const output = formatDryRunReport(results);

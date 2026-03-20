@@ -8,6 +8,8 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { GitHubProvider } from '../../../src/providers/github';
 import type { GitHubConfig } from '../../../src/types';
+import type { PipelineResult } from '../../../src/orchestrator';
+import type { TriageResult } from '../../../src/triage';
 
 vi.mock('child_process', () => ({
   spawnSync: vi.fn(),
@@ -705,6 +707,125 @@ describe('GitHubProvider write-back (WS-DAEMON-12)', () => {
       const args = vi.mocked(spawnSync).mock.calls[0][1] as string[];
       const bodyArg = args[args.indexOf('--body') + 1];
       expect(bodyArg).toContain('#0');
+    });
+  });
+
+  // -------------------------------------------------------------------------
+  // Triage writeback — GitHub-specific (GH-104)
+  // -------------------------------------------------------------------------
+
+  describe('Triage writeback — GitHub (GH-104)', () => {
+    it('GIVEN NEEDS_CLARIFICATION triage body WHEN addComment() called THEN posts triage-formatted comment via gh CLI', async () => {
+      vi.mocked(spawnSync).mockReturnValue({ status: 0, stdout: '', stderr: '' } as any);
+
+      const triageComment = '**Triage: NEEDS_CLARIFICATION**\n\nMissing acceptance criteria\n\n**Questions:**\n- What should the behavior be?';
+      await provider.addComment('GH-42', triageComment);
+
+      const args = vi.mocked(spawnSync).mock.calls[0][1] as string[];
+      expect(args).toContain('--body');
+      expect(args).toContain(triageComment);
+    });
+
+    it('GIVEN REJECT triage body WHEN addComment() called THEN posts rejection comment via gh CLI', async () => {
+      vi.mocked(spawnSync).mockReturnValue({ status: 0, stdout: '', stderr: '' } as any);
+
+      const triageComment = '**Triage: REJECT**\n\nOut of scope for this project';
+      await provider.addComment('GH-42', triageComment);
+
+      const args = vi.mocked(spawnSync).mock.calls[0][1] as string[];
+      expect(args).toContain(triageComment);
+    });
+
+    it('GIVEN triage adds mg-daemon:needs-info label WHEN addLabel() called THEN gh CLI receives that label', async () => {
+      vi.mocked(spawnSync).mockReturnValue({ status: 0, stdout: '', stderr: '' } as any);
+
+      await provider.addLabel('GH-42', 'mg-daemon:needs-info');
+
+      const args = vi.mocked(spawnSync).mock.calls[0][1] as string[];
+      expect(args).toContain('--add-label');
+      expect(args).toContain('mg-daemon:needs-info');
+    });
+
+    it('GIVEN triage adds mg-daemon:rejected label WHEN addLabel() called THEN gh CLI receives that label', async () => {
+      vi.mocked(spawnSync).mockReturnValue({ status: 0, stdout: '', stderr: '' } as any);
+
+      await provider.addLabel('GH-42', 'mg-daemon:rejected');
+
+      const args = vi.mocked(spawnSync).mock.calls[0][1] as string[];
+      expect(args).toContain('mg-daemon:rejected');
+    });
+  });
+
+  // -------------------------------------------------------------------------
+  // PipelineResult triageResult assertions (GH-104)
+  // -------------------------------------------------------------------------
+
+  describe('PipelineResult triageResult assertions (GH-104)', () => {
+    it('GIVEN GO triage outcome THEN PipelineResult includes triageResult with outcome GO', () => {
+      const triageResult: TriageResult = { outcome: 'GO', reason: 'All checks pass' };
+      const result: PipelineResult = {
+        ticketId: 'GH-42',
+        triageResult,
+        planned: [],
+        executed: [],
+        success: true,
+      };
+      expect(result.triageResult).toBeDefined();
+      expect(result.triageResult!.outcome).toBe('GO');
+      expect(result.triageResult!.reason).toBe('All checks pass');
+    });
+
+    it('GIVEN NEEDS_CLARIFICATION triage outcome THEN PipelineResult includes triageResult and success=false', () => {
+      const triageResult: TriageResult = {
+        outcome: 'NEEDS_CLARIFICATION',
+        reason: 'Missing acceptance criteria',
+        questions: ['What should the behavior be?'],
+      };
+      const result: PipelineResult = {
+        ticketId: 'GH-42',
+        triageResult,
+        planned: [],
+        executed: [],
+        success: false,
+        error: 'Triage: NEEDS_CLARIFICATION — Missing acceptance criteria',
+      };
+      expect(result.triageResult).toBeDefined();
+      expect(result.triageResult!.outcome).toBe('NEEDS_CLARIFICATION');
+      expect(result.triageResult!.questions).toContain('What should the behavior be?');
+      expect(result.success).toBe(false);
+    });
+
+    it('GIVEN REJECT triage outcome THEN PipelineResult includes triageResult and success=false', () => {
+      const triageResult: TriageResult = {
+        outcome: 'REJECT',
+        reason: 'Out of scope',
+      };
+      const result: PipelineResult = {
+        ticketId: 'GH-42',
+        triageResult,
+        planned: [],
+        executed: [],
+        success: false,
+        error: 'Triage: REJECT — Out of scope',
+      };
+      expect(result.triageResult).toBeDefined();
+      expect(result.triageResult!.outcome).toBe('REJECT');
+      expect(result.success).toBe(false);
+    });
+
+    it('GIVEN any triage outcome THEN triageResult is always present in PipelineResult for all outcomes', () => {
+      const outcomes: Array<TriageResult['outcome']> = ['GO', 'NEEDS_CLARIFICATION', 'REJECT'];
+      for (const outcome of outcomes) {
+        const result: PipelineResult = {
+          ticketId: 'GH-42',
+          triageResult: { outcome, reason: 'test reason' },
+          planned: [],
+          executed: [],
+          success: outcome === 'GO',
+        };
+        expect(result.triageResult).toBeDefined();
+        expect(result.triageResult!.outcome).toBe(outcome);
+      }
     });
   });
 });

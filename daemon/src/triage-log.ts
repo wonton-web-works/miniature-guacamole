@@ -12,8 +12,26 @@ export interface TriageLogEntry {
   timestamp: string;
 }
 
-const LOG_FILE = join(process.cwd(), '..', '.mg-daemon', 'triage-log.json');
-const LOG_FILE_TMP = `${LOG_FILE}.tmp`;
+export interface TriageStats {
+  go: number;
+  needsInfo: number;
+  rejected: number;
+}
+
+// Default base path — overridable for testing
+let basePath = join(process.cwd(), '..', '.mg-daemon');
+
+/**
+ * Override base path for test isolation.
+ * @internal
+ */
+export function _setBasePath(path: string): void {
+  basePath = path;
+}
+
+function getLogFile(): string {
+  return join(basePath, 'triage-log.json');
+}
 
 /**
  * Load existing triage log entries from disk.
@@ -21,10 +39,11 @@ const LOG_FILE_TMP = `${LOG_FILE}.tmp`;
  */
 function loadEntries(): TriageLogEntry[] {
   try {
-    if (!existsSync(LOG_FILE)) {
+    const file = getLogFile();
+    if (!existsSync(file)) {
       return [];
     }
-    const content = readFileSync(LOG_FILE, 'utf-8');
+    const content = readFileSync(file, 'utf-8');
     const parsed = JSON.parse(content);
     return Array.isArray(parsed) ? parsed : [];
   } catch {
@@ -36,13 +55,15 @@ function loadEntries(): TriageLogEntry[] {
  * Save entries atomically using write-tmp-then-rename pattern.
  */
 function saveEntries(entries: TriageLogEntry[]): void {
-  const dir = dirname(LOG_FILE);
+  const logFile = getLogFile();
+  const dir = dirname(logFile);
   if (!existsSync(dir)) {
     mkdirSync(dir, { recursive: true });
   }
   const content = JSON.stringify(entries, null, 2);
-  writeFileSync(LOG_FILE_TMP, content, 'utf-8');
-  renameSync(LOG_FILE_TMP, LOG_FILE);
+  const tmpFile = `${logFile}.tmp`;
+  writeFileSync(tmpFile, content, 'utf-8');
+  renameSync(tmpFile, logFile);
 }
 
 /**
@@ -60,8 +81,24 @@ export function appendTriageLog(entry: TriageLogEntry): void {
 }
 
 /**
- * Read all triage log entries. Returns empty array on missing or corrupted file.
+ * Read all triage log entries and return aggregated stats.
+ * Returns zero counts on missing or corrupted file.
  */
-export function readTriageLog(): TriageLogEntry[] {
-  return loadEntries();
+export function readTriageLog(): TriageStats {
+  const entries = loadEntries();
+  const stats: TriageStats = { go: 0, needsInfo: 0, rejected: 0 };
+  for (const entry of entries) {
+    switch (entry.outcome) {
+      case 'GO':
+        stats.go++;
+        break;
+      case 'NEEDS_CLARIFICATION':
+        stats.needsInfo++;
+        break;
+      case 'REJECT':
+        stats.rejected++;
+        break;
+    }
+  }
+  return stats;
 }

@@ -2,6 +2,13 @@
 // AC-1.7: Config schema exported as TypeScript type DaemonConfig with no `any` types
 // AC-1.8: All types exported from daemon/src/types.ts
 
+import type { ClaudeResult } from './claude';
+
+export type ExecClaudeFn = (
+  prompt: string,
+  options: { timeout?: number; cwd?: string }
+) => Promise<ClaudeResult>;
+
 export interface JiraConfig {
   host: string;
   email: string;

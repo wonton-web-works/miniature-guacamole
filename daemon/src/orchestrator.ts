@@ -22,7 +22,12 @@ import { appendTriageLog } from './triage-log';
 import { ConcurrencyLimiter } from './concurrency';
 import { spawnSync } from 'child_process';
 import { existsSync, statfsSync } from 'fs';
-import { join } from 'path';
+import { reviewPR } from './reviewer';
+import type { WorkstreamTrack } from './reviewer';
+import { handleApproval, handleRejection } from './merger';
+import type { MergeResult, ExecSyncFn as MergerExecSyncFn } from './merger';
+import { writeWorkstreamState, appendDecision } from './state-sync';
+import * as path from 'path';
 
 const STOP_SENTINEL = '.mg-daemon/STOP';
 const MIN_FREE_DISK_BYTES = 5 * 1024 * 1024 * 1024; // 5 GB
@@ -87,6 +92,13 @@ export interface OrchestratorConfig {
     config: TriageConfig,
     execClaudeFn: TriageExecClaudeFn
   ) => Promise<TriageResult>;
+  reviewPR?: typeof reviewPR;
+  handleApproval?: typeof handleApproval;
+  handleRejection?: typeof handleRejection;
+  writeWorkstreamState?: typeof writeWorkstreamState;
+  appendDecision?: typeof appendDecision;
+  memoryDir?: string;
+  execSync?: MergerExecSyncFn;
 }
 
 export interface PipelineResult {
@@ -163,6 +175,14 @@ export async function processTicket(
   const removeWorktreeFn = deps.removeWorktree ?? defaultRemoveWorktree;
   const createPRFn = deps.createPR ?? defaultCreatePR;
   const passthrough: PlannerExecClaudeFn = deps.execClaude ?? defaultExecClaude;
+  const reviewPRFn = deps.reviewPR ?? reviewPR;
+  const handleApprovalFn = deps.handleApproval ?? handleApproval;
+  const handleRejectionFn = deps.handleRejection ?? handleRejection;
+  const writeWorkstreamStateFn = deps.writeWorkstreamState ?? writeWorkstreamState;
+  const appendDecisionFn = deps.appendDecision ?? appendDecision;
+  const memoryDir = deps.memoryDir ?? path.join(process.cwd(), '.claude/memory');
+  const execClaudeFn: ExecutorExecClaudeFn = deps.execClaude ?? defaultExecClaude;
+  const execSyncFn: MergerExecSyncFn = deps.execSync ?? ((cmd, args, opts) => spawnSync(cmd, args ?? [], opts as Parameters<typeof spawnSync>[2] ?? {}));
 
   // Mark as processing in tracker
   deps.tracker.markProcessing(ticket.id);
@@ -253,6 +273,11 @@ export async function processTicket(
     return { ticketId: ticket.id, triageResult, planned, executed: [], success: true };
   }
 
+  // State sync — planning phase
+  for (const ws of planned) {
+    writeWorkstreamStateFn(ws.name, ticket.id, { phase: 'planning', track: undefined }, memoryDir);
+  }
+
   // Step 3: Create subtasks for each workstream
   for (const ws of planned) {
     await deps.provider.createSubtask(ticket.id, {
@@ -269,6 +294,11 @@ export async function processTicket(
   let executed: ExecutionResult[] = [];
   let prUrl: string | undefined;
 
+  // State sync — executing phase
+  for (const ws of planned) {
+    writeWorkstreamStateFn(ws.name, ticket.id, { phase: 'executing' }, memoryDir);
+  }
+
   try {
     // Step 5: Execute workstreams
     for (const ws of planned) {
@@ -280,8 +310,8 @@ export async function processTicket(
     const gitOpts = { cwd: worktreePath, encoding: 'utf-8' as const };
 
     spawnSync('git', ['fetch', 'origin', baseBranch], gitOpts);
-    const mergeResult = spawnSync('git', ['merge', `origin/${baseBranch}`, '--no-edit'], gitOpts);
-    if (mergeResult.status !== 0) {
+    const gitMergeResult = spawnSync('git', ['merge', `origin/${baseBranch}`, '--no-edit'], gitOpts);
+    if (gitMergeResult.status !== 0) {
       // Merge conflict — abort and report failure
       spawnSync('git', ['merge', '--abort'], gitOpts);
       deps.tracker.markFailed(ticket.id, 'Merge conflict with main');
@@ -343,8 +373,77 @@ export async function processTicket(
         // Log but don't fail — some trackers have strict workflow rules
       }
 
-      // Update tracker
-      deps.tracker.markComplete(ticket.id, prUrl);
+      // Step 8.5: Code Review (track-aware)
+      // Infer track: if all execution results succeeded → mechanical candidate, else architectural
+      const allTestsPassed = executed.every(r => r.success);
+      const track: WorkstreamTrack = allTestsPassed ? 'mechanical' : 'architectural';
+
+      const reviewResult = await reviewPRFn(
+        prUrl,
+        planned,
+        executed,
+        track,
+        execClaudeFn
+      );
+
+      // Step 8.6: State sync — reviewing phase
+      for (const ws of planned) {
+        writeWorkstreamStateFn(ws.name, ticket.id, { phase: 'reviewing' }, memoryDir);
+      }
+      appendDecisionFn(ticket.id, 'all-workstreams', reviewResult.decision, reviewResult.feedback, memoryDir);
+
+      // Step 8.7: Merge or rejection loop
+      let mergeOutcomeResult: MergeResult;
+      if (reviewResult.decision === 'APPROVED') {
+        // State sync — approved
+        for (const ws of planned) {
+          writeWorkstreamStateFn(ws.name, ticket.id, { phase: 'approved', reviewResult }, memoryDir);
+        }
+        mergeOutcomeResult = await handleApprovalFn(branchName, baseBranch, worktreePath, prUrl, execSyncFn);
+        // State sync — merged or failed
+        for (const ws of planned) {
+          const phase = mergeOutcomeResult.outcome === 'merged' ? 'merged' : 'failed';
+          writeWorkstreamStateFn(ws.name, ticket.id, { phase, mergeResult: mergeOutcomeResult }, memoryDir);
+        }
+      } else {
+        // State sync — changes_requested
+        for (const ws of planned) {
+          writeWorkstreamStateFn(ws.name, ticket.id, { phase: 'changes_requested', reviewResult }, memoryDir);
+        }
+        const rejectionResult = await handleRejectionFn(
+          reviewResult.feedback,
+          reviewResult.requiredChanges,
+          ticket,
+          branchName,
+          worktreePath,
+          execClaudeFn,
+          execSyncFn,
+          2 // max retries
+        );
+        if (rejectionResult.fixed) {
+          // Re-review after fix
+          const reReviewResult = await reviewPRFn(prUrl, planned, executed, track, execClaudeFn);
+          appendDecisionFn(ticket.id, 'all-workstreams-retry', reReviewResult.decision, reReviewResult.feedback, memoryDir);
+          if (reReviewResult.decision === 'APPROVED') {
+            mergeOutcomeResult = await handleApprovalFn(branchName, baseBranch, worktreePath, prUrl, execSyncFn);
+          } else {
+            mergeOutcomeResult = { outcome: 'escalated', prUrl, rejectionCount: rejectionResult.retries, escalationReason: 'Re-review failed after fix attempt' };
+          }
+        } else {
+          mergeOutcomeResult = { outcome: 'escalated', prUrl, rejectionCount: rejectionResult.retries, escalationReason: 'Max retries exceeded' };
+        }
+        for (const ws of planned) {
+          const phase = mergeOutcomeResult.outcome === 'merged' ? 'merged' : 'failed';
+          writeWorkstreamStateFn(ws.name, ticket.id, { phase, mergeResult: mergeOutcomeResult }, memoryDir);
+        }
+      }
+
+      // Update tracker based on merge outcome
+      if (mergeOutcomeResult.outcome === 'merged') {
+        deps.tracker.markComplete(ticket.id, prUrl);
+      } else {
+        deps.tracker.markFailed(ticket.id, mergeOutcomeResult.escalationReason ?? `Merge outcome: ${mergeOutcomeResult.outcome}`);
+      }
     } else {
       deps.tracker.markFailed(ticket.id, prResult.error ?? 'PR creation failed');
     }

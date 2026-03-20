@@ -237,6 +237,15 @@ describe('processTicket() (WS-DAEMON-11)', () => {
       await processTicket(TICKET, deps);
       expect(deps.provider.createSubtask).not.toHaveBeenCalled();
     });
+
+    it('GIVEN ticket with labels WHEN processTicket called THEN createSubtask passes labels from parent ticket (GH-102)', async () => {
+      const deps = makeDeps();
+      await processTicket(TICKET, deps);
+      expect(deps.provider.createSubtask).toHaveBeenCalledWith(
+        TICKET.id,
+        expect.objectContaining({ labels: TICKET.labels })
+      );
+    });
   });
 
   describe('AC: Creates a git worktree', () => {

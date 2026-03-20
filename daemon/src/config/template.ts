@@ -36,6 +36,11 @@ export function getDefaultConfig(): DaemonConfig {
     mcp: {
       enabled: false,
       servers: []
+    },
+    triage: {
+      enabled: true,
+      autoReject: false,
+      maxTicketSizeChars: 10000,
     }
   };
 }
@@ -128,6 +133,13 @@ mcp:
   #   command: mcp-server-filesystem
   #   args:
   #     - /path/to/project
+
+# Triage Configuration
+# Optional: Configure how the daemon triages incoming work items
+triage:
+  enabled: true  # Set to false to skip triage and process all tickets directly
+  autoReject: false  # Set to true to auto-reject oversized tickets (default: convert to NEEDS_CLARIFICATION)
+  maxTicketSizeChars: 10000  # Maximum ticket description size before rejection/clarification
 `;
 
   // Write to file

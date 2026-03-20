@@ -277,6 +277,73 @@ const installCmd = 'curl -fsSL https://raw.githubusercontent.com/wonton-web-work
     </section>
 
     <!-- ============================================================
+         PRICING
+    ============================================================ -->
+    <section class="pricing" id="pricing">
+      <div class="container">
+        <h2 class="section-heading">Pricing</h2>
+        <p class="section-sublead">The framework is free. The autonomous pipeline is not.</p>
+
+        <div class="pricing-grid">
+          <div class="pricing-card">
+            <span class="pricing-tier mono">Community</span>
+            <div class="pricing-price">
+              <span class="price-amount">Free</span>
+              <span class="price-period">forever</span>
+            </div>
+            <p class="pricing-desc">The full framework. 20 agents, 19 skills, NDA-safe architecture. Install and run.</p>
+            <ul class="pricing-features">
+              <li>All agents and skills</li>
+              <li>CLI tools (`/mg-build`, `/mg-assess`, etc.)</li>
+              <li>Project-local memory</li>
+              <li>Community support (GitHub)</li>
+            </ul>
+            <a href="https://github.com/wonton-web-works/miniature-guacamole" class="pricing-cta-secondary mono">Install from GitHub</a>
+          </div>
+
+          <div class="pricing-card featured">
+            <span class="pricing-tier mono">Team</span>
+            <div class="pricing-price">
+              <span class="price-amount">$299</span>
+              <span class="price-period">/month</span>
+            </div>
+            <p class="pricing-desc">The daemon pipeline. Autonomous ticket-to-PR automation running 24/7 on your repos.</p>
+            <ul class="pricing-features">
+              <li>Everything in Community</li>
+              <li>Daemon pipeline (Jira, Linear, GitHub)</li>
+              <li>5 repo seats</li>
+              <li>Triage gate + error budget</li>
+              <li>Dashboard + audit trail</li>
+              <li>Onboarding call + setup</li>
+              <li>Email support</li>
+            </ul>
+            <a href="mailto:byazaki@wontonwebworks.com?subject=MG%20Team%20—%20interested&body=Hi%20Brodie%2C%0A%0AWe're%20interested%20in%20MG%20Team.%20Our%20stack%3A%0A%0ATeam%20size%3A%0ATracker%3A%20(Jira%2FLinear%2FGitHub)%0AUse%20case%3A%0A" class="pricing-cta mono">Talk to us</a>
+          </div>
+
+          <div class="pricing-card">
+            <span class="pricing-tier mono">Enterprise</span>
+            <div class="pricing-price">
+              <span class="price-amount">$999</span>
+              <span class="price-period">/month</span>
+            </div>
+            <p class="pricing-desc">Unlimited repos, custom agent definitions, priority support, SLA.</p>
+            <ul class="pricing-features">
+              <li>Everything in Team</li>
+              <li>Unlimited repo seats</li>
+              <li>Custom agent training</li>
+              <li>Priority support (Slack)</li>
+              <li>SLA (99.5% daemon uptime)</li>
+              <li>Quarterly business review</li>
+            </ul>
+            <a href="mailto:byazaki@wontonwebworks.com?subject=MG%20Enterprise%20—%20interested&body=Hi%20Brodie%2C%0A%0AWe're%20interested%20in%20MG%20Enterprise.%20Our%20stack%3A%0A%0ATeam%20size%3A%0ATracker%3A%20(Jira%2FLinear%2FGitHub)%0ACompliance%20needs%3A%0A" class="pricing-cta-secondary mono">Talk to us</a>
+          </div>
+        </div>
+
+        <p class="pricing-note">All plans include a discovery call. We configure the daemon for your stack, your tracker, your workflow. No self-serve checkout — we set you up right.</p>
+      </div>
+    </section>
+
+    <!-- ============================================================
          CHANGELOG
     ============================================================ -->
     <section class="changelog">
@@ -736,6 +803,166 @@ const installCmd = 'curl -fsSL https://raw.githubusercontent.com/wonton-web-work
     .workflow-step:last-child {
       border-bottom-left-radius: 4px;
       border-bottom-right-radius: 4px;
+    }
+  }
+
+  /* -------------------------------------------------------
+     PRICING
+  ------------------------------------------------------- */
+  .pricing {
+    padding: clamp(60px, 8vw, 120px) 0;
+    border-bottom: 1px solid var(--mg-surface);
+  }
+
+  .pricing .section-sublead {
+    margin-bottom: 48px;
+  }
+
+  .pricing-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+  }
+
+  .pricing-card {
+    background: var(--mg-surface);
+    border: 1px solid #263040;
+    border-radius: 8px;
+    padding: 32px 28px;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .pricing-card.featured {
+    border-color: var(--mg-cilantro);
+    position: relative;
+  }
+
+  .pricing-card.featured::before {
+    content: 'Most popular';
+    position: absolute;
+    top: -12px;
+    left: 28px;
+    background: var(--mg-cilantro);
+    color: #fff;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 500;
+    padding: 3px 12px;
+    border-radius: 3px;
+    letter-spacing: 0.04em;
+  }
+
+  .pricing-tier {
+    font-size: 12px;
+    color: var(--mg-subtext);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-bottom: 16px;
+    display: block;
+  }
+
+  .pricing-price {
+    margin-bottom: 16px;
+  }
+
+  .price-amount {
+    font-family: var(--font-display);
+    font-size: 36px;
+    font-weight: 800;
+    color: var(--mg-text);
+  }
+
+  .price-period {
+    font-size: 14px;
+    color: var(--mg-subtext);
+    margin-left: 4px;
+  }
+
+  .pricing-desc {
+    font-size: 14px;
+    color: var(--mg-subtext);
+    line-height: 1.6;
+    margin-bottom: 24px;
+  }
+
+  .pricing-features {
+    list-style: none;
+    padding: 0;
+    margin-bottom: 28px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .pricing-features li {
+    font-size: 13px;
+    color: var(--mg-subtext);
+    padding-left: 20px;
+    position: relative;
+    line-height: 1.4;
+  }
+
+  .pricing-features li::before {
+    content: '✓';
+    position: absolute;
+    left: 0;
+    color: var(--mg-cilantro);
+    font-weight: 700;
+    font-size: 12px;
+  }
+
+  .pricing-cta {
+    display: block;
+    text-align: center;
+    background: var(--mg-cilantro);
+    color: #fff;
+    font-size: 14px;
+    font-weight: 600;
+    padding: 12px 24px;
+    border-radius: 4px;
+    text-decoration: none;
+    transition: opacity 0.15s;
+  }
+
+  .pricing-cta:hover {
+    opacity: 0.88;
+  }
+
+  .pricing-cta-secondary {
+    display: block;
+    text-align: center;
+    background: transparent;
+    color: var(--mg-subtext);
+    font-size: 14px;
+    font-weight: 500;
+    padding: 12px 24px;
+    border: 1px solid #263040;
+    border-radius: 4px;
+    text-decoration: none;
+    transition: border-color 0.15s, color 0.15s;
+  }
+
+  .pricing-cta-secondary:hover {
+    border-color: var(--mg-text);
+    color: var(--mg-text);
+  }
+
+  .pricing-note {
+    font-size: 13px;
+    color: var(--mg-subtext);
+    margin-top: 32px;
+    max-width: 600px;
+  }
+
+  @media (max-width: 768px) {
+    .pricing-grid {
+      grid-template-columns: 1fr;
+      max-width: 400px;
+    }
+    .pricing-card.featured {
+      order: -1;
     }
   }
 

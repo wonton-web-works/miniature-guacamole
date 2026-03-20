@@ -176,6 +176,81 @@ describe('GitHubProvider write-back (WS-DAEMON-12)', () => {
       });
     });
 
+    describe('AC: Copies parent labels to sub-issues (GH-102)', () => {
+      it('GIVEN labels ["mg-daemon", "priority:high"] WHEN createSubtask() called THEN passes --label for each label', async () => {
+        vi.mocked(spawnSync).mockReturnValue({
+          status: 0,
+          stdout: 'https://github.com/owner/repo/issues/100\n',
+          stderr: '',
+        } as any);
+
+        await provider.createSubtask('GH-42', {
+          title: 'Sub',
+          description: 'Desc',
+          parentId: 'GH-42',
+          labels: ['mg-daemon', 'priority:high'],
+        });
+
+        const args = vi.mocked(spawnSync).mock.calls[0][1] as string[];
+        expect(args).toContain('--label');
+        expect(args).toContain('mg-daemon,priority:high');
+      });
+
+      it('GIVEN labels ["mg-daemon"] WHEN createSubtask() called THEN passes --label mg-daemon', async () => {
+        vi.mocked(spawnSync).mockReturnValue({
+          status: 0,
+          stdout: 'https://github.com/owner/repo/issues/100\n',
+          stderr: '',
+        } as any);
+
+        await provider.createSubtask('GH-42', {
+          title: 'Sub',
+          description: 'Desc',
+          parentId: 'GH-42',
+          labels: ['mg-daemon'],
+        });
+
+        const args = vi.mocked(spawnSync).mock.calls[0][1] as string[];
+        expect(args).toContain('--label');
+        expect(args).toContain('mg-daemon');
+      });
+
+      it('GIVEN empty labels array WHEN createSubtask() called THEN does NOT include --label flag', async () => {
+        vi.mocked(spawnSync).mockReturnValue({
+          status: 0,
+          stdout: 'https://github.com/owner/repo/issues/100\n',
+          stderr: '',
+        } as any);
+
+        await provider.createSubtask('GH-42', {
+          title: 'Sub',
+          description: 'Desc',
+          parentId: 'GH-42',
+          labels: [],
+        });
+
+        const args = vi.mocked(spawnSync).mock.calls[0][1] as string[];
+        expect(args).not.toContain('--label');
+      });
+
+      it('GIVEN no labels field WHEN createSubtask() called THEN does NOT include --label flag', async () => {
+        vi.mocked(spawnSync).mockReturnValue({
+          status: 0,
+          stdout: 'https://github.com/owner/repo/issues/100\n',
+          stderr: '',
+        } as any);
+
+        await provider.createSubtask('GH-42', {
+          title: 'Sub',
+          description: 'Desc',
+          parentId: 'GH-42',
+        });
+
+        const args = vi.mocked(spawnSync).mock.calls[0][1] as string[];
+        expect(args).not.toContain('--label');
+      });
+    });
+
     describe('AC: Error handling — invalid parent ID format', () => {
       it('GIVEN parent "INVALID-FORMAT" WHEN createSubtask() called THEN throws with descriptive error', async () => {
         await expect(

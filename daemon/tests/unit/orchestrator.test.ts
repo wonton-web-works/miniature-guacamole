@@ -510,19 +510,37 @@ describe('processTicket() triage gate (WS-DAEMON-15)', () => {
     });
   });
 
-  describe('AC: Triage failure posts comment and label', () => {
-    it('GIVEN triage returns NEEDS_CLARIFICATION WHEN processTicket called THEN addComment is called', async () => {
+  describe('AC: Triage failure posts comment and label (GH-105)', () => {
+    it('GIVEN NEEDS_CLARIFICATION with questions WHEN processTicket called THEN addComment body contains outcome, reason, and bullet-list questions', async () => {
       const deps = makeDeps({
         triageTicket: vi.fn().mockResolvedValue({
           outcome: 'NEEDS_CLARIFICATION',
-          reason: 'Unclear',
-          questions: ['What endpoint?'],
+          reason: 'Missing acceptance criteria',
+          questions: ['What endpoint?', 'Auth required?'],
         } as TriageResult),
       });
       await processTicket(TICKET, deps);
       expect(deps.provider.addComment).toHaveBeenCalledWith(
         TICKET.id,
-        expect.stringContaining('NEEDS_CLARIFICATION')
+        '**Triage: NEEDS_CLARIFICATION**\n\n' +
+        'Missing acceptance criteria\n\n' +
+        '**Questions:**\n' +
+        '- What endpoint?\n' +
+        '- Auth required?'
+      );
+    });
+
+    it('GIVEN NEEDS_CLARIFICATION without questions WHEN processTicket called THEN addComment body has outcome and reason only', async () => {
+      const deps = makeDeps({
+        triageTicket: vi.fn().mockResolvedValue({
+          outcome: 'NEEDS_CLARIFICATION',
+          reason: 'Unclear',
+        } as TriageResult),
+      });
+      await processTicket(TICKET, deps);
+      expect(deps.provider.addComment).toHaveBeenCalledWith(
+        TICKET.id,
+        '**Triage: NEEDS_CLARIFICATION**\n\nUnclear'
       );
     });
 
@@ -535,6 +553,20 @@ describe('processTicket() triage gate (WS-DAEMON-15)', () => {
       });
       await processTicket(TICKET, deps);
       expect(deps.provider.addLabel).toHaveBeenCalledWith(TICKET.id, 'mg-daemon:needs-info');
+    });
+
+    it('GIVEN REJECT WHEN processTicket called THEN addComment body contains outcome and rejection reason', async () => {
+      const deps = makeDeps({
+        triageTicket: vi.fn().mockResolvedValue({
+          outcome: 'REJECT',
+          reason: 'Out of scope',
+        } as TriageResult),
+      });
+      await processTicket(TICKET, deps);
+      expect(deps.provider.addComment).toHaveBeenCalledWith(
+        TICKET.id,
+        '**Triage: REJECT**\n\nOut of scope'
+      );
     });
 
     it('GIVEN triage returns REJECT WHEN processTicket called THEN adds rejected label', async () => {
@@ -562,6 +594,114 @@ describe('processTicket() triage gate (WS-DAEMON-15)', () => {
       const result = await processTicket(TICKET, deps);
       expect(result.success).toBe(false);
       expect(result.triageResult?.outcome).toBe('NEEDS_CLARIFICATION');
+    });
+
+    it('GIVEN addLabel throws but addComment succeeds WHEN processTicket called THEN pipeline still returns (best-effort)', async () => {
+      const deps = makeDeps({
+        providerOverrides: {
+          addLabel: vi.fn().mockRejectedValue(new Error('label API error')),
+        },
+        triageTicket: vi.fn().mockResolvedValue({
+          outcome: 'REJECT',
+          reason: 'Nope',
+        } as TriageResult),
+      });
+      const result = await processTicket(TICKET, deps);
+      expect(result.success).toBe(false);
+      // Comment was still attempted even though label will fail
+      expect(deps.provider.addComment).toHaveBeenCalled();
+    });
+
+    it('GIVEN addComment throws WHEN processTicket called THEN addLabel is still attempted', async () => {
+      const addComment = vi.fn().mockRejectedValue(new Error('comment API error'));
+      const addLabel = vi.fn().mockResolvedValue(undefined);
+      const deps = makeDeps({
+        providerOverrides: { addComment, addLabel },
+        triageTicket: vi.fn().mockResolvedValue({
+          outcome: 'NEEDS_CLARIFICATION',
+          reason: 'Vague',
+        } as TriageResult),
+      });
+      await processTicket(TICKET, deps);
+      expect(addComment).toHaveBeenCalled();
+      expect(addLabel).toHaveBeenCalledWith(TICKET.id, 'mg-daemon:needs-info');
+    });
+
+    it('GIVEN addComment throws WHEN processTicket called THEN markFailed is still called with triage reason', async () => {
+      const deps = makeDeps({
+        providerOverrides: {
+          addComment: vi.fn().mockRejectedValue(new Error('API error')),
+        },
+        triageTicket: vi.fn().mockResolvedValue({
+          outcome: 'NEEDS_CLARIFICATION',
+          reason: 'Missing details',
+        } as TriageResult),
+      });
+      await processTicket(TICKET, deps);
+      expect(deps.tracker.markFailed).toHaveBeenCalledWith(
+        TICKET.id,
+        expect.stringContaining('NEEDS_CLARIFICATION')
+      );
+      expect(deps.tracker.markFailed).toHaveBeenCalledWith(
+        TICKET.id,
+        expect.stringContaining('Missing details')
+      );
+    });
+
+    it('GIVEN addLabel throws WHEN processTicket called THEN markFailed is still called with triage reason', async () => {
+      const deps = makeDeps({
+        providerOverrides: {
+          addLabel: vi.fn().mockRejectedValue(new Error('label error')),
+        },
+        triageTicket: vi.fn().mockResolvedValue({
+          outcome: 'REJECT',
+          reason: 'Out of scope',
+        } as TriageResult),
+      });
+      await processTicket(TICKET, deps);
+      expect(deps.tracker.markFailed).toHaveBeenCalledWith(
+        TICKET.id,
+        expect.stringContaining('REJECT')
+      );
+      expect(deps.tracker.markFailed).toHaveBeenCalledWith(
+        TICKET.id,
+        expect.stringContaining('Out of scope')
+      );
+    });
+
+    it('GIVEN both addComment and addLabel throw WHEN processTicket called THEN markFailed is still called with triage reason', async () => {
+      const deps = makeDeps({
+        providerOverrides: {
+          addComment: vi.fn().mockRejectedValue(new Error('comment error')),
+          addLabel: vi.fn().mockRejectedValue(new Error('label error')),
+        },
+        triageTicket: vi.fn().mockResolvedValue({
+          outcome: 'REJECT',
+          reason: 'Not actionable',
+        } as TriageResult),
+      });
+      const result = await processTicket(TICKET, deps);
+      expect(result.success).toBe(false);
+      expect(result.triageResult?.outcome).toBe('REJECT');
+      expect(deps.tracker.markFailed).toHaveBeenCalledWith(
+        TICKET.id,
+        expect.stringContaining('Not actionable')
+      );
+    });
+
+    it('GIVEN writeback fails WHEN processTicket called THEN processTicket does NOT throw', async () => {
+      const deps = makeDeps({
+        providerOverrides: {
+          addComment: vi.fn().mockRejectedValue(new Error('boom')),
+          addLabel: vi.fn().mockRejectedValue(new Error('boom')),
+        },
+        triageTicket: vi.fn().mockResolvedValue({
+          outcome: 'NEEDS_CLARIFICATION',
+          reason: 'Unclear',
+        } as TriageResult),
+      });
+      // Should resolve, not reject
+      await expect(processTicket(TICKET, deps)).resolves.toBeDefined();
     });
   });
 

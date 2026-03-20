@@ -38,6 +38,21 @@ vi.mock('../../src/triage-log', () => ({
   appendTriageLog: vi.fn(),
 }));
 
+// Mock reviewer, merger, and state-sync so orchestrator tests don't need real Claude or disk I/O.
+// Plain vi.fn() — mockReset: true in vitest.config.ts clears implementations between tests,
+// so per-test implementations are injected via makeDeps() or explicit re-mocking.
+vi.mock('../../src/reviewer', () => ({
+  reviewPR: vi.fn(),
+}));
+vi.mock('../../src/merger', () => ({
+  handleApproval: vi.fn(),
+  handleRejection: vi.fn(),
+}));
+vi.mock('../../src/state-sync', () => ({
+  writeWorkstreamState: vi.fn(),
+  appendDecision: vi.fn(),
+}));
+
 import { appendTriageLog } from '../../src/triage-log';
 import { processTicket, runPollCycle, shouldStop, hasSufficientDiskSpace } from '../../src/orchestrator';
 import type { OrchestratorConfig } from '../../src/orchestrator';
@@ -55,6 +70,9 @@ import { executeWorkstream as defaultExecuteWorkstreamMock } from '../../src/exe
 import { createWorktree as defaultCreateWorktreeMock, removeWorktree as defaultRemoveWorktreeMock } from '../../src/worktree';
 import { createPR as defaultCreatePRMock } from '../../src/github';
 import { execClaude as defaultExecClaudeMock } from '../../src/claude';
+import { reviewPR as defaultReviewPRMock } from '../../src/reviewer';
+import { handleApproval as defaultHandleApprovalMock, handleRejection as defaultHandleRejectionMock } from '../../src/merger';
+import { writeWorkstreamState as defaultWriteWorkstreamStateMock, appendDecision as defaultAppendDecisionMock } from '../../src/state-sync';
 
 // ---------------------------------------------------------------------------
 // Fixtures
@@ -122,6 +140,11 @@ function makeDeps(overrides?: {
   removeWorktree?: ReturnType<typeof vi.fn>;
   createPR?: ReturnType<typeof vi.fn>;
   triageTicket?: ReturnType<typeof vi.fn>;
+  reviewPR?: ReturnType<typeof vi.fn>;
+  handleApproval?: ReturnType<typeof vi.fn>;
+  handleRejection?: ReturnType<typeof vi.fn>;
+  writeWorkstreamState?: ReturnType<typeof vi.fn>;
+  appendDecision?: ReturnType<typeof vi.fn>;
   tracker?: {
     markProcessing: ReturnType<typeof vi.fn>;
     markComplete: ReturnType<typeof vi.fn>;
@@ -165,6 +188,28 @@ function makeDeps(overrides?: {
     createPR:
       overrides?.createPR ??
       vi.fn().mockReturnValue({ success: true, prUrl: 'https://github.com/owner/repo/pull/42' }),
+    reviewPR:
+      overrides?.reviewPR ??
+      vi.fn().mockResolvedValue({
+        decision: 'APPROVED',
+        feedback: 'LGTM',
+        requiredChanges: [],
+        reviewedAt: '2026-01-01T00:00:00.000Z',
+      }),
+    handleApproval:
+      overrides?.handleApproval ??
+      vi.fn().mockResolvedValue({
+        outcome: 'merged',
+        prUrl: 'https://github.com/owner/repo/pull/42',
+        rejectionCount: 0,
+        mergedAt: '2026-01-01T00:00:00.000Z',
+      }),
+    handleRejection:
+      overrides?.handleRejection ??
+      vi.fn().mockResolvedValue({ fixed: false, retries: 0 }),
+    writeWorkstreamState: overrides?.writeWorkstreamState ?? vi.fn(),
+    appendDecision: overrides?.appendDecision ?? vi.fn(),
+    memoryDir: '/tmp/test-memory',
   };
 }
 
@@ -1117,6 +1162,12 @@ describe('processTicket() coverage hardening (GH-108)', () => {
         createWorktree: vi.fn().mockReturnValue({ worktreePath: '/tmp/wt', branchName: 'feature/test' }),
         removeWorktree: vi.fn(),
         createPR: vi.fn().mockReturnValue({ success: true, prUrl: 'https://github.com/owner/repo/pull/99' }),
+        reviewPR: vi.fn().mockResolvedValue({ decision: 'APPROVED', feedback: '', requiredChanges: [], reviewedAt: '2026-01-01T00:00:00.000Z' }),
+        handleApproval: vi.fn().mockResolvedValue({ outcome: 'merged', prUrl: 'https://github.com/owner/repo/pull/99', rejectionCount: 0, mergedAt: '2026-01-01T00:00:00.000Z' }),
+        handleRejection: vi.fn().mockResolvedValue({ fixed: false, retries: 0 }),
+        writeWorkstreamState: vi.fn(),
+        appendDecision: vi.fn(),
+        memoryDir: '/tmp/test-memory',
       };
 
       const result = await processTicket(TICKET, deps);
@@ -1303,7 +1354,7 @@ describe('processTicket() coverage hardening (GH-108)', () => {
 
   describe('AC: Default dep fallbacks via ?? operator', () => {
     it('GIVEN no optional deps provided WHEN processTicket called THEN uses default module imports', async () => {
-      // Re-setup mocked module defaults (mockReset clears them)
+      // Re-setup mocked module defaults (mockReset clears them between tests)
       vi.mocked(defaultTriageTicketMock).mockResolvedValue({ outcome: 'GO', reason: 'default triage' });
       vi.mocked(defaultPlanTicketMock).mockResolvedValue([{ name: 'default-ws', acceptanceCriteria: 'AC' }]);
       vi.mocked(defaultExecuteWorkstreamMock).mockResolvedValue({ workstream: 'default-ws', success: true, output: 'ok', durationMs: 50 });
@@ -1311,6 +1362,11 @@ describe('processTicket() coverage hardening (GH-108)', () => {
       vi.mocked(defaultRemoveWorktreeMock).mockImplementation(() => {});
       vi.mocked(defaultCreatePRMock).mockReturnValue({ success: true, prUrl: 'https://github.com/owner/repo/pull/77' });
       vi.mocked(defaultExecClaudeMock).mockResolvedValue({ stdout: '', stderr: '', exitCode: 0, timedOut: false });
+      vi.mocked(defaultReviewPRMock).mockResolvedValue({ decision: 'APPROVED', feedback: 'LGTM', requiredChanges: [], reviewedAt: '2026-01-01T00:00:00.000Z' });
+      vi.mocked(defaultHandleApprovalMock).mockResolvedValue({ outcome: 'merged', prUrl: 'https://github.com/owner/repo/pull/77', rejectionCount: 0, mergedAt: '2026-01-01T00:00:00.000Z' });
+      vi.mocked(defaultHandleRejectionMock).mockResolvedValue({ fixed: false, retries: 0 });
+      vi.mocked(defaultWriteWorkstreamStateMock).mockImplementation(() => {});
+      vi.mocked(defaultAppendDecisionMock).mockImplementation(() => {});
 
       const provider = makeProvider();
       const config = makeConfig();
@@ -1324,7 +1380,8 @@ describe('processTicket() coverage hardening (GH-108)', () => {
           getProcessedTickets: vi.fn().mockReturnValue([]),
         },
         // All optional deps omitted — exercises ?? default fallbacks for triageTicket, planTicket,
-        // executeWorkstream, createWorktree, removeWorktree, createPR, execClaude
+        // executeWorkstream, createWorktree, removeWorktree, createPR, execClaude,
+        // reviewPR, handleApproval, handleRejection, writeWorkstreamState, appendDecision
       };
 
       const result = await processTicket(TICKET, deps);
@@ -1617,6 +1674,12 @@ describe('processTicket() triage integration paths — end-to-end (GH-108)', () 
         createWorktree: vi.fn().mockReturnValue({ worktreePath: '/tmp/wt', branchName: 'feature/test' }),
         removeWorktree: vi.fn(),
         createPR: vi.fn().mockReturnValue({ success: true, prUrl: 'https://github.com/owner/repo/pull/99' }),
+        reviewPR: vi.fn().mockResolvedValue({ decision: 'APPROVED', feedback: '', requiredChanges: [], reviewedAt: '2026-01-01T00:00:00.000Z' }),
+        handleApproval: vi.fn().mockResolvedValue({ outcome: 'merged', prUrl: 'https://github.com/owner/repo/pull/99', rejectionCount: 0, mergedAt: '2026-01-01T00:00:00.000Z' }),
+        handleRejection: vi.fn().mockResolvedValue({ fixed: false, retries: 0 }),
+        writeWorkstreamState: vi.fn(),
+        appendDecision: vi.fn(),
+        memoryDir: '/tmp/test-memory',
       };
 
       const result = await processTicket(TICKET, deps);
@@ -1628,6 +1691,160 @@ describe('processTicket() triage integration paths — end-to-end (GH-108)', () 
         expect.any(Function)
       );
     });
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Code review and merge wiring tests (WS-DAEMON-16/17/18)
+// ---------------------------------------------------------------------------
+
+describe('AC: Code review and merge wiring (WS-DAEMON-16/17/18)', () => {
+  beforeEach(() => {
+    vi.mocked(existsSync).mockReturnValue(false);
+    vi.mocked(statfsSync as unknown as () => unknown).mockReturnValue({ bfree: 1_000_000, bsize: 8192 });
+    vi.mocked(spawnSync).mockImplementation((_cmd: unknown, args: unknown) => {
+      const argsList = args as string[] | undefined;
+      if (argsList?.includes('--cached') && argsList?.includes('--quiet')) {
+        return { status: 1, stdout: '', stderr: '', pid: 0, output: [], signal: null } as ReturnType<typeof spawnSync>;
+      }
+      return { status: 0, stdout: '', stderr: '', pid: 0, output: [], signal: null } as ReturnType<typeof spawnSync>;
+    });
+  });
+
+  it('GIVEN REQUEST_CHANGES then fixed=true then re-review APPROVED WHEN processTicket runs THEN handleRejection called once, handleApproval called once, pipeline succeeds, writeWorkstreamState phases include changes_requested then merged', async () => {
+    const reviewPRMock = vi.fn()
+      .mockResolvedValueOnce({
+        decision: 'REQUEST_CHANGES',
+        feedback: 'fix X',
+        requiredChanges: ['fix X'],
+        reviewedAt: '2026-01-01T00:00:00.000Z',
+      })
+      .mockResolvedValueOnce({
+        decision: 'APPROVED',
+        feedback: 'Looks good now',
+        requiredChanges: [],
+        reviewedAt: '2026-01-01T01:00:00.000Z',
+      });
+    const handleRejectionMock = vi.fn().mockResolvedValue({ fixed: true, retries: 1 });
+    const handleApprovalMock = vi.fn().mockResolvedValue({
+      outcome: 'merged',
+      prUrl: 'https://github.com/owner/repo/pull/42',
+      rejectionCount: 0,
+      mergedAt: '2026-01-01T02:00:00.000Z',
+    });
+    const writeWorkstreamStateMock = vi.fn();
+
+    const deps = makeDeps({
+      reviewPR: reviewPRMock,
+      handleRejection: handleRejectionMock,
+      handleApproval: handleApprovalMock,
+      writeWorkstreamState: writeWorkstreamStateMock,
+    });
+
+    const result = await processTicket(TICKET, deps);
+
+    expect(handleRejectionMock).toHaveBeenCalledOnce();
+    expect(handleApprovalMock).toHaveBeenCalledOnce();
+    expect(result.success).toBe(true);
+
+    const phases = writeWorkstreamStateMock.mock.calls.map((call: unknown[]) => (call[2] as { phase: string }).phase);
+    expect(phases).toContain('changes_requested');
+    expect(phases).toContain('merged');
+  });
+
+  it('GIVEN REQUEST_CHANGES and fixed=false WHEN processTicket runs THEN handleApproval NOT called, pipeline escalated, writeWorkstreamState called with failed phase', async () => {
+    const reviewPRMock = vi.fn().mockResolvedValue({
+      decision: 'REQUEST_CHANGES',
+      feedback: 'still broken',
+      requiredChanges: ['fix everything'],
+      reviewedAt: '2026-01-01T00:00:00.000Z',
+    });
+    const handleRejectionMock = vi.fn().mockResolvedValue({ fixed: false, retries: 2 });
+    const handleApprovalMock = vi.fn();
+    const writeWorkstreamStateMock = vi.fn();
+
+    const deps = makeDeps({
+      reviewPR: reviewPRMock,
+      handleRejection: handleRejectionMock,
+      handleApproval: handleApprovalMock,
+      writeWorkstreamState: writeWorkstreamStateMock,
+    });
+
+    await processTicket(TICKET, deps);
+
+    expect(handleApprovalMock).not.toHaveBeenCalled();
+    // Escalation — tracker marks failed (not merged)
+    expect(deps.tracker.markFailed).toHaveBeenCalledWith(
+      TICKET.id,
+      expect.stringContaining('Max retries exceeded')
+    );
+
+    const phases = writeWorkstreamStateMock.mock.calls.map((call: unknown[]) => (call[2] as { phase: string }).phase);
+    expect(phases).toContain('failed');
+  });
+
+  it('GIVEN REQUEST_CHANGES and fixed=true but re-review still REQUEST_CHANGES WHEN processTicket runs THEN handleApproval NOT called and escalation reason is re-review failure', async () => {
+    const reviewPRMock = vi.fn().mockResolvedValue({
+      decision: 'REQUEST_CHANGES',
+      feedback: 'still not right',
+      requiredChanges: ['redo everything'],
+      reviewedAt: '2026-01-01T00:00:00.000Z',
+    });
+    const handleRejectionMock = vi.fn().mockResolvedValue({ fixed: true, retries: 1 });
+    const handleApprovalMock = vi.fn();
+
+    const deps = makeDeps({
+      reviewPR: reviewPRMock,
+      handleRejection: handleRejectionMock,
+      handleApproval: handleApprovalMock,
+    });
+
+    await processTicket(TICKET, deps);
+
+    expect(handleApprovalMock).not.toHaveBeenCalled();
+    // Escalation — tracker marks failed with re-review reason
+    expect(deps.tracker.markFailed).toHaveBeenCalledWith(
+      TICKET.id,
+      expect.stringContaining('Re-review failed after fix attempt')
+    );
+  });
+
+  it('GIVEN one workstream fails WHEN processTicket runs THEN reviewPR is called with track architectural', async () => {
+    const executeWorkstreamMock = vi.fn()
+      .mockResolvedValueOnce({
+        workstream: 'Database schema',
+        success: false,
+        output: '',
+        error: 'build failed',
+        durationMs: 100,
+      })
+      .mockResolvedValueOnce({
+        workstream: 'API endpoints',
+        success: true,
+        output: 'done',
+        durationMs: 100,
+      });
+    const reviewPRMock = vi.fn().mockResolvedValue({
+      decision: 'APPROVED',
+      feedback: 'LGTM',
+      requiredChanges: [],
+      reviewedAt: '2026-01-01T00:00:00.000Z',
+    });
+
+    const deps = makeDeps({
+      executeWorkstream: executeWorkstreamMock,
+      reviewPR: reviewPRMock,
+    });
+
+    await processTicket(TICKET, deps);
+
+    expect(reviewPRMock).toHaveBeenCalledWith(
+      expect.any(String),
+      expect.any(Array),
+      expect.any(Array),
+      'architectural',
+      expect.any(Function)
+    );
   });
 });
 
@@ -1674,6 +1891,12 @@ describe('runPollCycle() orchestration config fallback (GH-108)', () => {
       createWorktree: vi.fn().mockReturnValue({ worktreePath: '/tmp/wt', branchName: 'feature/test' }),
       removeWorktree: vi.fn(),
       createPR: vi.fn().mockReturnValue({ success: true, prUrl: 'https://github.com/owner/repo/pull/99' }),
+      reviewPR: vi.fn().mockResolvedValue({ decision: 'APPROVED', feedback: '', requiredChanges: [], reviewedAt: '2026-01-01T00:00:00.000Z' }),
+      handleApproval: vi.fn().mockResolvedValue({ outcome: 'merged', prUrl: 'https://github.com/owner/repo/pull/99', rejectionCount: 0, mergedAt: '2026-01-01T00:00:00.000Z' }),
+      handleRejection: vi.fn().mockResolvedValue({ fixed: false, retries: 0 }),
+      writeWorkstreamState: vi.fn(),
+      appendDecision: vi.fn(),
+      memoryDir: '/tmp/test-memory',
     };
 
     const results = await runPollCycle(deps);

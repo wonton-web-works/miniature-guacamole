@@ -205,36 +205,15 @@ Timing is appended to each output line, right-aligned.
 
 ## Output Format
 
-MECHANICAL track:
+Each line: `[ROLE]  action — result    {elapsed}`. Two tracks:
 
 ```
-[EM]    Classifying... MECHANICAL                  0.2s
-[DEV]   Writing tests — 12 specs                   4.1s
-[DEV]   Implementing — all tests passing          18.7s
-[GATE]  Coverage 99.4% ✓  Lines 142 ✓              0.3s
-[EM]    Done                                      23.3s
+MECHANICAL:     [EM] classify → [DEV] tests+impl → [GATE] pass → [EM] Done
+ARCHITECTURAL:  [EM] classify → [CEO/CTO/ED] → [QA] → [DEV] → [SE] → [EM] Done
 ```
 
-ARCHITECTURAL track:
-
-```
-[EM]    Classifying... ARCHITECTURAL               0.3s
-
-[CEO]   Strategic fit — approved
-[CTO]   Technical approach — approved
-[ED]    Resources allocated — 2 workstreams         8.2s
-
-[QA]    Writing tests — 24 specs                   6.4s
-[DEV]   Implementing — all tests passing          34.1s
-[QA]    Verification — coverage 99.1%               3.2s
-
-[SE]    Code review — approved                    12.0s
-
-[CEO]   Final review — APPROVED                    5.1s
-[EM]    Done                                    1m 09s
-```
-
-See `shared/visual-formatting.md` for the full line format spec.
+See `references/output-examples.md` for full annotated examples of both tracks.
+See `shared/visual-formatting.md` for the line format spec.
 
 ## Boundaries
 

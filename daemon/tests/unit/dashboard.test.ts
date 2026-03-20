@@ -533,5 +533,117 @@ describe('Dashboard Module', () => {
         expect(output).toMatch(/2h|2 h/);
       });
     });
+
+    // Lines 138-139: truncate() — text longer than max gets ... appended
+    describe('GIVEN very long ticket IDs or URLs WHEN formatDashboard called THEN truncates to fit', () => {
+      it('GIVEN in-flight ticket with very long ID THEN output line is truncated with ellipsis', () => {
+        const longId = 'PROJ-' + 'X'.repeat(100);
+        const data = {
+          daemonStatus: { running: true, pid: 1, uptimeMs: 100 },
+          lastPollTime: null,
+          heartbeatStale: false,
+          inFlightTickets: [{ id: longId, status: 'processing' as const, startedAt: '2026-03-18T14:25:00Z' }],
+          recentCompleted: [],
+          recentFailed: [],
+          errorBudget: { consecutive: 0, threshold: 3, paused: false },
+        };
+
+        const output = formatDashboard(data);
+        // Truncated lines should have '...' and no line exceeds 80 chars
+        expect(output).toContain('...');
+        const lines = output.split('\n');
+        for (const line of lines) {
+          expect(line.length).toBeLessThanOrEqual(80);
+        }
+      });
+
+      it('GIVEN completed ticket with very long PR URL THEN output is truncated', () => {
+        const longUrl = 'https://github.com/org/repo/pull/' + '9'.repeat(80);
+        const data = {
+          daemonStatus: { running: true, pid: 1, uptimeMs: 100 },
+          lastPollTime: null,
+          heartbeatStale: false,
+          inFlightTickets: [],
+          recentCompleted: [{ id: 'PROJ-1', prUrl: longUrl, completedAt: '2026-03-18T13:00:00Z' }],
+          recentFailed: [],
+          errorBudget: { consecutive: 0, threshold: 3, paused: false },
+        };
+
+        const output = formatDashboard(data);
+        expect(output).toContain('...');
+        const lines = output.split('\n');
+        for (const line of lines) {
+          expect(line.length).toBeLessThanOrEqual(80);
+        }
+      });
+
+      it('GIVEN failed ticket with very long error message THEN output is truncated', () => {
+        const longError = 'Error: ' + 'A'.repeat(100);
+        const data = {
+          daemonStatus: { running: true, pid: 1, uptimeMs: 100 },
+          lastPollTime: null,
+          heartbeatStale: false,
+          inFlightTickets: [],
+          recentCompleted: [],
+          recentFailed: [{ id: 'PROJ-2', error: longError, failedAt: '2026-03-18T12:00:00Z' }],
+          errorBudget: { consecutive: 0, threshold: 3, paused: false },
+        };
+
+        const output = formatDashboard(data);
+        expect(output).toContain('...');
+      });
+    });
+
+    // Lines 155-159: relativeTime() various time ranges
+    describe('GIVEN various timestamps WHEN formatDashboard called THEN formats relative time correctly', () => {
+      it('GIVEN in-flight ticket started less than 1 minute ago THEN shows "just now"', () => {
+        // Use a timestamp from just now (within the last minute)
+        const now = new Date().toISOString();
+        const data = {
+          daemonStatus: { running: true, pid: 1, uptimeMs: 100 },
+          lastPollTime: null,
+          heartbeatStale: false,
+          inFlightTickets: [{ id: 'PROJ-1', status: 'processing' as const, startedAt: now }],
+          recentCompleted: [],
+          recentFailed: [],
+          errorBudget: { consecutive: 0, threshold: 3, paused: false },
+        };
+
+        const output = formatDashboard(data);
+        expect(output).toContain('just now');
+      });
+
+      it('GIVEN in-flight ticket started exactly 1 minute ago THEN shows "1m ago"', () => {
+        const oneMinuteAgo = new Date(Date.now() - 60000).toISOString();
+        const data = {
+          daemonStatus: { running: true, pid: 1, uptimeMs: 100 },
+          lastPollTime: null,
+          heartbeatStale: false,
+          inFlightTickets: [{ id: 'PROJ-1', status: 'processing' as const, startedAt: oneMinuteAgo }],
+          recentCompleted: [],
+          recentFailed: [],
+          errorBudget: { consecutive: 0, threshold: 3, paused: false },
+        };
+
+        const output = formatDashboard(data);
+        expect(output).toContain('1m ago');
+      });
+
+      it('GIVEN in-flight ticket started 30 minutes ago THEN shows minutes', () => {
+        const thirtyMinutesAgo = new Date(Date.now() - 30 * 60000).toISOString();
+        const data = {
+          daemonStatus: { running: true, pid: 1, uptimeMs: 100 },
+          lastPollTime: null,
+          heartbeatStale: false,
+          inFlightTickets: [{ id: 'PROJ-1', status: 'processing' as const, startedAt: thirtyMinutesAgo }],
+          recentCompleted: [],
+          recentFailed: [],
+          errorBudget: { consecutive: 0, threshold: 3, paused: false },
+        };
+
+        const output = formatDashboard(data);
+        expect(output).toContain('30m ago');
+      });
+    });
   });
 });

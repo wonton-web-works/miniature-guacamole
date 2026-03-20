@@ -183,6 +183,13 @@ describe('triageTicket() — Claude failure modes', () => {
     expect(result.outcome).toBe('NEEDS_CLARIFICATION');
     expect(result.reason).toMatch(/spawn failed/i);
   });
+
+  it('GIVEN execClaudeFn throws non-Error value WHEN triaged THEN stringifies and returns NEEDS_CLARIFICATION', async () => {
+    const execClaudeFn = vi.fn().mockRejectedValue('socket hang up');
+    const result = await triageTicket(TICKET, DEFAULT_CONFIG, execClaudeFn);
+    expect(result.outcome).toBe('NEEDS_CLARIFICATION');
+    expect(result.reason).toContain('socket hang up');
+  });
 });
 
 // ---------------------------------------------------------------------------
@@ -336,6 +343,13 @@ describe('parseTriageResponse() — structured parsing', () => {
     const mixed = 'TRIAGE_OUTCOME: go\nTRIAGE_REASON: Looks fine';
     const result = parseTriageResponse(mixed, false);
     expect(result.outcome).toBe('GO');
+  });
+
+  it('GIVEN response with missing TRIAGE_REASON line WHEN parsed THEN uses fallback reason', () => {
+    const noReason = 'TRIAGE_OUTCOME: GO';
+    const result = parseTriageResponse(noReason, false);
+    expect(result.outcome).toBe('GO');
+    expect(result.reason).toBe('No reason provided');
   });
 
   it('GIVEN TRIAGE_QUESTIONS header with only empty bullet lines WHEN parsed THEN questions is undefined', () => {

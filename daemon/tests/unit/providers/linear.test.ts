@@ -562,4 +562,59 @@ describe('LinearProvider (WS-DAEMON-10)', () => {
       await expect(provider.linkPR('lin-id-1', 'https://github.com/pr/1')).rejects.toThrow();
     });
   });
+
+  describe('Coverage gap tests', () => {
+    // Lines 227-228: poll() returns [] when data.data?.issues?.nodes is falsy (no errors)
+    it('GIVEN API returns success with no issues nodes WHEN poll() called THEN returns empty array', async () => {
+      // data.data exists but issues.nodes is missing
+      mockFetch.mockResolvedValue({
+        ok: true,
+        status: 200,
+        json: async () => ({
+          data: { issues: {} }, // nodes is undefined
+        }),
+      });
+
+      const result = await provider.poll();
+      expect(result).toEqual([]);
+    });
+
+    it('GIVEN API returns success with null data WHEN poll() called THEN returns empty array', async () => {
+      mockFetch.mockResolvedValue({
+        ok: true,
+        status: 200,
+        json: async () => ({
+          data: null, // no data at all
+        }),
+      });
+
+      const result = await provider.poll();
+      expect(result).toEqual([]);
+    });
+
+    // Lines 379-380: addLabel() throws when issueLabelCreate returns no issueLabel
+    it('GIVEN addLabel() label create returns no issueLabel WHEN called THEN throws descriptive error', async () => {
+      // First call: findLabel (no existing labels)
+      mockFetch
+        .mockResolvedValueOnce({
+          ok: true,
+          status: 200,
+          json: async () => ({
+            data: { issueLabels: { nodes: [] } }, // no existing label
+          }),
+        })
+        // Second call: createLabel — returns no issueLabel in response
+        .mockResolvedValueOnce({
+          ok: true,
+          status: 200,
+          json: async () => ({
+            data: { issueLabelCreate: {} }, // no issueLabel
+          }),
+        });
+
+      await expect(provider.addLabel('lin-id-1', 'my-label')).rejects.toThrow(
+        'Linear addLabel: failed to create label "my-label"'
+      );
+    });
+  });
 });

@@ -366,6 +366,20 @@ jira:
         expect(error.message).toMatch(/directory|file/i);
       }
     });
+
+    // Lines 30-31: generic error (not EACCES or EISDIR) is re-thrown as-is
+    it('WHEN loadConfig() called and readFile throws unknown error THEN original error is rethrown', () => {
+      // Arrange
+      vi.mocked(existsSync).mockReturnValue(true);
+      const unknownError = new Error('Some unexpected IO error');
+      (unknownError as any).code = 'EUNKNOWN';
+      vi.mocked(readFileSync).mockImplementation(() => {
+        throw unknownError;
+      });
+
+      // Act & Assert
+      expect(() => loadConfig(mockProjectPath)).toThrow('Some unexpected IO error');
+    });
   });
 
   describe('Given UTF-8 encoding issues', () => {

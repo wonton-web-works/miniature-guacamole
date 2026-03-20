@@ -7,6 +7,7 @@ import type {
   SlackConfig,
   GitHubConfig,
   MCPConfig,
+  TriageConfig,
   ValidationError,
   NotifyOnEvent,
   ContextRepo,
@@ -583,6 +584,110 @@ describe('Type Definitions (AC-1.2 & AC-1.7: TypeScript types)', () => {
       expect(event).toBeDefined();
       expect(repo).toBeDefined();
       expect(server).toBeDefined();
+    });
+
+    it('GIVEN config/types module THEN TriageConfig should be exported', () => {
+      // Assert: TriageConfig import works
+      const triage = {} as TriageConfig;
+      expect(triage).toBeDefined();
+    });
+  });
+
+  describe('TriageConfig interface', () => {
+    it('GIVEN a valid TriageConfig object THEN it should have enabled, autoReject, and maxTicketSizeChars', () => {
+      // Arrange & Act
+      const triageConfig: TriageConfig = {
+        enabled: true,
+        autoReject: false,
+        maxTicketSizeChars: 10000,
+      };
+
+      // Assert
+      expect(typeof triageConfig.enabled).toBe('boolean');
+      expect(typeof triageConfig.autoReject).toBe('boolean');
+      expect(typeof triageConfig.maxTicketSizeChars).toBe('number');
+    });
+
+    it('GIVEN TriageConfig THEN enabled field should be boolean', () => {
+      const triage: TriageConfig = { enabled: false, autoReject: true, maxTicketSizeChars: 5000 };
+      const enabled: boolean = triage.enabled;
+      expect(enabled).toBe(false);
+    });
+
+    it('GIVEN TriageConfig THEN autoReject field should be boolean', () => {
+      const triage: TriageConfig = { enabled: true, autoReject: true, maxTicketSizeChars: 5000 };
+      const autoReject: boolean = triage.autoReject;
+      expect(autoReject).toBe(true);
+    });
+
+    it('GIVEN TriageConfig THEN maxTicketSizeChars field should be number', () => {
+      const triage: TriageConfig = { enabled: true, autoReject: false, maxTicketSizeChars: 8000 };
+      const maxTicketSizeChars: number = triage.maxTicketSizeChars;
+      expect(maxTicketSizeChars).toBe(8000);
+    });
+  });
+
+  describe('DaemonConfig.triage optional field', () => {
+    it('GIVEN DaemonConfig THEN triage field should be optional (absent)', () => {
+      // Arrange: Config without triage field
+      const config: DaemonConfig = {
+        version: '1.0',
+        jira: {
+          host: 'https://example.atlassian.net',
+          email: 'user@example.com',
+          apiToken: 'token',
+          project: 'PROJ',
+          jql: 'status = Ready',
+          statusTransitions: {},
+        },
+        slack: {
+          botToken: 'xoxb-test',
+          statusChannel: 'C123',
+          dmContacts: [],
+        },
+        github: {
+          token: 'ghp_test',
+          primaryRepo: { owner: 'org', name: 'repo', baseBranch: 'main' },
+          contextRepos: [],
+        },
+        mcp: { enabled: false, servers: [] },
+      };
+
+      // Assert: triage is absent — that's valid
+      expect(config.triage).toBeUndefined();
+    });
+
+    it('GIVEN DaemonConfig THEN triage field should be optional (present)', () => {
+      // Arrange: Config with triage field
+      const config: DaemonConfig = {
+        version: '1.0',
+        jira: {
+          host: 'https://example.atlassian.net',
+          email: 'user@example.com',
+          apiToken: 'token',
+          project: 'PROJ',
+          jql: 'status = Ready',
+          statusTransitions: {},
+        },
+        slack: {
+          botToken: 'xoxb-test',
+          statusChannel: 'C123',
+          dmContacts: [],
+        },
+        github: {
+          token: 'ghp_test',
+          primaryRepo: { owner: 'org', name: 'repo', baseBranch: 'main' },
+          contextRepos: [],
+        },
+        mcp: { enabled: false, servers: [] },
+        triage: { enabled: true, autoReject: false, maxTicketSizeChars: 10000 },
+      };
+
+      // Assert: triage is present and typed correctly
+      expect(config.triage).toBeDefined();
+      expect(config.triage?.enabled).toBe(true);
+      expect(config.triage?.autoReject).toBe(false);
+      expect(config.triage?.maxTicketSizeChars).toBe(10000);
     });
   });
 });

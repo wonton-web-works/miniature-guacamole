@@ -6,6 +6,11 @@ vi.mock('fs', () => ({
   readFileSync: vi.fn(),
 }));
 
+// Mock triage-log module
+vi.mock('../../src/triage-log', () => ({
+  readTriageLog: vi.fn(),
+}));
+
 // Mock process module
 vi.mock('../../src/process', () => ({
   statusDaemon: vi.fn(),
@@ -24,8 +29,8 @@ vi.mock('../../src/triage-log', () => ({
 import { existsSync, readFileSync } from 'fs';
 import * as processModule from '../../src/process';
 import * as heartbeatModule from '../../src/heartbeat';
+import * as triageLogModule from '../../src/triage-log';
 import { readTriageLog } from '../../src/triage-log';
-import type { TriageLogEntry } from '../../src/triage-log';
 import { gatherDashboardData, formatDashboard } from '../../src/dashboard';
 import type { DaemonConfig } from '../../src/types';
 
@@ -38,7 +43,7 @@ const baseConfig: DaemonConfig = {
 describe('Dashboard Module', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    vi.mocked(readTriageLog).mockReturnValue([]);
+    vi.mocked(readTriageLog).mockReturnValue({ go: 0, needsInfo: 0, rejected: 0 });
   });
 
   // ─── gatherDashboardData ────────────────────────────────────────────────────
@@ -259,19 +264,11 @@ describe('Dashboard Module', () => {
     });
 
     describe('GIVEN triage-log.json has entries WHEN gatherDashboardData called THEN returns triage counts (GH-106)', () => {
-      const triageEntries: TriageLogEntry[] = [
-        { ticketId: 'GH-1', outcome: 'GO', reason: 'ok', timestamp: '2026-03-19T09:00:00Z' },
-        { ticketId: 'GH-2', outcome: 'GO', reason: 'ok', timestamp: '2026-03-19T09:01:00Z' },
-        { ticketId: 'GH-3', outcome: 'REJECT', reason: 'bad', timestamp: '2026-03-19T09:02:00Z' },
-        { ticketId: 'GH-4', outcome: 'NEEDS_CLARIFICATION', reason: 'unclear', timestamp: '2026-03-19T09:03:00Z' },
-        { ticketId: 'GH-5', outcome: 'NEEDS_CLARIFICATION', reason: 'vague', timestamp: '2026-03-19T09:04:00Z' },
-      ];
-
       it('GIVEN mixed triage outcomes THEN triage.go count is correct', () => {
         vi.mocked(processModule.statusDaemon).mockReturnValue({ running: false });
         vi.mocked(heartbeatModule.isStale).mockReturnValue(false);
         vi.mocked(existsSync).mockReturnValue(false);
-        vi.mocked(readTriageLog).mockReturnValue(triageEntries);
+        vi.mocked(readTriageLog).mockReturnValue({ go: 2, needsInfo: 2, rejected: 1 });
 
         const data = gatherDashboardData(baseConfig);
 
@@ -282,7 +279,7 @@ describe('Dashboard Module', () => {
         vi.mocked(processModule.statusDaemon).mockReturnValue({ running: false });
         vi.mocked(heartbeatModule.isStale).mockReturnValue(false);
         vi.mocked(existsSync).mockReturnValue(false);
-        vi.mocked(readTriageLog).mockReturnValue(triageEntries);
+        vi.mocked(readTriageLog).mockReturnValue({ go: 2, needsInfo: 2, rejected: 1 });
 
         const data = gatherDashboardData(baseConfig);
 
@@ -293,7 +290,7 @@ describe('Dashboard Module', () => {
         vi.mocked(processModule.statusDaemon).mockReturnValue({ running: false });
         vi.mocked(heartbeatModule.isStale).mockReturnValue(false);
         vi.mocked(existsSync).mockReturnValue(false);
-        vi.mocked(readTriageLog).mockReturnValue(triageEntries);
+        vi.mocked(readTriageLog).mockReturnValue({ go: 2, needsInfo: 2, rejected: 1 });
 
         const data = gatherDashboardData(baseConfig);
 
@@ -304,13 +301,48 @@ describe('Dashboard Module', () => {
         vi.mocked(processModule.statusDaemon).mockReturnValue({ running: false });
         vi.mocked(heartbeatModule.isStale).mockReturnValue(false);
         vi.mocked(existsSync).mockReturnValue(false);
-        vi.mocked(readTriageLog).mockReturnValue([]);
+        vi.mocked(readTriageLog).mockReturnValue({ go: 0, needsInfo: 0, rejected: 0 });
 
         const data = gatherDashboardData(baseConfig);
 
         expect(data.triage.go).toBe(0);
         expect(data.triage.needsInfo).toBe(0);
         expect(data.triage.rejected).toBe(0);
+      });
+    });
+
+    describe('GIVEN triage log data WHEN gatherDashboardData called THEN includes triageStats (GH-104)', () => {
+      it('GIVEN readTriageLog returns counts THEN triageStats reflects them', () => {
+        vi.mocked(processModule.statusDaemon).mockReturnValue({ running: false });
+        vi.mocked(heartbeatModule.isStale).mockReturnValue(false);
+        vi.mocked(existsSync).mockReturnValue(false);
+        vi.mocked(triageLogModule.readTriageLog).mockReturnValue({ go: 5, needsInfo: 2, rejected: 1 });
+
+        const data = gatherDashboardData(baseConfig);
+
+        expect(data.triageStats).toEqual({ go: 5, needsInfo: 2, rejected: 1 });
+      });
+
+      it('GIVEN readTriageLog returns zero counts THEN triageStats has all zeros', () => {
+        vi.mocked(processModule.statusDaemon).mockReturnValue({ running: false });
+        vi.mocked(heartbeatModule.isStale).mockReturnValue(false);
+        vi.mocked(existsSync).mockReturnValue(false);
+        vi.mocked(triageLogModule.readTriageLog).mockReturnValue({ go: 0, needsInfo: 0, rejected: 0 });
+
+        const data = gatherDashboardData(baseConfig);
+
+        expect(data.triageStats).toEqual({ go: 0, needsInfo: 0, rejected: 0 });
+      });
+
+      it('GIVEN readTriageLog throws WHEN gatherDashboardData called THEN triageStats defaults to zero counts', () => {
+        vi.mocked(processModule.statusDaemon).mockReturnValue({ running: false });
+        vi.mocked(heartbeatModule.isStale).mockReturnValue(false);
+        vi.mocked(existsSync).mockReturnValue(false);
+        vi.mocked(triageLogModule.readTriageLog).mockImplementation(() => { throw new Error('read error'); });
+
+        const data = gatherDashboardData(baseConfig);
+
+        expect(data.triageStats).toEqual({ go: 0, needsInfo: 0, rejected: 0 });
       });
     });
   });
@@ -560,6 +592,76 @@ describe('Dashboard Module', () => {
         const output = formatDashboard(data);
         expect(output).toContain('1');
         expect(output).toContain('3');
+      });
+    });
+
+    describe('GIVEN triage stats WHEN formatDashboard called THEN renders triage section (GH-104)', () => {
+      it('GIVEN triageStats with counts THEN output contains TRIAGE section with counts', () => {
+        const data = {
+          daemonStatus: { running: false },
+          lastPollTime: null,
+          heartbeatStale: false,
+          inFlightTickets: [],
+          recentCompleted: [],
+          recentFailed: [],
+          errorBudget: { consecutive: 0, threshold: 3, paused: false },
+          triageStats: { go: 10, needsInfo: 3, rejected: 2 },
+        };
+
+        const output = formatDashboard(data);
+        expect(output).toContain('Triage:');
+        expect(output).toContain('10');
+        expect(output).toContain('3');
+        expect(output).toContain('2');
+      });
+
+      it('GIVEN triageStats with all zeros THEN output still contains TRIAGE section', () => {
+        const data = {
+          daemonStatus: { running: false },
+          lastPollTime: null,
+          heartbeatStale: false,
+          inFlightTickets: [],
+          recentCompleted: [],
+          recentFailed: [],
+          errorBudget: { consecutive: 0, threshold: 3, paused: false },
+          triageStats: { go: 0, needsInfo: 0, rejected: 0 },
+        };
+
+        const output = formatDashboard(data);
+        expect(output).toContain('Triage:');
+      });
+
+      it('GIVEN no triageStats (undefined) THEN dashboard still renders without error', () => {
+        const data = {
+          daemonStatus: { running: false },
+          lastPollTime: null,
+          heartbeatStale: false,
+          inFlightTickets: [],
+          recentCompleted: [],
+          recentFailed: [],
+          errorBudget: { consecutive: 0, threshold: 3, paused: false },
+        };
+
+        expect(() => formatDashboard(data)).not.toThrow();
+      });
+
+      it('GIVEN triageStats THEN each line is at most 80 characters', () => {
+        const data = {
+          daemonStatus: { running: false },
+          lastPollTime: null,
+          heartbeatStale: false,
+          inFlightTickets: [],
+          recentCompleted: [],
+          recentFailed: [],
+          errorBudget: { consecutive: 0, threshold: 3, paused: false },
+          triageStats: { go: 100, needsInfo: 50, rejected: 25 },
+        };
+
+        const output = formatDashboard(data);
+        const lines = output.split('\n');
+        for (const line of lines) {
+          expect(line.length).toBeLessThanOrEqual(80);
+        }
       });
     });
 

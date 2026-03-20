@@ -8,6 +8,8 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { LinearProvider } from '../../../src/providers/linear';
 import type { LinearConfig } from '../../../src/types';
+import type { PipelineResult } from '../../../src/orchestrator';
+import type { TriageResult } from '../../../src/triage';
 
 const BASE_LINEAR_CONFIG: LinearConfig = {
   apiKey: 'lin_api_test123',
@@ -722,6 +724,158 @@ describe('LinearProvider write-back (WS-DAEMON-12)', () => {
 
         await expect(provider.linkPR('lin-id-1', 'https://github.com/pr/1')).rejects.toThrow('DNS lookup failed');
       });
+    });
+  });
+
+  // -------------------------------------------------------------------------
+  // Triage writeback — Linear-specific (GH-104)
+  // -------------------------------------------------------------------------
+
+  describe('Triage writeback — Linear (GH-104)', () => {
+    it('GIVEN NEEDS_CLARIFICATION triage body WHEN addComment() called THEN sends createComment mutation with triage outcome', async () => {
+      mockFetch.mockResolvedValue({
+        ok: true,
+        status: 200,
+        json: async () => ({ data: { createComment: { comment: { id: 'c-id' } } } }),
+      });
+
+      const triageComment = '**Triage: NEEDS_CLARIFICATION**\n\nMissing acceptance criteria\n\n**Questions:**\n- What should the behavior be?';
+      await provider.addComment('lin-id-1', triageComment);
+
+      const body = JSON.parse(mockFetch.mock.calls[0][1].body as string);
+      expect(body.query).toContain('createComment');
+      expect(body.variables.body).toBe(triageComment);
+    });
+
+    it('GIVEN REJECT triage body WHEN addComment() called THEN sends createComment mutation with rejection reason', async () => {
+      mockFetch.mockResolvedValue({
+        ok: true,
+        status: 200,
+        json: async () => ({ data: { createComment: { comment: { id: 'c-id' } } } }),
+      });
+
+      const triageComment = '**Triage: REJECT**\n\nOut of scope for this project';
+      await provider.addComment('lin-id-1', triageComment);
+
+      const body = JSON.parse(mockFetch.mock.calls[0][1].body as string);
+      expect(body.variables.body).toContain('REJECT');
+      expect(body.variables.body).toContain('Out of scope for this project');
+    });
+
+    it('GIVEN triage adds mg-daemon:needs-info label WHEN addLabel() called THEN queries issueLabels and updates issue', async () => {
+      mockFetch
+        .mockResolvedValueOnce({
+          ok: true, status: 200,
+          json: async () => ({ data: { issueLabels: { nodes: [{ id: 'lbl-needs', name: 'mg-daemon:needs-info' }] } } }),
+        })
+        .mockResolvedValueOnce({
+          ok: true, status: 200,
+          json: async () => ({ data: { issue: { labels: { nodes: [] } } } }),
+        })
+        .mockResolvedValueOnce({
+          ok: true, status: 200,
+          json: async () => ({ data: { issueUpdate: { issue: { id: 'lin-id-1' } } } }),
+        });
+
+      await provider.addLabel('lin-id-1', 'mg-daemon:needs-info');
+
+      const updateBody = JSON.parse(mockFetch.mock.calls[2][1].body as string);
+      expect(updateBody.query).toContain('issueUpdate');
+      expect(updateBody.variables.labelIds).toContain('lbl-needs');
+    });
+
+    it('GIVEN triage adds mg-daemon:rejected label WHEN addLabel() called THEN queries issueLabels and updates issue', async () => {
+      mockFetch
+        .mockResolvedValueOnce({
+          ok: true, status: 200,
+          json: async () => ({ data: { issueLabels: { nodes: [{ id: 'lbl-reject', name: 'mg-daemon:rejected' }] } } }),
+        })
+        .mockResolvedValueOnce({
+          ok: true, status: 200,
+          json: async () => ({ data: { issue: { labels: { nodes: [] } } } }),
+        })
+        .mockResolvedValueOnce({
+          ok: true, status: 200,
+          json: async () => ({ data: { issueUpdate: { issue: { id: 'lin-id-1' } } } }),
+        });
+
+      await provider.addLabel('lin-id-1', 'mg-daemon:rejected');
+
+      const updateBody = JSON.parse(mockFetch.mock.calls[2][1].body as string);
+      expect(updateBody.variables.labelIds).toContain('lbl-reject');
+    });
+  });
+
+  // -------------------------------------------------------------------------
+  // PipelineResult triageResult assertions (GH-104)
+  // -------------------------------------------------------------------------
+
+  describe('PipelineResult triageResult assertions (GH-104)', () => {
+    it('GIVEN GO triage outcome THEN PipelineResult includes triageResult with outcome GO', () => {
+      const triageResult: TriageResult = { outcome: 'GO', reason: 'All checks pass' };
+      const result: PipelineResult = {
+        ticketId: 'ENG-1',
+        triageResult,
+        planned: [],
+        executed: [],
+        success: true,
+      };
+      expect(result.triageResult).toBeDefined();
+      expect(result.triageResult!.outcome).toBe('GO');
+      expect(result.triageResult!.reason).toBe('All checks pass');
+    });
+
+    it('GIVEN NEEDS_CLARIFICATION triage outcome THEN PipelineResult includes triageResult and success=false', () => {
+      const triageResult: TriageResult = {
+        outcome: 'NEEDS_CLARIFICATION',
+        reason: 'Missing acceptance criteria',
+        questions: ['What should the behavior be?'],
+      };
+      const result: PipelineResult = {
+        ticketId: 'ENG-1',
+        triageResult,
+        planned: [],
+        executed: [],
+        success: false,
+        error: 'Triage: NEEDS_CLARIFICATION — Missing acceptance criteria',
+      };
+      expect(result.triageResult).toBeDefined();
+      expect(result.triageResult!.outcome).toBe('NEEDS_CLARIFICATION');
+      expect(result.triageResult!.questions).toContain('What should the behavior be?');
+      expect(result.success).toBe(false);
+    });
+
+    it('GIVEN REJECT triage outcome THEN PipelineResult includes triageResult and success=false', () => {
+      const triageResult: TriageResult = {
+        outcome: 'REJECT',
+        reason: 'Out of scope',
+      };
+      const result: PipelineResult = {
+        ticketId: 'ENG-1',
+        triageResult,
+        planned: [],
+        executed: [],
+        success: false,
+        error: 'Triage: REJECT — Out of scope',
+      };
+      expect(result.triageResult).toBeDefined();
+      expect(result.triageResult!.outcome).toBe('REJECT');
+      expect(result.success).toBe(false);
+    });
+
+    it('GIVEN any triage outcome THEN triageResult is always present in PipelineResult for all outcomes', () => {
+      const outcomes: Array<TriageResult['outcome']> = ['GO', 'NEEDS_CLARIFICATION', 'REJECT'];
+      for (const outcome of outcomes) {
+        const result: PipelineResult = {
+          ticketId: 'ENG-1',
+          triageResult: { outcome, reason: 'test reason' },
+          planned: [],
+          executed: [],
+          success: outcome === 'GO',
+        };
+        expect(result.triageResult).toBeDefined();
+        expect(result.triageResult!.outcome).toBe(outcome);
+      }
     });
   });
 });

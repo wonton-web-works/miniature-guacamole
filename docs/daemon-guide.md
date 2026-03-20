@@ -15,7 +15,8 @@ This guide covers configuration, deployment, ticket provider setup, and troubles
 5. [launchd Deployment (macOS)](#launchd-deployment-macos)
 6. [Error Budget and Safety](#error-budget-and-safety)
 7. [Runtime Files](#runtime-files)
-8. [Troubleshooting](#troubleshooting)
+8. [Post-PR Pipeline](#post-pr-pipeline)
+9. [Troubleshooting](#troubleshooting)
 
 ---
 
@@ -398,6 +399,121 @@ All runtime state lives in the `.mg-daemon/` directory at the project root:
 | `dry-run` | Marker file — presence indicates dry-run mode. |
 | `STOP` | Emergency stop sentinel — presence halts all processing. |
 | `worktrees/` | Git worktrees created for ticket processing. Each ticket gets an isolated worktree. |
+| `.claude/memory/workstream-{id}-state.json` | Lifecycle state for each workstream (phase, track, review results, merge results). |
+| `.claude/memory/decisions.json` | Append-only log of leadership review decisions. |
+
+---
+
+## Post-PR Pipeline
+
+After creating a draft PR, the daemon enters the post-PR pipeline: code review, merge automation, and state synchronization. This section describes what happens at each stage.
+
+### Code Review
+
+Once a PR is created, the daemon invokes Claude with a leadership review prompt against the diff. Claude's response is parsed for one of two decisions:
+
+- **APPROVED** — the changes meet quality standards and are ready to merge
+- **REQUEST_CHANGES** — the changes need revision before merging
+
+Review routing depends on the workstream track:
+
+| Track | Review behavior |
+|-------|-----------------|
+| MECHANICAL | All tests passed during execution — auto-approved, leadership review is skipped |
+| ARCHITECTURAL | Always requires full leadership review — no auto-approval |
+
+Review results (decision, rationale, timestamp) are stored in daemon state and appended to `.claude/memory/decisions.json`.
+
+### Merge Automation
+
+The daemon acts on the review decision automatically.
+
+**On APPROVED:**
+
+The daemon merges the PR branch into the base branch and cleans up the worktree. The workstream state transitions to `merged`.
+
+**On REQUEST_CHANGES:**
+
+The daemon extracts the specific feedback from the review response and loops back to the dev agent with targeted fix instructions. The dev agent pushes new commits to the existing PR branch. After the fix, the daemon re-requests leadership review.
+
+This fix-and-re-review loop has a maximum of **2 rejection cycles**. After 2 rejections the daemon escalates to a human.
+
+**Escalation:**
+
+When the rejection limit is reached, the daemon leaves the PR open as a draft and posts an escalation comment summarizing the review history and outstanding feedback. No further automated action is taken on that workstream — a human must intervene.
+
+Example escalation comment:
+
+```
+mg-daemon: Escalating to human review after 2 rejected cycles.
+
+Final review feedback:
+  - The retry logic in fetchUser() does not handle 429 responses
+  - Test coverage for the error branch is missing
+
+Please review the PR and either merge, close, or push a fix manually.
+```
+
+### Lifecycle State Sync
+
+The daemon writes state files at every phase transition so that the pipeline is observable and resumable.
+
+**Phases:**
+
+```
+planning → executing → reviewing → approved / changes_requested → merged / failed
+```
+
+**Files written:**
+
+`.claude/memory/workstream-{id}-state.json` — updated at every transition:
+
+```json
+{
+  "workstreamId": "WS-42",
+  "track": "ARCHITECTURAL",
+  "phase": "merged",
+  "prNumber": 187,
+  "reviewDecision": "APPROVED",
+  "reviewCycles": 1,
+  "mergedAt": "2026-03-20T14:22:11.000Z"
+}
+```
+
+`.claude/memory/decisions.json` — append-only log, one entry per review decision:
+
+```json
+[
+  {
+    "workstreamId": "WS-42",
+    "decision": "REQUEST_CHANGES",
+    "cycle": 1,
+    "rationale": "Missing error handling for 429 responses.",
+    "timestamp": "2026-03-20T14:18:03.000Z"
+  },
+  {
+    "workstreamId": "WS-42",
+    "decision": "APPROVED",
+    "cycle": 2,
+    "rationale": "Retry logic and tests look good.",
+    "timestamp": "2026-03-20T14:22:08.000Z"
+  }
+]
+```
+
+Tracker subtask statuses are updated in the ticket provider at each transition (In Progress, Complete, Blocked).
+
+### Full Pipeline Diagram
+
+```
+Ticket → Triage → Plan → Execute → PR → Review → Merge → State Sync
+                                         |
+                                         v (if rejected)
+                                    Fix → Re-review (max 2x)
+                                         |
+                                         v (if still rejected)
+                                    Escalate to human
+```
 
 ---
 

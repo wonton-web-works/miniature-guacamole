@@ -107,13 +107,13 @@ const installCmd = 'curl -fsSL https://raw.githubusercontent.com/wonton-web-work
         <div class="hero-content">
           <div class="hero-text">
             <h1 class="hero-headline">
-              <span class="hero-headline-light">Turn Claude Code into</span>
+              <span class="hero-headline-light">20 engineers.</span>
               <br />
-              <span class="hero-headline-bold">a team.</span>
+              <span class="hero-headline-bold">Zero salaries.</span>
             </h1>
 
             <p class="hero-subtitle">
-              miniature-guacamole gives Claude Code a complete product development org — Engineering Manager, QA, Staff Engineer, and more. Every agent has a role. Memory is project-local. No hallway meetings.
+              PrivateEnterprise gives Claude Code a complete product development org — Engineering Manager, QA, Staff Engineer, and more. Every agent has a role. Memory is project-local. No hallway meetings.
             </p>
 
             <div class="hero-actions">
@@ -272,7 +272,7 @@ const installCmd = 'curl -fsSL https://raw.githubusercontent.com/wonton-web-work
             copy
           </button>
         </div>
-        <p class="install-note">Works anywhere Claude Code is installed.</p>
+        <p class="install-note">Works anywhere Claude Code is installed. PrivateEnterprise is the commercial product built on the miniature-guacamole open-source framework.</p>
       </div>
     </section>
 
@@ -436,8 +436,9 @@ const installCmd = 'curl -fsSL https://raw.githubusercontent.com/wonton-web-work
      HERO
   ------------------------------------------------------- */
   .hero {
-    padding: clamp(80px, 12vw, 160px) 0 clamp(60px, 8vw, 120px);
-    border-bottom: 1px solid var(--mg-surface);
+    padding: clamp(80px, 12vw, 160px) 0 calc(clamp(60px, 8vw, 120px) + 40px);
+    clip-path: polygon(0 0, 100% 0, 100% calc(100% - 40px), 0 100%);
+    border-bottom: none;
   }
 
   .hero-content {
@@ -495,8 +496,8 @@ const installCmd = 'curl -fsSL https://raw.githubusercontent.com/wonton-web-work
 
   .cta-primary {
     display: inline-block;
-    background: var(--mg-lime-zest);
-    color: #121820;
+    background: var(--mg-guac);
+    color: #ffffff;
     font-family: var(--font-display);
     font-weight: 700;
     font-size: 15px;
@@ -528,6 +529,8 @@ const installCmd = 'curl -fsSL https://raw.githubusercontent.com/wonton-web-work
   ------------------------------------------------------- */
   .what-it-does {
     padding: clamp(60px, 8vw, 120px) 0;
+    clip-path: polygon(0 40px, 100% 0, 100% 100%, 0 100%);
+    margin-top: -40px;
     border-bottom: 1px solid var(--mg-surface);
   }
 

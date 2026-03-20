@@ -6,6 +6,7 @@ import { join } from 'path';
 import { statusDaemon } from './process';
 import { isStale } from './heartbeat';
 import { readTriageLog } from './triage-log';
+import type { TriageStats } from './triage-log';
 import type { DaemonConfig, ProcessedTicket } from './types';
 
 export interface InFlightTicket {
@@ -35,6 +36,7 @@ export interface DashboardData {
   recentFailed: FailedTicket[];
   errorBudget: { consecutive: number; threshold: number; paused: boolean };
   triage: { go: number; needsInfo: number; rejected: number };
+  triageStats?: TriageStats;
 }
 
 // ─── File paths ──────────────────────────────────────────────────────────────
@@ -105,12 +107,19 @@ export function gatherDashboardData(config: DaemonConfig): DashboardData {
   const pollRaw = readJsonFile<{ timestamp: string }>(LAST_POLL_FILE);
   const lastPollTime = pollRaw?.timestamp ?? null;
 
-  // Triage log counts
-  const triageEntries = readTriageLog();
+  // Triage stats (best-effort — default to zeros on any failure)
+  let triageStats: TriageStats;
+  try {
+    triageStats = readTriageLog();
+  } catch {
+    triageStats = { go: 0, needsInfo: 0, rejected: 0 };
+  }
+
+  // triage field mirrors triageStats for backwards compatibility
   const triage = {
-    go: triageEntries.filter(e => e.outcome === 'GO').length,
-    needsInfo: triageEntries.filter(e => e.outcome === 'NEEDS_CLARIFICATION').length,
-    rejected: triageEntries.filter(e => e.outcome === 'REJECT').length,
+    go: triageStats.go,
+    needsInfo: triageStats.needsInfo,
+    rejected: triageStats.rejected,
   };
 
   return {
@@ -122,6 +131,7 @@ export function gatherDashboardData(config: DaemonConfig): DashboardData {
     recentFailed,
     errorBudget,
     triage,
+    triageStats,
   };
 }
 
@@ -209,6 +219,13 @@ export function formatDashboard(data: DashboardData): string {
     : `${errorBudget.consecutive}/${errorBudget.threshold} (budget OK)`;
   lines.push(row(`Errors:    ${budgetStr}`));
 
+  // Triage stats
+  const stats = data.triageStats ?? data.triage;
+  if (stats) {
+    const { go, needsInfo, rejected } = stats;
+    lines.push(row(`Triage:    GO: ${go}  Needs-Info: ${needsInfo}  Rejected: ${rejected}`));
+  }
+
   // IN-FLIGHT
   lines.push(BORDER_MID);
   lines.push(row('IN-FLIGHT'));
@@ -244,13 +261,6 @@ export function formatDashboard(data: DashboardData): string {
       const line = truncate(`  ${ticket.id}  │ ${ticket.error}`, WIDTH - 2);
       lines.push(row(line));
     }
-  }
-
-  // TRIAGE
-  if (data.triage) {
-    lines.push(BORDER_MID);
-    lines.push(row('TRIAGE'));
-    lines.push(row(`  GO: ${data.triage.go}  │  NEEDS_INFO: ${data.triage.needsInfo}  │  REJECTED: ${data.triage.rejected}`));
   }
 
   lines.push(BORDER_BOTTOM);

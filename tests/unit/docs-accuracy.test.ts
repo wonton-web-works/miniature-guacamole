@@ -151,9 +151,9 @@ describe('README.md — golden path (correct values must appear)', () => {
 // ─────────────────────────────────────────────────────────────
 
 describe('docs/index.md — reference docs landing page', () => {
-  it('contains PrivateEnterprise branding', () => {
+  it('contains miniature-guacamole branding', () => {
     const index = read('docs/index.md');
-    expect(index).toMatch(/PrivateEnterprise/);
+    expect(index).toMatch(/miniature-guacamole/);
   });
 
   it('has quick links to key doc sections', () => {

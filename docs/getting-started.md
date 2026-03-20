@@ -1,4 +1,4 @@
-# Getting Started with PrivateEnterprise
+# Getting Started with miniature-guacamole
 
 ## Prerequisites
 

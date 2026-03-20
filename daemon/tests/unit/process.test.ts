@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { existsSync, readFileSync, writeFileSync, renameSync, unlinkSync } from 'fs';
+import { existsSync, readFileSync, writeFileSync, renameSync, unlinkSync, mkdirSync } from 'fs';
 
 // Module under test - will be implemented by dev
 import {
@@ -18,6 +18,7 @@ vi.mock('fs', () => ({
   writeFileSync: vi.fn(),
   renameSync: vi.fn(),
   unlinkSync: vi.fn(),
+  mkdirSync: vi.fn(),
 }));
 
 describe('Process Manager', () => {
@@ -937,6 +938,200 @@ describe('Process Manager', () => {
       expect(unlinkSync).toHaveBeenCalled();
 
       killSpy.mockRestore();
+    });
+  });
+
+  describe('Coverage gap tests', () => {
+    // Line 54-55: mkdirSync branch when PID_DIR does not exist
+    it('GIVEN PID_DIR does not exist WHEN startDaemon() called THEN creates directory via mkdirSync', () => {
+      // Arrange: first existsSync call (for PID file) returns false,
+      // second existsSync call (for PID_DIR inside writePidFile) also returns false
+      vi.mocked(existsSync).mockReturnValue(false);
+      vi.mocked(mkdirSync).mockImplementation(() => undefined);
+      vi.mocked(writeFileSync).mockImplementation(() => {});
+      vi.mocked(renameSync).mockImplementation(() => {});
+
+      // Act
+      startDaemon();
+
+      // Assert mkdirSync was called to create the directory
+      expect(mkdirSync).toHaveBeenCalledWith('.mg-daemon', { recursive: true });
+    });
+
+    // Line 71: Legacy PID format — plain integer string that fails JSON.parse but succeeds parseInt
+    // e.g. "12345abc" throws SyntaxError in JSON.parse but parseInt reads "12345"
+    it('GIVEN PID file contains non-JSON string starting with integer WHEN statusDaemon() called THEN reads it as legacy format', () => {
+      // Arrange: content like "12345abc" fails JSON.parse but parseInt extracts 12345
+      vi.mocked(existsSync).mockReturnValue(true);
+      vi.mocked(readFileSync).mockReturnValue('12345abc');
+
+      const killSpy = vi.spyOn(process, 'kill').mockImplementation(() => true);
+
+      // Act
+      const status = statusDaemon();
+
+      // Assert: legacy PID was parsed correctly via parseInt
+      expect(status.running).toBe(true);
+      expect(status.pid).toBe(12345);
+
+      killSpy.mockRestore();
+    });
+
+    // Lines 87-88: mkdirSync throws but is silently ignored (catch block)
+    it('GIVEN mkdirSync throws WHEN startDaemon() called THEN error is silently swallowed and daemon starts', () => {
+      // Arrange
+      vi.mocked(existsSync).mockReturnValue(false);
+      vi.mocked(mkdirSync).mockImplementation(() => {
+        throw new Error('Cannot create directory');
+      });
+      vi.mocked(writeFileSync).mockImplementation(() => {});
+      vi.mocked(renameSync).mockImplementation(() => {});
+
+      // Act — should NOT throw because mkdirSync errors are silently caught
+      const result = startDaemon();
+
+      // Assert: daemon started despite mkdir failure
+      expect(result.pid).toBeDefined();
+    });
+
+    // Lines 103-104: cleanup temp file when rename fails (existsSync returns true for tmp file)
+    it('GIVEN rename fails and temp file exists WHEN startDaemon() called THEN unlinkSync called for temp file', () => {
+      // Arrange
+      vi.mocked(existsSync)
+        .mockReturnValueOnce(false)   // no PID file at start
+        .mockReturnValueOnce(false)   // PID_DIR does not exist (mkdirSync path)
+        .mockReturnValueOnce(true);   // temp file exists during cleanup
+      vi.mocked(mkdirSync).mockImplementation(() => undefined);
+      vi.mocked(writeFileSync).mockImplementation(() => {});
+      vi.mocked(renameSync).mockImplementation(() => {
+        throw new Error('Rename failed');
+      });
+      vi.mocked(unlinkSync).mockImplementation(() => {});
+
+      // Act & Assert
+      expect(() => startDaemon()).toThrow('Rename failed');
+
+      // Should have attempted to clean up temp file
+      expect(unlinkSync).toHaveBeenCalledWith(expect.stringContaining('.pid.tmp'));
+    });
+
+    // Lines 106-107: catch block when unlinkSync throws during cleanup
+    it('GIVEN rename fails and unlinkSync also throws WHEN startDaemon() called THEN original error is rethrown', () => {
+      // Arrange
+      vi.mocked(existsSync)
+        .mockReturnValueOnce(false)   // no PID file
+        .mockReturnValueOnce(false)   // PID_DIR check
+        .mockReturnValueOnce(true);   // temp file exists
+      vi.mocked(mkdirSync).mockImplementation(() => undefined);
+      vi.mocked(writeFileSync).mockImplementation(() => {});
+      vi.mocked(renameSync).mockImplementation(() => {
+        throw new Error('Rename failed');
+      });
+      vi.mocked(unlinkSync).mockImplementation(() => {
+        throw new Error('Unlink also failed');
+      });
+
+      // Act & Assert: original rename error propagates despite cleanup error
+      expect(() => startDaemon()).toThrow('Rename failed');
+    });
+
+    // Lines 157-158: stopDaemon with NaN pid (JSON with string pid field)
+    it('GIVEN PID file contains JSON with non-numeric pid WHEN stopDaemon() called THEN throws Invalid PID error', () => {
+      // Arrange: JSON with both required fields but pid is a string that coerces to NaN
+      vi.mocked(existsSync).mockReturnValue(true);
+      vi.mocked(readFileSync).mockReturnValue(
+        JSON.stringify({ pid: 'not-a-number', startedAt: '2024-01-01T00:00:00.000Z' })
+      );
+
+      // Act & Assert
+      expect(() => stopDaemon()).toThrow('Invalid PID in daemon.pid file');
+    });
+
+    // Lines 221-222: SIGTERM handler calling shutdownCallback
+    it('GIVEN shutdownCallback provided WHEN SIGTERM handler triggered THEN calls shutdownCallback', () => {
+      // Arrange
+      let sigtermHandler: Function | undefined;
+      const processOnSpy = vi.spyOn(process, 'on').mockImplementation((signal, handler) => {
+        if (signal === 'SIGTERM') {
+          sigtermHandler = handler as Function;
+        }
+        return process;
+      });
+      const processExitSpy = vi.spyOn(process, 'exit').mockImplementation(() => {
+        throw new Error('process.exit called');
+      });
+      const shutdownCallback = vi.fn();
+
+      vi.mocked(existsSync).mockReturnValue(false);
+
+      setupSignalHandlers(shutdownCallback);
+
+      // Act: trigger SIGTERM
+      expect(sigtermHandler).toBeDefined();
+      expect(() => sigtermHandler!()).toThrow('process.exit called');
+
+      // Assert: shutdownCallback was called before exit
+      expect(shutdownCallback).toHaveBeenCalledOnce();
+
+      processOnSpy.mockRestore();
+      processExitSpy.mockRestore();
+    });
+
+    // Lines 226-227: SIGTERM handler removing PID file when it exists
+    it('GIVEN SIGTERM handler WHEN PID file exists THEN removes PID file', () => {
+      // Arrange
+      let sigtermHandler: Function | undefined;
+      const processOnSpy = vi.spyOn(process, 'on').mockImplementation((signal, handler) => {
+        if (signal === 'SIGTERM') {
+          sigtermHandler = handler as Function;
+        }
+        return process;
+      });
+      const processExitSpy = vi.spyOn(process, 'exit').mockImplementation(() => {
+        throw new Error('process.exit called');
+      });
+
+      vi.mocked(existsSync).mockReturnValue(true);
+      vi.mocked(unlinkSync).mockImplementation(() => {});
+
+      setupSignalHandlers();
+
+      // Act
+      expect(sigtermHandler).toBeDefined();
+      expect(() => sigtermHandler!()).toThrow('process.exit called');
+
+      // Assert: PID file was removed
+      expect(unlinkSync).toHaveBeenCalledWith(expect.stringContaining('daemon.pid'));
+
+      processOnSpy.mockRestore();
+      processExitSpy.mockRestore();
+    });
+
+    // SIGTERM handler when PID file does not exist (no unlinkSync call)
+    it('GIVEN SIGTERM handler WHEN PID file does not exist THEN exits without error', () => {
+      // Arrange
+      let sigtermHandler: Function | undefined;
+      const processOnSpy = vi.spyOn(process, 'on').mockImplementation((signal, handler) => {
+        if (signal === 'SIGTERM') {
+          sigtermHandler = handler as Function;
+        }
+        return process;
+      });
+      const processExitSpy = vi.spyOn(process, 'exit').mockImplementation(() => {
+        throw new Error('process.exit called');
+      });
+
+      vi.mocked(existsSync).mockReturnValue(false);
+
+      setupSignalHandlers();
+
+      // Act & Assert: no throw from missing PID file
+      expect(sigtermHandler).toBeDefined();
+      expect(() => sigtermHandler!()).toThrow('process.exit called');
+      expect(unlinkSync).not.toHaveBeenCalled();
+
+      processOnSpy.mockRestore();
+      processExitSpy.mockRestore();
     });
   });
 });

@@ -153,6 +153,84 @@ AC: My criteria
       expect(result[0]).toHaveProperty('acceptanceCriteria');
     });
   });
+
+  describe('AC: Strategy 2 — WS-N: name — criteria fallback format (lines 77-81)', () => {
+    it('GIVEN WS-N format output WHEN parseWorkstreamPlan called THEN parses name and criteria', () => {
+      // Lines 77-81: strategy 2 fires when strategy 1 finds nothing
+      const output = [
+        'WS-1: Database schema — Tables created and migrated',
+        'WS-2: API endpoints — REST endpoints done',
+      ].join('\n');
+
+      const result = parseWorkstreamPlan(output);
+      expect(result).toHaveLength(2);
+      expect(result[0].name).toBe('Database schema');
+      expect(result[0].acceptanceCriteria).toBe('Tables created and migrated');
+      expect(result[1].name).toBe('API endpoints');
+      expect(result[1].acceptanceCriteria).toBe('REST endpoints done');
+    });
+
+    it('GIVEN "Workstream N:" format output WHEN parseWorkstreamPlan called THEN parses via strategy 2', () => {
+      const output = 'Workstream 1: Auth service — OAuth2 login flow implemented';
+
+      const result = parseWorkstreamPlan(output);
+      expect(result).toHaveLength(1);
+      expect(result[0].name).toBe('Auth service');
+      expect(result[0].acceptanceCriteria).toBe('OAuth2 login flow implemented');
+    });
+
+    it('GIVEN WS-N format without criteria WHEN parseWorkstreamPlan called THEN acceptanceCriteria defaults to empty string', () => {
+      const output = 'WS-1: Just a name';
+
+      const result = parseWorkstreamPlan(output);
+      expect(result).toHaveLength(1);
+      expect(result[0].name).toBe('Just a name');
+      expect(result[0].acceptanceCriteria).toBe('');
+    });
+  });
+
+  describe('AC: Strategy 3 — bullet points under Workstreams header (lines 88-98)', () => {
+    it('GIVEN bullet points under Workstreams header WHEN parseWorkstreamPlan called THEN parses each bullet as a workstream', () => {
+      // Lines 88-98: strategy 3 — bullet extraction from ## Workstreams section
+      const output = [
+        '## Workstreams',
+        '- **Database schema** — Tables created',
+        '- **API layer** — Endpoints done',
+        '- **Auth service** — OAuth login working',
+      ].join('\n');
+
+      const result = parseWorkstreamPlan(output);
+      expect(result).toHaveLength(3);
+      expect(result[0].name).toBe('Database schema');
+      expect(result[0].acceptanceCriteria).toBe('Tables created');
+      expect(result[1].name).toBe('API layer');
+      expect(result[2].name).toBe('Auth service');
+    });
+
+    it('GIVEN bullets without bold markers WHEN parseWorkstreamPlan called via strategy 3 THEN parses plain bullet names', () => {
+      const output = [
+        '## Workstreams',
+        '- Database schema — Tables created',
+        '- API layer — Endpoints ready',
+      ].join('\n');
+
+      const result = parseWorkstreamPlan(output);
+      expect(result).toHaveLength(2);
+      expect(result[0].name).toBe('Database schema');
+      expect(result[1].name).toBe('API layer');
+    });
+
+    it('GIVEN Workstreams section with bullets but no separator WHEN parseWorkstreamPlan called THEN still parses all bullets', () => {
+      const output = [
+        '## Workstreams',
+        '* **Feature A** — First feature done',
+        '* **Feature B** — Second feature done',
+      ].join('\n');
+
+      const result = parseWorkstreamPlan(output);
+      expect(result).toHaveLength(2);
+    });
+  });
 });
 
 describe('planTicket() (WS-DAEMON-11)', () => {

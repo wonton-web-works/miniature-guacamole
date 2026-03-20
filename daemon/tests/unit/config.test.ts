@@ -235,6 +235,43 @@ describe('Configuration Module (Updated for multi-provider schema)', () => {
       });
     });
 
+    describe('AC: File permission enforcement (lines 122-123)', () => {
+      it('GIVEN config file with group/other readable permissions WHEN loadConfig() called THEN calls chmodSync to restrict permissions', () => {
+        // Arrange: mode 0o100644 has group+other read bits set (0o044 != 0)
+        vi.mocked(statSync).mockReturnValue({ mode: 0o100644 } as ReturnType<typeof statSync>);
+        vi.mocked(existsSync).mockReturnValue(true);
+        vi.mocked(readFileSync).mockReturnValue(JSON.stringify(validJiraConfig()));
+        vi.mocked(chmodSync).mockImplementation(() => {});
+
+        loadConfig();
+
+        expect(chmodSync).toHaveBeenCalledWith(expect.stringContaining('.mg-daemon.json'), 0o600);
+      });
+
+      it('GIVEN config file with world-writable permissions WHEN loadConfig() called THEN calls chmodSync', () => {
+        // Arrange: mode 0o100666 (group and other have rw)
+        vi.mocked(statSync).mockReturnValue({ mode: 0o100666 } as ReturnType<typeof statSync>);
+        vi.mocked(existsSync).mockReturnValue(true);
+        vi.mocked(readFileSync).mockReturnValue(JSON.stringify(validJiraConfig()));
+        vi.mocked(chmodSync).mockImplementation(() => {});
+
+        loadConfig();
+
+        expect(chmodSync).toHaveBeenCalledWith(expect.any(String), 0o600);
+      });
+
+      it('GIVEN config file already at 0o600 permissions WHEN loadConfig() called THEN does not call chmodSync', () => {
+        // Arrange: mode 0o100600 — no group/other bits set
+        vi.mocked(statSync).mockReturnValue({ mode: 0o100600 } as ReturnType<typeof statSync>);
+        vi.mocked(existsSync).mockReturnValue(true);
+        vi.mocked(readFileSync).mockReturnValue(JSON.stringify(validJiraConfig()));
+
+        loadConfig();
+
+        expect(chmodSync).not.toHaveBeenCalled();
+      });
+    });
+
     describe('Edge cases and error handling', () => {
       it('GIVEN config file with invalid JSON WHEN loadConfig() called THEN throws a parse error', () => {
         vi.mocked(existsSync).mockReturnValue(true);

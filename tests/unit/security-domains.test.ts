@@ -535,3 +535,129 @@ describe('GH-15: Domain Detection Heuristics — Daemon Codebase', () => {
     expect(threats).toMatch(/supply chain/);
   });
 });
+
+// ============================================================================
+// TEST SECTION 12: GH-95 — Web Domain Validation
+// ============================================================================
+
+describe('GH-95: Web Domain Reference — Staff-Engineer Validation', () => {
+  let content: string;
+  let checklistSection: string;
+  let threatSection: string;
+  let reviewSection: string;
+  let owaspSection: string;
+
+  beforeAll(() => {
+    content = fs.readFileSync(path.join(DOMAINS_DIR, 'web.md'), 'utf-8');
+
+    const checklistMatch = content.match(
+      /##\s+.*Checklist\s*\n([\s\S]*?)(?=\n##|\n$|$)/i
+    );
+    checklistSection = checklistMatch ? checklistMatch[1] : '';
+
+    const threatMatch = content.match(
+      /##\s+.*Threat Model\s*\n([\s\S]*?)(?=\n##|\n$|$)/i
+    );
+    threatSection = threatMatch ? threatMatch[1] : '';
+
+    const reviewMatch = content.match(
+      /##\s+.*Review Areas\s*\n([\s\S]*?)(?=\n##|\n$|$)/i
+    );
+    reviewSection = reviewMatch ? reviewMatch[1] : '';
+
+    const owaspMatch = content.match(
+      /##\s+.*OWASP Top 10.*\n([\s\S]*?)(?=\n##|\n$|$)/i
+    );
+    owaspSection = owaspMatch ? owaspMatch[1] : '';
+  });
+
+  // --- Missing vulnerability class coverage ---
+
+  it('should cover WebSocket security', () => {
+    expect(content.toLowerCase()).toMatch(/websocket/);
+  });
+
+  it('should cover GraphQL injection and batching attacks', () => {
+    const lower = content.toLowerCase();
+    expect(lower).toMatch(/graphql/);
+    expect(lower).toMatch(/batch|introspection|depth.limit/);
+  });
+
+  it('should cover API abuse patterns (rate-limit bypass, mass assignment)', () => {
+    const lower = content.toLowerCase();
+    expect(lower).toMatch(/rate.limit.*bypass|rate.limiting/i);
+    expect(lower).toMatch(/mass.assignment/i);
+  });
+
+  it('should cover HTTP request smuggling', () => {
+    expect(content.toLowerCase()).toMatch(/request smuggling/);
+  });
+
+  it('should cover cache poisoning', () => {
+    expect(content.toLowerCase()).toMatch(/cache poisoning/);
+  });
+
+  // --- Checklist minimum 14 items ---
+
+  it('checklist should have no fewer than 14 items', () => {
+    const items = checklistSection.match(/^[\s]*[-*]\s+\[.\]/gm);
+    expect(items).toBeTruthy();
+    expect(items!.length).toBeGreaterThanOrEqual(14);
+  });
+
+  // --- OWASP Top 10 (2021) — at least 2 key checks per category ---
+
+  it('OWASP mapping should cover all 10 categories', () => {
+    const categories = [
+      'A01', 'A02', 'A03', 'A04', 'A05',
+      'A06', 'A07', 'A08', 'A09', 'A10',
+    ];
+    for (const cat of categories) {
+      expect(owaspSection).toContain(cat);
+    }
+  });
+
+  it('each OWASP category should have at least 2 key checks', () => {
+    // Parse table rows: | A0X ... | check1, check2, ... |
+    const rows = owaspSection.split('\n').filter((l) => /\|\s*A\d{2}/.test(l));
+    expect(rows.length).toBe(10);
+    for (const row of rows) {
+      const checksCell = row.split('|')[2];
+      expect(checksCell).toBeTruthy();
+      // Count comma-separated items (commas + 1 = item count)
+      const commas = (checksCell!.match(/,/g) || []).length;
+      expect(commas).toBeGreaterThanOrEqual(1); // at least 2 items
+    }
+  });
+
+  // --- Threat model coverage for new vulnerability classes ---
+
+  it('threat model should include API abuse or protocol-level threats', () => {
+    const lower = threatSection.toLowerCase();
+    // At least one of: request smuggling, cache poisoning, API abuse, GraphQL
+    expect(lower).toMatch(
+      /request smuggling|cache poisoning|api abuse|graphql|websocket/
+    );
+  });
+
+  // --- Review areas coverage ---
+
+  it('review areas should cover API and protocol-level security', () => {
+    const lower = reviewSection.toLowerCase();
+    expect(lower).toMatch(/api|graphql|websocket|protocol/);
+  });
+
+  // --- Markdown structure quality ---
+
+  it('should not have broken markdown links or images', () => {
+    // Check for common broken patterns: [text]( ) or ![alt]( )
+    expect(content).not.toMatch(/\[.*\]\(\s*\)/);
+  });
+
+  it('should not have trailing whitespace on header lines', () => {
+    const headers = content.split('\n').filter((l) => /^#+\s/.test(l));
+    for (const h of headers) {
+      expect(h).toBe(h.trimEnd());
+    }
+  });
+});

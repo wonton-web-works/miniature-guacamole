@@ -1,8 +1,8 @@
 import { defineConfig } from 'vitepress';
 
 export default defineConfig({
-  title: 'TheEngOrg Docs',
-  description: 'Reference documentation for TheEngOrg — AI-powered product development team framework',
+  title: 'miniature-guacamole',
+  description: 'Reference documentation for miniature-guacamole — AI-powered product development team framework',
   base: '/miniature-guacamole/',
   srcExclude: ['prd-*.md', 'technical-design-*.md', 'v0-feedback-summary.md'],
 
@@ -15,16 +15,16 @@ export default defineConfig({
 
     // OpenGraph Meta Tags
     ['meta', { property: 'og:type', content: 'website' }],
-    ['meta', { property: 'og:site_name', content: 'TheEngOrg' }],
-    ['meta', { property: 'og:title', content: 'TheEngOrg — AI-Powered Product Development Team Framework' }],
-    ['meta', { property: 'og:description', content: 'Reference documentation for TheEngOrg — AI-powered product development team framework for Claude Code.' }],
+    ['meta', { property: 'og:site_name', content: 'miniature-guacamole' }],
+    ['meta', { property: 'og:title', content: 'miniature-guacamole — AI-Powered Product Development Team Framework' }],
+    ['meta', { property: 'og:description', content: 'Reference documentation for miniature-guacamole — AI-powered product development team framework for Claude Code.' }],
     ['meta', { property: 'og:image', content: 'https://wonton-web-works.github.io/miniature-guacamole/og-image.svg' }],
     ['meta', { property: 'og:url', content: 'https://wonton-web-works.github.io/miniature-guacamole/' }],
 
     // Twitter Card Meta Tags
     ['meta', { name: 'twitter:card', content: 'summary_large_image' }],
-    ['meta', { name: 'twitter:title', content: 'TheEngOrg — AI-Powered Product Development Team Framework' }],
-    ['meta', { name: 'twitter:description', content: 'Reference documentation for TheEngOrg — AI-powered product development team framework for Claude Code.' }],
+    ['meta', { name: 'twitter:title', content: 'miniature-guacamole — AI-Powered Product Development Team Framework' }],
+    ['meta', { name: 'twitter:description', content: 'Reference documentation for miniature-guacamole — AI-powered product development team framework for Claude Code.' }],
     ['meta', { name: 'twitter:image', content: 'https://wonton-web-works.github.io/miniature-guacamole/og-image.svg' }],
 
     // Additional Meta

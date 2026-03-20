@@ -1,4 +1,4 @@
-# Getting Started with TheEngOrg
+# Getting Started with miniature-guacamole
 
 ## Prerequisites
 

@@ -5,6 +5,7 @@ import { existsSync, readFileSync } from 'fs';
 import { join } from 'path';
 import { statusDaemon } from './process';
 import { isStale } from './heartbeat';
+import { readTriageLog } from './triage-log';
 import type { DaemonConfig, ProcessedTicket } from './types';
 
 export interface InFlightTicket {
@@ -33,6 +34,7 @@ export interface DashboardData {
   recentCompleted: CompletedTicket[];
   recentFailed: FailedTicket[];
   errorBudget: { consecutive: number; threshold: number; paused: boolean };
+  triage: { go: number; needsInfo: number; rejected: number };
 }
 
 // ─── File paths ──────────────────────────────────────────────────────────────
@@ -103,6 +105,14 @@ export function gatherDashboardData(config: DaemonConfig): DashboardData {
   const pollRaw = readJsonFile<{ timestamp: string }>(LAST_POLL_FILE);
   const lastPollTime = pollRaw?.timestamp ?? null;
 
+  // Triage log counts
+  const triageEntries = readTriageLog();
+  const triage = {
+    go: triageEntries.filter(e => e.outcome === 'GO').length,
+    needsInfo: triageEntries.filter(e => e.outcome === 'NEEDS_CLARIFICATION').length,
+    rejected: triageEntries.filter(e => e.outcome === 'REJECT').length,
+  };
+
   return {
     daemonStatus,
     lastPollTime,
@@ -111,6 +121,7 @@ export function gatherDashboardData(config: DaemonConfig): DashboardData {
     recentCompleted,
     recentFailed,
     errorBudget,
+    triage,
   };
 }
 
@@ -233,6 +244,13 @@ export function formatDashboard(data: DashboardData): string {
       const line = truncate(`  ${ticket.id}  │ ${ticket.error}`, WIDTH - 2);
       lines.push(row(line));
     }
+  }
+
+  // TRIAGE
+  if (data.triage) {
+    lines.push(BORDER_MID);
+    lines.push(row('TRIAGE'));
+    lines.push(row(`  GO: ${data.triage.go}  │  NEEDS_INFO: ${data.triage.needsInfo}  │  REJECTED: ${data.triage.rejected}`));
   }
 
   lines.push(BORDER_BOTTOM);

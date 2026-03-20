@@ -248,12 +248,18 @@ const installCmd = 'curl -fsSL https://raw.githubusercontent.com/wonton-web-work
         <h2 class="section-heading">How it works</h2>
         <p class="section-sublabel mono">The CAD workflow — every build follows this sequence</p>
 
-        <div class="workflow-steps">
-          {workflow.map(({ step, label, detail }) => (
-            <div class="workflow-step">
-              <span class="step-number mono">{step}</span>
-              <span class="step-label">{label}</span>
-              <span class="step-detail mono">{detail}</span>
+        <div class="workflow-timeline">
+          {workflow.map(({ step, label, detail }, i) => (
+            <div class="wf-item">
+              <div class="wf-marker">
+                <span class="wf-dot"></span>
+                {i < workflow.length - 1 && <span class="wf-line"></span>}
+              </div>
+              <div class="wf-content">
+                <span class="wf-step mono">{step}</span>
+                <h3 class="wf-label">{label}</h3>
+                <p class="wf-detail mono">{detail}</p>
+              </div>
             </div>
           ))}
         </div>
@@ -724,7 +730,7 @@ const installCmd = 'curl -fsSL https://raw.githubusercontent.com/wonton-web-work
   }
 
   /* -------------------------------------------------------
-     HOW IT WORKS
+     HOW IT WORKS — vertical timeline
   ------------------------------------------------------- */
   .how-it-works {
     padding: clamp(60px, 8vw, 120px) 0;
@@ -740,35 +746,51 @@ const installCmd = 'curl -fsSL https://raw.githubusercontent.com/wonton-web-work
     margin-top: -28px;
   }
 
-  .workflow-steps {
-    display: flex;
-    flex-wrap: wrap;
-  }
-
-  .workflow-step {
-    flex: 1;
-    min-width: 160px;
-    padding: 28px 24px;
-    background: var(--mg-surface);
-    border: 1px solid #263040;
-    border-left: none;
+  .workflow-timeline {
     display: flex;
     flex-direction: column;
-    gap: 6px;
+    gap: 0;
+    max-width: 520px;
   }
 
-  .workflow-step:first-child {
-    border-left: 3px solid var(--mg-chili);
-    border-top-left-radius: 4px;
-    border-bottom-left-radius: 4px;
+  .wf-item {
+    display: flex;
+    gap: 24px;
   }
 
-  .workflow-step:last-child {
-    border-top-right-radius: 4px;
-    border-bottom-right-radius: 4px;
+  .wf-marker {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    flex-shrink: 0;
+    width: 20px;
+    padding-top: 6px;
   }
 
-  .step-number {
+  .wf-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: var(--mg-chili);
+    flex-shrink: 0;
+  }
+
+  .wf-line {
+    width: 2px;
+    flex: 1;
+    background: #263040;
+    min-height: 20px;
+  }
+
+  .wf-content {
+    padding-bottom: 32px;
+  }
+
+  .wf-item:last-child .wf-content {
+    padding-bottom: 0;
+  }
+
+  .wf-step {
     font-size: 11px;
     color: var(--mg-chili);
     letter-spacing: 0.1em;
@@ -776,43 +798,19 @@ const installCmd = 'curl -fsSL https://raw.githubusercontent.com/wonton-web-work
     margin-bottom: 4px;
   }
 
-  .step-label {
+  .wf-label {
     font-family: var(--font-display);
     font-size: 18px;
     font-weight: 700;
     color: var(--mg-text);
-    display: block;
+    margin-bottom: 4px;
   }
 
-  .step-detail {
-    font-size: 11px;
+  .wf-detail {
+    font-size: 12px;
     color: var(--mg-subtext);
     letter-spacing: 0.02em;
-    display: block;
     line-height: 1.4;
-  }
-
-  @media (max-width: 640px) {
-    .workflow-steps {
-      flex-direction: column;
-    }
-    .workflow-step {
-      border-left: 3px solid var(--mg-chili);
-      border-right: 1px solid #263040;
-      border-top: none;
-      border-bottom: 1px solid #263040;
-      border-radius: 0;
-      min-width: unset;
-    }
-    .workflow-step:first-child {
-      border-top: 1px solid #263040;
-      border-top-left-radius: 4px;
-      border-top-right-radius: 4px;
-    }
-    .workflow-step:last-child {
-      border-bottom-left-radius: 4px;
-      border-bottom-right-radius: 4px;
-    }
   }
 
   /* -------------------------------------------------------

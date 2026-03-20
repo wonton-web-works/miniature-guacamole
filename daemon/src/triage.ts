@@ -2,7 +2,9 @@
 // WS-DAEMON-15: Ticket Triage Gate — assess before planning
 
 import type { NormalizedTicket } from './providers/types';
-import type { ClaudeResult } from './claude';
+import type { ExecClaudeFn } from './types';
+
+export type { ExecClaudeFn };
 
 export type TriageOutcome = 'GO' | 'NEEDS_CLARIFICATION' | 'REJECT';
 
@@ -17,12 +19,6 @@ export interface TriageResult {
   reason: string;
   questions?: string[];
 }
-
-// Dependency-injectable execClaude type for testing
-export type ExecClaudeFn = (
-  prompt: string,
-  options: { timeout?: number; cwd?: string }
-) => Promise<ClaudeResult>;
 
 const TRIAGE_TIMEOUT_MS = 120_000; // 2 minutes — triage should be fast
 

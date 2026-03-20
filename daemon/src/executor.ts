@@ -2,9 +2,11 @@
 // WS-DAEMON-11: MG Orchestration Engine
 
 import { execClaude } from './claude';
-import type { ClaudeResult } from './claude';
 import type { NormalizedTicket } from './providers/types';
 import type { WorkstreamPlan } from './planner';
+import type { ExecClaudeFn } from './types';
+
+export type { ExecClaudeFn };
 
 export interface ExecutionResult {
   workstream: string;
@@ -13,12 +15,6 @@ export interface ExecutionResult {
   error?: string;
   durationMs: number;
 }
-
-// Dependency-injectable execClaude type for testing
-export type ExecClaudeFn = (
-  prompt: string,
-  options: { timeout?: number; cwd?: string }
-) => Promise<ClaudeResult>;
 
 /**
  * Build the execution prompt for Claude.

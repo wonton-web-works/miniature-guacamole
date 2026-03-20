@@ -66,6 +66,7 @@ export default defineConfig({
       {
         text: 'Reference',
         items: [
+          { text: 'Glossary', link: '/glossary' },
           { text: 'CLI Reference', link: '/cli-reference' },
           { text: 'Audit Logging', link: '/audit-logging' }
         ]

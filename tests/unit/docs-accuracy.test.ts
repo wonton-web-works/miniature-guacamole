@@ -150,52 +150,24 @@ describe('README.md — golden path (correct values must appear)', () => {
 // docs/index.md
 // ─────────────────────────────────────────────────────────────
 
-describe('docs/index.md — misuse cases (stale values must not appear)', () => {
-  it('tagline does not say "16 skills"', () => {
-    // AC-8
+describe('docs/index.md — reference docs landing page', () => {
+  it('contains TheEngOrg branding', () => {
     const index = read('docs/index.md');
-    expect(index).not.toMatch(/tagline:.*16 skills/);
+    expect(index).toMatch(/TheEngOrg/);
   });
 
-  it('"16 Team Skills" feature card title does not appear', () => {
-    // AC-9
+  it('has quick links to key doc sections', () => {
     const index = read('docs/index.md');
-    expect(index).not.toMatch(/title:\s*16 Team Skills/);
+    expect(index).toMatch(/Getting Started/);
+    expect(index).toMatch(/Architecture/);
+    expect(index).toMatch(/CLI Reference/);
   });
 
-  it('Tier 1 description does not say "16 skills"', () => {
-    // AC-10
+  it('does not contain marketing hero elements', () => {
     const index = read('docs/index.md');
-    // The Tier 1 paragraph mentions skill count — must not be 16
-    const tier1Block = index.match(/###\s+Tier 1[^#]+/s);
-    expect(tier1Block).not.toBeNull();
-    if (tier1Block) {
-      expect(tier1Block[0]).not.toMatch(/\b16 skills\b/);
-    }
-  });
-});
-
-describe('docs/index.md — golden path (correct values must appear)', () => {
-  it('tagline says "18 skills"', () => {
-    // AC-8
-    const index = read('docs/index.md');
-    expect(index).toMatch(/tagline:.*18 skills/);
-  });
-
-  it('"18 Team Skills" feature card title appears', () => {
-    // AC-9
-    const index = read('docs/index.md');
-    expect(index).toMatch(/title:\s*18 Team Skills/);
-  });
-
-  it('Tier 1 description says "18 skills"', () => {
-    // AC-10
-    const index = read('docs/index.md');
-    const tier1Block = index.match(/###\s+Tier 1[^#]+/s);
-    expect(tier1Block).not.toBeNull();
-    if (tier1Block) {
-      expect(tier1Block[0]).toMatch(/\b18 skills\b/);
-    }
+    // No VitePress home layout hero (that's the marketing site's job)
+    expect(index).not.toMatch(/layout:\s*home/);
+    expect(index).not.toMatch(/tagline:/);
   });
 });
 

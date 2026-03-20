@@ -254,6 +254,7 @@ export async function processTicket(
       title: ws.name,
       description: ws.acceptanceCriteria,
       parentId: ticket.id,
+      labels: ticket.labels,
     });
   }
 

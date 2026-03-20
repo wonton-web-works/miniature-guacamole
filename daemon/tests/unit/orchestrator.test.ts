@@ -33,6 +33,11 @@ vi.mock('../../src/claude', () => ({
   execClaude: vi.fn().mockResolvedValue({ stdout: '', stderr: '', exitCode: 0, timedOut: false }),
 }));
 
+// Mock triage-log module
+vi.mock('../../src/triage-log', () => ({
+  appendTriageLog: vi.fn(),
+}));
+
 import { processTicket, runPollCycle, shouldStop, hasSufficientDiskSpace } from '../../src/orchestrator';
 import type { OrchestratorConfig } from '../../src/orchestrator';
 import type { NormalizedTicket, TicketProvider } from '../../src/providers/types';
@@ -40,6 +45,7 @@ import type { DaemonConfig } from '../../src/types';
 import type { WorkstreamPlan } from '../../src/planner';
 import type { ExecutionResult } from '../../src/executor';
 import type { TriageResult } from '../../src/triage';
+import { appendTriageLog } from '../../src/triage-log';
 
 import { spawnSync } from 'child_process';
 import { existsSync, statfsSync } from 'fs';
@@ -671,6 +677,118 @@ describe('processTicket() triage gate (WS-DAEMON-15)', () => {
         TICKET.id,
         expect.stringContaining('NEEDS_CLARIFICATION')
       );
+    });
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Triage log persistence tests (GH-106)
+// ---------------------------------------------------------------------------
+
+describe('processTicket() triage log persistence (GH-106)', () => {
+  beforeEach(() => {
+    vi.mocked(spawnSync).mockImplementation((_cmd: unknown, args: unknown) => {
+      const argsList = args as string[] | undefined;
+      if (argsList?.includes('--cached') && argsList?.includes('--quiet')) {
+        return { status: 1, stdout: '', stderr: '', pid: 0, output: [], signal: null } as ReturnType<typeof spawnSync>;
+      }
+      return { status: 0, stdout: '', stderr: '', pid: 0, output: [], signal: null } as ReturnType<typeof spawnSync>;
+    });
+    vi.mocked(appendTriageLog).mockClear();
+  });
+
+  describe('AC: appendTriageLog called after every triage', () => {
+    it('GIVEN triage returns GO WHEN processTicket called THEN appendTriageLog is called with GO outcome', async () => {
+      const deps = makeDeps();
+      await processTicket(TICKET, deps);
+
+      expect(appendTriageLog).toHaveBeenCalledOnce();
+      expect(appendTriageLog).toHaveBeenCalledWith(
+        expect.objectContaining({
+          ticketId: 'PROJ-123',
+          outcome: 'GO',
+          reason: 'All checks pass',
+          timestamp: expect.any(String),
+        })
+      );
+    });
+
+    it('GIVEN triage returns NEEDS_CLARIFICATION WHEN processTicket called THEN appendTriageLog is called with NEEDS_CLARIFICATION', async () => {
+      const deps = makeDeps({
+        triageTicket: vi.fn().mockResolvedValue({
+          outcome: 'NEEDS_CLARIFICATION',
+          reason: 'Missing AC',
+          questions: ['What endpoint?'],
+        } as TriageResult),
+      });
+      await processTicket(TICKET, deps);
+
+      expect(appendTriageLog).toHaveBeenCalledOnce();
+      expect(appendTriageLog).toHaveBeenCalledWith(
+        expect.objectContaining({
+          ticketId: 'PROJ-123',
+          outcome: 'NEEDS_CLARIFICATION',
+          reason: 'Missing AC',
+        })
+      );
+    });
+
+    it('GIVEN triage returns REJECT WHEN processTicket called THEN appendTriageLog is called with REJECT', async () => {
+      const deps = makeDeps({
+        triageTicket: vi.fn().mockResolvedValue({
+          outcome: 'REJECT',
+          reason: 'Out of scope',
+        } as TriageResult),
+      });
+      await processTicket(TICKET, deps);
+
+      expect(appendTriageLog).toHaveBeenCalledOnce();
+      expect(appendTriageLog).toHaveBeenCalledWith(
+        expect.objectContaining({
+          ticketId: 'PROJ-123',
+          outcome: 'REJECT',
+          reason: 'Out of scope',
+        })
+      );
+    });
+
+    it('GIVEN any triage outcome WHEN appendTriageLog called THEN timestamp is ISO format', async () => {
+      const deps = makeDeps();
+      await processTicket(TICKET, deps);
+
+      const call = vi.mocked(appendTriageLog).mock.calls[0][0];
+      expect(call.timestamp).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/);
+    });
+  });
+
+  describe('AC: pipeline continues if appendTriageLog throws', () => {
+    it('GIVEN appendTriageLog throws WHEN triage returns GO THEN pipeline continues to planning', async () => {
+      vi.mocked(appendTriageLog).mockImplementation(() => {
+        throw new Error('disk full');
+      });
+
+      const deps = makeDeps();
+      const result = await processTicket(TICKET, deps);
+
+      expect(deps.planTicket).toHaveBeenCalled();
+      expect(result.success).toBe(true);
+    });
+
+    it('GIVEN appendTriageLog throws WHEN triage returns REJECT THEN pipeline still returns failure result', async () => {
+      vi.mocked(appendTriageLog).mockImplementation(() => {
+        throw new Error('disk full');
+      });
+
+      const deps = makeDeps({
+        triageTicket: vi.fn().mockResolvedValue({
+          outcome: 'REJECT',
+          reason: 'Bad ticket',
+        } as TriageResult),
+      });
+      const result = await processTicket(TICKET, deps);
+
+      expect(result.success).toBe(false);
+      expect(result.error).toContain('REJECT');
     });
   });
 });

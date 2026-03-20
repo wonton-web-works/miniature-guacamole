@@ -673,4 +673,182 @@ describe('Config Validation (AC-1.4: validateConfig function)', () => {
       }
     });
   });
+
+  describe('Given triage configuration (MISUSE)', () => {
+    it('WHEN triage is a string THEN validation error is returned', () => {
+      // Arrange
+      (validConfig as any).triage = 'true';
+
+      // Act
+      const errors = validateConfig(validConfig);
+
+      // Assert
+      expect(errors.length).toBeGreaterThan(0);
+      const triageError = errors.find(e => e.field === 'triage');
+      expect(triageError).toBeDefined();
+      expect(triageError?.message).toMatch(/object/i);
+    });
+
+    it('WHEN triage is a number THEN validation error is returned', () => {
+      // Arrange
+      (validConfig as any).triage = 42;
+
+      // Act
+      const errors = validateConfig(validConfig);
+
+      // Assert
+      const triageError = errors.find(e => e.field === 'triage');
+      expect(triageError).toBeDefined();
+    });
+
+    it('WHEN triage is an array THEN validation error is returned', () => {
+      // Arrange
+      (validConfig as any).triage = [];
+
+      // Act
+      const errors = validateConfig(validConfig);
+
+      // Assert
+      const triageError = errors.find(e => e.field === 'triage');
+      expect(triageError).toBeDefined();
+    });
+
+    it('WHEN triage.enabled is not boolean THEN validation error references the field', () => {
+      // Arrange
+      (validConfig as any).triage = { enabled: 'yes', autoReject: false, maxTicketSizeChars: 10000 };
+
+      // Act
+      const errors = validateConfig(validConfig);
+
+      // Assert
+      expect(errors.length).toBeGreaterThan(0);
+      const triageError = errors.find(e => e.field === 'triage.enabled');
+      expect(triageError).toBeDefined();
+      expect(triageError?.message).toMatch(/boolean/i);
+    });
+
+    it('WHEN triage.autoReject is not boolean THEN validation error references the field', () => {
+      // Arrange
+      (validConfig as any).triage = { enabled: true, autoReject: 'no', maxTicketSizeChars: 10000 };
+
+      // Act
+      const errors = validateConfig(validConfig);
+
+      // Assert
+      const triageError = errors.find(e => e.field === 'triage.autoReject');
+      expect(triageError).toBeDefined();
+      expect(triageError?.message).toMatch(/boolean/i);
+    });
+
+    it('WHEN triage.maxTicketSizeChars is a string THEN validation error references the field', () => {
+      // Arrange
+      (validConfig as any).triage = { enabled: true, autoReject: false, maxTicketSizeChars: 'large' };
+
+      // Act
+      const errors = validateConfig(validConfig);
+
+      // Assert
+      const triageError = errors.find(e => e.field === 'triage.maxTicketSizeChars');
+      expect(triageError).toBeDefined();
+      expect(triageError?.message).toMatch(/positive number|number/i);
+    });
+
+    it('WHEN triage.maxTicketSizeChars is 0 THEN validation error is returned', () => {
+      // Arrange
+      (validConfig as any).triage = { enabled: true, autoReject: false, maxTicketSizeChars: 0 };
+
+      // Act
+      const errors = validateConfig(validConfig);
+
+      // Assert
+      const triageError = errors.find(e => e.field === 'triage.maxTicketSizeChars');
+      expect(triageError).toBeDefined();
+      expect(triageError?.message).toMatch(/positive/i);
+    });
+
+    it('WHEN triage.maxTicketSizeChars is negative THEN validation error is returned', () => {
+      // Arrange
+      (validConfig as any).triage = { enabled: true, autoReject: false, maxTicketSizeChars: -500 };
+
+      // Act
+      const errors = validateConfig(validConfig);
+
+      // Assert
+      const triageError = errors.find(e => e.field === 'triage.maxTicketSizeChars');
+      expect(triageError).toBeDefined();
+      expect(triageError?.message).toMatch(/positive/i);
+    });
+  });
+
+  describe('Given triage configuration (BOUNDARY)', () => {
+    it('WHEN triage is absent THEN no triage errors are returned (backward compatible)', () => {
+      // Arrange: validConfig has no triage field (baseline fixture)
+      // Act
+      const errors = validateConfig(validConfig);
+
+      // Assert
+      const triageErrors = errors.filter(e => e.field.startsWith('triage'));
+      expect(triageErrors).toHaveLength(0);
+      expect(errors).toHaveLength(0);
+    });
+
+    it('WHEN triage is undefined THEN no triage errors are returned', () => {
+      // Arrange
+      (validConfig as any).triage = undefined;
+
+      // Act
+      const errors = validateConfig(validConfig);
+
+      // Assert
+      const triageErrors = errors.filter(e => e.field.startsWith('triage'));
+      expect(triageErrors).toHaveLength(0);
+    });
+  });
+
+  describe('Given triage configuration (GOLDEN PATH)', () => {
+    it('WHEN valid triage config is provided THEN no errors are returned', () => {
+      // Arrange
+      (validConfig as any).triage = { enabled: true, autoReject: false, maxTicketSizeChars: 10000 };
+
+      // Act
+      const errors = validateConfig(validConfig);
+
+      // Assert
+      expect(errors).toHaveLength(0);
+    });
+
+    it('WHEN triage is enabled with autoReject true THEN no errors are returned', () => {
+      // Arrange
+      (validConfig as any).triage = { enabled: true, autoReject: true, maxTicketSizeChars: 5000 };
+
+      // Act
+      const errors = validateConfig(validConfig);
+
+      // Assert
+      expect(errors).toHaveLength(0);
+    });
+
+    it('WHEN triage is disabled THEN no errors are returned', () => {
+      // Arrange
+      (validConfig as any).triage = { enabled: false, autoReject: false, maxTicketSizeChars: 10000 };
+
+      // Act
+      const errors = validateConfig(validConfig);
+
+      // Assert
+      expect(errors).toHaveLength(0);
+    });
+
+    it('WHEN triage.maxTicketSizeChars is 1 (minimum positive) THEN no errors are returned', () => {
+      // Arrange
+      (validConfig as any).triage = { enabled: true, autoReject: false, maxTicketSizeChars: 1 };
+
+      // Act
+      const errors = validateConfig(validConfig);
+
+      // Assert
+      const triageErrors = errors.filter(e => e.field.startsWith('triage'));
+      expect(triageErrors).toHaveLength(0);
+    });
+  });
 });

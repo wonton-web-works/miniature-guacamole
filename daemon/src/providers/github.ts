@@ -102,12 +102,19 @@ export class GitHubProvider implements TicketProvider {
     const bodyText = `Parent: #${parentNumber}\n\n${task.description}`;
 
     // argv array — no escaping needed, no shell injection risk
-    const result = spawnSync('gh', [
+    const args = [
       'issue', 'create',
       '--repo', this.config.repo,
       '--title', task.title,
       '--body', bodyText,
-    ], { encoding: 'utf-8' });
+    ];
+
+    // Copy parent labels to sub-issue (GH-102)
+    if (task.labels && task.labels.length > 0) {
+      args.push('--label', task.labels.join(','));
+    }
+
+    const result = spawnSync('gh', args, { encoding: 'utf-8' });
 
     if (result.status !== 0) {
       throw new Error(result.stderr?.trim() || 'gh issue create failed');

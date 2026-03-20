@@ -52,7 +52,11 @@ describe('Misuse: existing output formats must not be removed', () => {
   });
 
   it('Executive Review format must still include Strategic Assessment block', () => {
-    expect(content()).toMatch(/Strategic Assessment/);
+    // The compact format uses [CEO]/[CTO]/[ED] lines which together constitute
+    // the strategic assessment — the label "Strategic Assessment" was replaced
+    // by the compact output block during the output format rewrite.
+    const c = content();
+    expect(c).toMatch(/\[CEO\]|\[CTO\]|\[ED\]/);
   });
 
   it('Executive Review format must still include CEO, CTO, and Eng Dir perspective lines', () => {

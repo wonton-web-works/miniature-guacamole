@@ -190,7 +190,6 @@ Phase 0 (intake):
 [PO]    Problem framed — {brief summary}
 [EM]    Brief ready — proceeding to evaluation       {elapsed}
 ```
-
 Phase 1-4 (evaluation):
 ```
 [PO]    Strategic fit — {HIGH | MEDIUM | LOW}
@@ -198,7 +197,6 @@ Phase 1-4 (evaluation):
 [EM]    Feasibility — {assessment summary}
 [EM]    Decision: {GO | NO-GO | NEEDS MORE INFO}     {elapsed}
 ```
-
 ## Delegation
 
 | Need | Action |

@@ -33,11 +33,12 @@ vi.mock('../../src/claude', () => ({
   execClaude: vi.fn().mockResolvedValue({ stdout: '', stderr: '', exitCode: 0, timedOut: false }),
 }));
 
-// Mock triage-log module
+// Mock triage-log module to verify appendTriageLog is called
 vi.mock('../../src/triage-log', () => ({
   appendTriageLog: vi.fn(),
 }));
 
+import { appendTriageLog } from '../../src/triage-log';
 import { processTicket, runPollCycle, shouldStop, hasSufficientDiskSpace } from '../../src/orchestrator';
 import type { OrchestratorConfig } from '../../src/orchestrator';
 import type { NormalizedTicket, TicketProvider } from '../../src/providers/types';
@@ -45,7 +46,6 @@ import type { DaemonConfig } from '../../src/types';
 import type { WorkstreamPlan } from '../../src/planner';
 import type { ExecutionResult } from '../../src/executor';
 import type { TriageResult } from '../../src/triage';
-import { appendTriageLog } from '../../src/triage-log';
 
 import { spawnSync } from 'child_process';
 import { existsSync, statfsSync } from 'fs';
@@ -822,10 +822,10 @@ describe('processTicket() triage gate (WS-DAEMON-15)', () => {
 });
 
 // ---------------------------------------------------------------------------
-// Triage log persistence tests (GH-106)
+// Triage log persistence tests (GH-104 / GH-106)
 // ---------------------------------------------------------------------------
 
-describe('processTicket() triage log persistence (GH-106)', () => {
+describe('processTicket() triage log persistence', () => {
   beforeEach(() => {
     vi.mocked(spawnSync).mockImplementation((_cmd: unknown, args: unknown) => {
       const argsList = args as string[] | undefined;
@@ -930,6 +930,12 @@ describe('processTicket() triage log persistence (GH-106)', () => {
       expect(result.success).toBe(false);
       expect(result.error).toContain('REJECT');
     });
+  });
+
+  it('GIVEN any triage outcome WHEN processTicket called THEN appendTriageLog called exactly once', async () => {
+    const deps = makeDeps();
+    await processTicket(TICKET, deps);
+    expect(appendTriageLog).toHaveBeenCalledTimes(1);
   });
 });
 

@@ -63,6 +63,16 @@ const workflow = [
 
 const changelog = [
   {
+    version: 'v4.2.0',
+    date: '2026-03-20',
+    title: 'Full Pipeline',
+    notes: [
+      'Post-PR code review — daemon invokes leadership review after every PR',
+      'Merge automation — approved PRs merge automatically, rejections loop back to dev',
+      'Lifecycle state sync — .claude/memory/ tracks every phase from planning to merged',
+    ],
+  },
+  {
     version: 'v4.1.0',
     date: '2026-03-19',
     title: 'Output Parity',
@@ -282,7 +292,24 @@ const installCmd = 'curl -fsSL https://raw.githubusercontent.com/wonton-web-work
       </div>
     </section>
 
-    <!-- Pricing removed — repricing in progress. PrivateEnterprise replaces teams, not tools. -->
+    <!-- ============================================================
+         VALUE CTA
+    ============================================================ -->
+    <section class="value-cta">
+      <div class="container">
+        <h2 class="value-cta-headline">Replace a 5-person team.<br />Keep one engineer.</h2>
+        <p class="value-cta-sub">
+          PrivateEnterprise runs your full development lifecycle — triage, planning, code, review, merge — 24/7. Pricing reflects team replacement, not tooling.
+        </p>
+        <div class="value-cta-actions">
+          <a href="/pilot" class="cta-primary">Start a Pilot</a>
+          <a
+            href="mailto:byazaki@wontonwebworks.com?subject=PrivateEnterprise"
+            class="cta-secondary"
+          >Book a Call</a>
+        </div>
+      </div>
+    </section>
 
     <!-- ============================================================
          CHANGELOG
@@ -749,162 +776,69 @@ const installCmd = 'curl -fsSL https://raw.githubusercontent.com/wonton-web-work
   }
 
   /* -------------------------------------------------------
-     PRICING
+     VALUE CTA
   ------------------------------------------------------- */
-  .pricing {
-    padding: clamp(60px, 8vw, 120px) 0;
+  .value-cta {
+    padding: clamp(80px, 12vw, 160px) 0;
     border-bottom: 1px solid var(--mg-surface);
+    text-align: center;
   }
 
-  .pricing .section-sublead {
-    margin-bottom: 48px;
-  }
-
-  .pricing-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 20px;
-  }
-
-  .pricing-card {
-    background: var(--mg-surface);
-    border: 1px solid #263040;
-    border-radius: 8px;
-    padding: 32px 28px;
-    display: flex;
-    flex-direction: column;
-  }
-
-  .pricing-card.featured {
-    border-color: var(--mg-cilantro);
-    position: relative;
-  }
-
-  .pricing-card.featured::before {
-    content: 'Most popular';
-    position: absolute;
-    top: -12px;
-    left: 28px;
-    background: var(--mg-cilantro);
-    color: #fff;
-    font-family: var(--font-mono);
-    font-size: 11px;
-    font-weight: 500;
-    padding: 3px 12px;
-    border-radius: 3px;
-    letter-spacing: 0.04em;
-  }
-
-  .pricing-tier {
-    font-size: 12px;
-    color: var(--mg-subtext);
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    margin-bottom: 16px;
-    display: block;
-  }
-
-  .pricing-price {
-    margin-bottom: 16px;
-  }
-
-  .price-amount {
+  .value-cta-headline {
     font-family: var(--font-display);
-    font-size: 36px;
+    font-size: clamp(28px, 3.5vw, 48px);
     font-weight: 800;
     color: var(--mg-text);
+    letter-spacing: -0.02em;
+    line-height: 1.1;
+    margin-bottom: 20px;
   }
 
-  .price-period {
-    font-size: 14px;
+  .value-cta-sub {
+    font-size: clamp(15px, 1.8vw, 18px);
+    line-height: 1.65;
     color: var(--mg-subtext);
-    margin-left: 4px;
+    max-width: 560px;
+    margin: 0 auto 40px;
   }
 
-  .pricing-desc {
-    font-size: 14px;
-    color: var(--mg-subtext);
-    line-height: 1.6;
-    margin-bottom: 24px;
-  }
-
-  .pricing-features {
-    list-style: none;
-    padding: 0;
-    margin-bottom: 28px;
-    flex: 1;
+  .value-cta-actions {
     display: flex;
-    flex-direction: column;
-    gap: 10px;
+    gap: 16px;
+    justify-content: center;
+    flex-wrap: wrap;
   }
 
-  .pricing-features li {
-    font-size: 13px;
-    color: var(--mg-subtext);
-    padding-left: 20px;
-    position: relative;
-    line-height: 1.4;
-  }
-
-  .pricing-features li::before {
-    content: '✓';
-    position: absolute;
-    left: 0;
-    color: var(--mg-cilantro);
-    font-weight: 700;
-    font-size: 12px;
-  }
-
-  .pricing-cta {
-    display: block;
-    text-align: center;
-    background: var(--mg-cilantro);
-    color: #fff;
-    font-size: 14px;
-    font-weight: 600;
-    padding: 12px 24px;
-    border-radius: 4px;
-    text-decoration: none;
-    transition: opacity 0.15s;
-  }
-
-  .pricing-cta:hover {
-    opacity: 0.88;
-  }
-
-  .pricing-cta-secondary {
-    display: block;
-    text-align: center;
+  .cta-secondary {
+    display: inline-block;
     background: transparent;
     color: var(--mg-subtext);
-    font-size: 14px;
-    font-weight: 500;
-    padding: 12px 24px;
-    border: 1px solid #263040;
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: 15px;
+    padding: 14px 28px;
     border-radius: 4px;
+    border: 1px solid #263040;
     text-decoration: none;
-    transition: border-color 0.15s, color 0.15s;
+    letter-spacing: 0.01em;
+    transition: border-color 0.15s ease, color 0.15s ease;
   }
 
-  .pricing-cta-secondary:hover {
+  .cta-secondary:hover {
     border-color: var(--mg-text);
     color: var(--mg-text);
   }
 
-  .pricing-note {
-    font-size: 13px;
-    color: var(--mg-subtext);
-    margin-top: 32px;
-    max-width: 600px;
-  }
-
-  @media (max-width: 768px) {
-    .pricing-grid {
-      grid-template-columns: 1fr;
-      max-width: 400px;
+  @media (max-width: 480px) {
+    .value-cta-actions {
+      flex-direction: column;
+      align-items: center;
     }
-    .pricing-card.featured {
-      order: -1;
+    .cta-primary,
+    .cta-secondary {
+      width: 100%;
+      max-width: 280px;
+      text-align: center;
     }
   }
 

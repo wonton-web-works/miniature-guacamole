@@ -16,9 +16,16 @@ vi.mock('../../src/heartbeat', () => ({
   isStale: vi.fn(),
 }));
 
+// Mock triage-log module
+vi.mock('../../src/triage-log', () => ({
+  readTriageLog: vi.fn(),
+}));
+
 import { existsSync, readFileSync } from 'fs';
 import * as processModule from '../../src/process';
 import * as heartbeatModule from '../../src/heartbeat';
+import { readTriageLog } from '../../src/triage-log';
+import type { TriageLogEntry } from '../../src/triage-log';
 import { gatherDashboardData, formatDashboard } from '../../src/dashboard';
 import type { DaemonConfig } from '../../src/types';
 
@@ -31,6 +38,7 @@ const baseConfig: DaemonConfig = {
 describe('Dashboard Module', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    vi.mocked(readTriageLog).mockReturnValue([]);
   });
 
   // ─── gatherDashboardData ────────────────────────────────────────────────────
@@ -249,6 +257,62 @@ describe('Dashboard Module', () => {
         expect(data.inFlightTickets).toHaveLength(0);
       });
     });
+
+    describe('GIVEN triage-log.json has entries WHEN gatherDashboardData called THEN returns triage counts (GH-106)', () => {
+      const triageEntries: TriageLogEntry[] = [
+        { ticketId: 'GH-1', outcome: 'GO', reason: 'ok', timestamp: '2026-03-19T09:00:00Z' },
+        { ticketId: 'GH-2', outcome: 'GO', reason: 'ok', timestamp: '2026-03-19T09:01:00Z' },
+        { ticketId: 'GH-3', outcome: 'REJECT', reason: 'bad', timestamp: '2026-03-19T09:02:00Z' },
+        { ticketId: 'GH-4', outcome: 'NEEDS_CLARIFICATION', reason: 'unclear', timestamp: '2026-03-19T09:03:00Z' },
+        { ticketId: 'GH-5', outcome: 'NEEDS_CLARIFICATION', reason: 'vague', timestamp: '2026-03-19T09:04:00Z' },
+      ];
+
+      it('GIVEN mixed triage outcomes THEN triage.go count is correct', () => {
+        vi.mocked(processModule.statusDaemon).mockReturnValue({ running: false });
+        vi.mocked(heartbeatModule.isStale).mockReturnValue(false);
+        vi.mocked(existsSync).mockReturnValue(false);
+        vi.mocked(readTriageLog).mockReturnValue(triageEntries);
+
+        const data = gatherDashboardData(baseConfig);
+
+        expect(data.triage.go).toBe(2);
+      });
+
+      it('GIVEN mixed triage outcomes THEN triage.needsInfo count is correct', () => {
+        vi.mocked(processModule.statusDaemon).mockReturnValue({ running: false });
+        vi.mocked(heartbeatModule.isStale).mockReturnValue(false);
+        vi.mocked(existsSync).mockReturnValue(false);
+        vi.mocked(readTriageLog).mockReturnValue(triageEntries);
+
+        const data = gatherDashboardData(baseConfig);
+
+        expect(data.triage.needsInfo).toBe(2);
+      });
+
+      it('GIVEN mixed triage outcomes THEN triage.rejected count is correct', () => {
+        vi.mocked(processModule.statusDaemon).mockReturnValue({ running: false });
+        vi.mocked(heartbeatModule.isStale).mockReturnValue(false);
+        vi.mocked(existsSync).mockReturnValue(false);
+        vi.mocked(readTriageLog).mockReturnValue(triageEntries);
+
+        const data = gatherDashboardData(baseConfig);
+
+        expect(data.triage.rejected).toBe(1);
+      });
+
+      it('GIVEN no triage entries THEN all triage counts are 0', () => {
+        vi.mocked(processModule.statusDaemon).mockReturnValue({ running: false });
+        vi.mocked(heartbeatModule.isStale).mockReturnValue(false);
+        vi.mocked(existsSync).mockReturnValue(false);
+        vi.mocked(readTriageLog).mockReturnValue([]);
+
+        const data = gatherDashboardData(baseConfig);
+
+        expect(data.triage.go).toBe(0);
+        expect(data.triage.needsInfo).toBe(0);
+        expect(data.triage.rejected).toBe(0);
+      });
+    });
   });
 
   // ─── formatDashboard ────────────────────────────────────────────────────────
@@ -264,6 +328,7 @@ describe('Dashboard Module', () => {
           recentCompleted: [],
           recentFailed: [],
           errorBudget: { consecutive: 0, threshold: 3, paused: false },
+          triage: { go: 0, needsInfo: 0, rejected: 0 },
         };
 
         const output = formatDashboard(data);
@@ -280,6 +345,7 @@ describe('Dashboard Module', () => {
           recentCompleted: [],
           recentFailed: [],
           errorBudget: { consecutive: 0, threshold: 3, paused: false },
+          triage: { go: 0, needsInfo: 0, rejected: 0 },
         };
 
         const output = formatDashboard(data);
@@ -295,6 +361,7 @@ describe('Dashboard Module', () => {
           recentCompleted: [{ id: 'PROJ-120', prUrl: 'https://github.com/org/repo/pull/45', completedAt: '2026-03-18T13:00:00Z' }],
           recentFailed: [{ id: 'PROJ-121', error: 'claude timeout after 30m', failedAt: '2026-03-18T12:00:00Z' }],
           errorBudget: { consecutive: 1, threshold: 3, paused: false },
+          triage: { go: 0, needsInfo: 0, rejected: 0 },
         };
 
         const output = formatDashboard(data);
@@ -315,6 +382,7 @@ describe('Dashboard Module', () => {
           recentCompleted: [],
           recentFailed: [],
           errorBudget: { consecutive: 0, threshold: 3, paused: false },
+          triage: { go: 0, needsInfo: 0, rejected: 0 },
         };
 
         const output = formatDashboard(data);
@@ -330,6 +398,7 @@ describe('Dashboard Module', () => {
           recentCompleted: [],
           recentFailed: [],
           errorBudget: { consecutive: 0, threshold: 3, paused: false },
+          triage: { go: 0, needsInfo: 0, rejected: 0 },
         };
 
         const output = formatDashboard(data);
@@ -345,6 +414,7 @@ describe('Dashboard Module', () => {
           recentCompleted: [],
           recentFailed: [],
           errorBudget: { consecutive: 0, threshold: 3, paused: false },
+          triage: { go: 0, needsInfo: 0, rejected: 0 },
         };
 
         const output = formatDashboard(data);
@@ -362,6 +432,7 @@ describe('Dashboard Module', () => {
           recentCompleted: [],
           recentFailed: [],
           errorBudget: { consecutive: 0, threshold: 3, paused: false },
+          triage: { go: 0, needsInfo: 0, rejected: 0 },
         };
 
         const output = formatDashboard(data);
@@ -377,6 +448,7 @@ describe('Dashboard Module', () => {
           recentCompleted: [],
           recentFailed: [],
           errorBudget: { consecutive: 0, threshold: 3, paused: false },
+          triage: { go: 0, needsInfo: 0, rejected: 0 },
         };
 
         const output = formatDashboard(data);
@@ -394,6 +466,7 @@ describe('Dashboard Module', () => {
           recentCompleted: [],
           recentFailed: [],
           errorBudget: { consecutive: 0, threshold: 3, paused: false },
+          triage: { go: 0, needsInfo: 0, rejected: 0 },
         };
 
         const output = formatDashboard(data);
@@ -409,6 +482,7 @@ describe('Dashboard Module', () => {
           recentCompleted: [],
           recentFailed: [],
           errorBudget: { consecutive: 0, threshold: 3, paused: false },
+          triage: { go: 0, needsInfo: 0, rejected: 0 },
         };
 
         const output = formatDashboard(data);
@@ -426,6 +500,7 @@ describe('Dashboard Module', () => {
           recentCompleted: [{ id: 'PROJ-120', prUrl: 'https://github.com/org/repo/pull/45', completedAt: '2026-03-18T13:00:00Z' }],
           recentFailed: [],
           errorBudget: { consecutive: 0, threshold: 3, paused: false },
+          triage: { go: 0, needsInfo: 0, rejected: 0 },
         };
 
         const output = formatDashboard(data);
@@ -444,6 +519,7 @@ describe('Dashboard Module', () => {
           recentCompleted: [],
           recentFailed: [{ id: 'PROJ-121', error: 'claude timeout after 30m', failedAt: '2026-03-18T12:00:00Z' }],
           errorBudget: { consecutive: 0, threshold: 3, paused: false },
+          triage: { go: 0, needsInfo: 0, rejected: 0 },
         };
 
         const output = formatDashboard(data);
@@ -462,6 +538,7 @@ describe('Dashboard Module', () => {
           recentCompleted: [],
           recentFailed: [],
           errorBudget: { consecutive: 3, threshold: 3, paused: true },
+          triage: { go: 0, needsInfo: 0, rejected: 0 },
         };
 
         const output = formatDashboard(data);
@@ -477,6 +554,7 @@ describe('Dashboard Module', () => {
           recentCompleted: [],
           recentFailed: [],
           errorBudget: { consecutive: 1, threshold: 3, paused: false },
+          triage: { go: 0, needsInfo: 0, rejected: 0 },
         };
 
         const output = formatDashboard(data);
@@ -495,6 +573,7 @@ describe('Dashboard Module', () => {
           recentCompleted: [],
           recentFailed: [],
           errorBudget: { consecutive: 0, threshold: 3, paused: false },
+          triage: { go: 0, needsInfo: 0, rejected: 0 },
         };
 
         const output = formatDashboard(data);
@@ -510,6 +589,7 @@ describe('Dashboard Module', () => {
           recentCompleted: [],
           recentFailed: [],
           errorBudget: { consecutive: 0, threshold: 3, paused: false },
+          triage: { go: 0, needsInfo: 0, rejected: 0 },
         };
 
         const output = formatDashboard(data);
@@ -527,6 +607,7 @@ describe('Dashboard Module', () => {
           recentCompleted: [],
           recentFailed: [],
           errorBudget: { consecutive: 0, threshold: 3, paused: false },
+          triage: { go: 0, needsInfo: 0, rejected: 0 },
         };
 
         const output = formatDashboard(data);
@@ -591,6 +672,91 @@ describe('Dashboard Module', () => {
 
         const output = formatDashboard(data);
         expect(output).toContain('...');
+      });
+    });
+
+    describe('GIVEN triage counts WHEN formatDashboard called THEN renders TRIAGE section (GH-106)', () => {
+      it('GIVEN triage data THEN output contains TRIAGE section header', () => {
+        const data = {
+          daemonStatus: { running: false },
+          lastPollTime: null,
+          heartbeatStale: false,
+          inFlightTickets: [],
+          recentCompleted: [],
+          recentFailed: [],
+          errorBudget: { consecutive: 0, threshold: 3, paused: false },
+          triage: { go: 5, needsInfo: 2, rejected: 1 },
+        };
+
+        const output = formatDashboard(data);
+        expect(output).toContain('TRIAGE');
+      });
+
+      it('GIVEN triage counts THEN output contains GO count', () => {
+        const data = {
+          daemonStatus: { running: false },
+          lastPollTime: null,
+          heartbeatStale: false,
+          inFlightTickets: [],
+          recentCompleted: [],
+          recentFailed: [],
+          errorBudget: { consecutive: 0, threshold: 3, paused: false },
+          triage: { go: 5, needsInfo: 2, rejected: 1 },
+        };
+
+        const output = formatDashboard(data);
+        expect(output).toMatch(/GO.*5/);
+      });
+
+      it('GIVEN triage counts THEN output contains NEEDS_INFO count', () => {
+        const data = {
+          daemonStatus: { running: false },
+          lastPollTime: null,
+          heartbeatStale: false,
+          inFlightTickets: [],
+          recentCompleted: [],
+          recentFailed: [],
+          errorBudget: { consecutive: 0, threshold: 3, paused: false },
+          triage: { go: 5, needsInfo: 2, rejected: 1 },
+        };
+
+        const output = formatDashboard(data);
+        expect(output).toMatch(/NEEDS_INFO.*2/);
+      });
+
+      it('GIVEN triage counts THEN output contains REJECTED count', () => {
+        const data = {
+          daemonStatus: { running: false },
+          lastPollTime: null,
+          heartbeatStale: false,
+          inFlightTickets: [],
+          recentCompleted: [],
+          recentFailed: [],
+          errorBudget: { consecutive: 0, threshold: 3, paused: false },
+          triage: { go: 5, needsInfo: 2, rejected: 1 },
+        };
+
+        const output = formatDashboard(data);
+        expect(output).toMatch(/REJECTED.*1/);
+      });
+
+      it('GIVEN triage section THEN each line is at most 80 characters', () => {
+        const data = {
+          daemonStatus: { running: false },
+          lastPollTime: null,
+          heartbeatStale: false,
+          inFlightTickets: [],
+          recentCompleted: [],
+          recentFailed: [],
+          errorBudget: { consecutive: 0, threshold: 3, paused: false },
+          triage: { go: 999, needsInfo: 999, rejected: 999 },
+        };
+
+        const output = formatDashboard(data);
+        const lines = output.split('\n');
+        for (const line of lines) {
+          expect(line.length).toBeLessThanOrEqual(80);
+        }
       });
     });
 

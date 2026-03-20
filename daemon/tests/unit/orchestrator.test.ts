@@ -594,6 +594,70 @@ describe('processTicket() triage gate (WS-DAEMON-15)', () => {
     });
   });
 
+  describe('AC: dryRun=true triage results in PipelineResult (GH-107)', () => {
+    it('GIVEN dryRun=true and triage GO WHEN processTicket resolves THEN triageResult populated and success=true', async () => {
+      const deps = makeDeps({
+        configOverrides: { dryRun: true },
+        triageTicket: vi.fn().mockResolvedValue({
+          outcome: 'GO',
+          reason: 'Ticket is well-defined',
+        } as TriageResult),
+      });
+      const result = await processTicket(TICKET, deps);
+      expect(result.triageResult).toBeDefined();
+      expect(result.triageResult?.outcome).toBe('GO');
+      expect(result.triageResult?.reason).toBe('Ticket is well-defined');
+      expect(result.success).toBe(true);
+    });
+
+    it('GIVEN dryRun=true and triage REJECT WHEN processTicket resolves THEN triageResult populated and success=false', async () => {
+      const deps = makeDeps({
+        configOverrides: { dryRun: true },
+        triageTicket: vi.fn().mockResolvedValue({
+          outcome: 'REJECT',
+          reason: 'Out of scope for this project',
+        } as TriageResult),
+      });
+      const result = await processTicket(TICKET, deps);
+      expect(result.triageResult).toBeDefined();
+      expect(result.triageResult?.outcome).toBe('REJECT');
+      expect(result.triageResult?.reason).toBe('Out of scope for this project');
+      expect(result.success).toBe(false);
+    });
+
+    it('GIVEN dryRun=true and triage NEEDS_CLARIFICATION WHEN processTicket resolves THEN triageResult has questions and success=false', async () => {
+      const deps = makeDeps({
+        configOverrides: { dryRun: true },
+        triageTicket: vi.fn().mockResolvedValue({
+          outcome: 'NEEDS_CLARIFICATION',
+          reason: 'Missing acceptance criteria',
+          questions: ['What is the expected behavior?', 'Which endpoints are affected?'],
+        } as TriageResult),
+      });
+      const result = await processTicket(TICKET, deps);
+      expect(result.triageResult).toBeDefined();
+      expect(result.triageResult?.outcome).toBe('NEEDS_CLARIFICATION');
+      expect(result.triageResult?.questions).toEqual([
+        'What is the expected behavior?',
+        'Which endpoints are affected?',
+      ]);
+      expect(result.success).toBe(false);
+    });
+
+    it('GIVEN dryRun=true and non-GO triage WHEN processTicket called THEN addComment and addLabel are NOT called', async () => {
+      const deps = makeDeps({
+        configOverrides: { dryRun: true },
+        triageTicket: vi.fn().mockResolvedValue({
+          outcome: 'REJECT',
+          reason: 'Not actionable',
+        } as TriageResult),
+      });
+      await processTicket(TICKET, deps);
+      expect(deps.provider.addComment).not.toHaveBeenCalled();
+      expect(deps.provider.addLabel).not.toHaveBeenCalled();
+    });
+  });
+
   describe('AC: Tracker updated on triage failure', () => {
     it('GIVEN triage returns NEEDS_CLARIFICATION WHEN processTicket called THEN markFailed is called', async () => {
       const deps = makeDeps({

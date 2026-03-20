@@ -2,6 +2,7 @@
 // WS-DAEMON-14: Pipeline Observability & Safety
 
 import type { WorkstreamPlan } from './planner';
+import type { TriageResult } from './triage';
 
 export type { WorkstreamPlan };
 
@@ -11,6 +12,7 @@ export interface DryRunResult {
   plannedWorkstreams: WorkstreamPlan[];
   wouldCreatePR: boolean;
   wouldCreateSubtasks: number;
+  triageResult?: TriageResult;
 }
 
 // Box-drawing constants — all output must fit 80 columns
@@ -51,6 +53,11 @@ export function formatDryRunReport(results: DryRunResult[]): string {
 
     const titleLine = truncate(`${result.ticketId}  ${result.ticketTitle}`, WIDTH - 2);
     lines.push(pad(titleLine));
+
+    if (result.triageResult) {
+      const triageLine = truncate(`  Triage: ${result.triageResult.outcome} — ${result.triageResult.reason}`, WIDTH - 2);
+      lines.push(pad(triageLine));
+    }
 
     if (result.wouldCreatePR) {
       lines.push(pad('  Would create PR'));

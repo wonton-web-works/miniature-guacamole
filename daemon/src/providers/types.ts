@@ -20,6 +20,7 @@ export interface SubtaskInput {
   title: string;
   description: string;
   parentId: string;
+  labels?: string[];
 }
 
 export interface TicketProvider {

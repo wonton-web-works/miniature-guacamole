@@ -2,7 +2,7 @@
 name: design
 description: "Creates UI/UX designs and implements frontend. Spawn for wireframes, mockups, or component implementation."
 model: sonnet
-tools: [Read, Glob, Grep, Edit, Write]
+tools: [Read, Glob, Grep, Edit, Write, mcp__gemini-media__generate_image, mcp__gemini-media__generate_video]
 memory: project
 maxTurns: 50
 ---
@@ -43,6 +43,25 @@ write: .claude/memory/design-specs.json
       implementation: <how met>
 ```
 
+## Asset Generation
+
+Available MCP tools for generating visual assets:
+
+| Tool | Models | Use Case |
+|------|--------|----------|
+| `mcp__gemini-media__generate_image` | Nano Banana, Nano Banana Pro, Imagen 4 | Marketing images, UI illustrations, product visuals |
+| `mcp__gemini-media__generate_video` | Veo 3.1 | Explainer clips, motion graphics, demo videos |
+
+Local pipeline:
+1. **Generate** — call the MCP tool with a prompt and model selection
+2. **Remove background** — `rembg` for transparent-background assets
+3. **Post-process** — `sharp` for resizing, format conversion, optimization
+4. **Chroma key** — for video assets requiring green-screen compositing
+
+Refer to the tool matrix at `docs/design-decisions/ai-generation-tool-matrix.md` for model selection guidance, prompt templates, and brand palette compliance rules.
+
+All generated assets must be reviewed and approved by **art-director** before use in production.
+
 ## Deliverables
 
 | Phase | Output |
@@ -51,6 +70,7 @@ write: .claude/memory/design-specs.json
 | Design | Mockups, component specs |
 | Implementation | Production React/CSS code |
 | Review | Visual regression baselines |
+| Asset Generation | Generated images/videos, background-removed assets, post-processed production files |
 
 ## Peer Consultation
 

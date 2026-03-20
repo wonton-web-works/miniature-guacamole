@@ -103,7 +103,7 @@ organization:
 hierarchy:
   executive:   [ceo, cto, engineering-director]
   leadership:  [product-owner, product-manager, engineering-manager, staff-engineer, art-director]
-  ic:          [dev, qa, design]
+  ic:          [dev, qa, design, ai-artist]
   operations:  [deployment-engineer]
 
 # ----------------------------------------------------------------------------
@@ -218,11 +218,11 @@ agents:
     description: >
       Sets design vision, brand standards, and directs the design team.
       Approves visual changes and maintains design consistency.
-    tools: [Read, Glob, Grep, Task]
-    can_spawn: [design]
+    tools: [Read, Glob, Grep, Task, mcp__gemini-media__generate_image]
+    can_spawn: [design, ai-artist]
     escalates_to: ceo
     memory_patterns:
-      reads:  [design-system, visual-regression-reports, brand-guidelines]
+      reads:  [design-system, visual-regression-reports, brand-guidelines, generated-assets]
       writes: [design-approvals, brand-guidelines, design-direction]
 
   # === IC TIER (implementation model, some fast) ===
@@ -261,13 +261,28 @@ agents:
     description: >
       Creates wireframes, mockups, and interaction designs. Implements
       production-grade frontend code with high design quality.
-    tools: [Read, Glob, Grep, Edit, Write]
+    tools: [Read, Glob, Grep, Edit, Write, mcp__gemini-media__generate_image, mcp__gemini-media__generate_video]
     can_spawn: []
-    can_consult: [dev, qa]
+    can_consult: [dev, qa, ai-artist]
     escalates_to: art-director
     memory_patterns:
       reads:  [design-system, brand-guidelines, feature-specs]
       writes: [design-specs, component-designs, visual-assets]
+
+  ai-artist:
+    title: AI Artist
+    tier: implementation
+    description: >
+      Generates production-ready visual assets using AI models (Nano Banana,
+      Nano Banana Pro, Imagen 4, Veo 3.1). Runs background removal and
+      post-processing pipeline. Delivers files for art-director approval.
+    tools: [Read, Glob, Grep, Edit, Write, Bash, mcp__gemini-media__generate_image, mcp__gemini-media__generate_video]
+    can_spawn: []
+    can_consult: [design, art-director]
+    escalates_to: art-director
+    memory_patterns:
+      reads:  [brand-guidelines, tasks-ai-artist]
+      writes: [generated-assets]
 
   # === OPERATIONS TIER ===
 
@@ -323,8 +338,8 @@ teams:
     default_tier: implementation
 
   design-team:
-    description: UI/UX design with visual regression and frontend implementation
-    members: [art-director, design]
+    description: UI/UX design with visual regression, frontend implementation, and AI asset generation
+    members: [art-director, design, ai-artist]
     default_tier: implementation
 
 # ----------------------------------------------------------------------------

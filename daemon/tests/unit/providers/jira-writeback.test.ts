@@ -8,6 +8,8 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { JiraProvider } from '../../../src/providers/jira';
 import type { JiraConfig } from '../../../src/types';
+import type { PipelineResult } from '../../../src/orchestrator';
+import type { TriageResult } from '../../../src/triage';
 
 vi.mock('../../../src/tracker', () => ({
   getProcessedTickets: vi.fn().mockReturnValue([]),
@@ -692,6 +694,139 @@ describe('JiraProvider write-back (WS-DAEMON-12)', () => {
       const headers = mockFetch.mock.calls[0][1].headers as Record<string, string>;
       const expectedEncoded = Buffer.from('user@example.com:my-secret-token').toString('base64');
       expect(headers['Authorization']).toBe(`Basic ${expectedEncoded}`);
+    });
+  });
+
+  // -------------------------------------------------------------------------
+  // Triage writeback — Jira-specific (GH-104)
+  // -------------------------------------------------------------------------
+
+  describe('Triage writeback — Jira (GH-104)', () => {
+    it('GIVEN NEEDS_CLARIFICATION triage body WHEN addComment() called THEN sends ADF doc containing triage outcome', async () => {
+      mockFetch.mockResolvedValue({
+        ok: true,
+        status: 201,
+        json: async () => ({ id: '10001' }),
+      });
+
+      const triageComment = '**Triage: NEEDS_CLARIFICATION**\n\nMissing acceptance criteria\n\n**Questions:**\n- What should the behavior be?';
+      await provider.addComment('TEST-42', triageComment);
+
+      const body = JSON.parse(mockFetch.mock.calls[0][1].body as string);
+      expect(body.body.type).toBe('doc');
+      expect(JSON.stringify(body)).toContain('NEEDS_CLARIFICATION');
+    });
+
+    it('GIVEN REJECT triage body WHEN addComment() called THEN sends ADF doc containing rejection reason', async () => {
+      mockFetch.mockResolvedValue({
+        ok: true,
+        status: 201,
+        json: async () => ({ id: '10001' }),
+      });
+
+      const triageComment = '**Triage: REJECT**\n\nOut of scope for this project';
+      await provider.addComment('TEST-42', triageComment);
+
+      const body = JSON.parse(mockFetch.mock.calls[0][1].body as string);
+      expect(JSON.stringify(body)).toContain('REJECT');
+      expect(JSON.stringify(body)).toContain('Out of scope for this project');
+    });
+
+    it('GIVEN triage adds mg-daemon:needs-info label WHEN addLabel() called THEN sends update.labels[{add}] payload', async () => {
+      mockFetch.mockResolvedValue({
+        ok: true, status: 204,
+        json: async () => ({}),
+      });
+
+      await provider.addLabel('TEST-42', 'mg-daemon:needs-info');
+
+      const body = JSON.parse(mockFetch.mock.calls[0][1].body as string);
+      expect(body.update.labels).toEqual([{ add: 'mg-daemon:needs-info' }]);
+    });
+
+    it('GIVEN triage adds mg-daemon:rejected label WHEN addLabel() called THEN sends update.labels[{add}] payload', async () => {
+      mockFetch.mockResolvedValue({
+        ok: true, status: 204,
+        json: async () => ({}),
+      });
+
+      await provider.addLabel('TEST-42', 'mg-daemon:rejected');
+
+      const body = JSON.parse(mockFetch.mock.calls[0][1].body as string);
+      expect(body.update.labels).toEqual([{ add: 'mg-daemon:rejected' }]);
+    });
+  });
+
+  // -------------------------------------------------------------------------
+  // PipelineResult triageResult assertions (GH-104)
+  // -------------------------------------------------------------------------
+
+  describe('PipelineResult triageResult assertions (GH-104)', () => {
+    it('GIVEN GO triage outcome THEN PipelineResult includes triageResult with outcome GO', () => {
+      const triageResult: TriageResult = { outcome: 'GO', reason: 'All checks pass' };
+      const result: PipelineResult = {
+        ticketId: 'TEST-42',
+        triageResult,
+        planned: [],
+        executed: [],
+        success: true,
+      };
+      expect(result.triageResult).toBeDefined();
+      expect(result.triageResult!.outcome).toBe('GO');
+      expect(result.triageResult!.reason).toBe('All checks pass');
+    });
+
+    it('GIVEN NEEDS_CLARIFICATION triage outcome THEN PipelineResult includes triageResult and success=false', () => {
+      const triageResult: TriageResult = {
+        outcome: 'NEEDS_CLARIFICATION',
+        reason: 'Missing acceptance criteria',
+        questions: ['What should the behavior be?'],
+      };
+      const result: PipelineResult = {
+        ticketId: 'TEST-42',
+        triageResult,
+        planned: [],
+        executed: [],
+        success: false,
+        error: 'Triage: NEEDS_CLARIFICATION — Missing acceptance criteria',
+      };
+      expect(result.triageResult).toBeDefined();
+      expect(result.triageResult!.outcome).toBe('NEEDS_CLARIFICATION');
+      expect(result.triageResult!.questions).toContain('What should the behavior be?');
+      expect(result.success).toBe(false);
+    });
+
+    it('GIVEN REJECT triage outcome THEN PipelineResult includes triageResult and success=false', () => {
+      const triageResult: TriageResult = {
+        outcome: 'REJECT',
+        reason: 'Out of scope',
+      };
+      const result: PipelineResult = {
+        ticketId: 'TEST-42',
+        triageResult,
+        planned: [],
+        executed: [],
+        success: false,
+        error: 'Triage: REJECT — Out of scope',
+      };
+      expect(result.triageResult).toBeDefined();
+      expect(result.triageResult!.outcome).toBe('REJECT');
+      expect(result.success).toBe(false);
+    });
+
+    it('GIVEN any triage outcome THEN triageResult is always present in PipelineResult for all outcomes', () => {
+      const outcomes: Array<TriageResult['outcome']> = ['GO', 'NEEDS_CLARIFICATION', 'REJECT'];
+      for (const outcome of outcomes) {
+        const result: PipelineResult = {
+          ticketId: 'TEST-42',
+          triageResult: { outcome, reason: 'test reason' },
+          planned: [],
+          executed: [],
+          success: outcome === 'GO',
+        };
+        expect(result.triageResult).toBeDefined();
+        expect(result.triageResult!.outcome).toBe(outcome);
+      }
     });
   });
 });

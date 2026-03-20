@@ -2,9 +2,9 @@
 layout: doc
 ---
 
-# PrivateEnterprise Documentation
+# miniature-guacamole Documentation
 
-Reference documentation for PrivateEnterprise (formerly miniature-guacamole) — an AI-powered product development team framework for Claude Code.
+Reference documentation for miniature-guacamole — an AI-powered product development team framework for Claude Code.
 
 ## Quick Links
 
@@ -16,9 +16,9 @@ Reference documentation for PrivateEnterprise (formerly miniature-guacamole) —
 - [Glossary](/glossary) — Key terms and concepts
 - [Daemon Guide](/daemon-guide) — Autonomous pipeline configuration and deployment
 
-## What is PrivateEnterprise?
+## What is miniature-guacamole?
 
-PrivateEnterprise transforms Claude Code into a complete product development team. 20 specialized agents — from CEO to QA to DevOps — coordinate through a structured workflow with quality gates, test-first development, and automated code review.
+miniature-guacamole transforms Claude Code into a complete product development team. 20 specialized agents — from CEO to QA to DevOps — coordinate through a structured workflow with quality gates, test-first development, and automated code review.
 
 The framework is open source. The daemon pipeline is available as a commercial product.
 

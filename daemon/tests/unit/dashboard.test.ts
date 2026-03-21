@@ -791,7 +791,7 @@ describe('Dashboard Module', () => {
         };
 
         const output = formatDashboard(data);
-        expect(output).toContain('TRIAGE');
+        expect(output).toContain('Triage:');
       });
 
       it('GIVEN triage counts THEN output contains GO count', () => {
@@ -823,7 +823,7 @@ describe('Dashboard Module', () => {
         };
 
         const output = formatDashboard(data);
-        expect(output).toMatch(/NEEDS_INFO.*2/);
+        expect(output).toMatch(/Needs-Info: 2/);
       });
 
       it('GIVEN triage counts THEN output contains REJECTED count', () => {
@@ -839,7 +839,7 @@ describe('Dashboard Module', () => {
         };
 
         const output = formatDashboard(data);
-        expect(output).toMatch(/REJECTED.*1/);
+        expect(output).toMatch(/Rejected: 1/);
       });
 
       it('GIVEN triage section THEN each line is at most 80 characters', () => {

@@ -21,11 +21,18 @@ Coordinates executive leadership for strategic alignment. Operates in two modes 
 At skill invocation, check for the Sage agent:
 
 ```
-IF .claude/agents/sage/AGENT.md exists → ENTERPRISE MODE (Sage-orchestrated)
-ELSE                                    → COMMUNITY MODE  (CEO + CTO + ED always)
+IF .claude/agents/sage/AGENT.md exists
+  AND ~/.claude/ext-session.json exists
+  AND session.license.expiresAt > now
+  AND session.license.features includes "sage"
+  → ENTERPRISE MODE (Sage-orchestrated)
+ELSE
+  → COMMUNITY MODE (CEO + CTO + ED always)
+  NOTE: if sage/AGENT.md exists but session is missing or invalid, print:
+        "Enterprise session required for Sage mode. Run `mg login` to authenticate."
 ```
 
-This check is silent. No edition banner is printed to the user.
+This check is silent on success. The note above is only printed when Sage exists but the session gate fails.
 
 ## Constitution
 

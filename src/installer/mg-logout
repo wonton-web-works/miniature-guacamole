@@ -1,0 +1,89 @@
+#!/usr/bin/env bash
+# mg-logout — end enterprise session
+# Usage: mg-logout
+set -euo pipefail
+
+# ─────────────────────────────────────────────────
+# Config
+# ─────────────────────────────────────────────────
+
+MG_API_URL="${MG_API_URL:-https://api.wontonwebworks.com}"
+SESSION_FILE="${HOME}/.claude/ext-session.json"
+
+# ─────────────────────────────────────────────────
+# Dependency check
+# ─────────────────────────────────────────────────
+
+if ! command -v curl &>/dev/null; then
+  echo "Error: curl is required but not installed." >&2
+  exit 1
+fi
+
+HAS_JQ=false
+if command -v jq &>/dev/null; then
+  HAS_JQ=true
+fi
+
+# ─────────────────────────────────────────────────
+# JSON helper
+# ─────────────────────────────────────────────────
+
+json_get() {
+  local json="$1" key="$2"
+  if $HAS_JQ; then
+    echo "$json" | jq -r ".$key // empty"
+  else
+    echo "$json" | grep -o "\"${key}\"[[:space:]]*:[[:space:]]*\"[^\"]*\"" \
+      | head -1 \
+      | sed 's/.*:[[:space:]]*"\(.*\)"/\1/'
+  fi
+}
+
+# ─────────────────────────────────────────────────
+# Read session
+# ─────────────────────────────────────────────────
+
+if [[ ! -f "$SESSION_FILE" ]]; then
+  echo "Not logged in. Nothing to do."
+  exit 0
+fi
+
+SESSION=$(cat "$SESSION_FILE")
+TOKEN=$(json_get "$SESSION" "token")
+
+if [[ -z "$TOKEN" ]]; then
+  echo "Session file is malformed — removing it."
+  rm -f "$SESSION_FILE"
+  exit 0
+fi
+
+# ─────────────────────────────────────────────────
+# POST /api/mg/auth/logout
+# ─────────────────────────────────────────────────
+
+HTTP_RESPONSE=$(curl \
+  --silent \
+  --show-error \
+  --write-out "\n__HTTP_STATUS__%{http_code}" \
+  --request POST \
+  --header "Authorization: Bearer ${TOKEN}" \
+  --header "Content-Type: application/json" \
+  "${MG_API_URL}/api/mg/auth/logout" 2>&1) || {
+    # Network failure — still remove the local session
+    echo "Warning: could not reach the server (network error). Removing local session anyway." >&2
+  }
+
+HTTP_STATUS=$(echo "$HTTP_RESPONSE" | grep '__HTTP_STATUS__' | sed 's/__HTTP_STATUS__//' || echo "000")
+
+if [[ "$HTTP_STATUS" != "200" ]] && [[ "$HTTP_STATUS" != "204" ]] && [[ "$HTTP_STATUS" != "000" ]]; then
+  # Server rejected the token — likely already expired. Still clean up locally.
+  echo "Warning: server returned HTTP ${HTTP_STATUS}. Removing local session anyway." >&2
+fi
+
+# ─────────────────────────────────────────────────
+# Remove session file
+# ─────────────────────────────────────────────────
+
+rm -f "$SESSION_FILE"
+
+echo "Logged out."

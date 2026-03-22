@@ -1,0 +1,206 @@
+#!/usr/bin/env bash
+# mg-upgrade — download enterprise features (Sage and enterprise skills)
+# Usage: mg-upgrade --enterprise
+set -euo pipefail
+
+# ─────────────────────────────────────────────────
+# Config
+# ─────────────────────────────────────────────────
+
+MG_API_URL="${MG_API_URL:-https://api.wontonwebworks.com}"
+SESSION_FILE="${HOME}/.claude/ext-session.json"
+GLOBAL_SAGE_DIR="${HOME}/.claude/agents/sage"
+GLOBAL_SKILL_DIR="${HOME}/.claude/skills/mg-leadership-team"
+
+# ─────────────────────────────────────────────────
+# Parse arguments
+# ─────────────────────────────────────────────────
+
+ENTERPRISE=false
+for arg in "$@"; do
+  case "$arg" in
+    --enterprise)
+      ENTERPRISE=true
+      ;;
+    --help|-h)
+      echo "Usage: mg-upgrade --enterprise"
+      echo ""
+      echo "Downloads Sage and enterprise skills using your active enterprise session."
+      echo "Run \`mg-login\` first if you have not authenticated."
+      exit 0
+      ;;
+    *)
+      echo "Unknown flag: $arg" >&2
+      echo "Usage: mg-upgrade --enterprise" >&2
+      exit 1
+      ;;
+  esac
+done
+
+if ! $ENTERPRISE; then
+  echo "Usage: mg-upgrade --enterprise"
+  echo ""
+  echo "  --enterprise    Download Sage and enterprise features"
+  exit 1
+fi
+
+# ─────────────────────────────────────────────────
+# Dependency checks
+# ─────────────────────────────────────────────────
+
+if ! command -v curl &>/dev/null; then
+  echo "Error: curl is required but not installed." >&2
+  exit 1
+fi
+
+HAS_JQ=false
+if command -v jq &>/dev/null; then
+  HAS_JQ=true
+fi
+
+# ─────────────────────────────────────────────────
+# JSON helpers
+# ─────────────────────────────────────────────────
+
+json_get() {
+  local json="$1" key="$2"
+  if $HAS_JQ; then
+    echo "$json" | jq -r ".$key // empty"
+  else
+    echo "$json" | grep -o "\"${key}\"[[:space:]]*:[[:space:]]*\"[^\"]*\"" \
+      | head -1 \
+      | sed 's/.*:[[:space:]]*"\(.*\)"/\1/'
+  fi
+}
+
+# Extract a multi-line string value (for AGENT.md content embedded in JSON)
+json_get_content() {
+  local json="$1" key="$2"
+  if $HAS_JQ; then
+    echo "$json" | jq -r ".$key // empty"
+  else
+    # Best-effort: pull value after key and unescape \n
+    echo "$json" | grep -o "\"${key}\"[[:space:]]*:[[:space:]]*\"[^\"]*\"" \
+      | head -1 \
+      | sed 's/.*:[[:space:]]*"\(.*\)"/\1/' \
+      | sed 's/\\n/\n/g' \
+      | sed 's/\\t/\t/g'
+  fi
+}
+
+# ─────────────────────────────────────────────────
+# Read session
+# ─────────────────────────────────────────────────
+
+if [[ ! -f "$SESSION_FILE" ]]; then
+  echo "Error: not logged in. Run \`mg-login\` first." >&2
+  exit 1
+fi
+
+SESSION=$(cat "$SESSION_FILE")
+TOKEN=$(json_get "$SESSION" "token")
+
+if [[ -z "$TOKEN" ]]; then
+  echo "Error: session file is malformed. Run \`mg-login\` to re-authenticate." >&2
+  exit 1
+fi
+
+# ─────────────────────────────────────────────────
+# GET /api/mg/enterprise/download
+# ─────────────────────────────────────────────────
+
+echo ""
+echo "Downloading enterprise features..."
+
+HTTP_RESPONSE=$(curl \
+  --silent \
+  --show-error \
+  --write-out "\n__HTTP_STATUS__%{http_code}" \
+  --request GET \
+  --header "Authorization: Bearer ${TOKEN}" \
+  "${MG_API_URL}/api/mg/enterprise/download" 2>&1) || {
+    echo "Error: network request failed. Check your connection and MG_API_URL." >&2
+    exit 1
+  }
+
+HTTP_BODY=$(echo "$HTTP_RESPONSE" | sed -n '/^__HTTP_STATUS__/!p' | tr -d '\r')
+HTTP_STATUS=$(echo "$HTTP_RESPONSE" | grep '__HTTP_STATUS__' | sed 's/__HTTP_STATUS__//')
+
+# ─────────────────────────────────────────────────
+# Handle errors
+# ─────────────────────────────────────────────────
+
+if [[ "$HTTP_STATUS" == "403" ]]; then
+  echo "Enterprise license required. Visit private-enterprise.wontonwebworks.com/enterprise" >&2
+  exit 1
+fi
+
+if [[ "$HTTP_STATUS" == "401" ]]; then
+  echo "Error: session expired or invalid. Run \`mg-login\` to re-authenticate." >&2
+  exit 1
+fi
+
+if [[ "$HTTP_STATUS" != "200" ]]; then
+  ERROR_MSG=$(json_get "$HTTP_BODY" "error")
+  if [[ -z "$ERROR_MSG" ]]; then
+    ERROR_MSG="HTTP $HTTP_STATUS"
+  fi
+  echo "Error: download failed — ${ERROR_MSG}" >&2
+  exit 1
+fi
+
+# ─────────────────────────────────────────────────
+# Extract payloads from response
+# ─────────────────────────────────────────────────
+
+SAGE_AGENT_MD=$(json_get_content "$HTTP_BODY" "sageAgentMd")
+LEADERSHIP_SKILL_MD=$(json_get_content "$HTTP_BODY" "leadershipTeamSkillMd")
+
+if [[ -z "$SAGE_AGENT_MD" ]]; then
+  echo "Error: server response is missing sageAgentMd. Contact support." >&2
+  exit 1
+fi
+
+# ─────────────────────────────────────────────────
+# Install: global ~/.claude/agents/sage/AGENT.md
+# ─────────────────────────────────────────────────
+
+mkdir -p "$GLOBAL_SAGE_DIR"
+printf '%s\n' "$SAGE_AGENT_MD" > "${GLOBAL_SAGE_DIR}/AGENT.md"
+echo "  Installed: ${GLOBAL_SAGE_DIR}/AGENT.md"
+
+# ─────────────────────────────────────────────────
+# Install: project-local .claude/agents/sage/AGENT.md
+# ─────────────────────────────────────────────────
+
+if [[ -d "${PWD}/.claude" ]]; then
+  LOCAL_SAGE_DIR="${PWD}/.claude/agents/sage"
+  mkdir -p "$LOCAL_SAGE_DIR"
+  printf '%s\n' "$SAGE_AGENT_MD" > "${LOCAL_SAGE_DIR}/AGENT.md"
+  echo "  Installed: ${LOCAL_SAGE_DIR}/AGENT.md"
+fi
+
+# ─────────────────────────────────────────────────
+# Install: enterprise leadership-team skill (global)
+# ─────────────────────────────────────────────────
+
+if [[ -n "$LEADERSHIP_SKILL_MD" ]]; then
+  mkdir -p "$GLOBAL_SKILL_DIR"
+  printf '%s\n' "$LEADERSHIP_SKILL_MD" > "${GLOBAL_SKILL_DIR}/SKILL.md"
+  echo "  Installed: ${GLOBAL_SKILL_DIR}/SKILL.md (enterprise v2.0)"
+
+  # Project-local sync
+  if [[ -d "${PWD}/.claude" ]]; then
+    LOCAL_SKILL_DIR="${PWD}/.claude/skills/mg-leadership-team"
+    mkdir -p "$LOCAL_SKILL_DIR"
+    printf '%s\n' "$LEADERSHIP_SKILL_MD" > "${LOCAL_SKILL_DIR}/SKILL.md"
+    echo "  Installed: ${LOCAL_SKILL_DIR}/SKILL.md (enterprise v2.0)"
+  fi
+fi
+
+# ─────────────────────────────────────────────────
+# Done
+# ─────────────────────────────────────────────────
+
+echo ""
+echo "Enterprise features installed. The Sage is ready."

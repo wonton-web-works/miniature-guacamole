@@ -1,0 +1,6 @@
+User-agent: *
+Allow: /
+Disallow: /pilot
+Disallow: /wireframe
+
+Sitemap: https://private-enterprise.wontonwebworks.com/sitemap.xml

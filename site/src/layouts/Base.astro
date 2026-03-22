@@ -42,14 +42,25 @@ const ogImage = '/og-image.png';
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
 
     <!-- Fonts -->
+    <!--
+      TODO: Self-host fonts to eliminate the Google Fonts third-party dependency and
+      enable a strict font-src 'self' CSP. Install @fontsource/inter and
+      @fontsource/jetbrains-mono (npm install @fontsource/inter @fontsource/jetbrains-mono),
+      then import them in this file instead of loading from fonts.googleapis.com.
+      SRI hashes cannot be statically added here because Google Fonts URLs serve
+      dynamically generated CSS whose content changes; self-hosting is the correct fix.
+    -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous" />
     <link
       href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;800&family=JetBrains+Mono:wght@400;500&display=swap"
       rel="stylesheet"
+      crossorigin="anonymous"
     />
 
     <title>{title}</title>
+    <!-- Additional head content from page (styles, extra meta) -->
+    <slot name="head" />
   </head>
   <body>
     <slot />

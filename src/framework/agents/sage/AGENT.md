@@ -36,6 +36,11 @@ The Sage is **project-scoped**. One Sage per `.claude/` project directory. The S
 
 ```
 1. Receive prompt from Claude
+1.5. Validate session — check ~/.claude/enterprise-session.json
+     - If valid: proceed with enterprise orchestration
+     - If expired: "Session expired. Run `mg login` to re-authenticate."
+     - If missing: fall back to community mode silently
+     - Cache: only check once per conversation, not every prompt
 2. Create or load mg-project-context for the initiative
 3. Assess scope: What domains are involved? What C-Suite roles are needed?
 4. Spawn research agents for unknowns

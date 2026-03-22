@@ -23,13 +23,13 @@ claude
 /mg-assess Build a user authentication system
 ```
 
-That's it. Claude Code now has all 18 skills and 20 agents available. Type `/mg` to see them all.
+That's it. Claude Code now has all 18 skills and 24 agents available. Type `/mg` to see them all.
 
 > **`mg-init` vs `/mg-init`** — `mg-init` is a shell script you run in your terminal. It reads from `~/.miniature-guacamole/` and installs the framework into your project's `.claude/` directory. `/mg-init` is a Claude Code skill you run inside a session. It creates `.claude/memory/`, detects your tech stack, and generates project-specific context. Run the shell script first to install, then the skill to initialize.
 
 ## What You Just Got
 
-You now have 18 skills, 20 agents, and a shared memory system installed in `.claude/`. Here's what that means:
+You now have 18 skills, 24 agents, and a shared memory system installed in `.claude/`. Here's what that means:
 
 - **Skills** are slash commands (`/mg-build`, `/mg-assess`, etc.) that coordinate multi-agent workflows
 - **Agents** are specialized roles (CEO, QA, Dev, etc.) that skills delegate work to
@@ -167,7 +167,7 @@ The full framework bundle — used as the source for per-project init:
 ```
 your-project/
 └── .claude/
-    ├── agents/           # 20 specialized agent roles
+    ├── agents/           # 24 specialized agent roles
     ├── skills/           # 18 team collaboration workflows
     ├── shared/           # 6 protocol documents
     ├── scripts/          # 17 mg-* utility commands
@@ -286,7 +286,7 @@ npm test  # Verify it works
 
 - [Workflow Guide](/workflows) - Learn the full CAD development cycle
 - [Architecture Overview](/architecture) - Agent hierarchy, delegation model, memory layer
-- [Agent Reference](/agents) - All 20 agents and their roles
+- [Agent Reference](/agents) - All 24 agents and their roles
 
 ## Support
 

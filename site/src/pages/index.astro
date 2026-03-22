@@ -66,6 +66,10 @@ const changelog = [
     version: 'v4.2.0',
     date: '2026-03-20',
     title: 'Full Pipeline',
+    badges: [
+      { label: 'reliability +1', color: '#7A5C8B', icon: '♥' },
+      { label: 'automation +3', color: '#D4A84B', icon: '⚡' },
+    ],
     notes: [
       'Post-PR code review — daemon invokes leadership review after every PR',
       'Merge automation — approved PRs merge automatically, rejections loop back to dev',
@@ -76,6 +80,10 @@ const changelog = [
     version: 'v4.1.0',
     date: '2026-03-19',
     title: 'Output Parity',
+    badges: [
+      { label: 'dx +1', color: '#5CB8C2', icon: '▸' },
+      { label: 'speed +40%', color: '#D4A84B', icon: '⚡' },
+    ],
     notes: [
       'Compact [ROLE] prefix output — every agent speaks in one line',
       'Timing instrumentation — per-step and total elapsed',
@@ -86,6 +94,11 @@ const changelog = [
     version: 'v4.0.0',
     date: '2026-03-19',
     title: 'Framework Hardening',
+    badges: [
+      { label: 'agents +3', color: '#2E6E8E', icon: '●' },
+      { label: 'speed +60%', color: '#D4A84B', icon: '⚡' },
+      { label: 'new skill', color: '#8ABB5A', icon: '★' },
+    ],
     notes: [
       'Base template inheritance — 42% less boilerplate per agent',
       '2-track dev cycle — MECHANICAL (1 spawn) vs ARCHITECTURAL (5-6)',
@@ -96,6 +109,10 @@ const changelog = [
     version: 'v3.1.0',
     date: '2026-03-19',
     title: 'State Reconciliation',
+    badges: [
+      { label: 'reliability +1', color: '#7A5C8B', icon: '♥' },
+      { label: 'security +1', color: '#C75450', icon: '■' },
+    ],
     notes: [
       '/mg-tidy skill for issue dedup + memory sync',
       'Daemon launchd auto-start with PATH fix',
@@ -117,13 +134,13 @@ const installCmd = 'curl -fsSL https://raw.githubusercontent.com/wonton-web-work
         <div class="hero-content">
           <div class="hero-text">
             <h1 class="hero-headline">
-              <span class="hero-headline-light">20 engineers.</span>
+              <span class="hero-headline-light">Your AI</span>
               <br />
-              <span class="hero-headline-bold">Zero salaries.</span>
+              <span class="hero-headline-bold">Engineering Org.</span>
             </h1>
 
             <p class="hero-subtitle">
-              PrivateEnterprise gives Claude Code a complete product development org — Engineering Manager, QA, Staff Engineer, and more. Every agent has a role. Memory is project-local. No hallway meetings.
+              PrivateEnterprise gives Claude Code a complete product development team — from triage to merge. The capybara guides. Your project ships.
             </p>
 
             <div class="hero-actions">
@@ -136,14 +153,20 @@ const installCmd = 'curl -fsSL https://raw.githubusercontent.com/wonton-web-work
             </div>
 
             <p class="hero-stats">
-              <span class="mono">20 agents · 19 skills · 6 protocols</span>
+              <span class="mono">24 agents · 19 skills · 6 protocols</span>
             </p>
           </div>
 
           <div class="hero-terminal">
-            <TerminalAnimation client:load />
+            <div class="terminal-wrapper">
+              <TerminalAnimation client:load />
+              <img src="/assets/capy/terminal-capy-spirits.png" alt="" class="terminal-capy" />
+            </div>
           </div>
         </div>
+      </div>
+      <div class="peeking-capy-wrapper">
+        <img src="/assets/capy/peeking.png" alt="" class="peeking-capy" />
       </div>
     </section>
 
@@ -173,7 +196,8 @@ const installCmd = 'curl -fsSL https://raw.githubusercontent.com/wonton-web-work
     <section class="meet-the-team">
       <div class="container">
         <h2 class="section-heading">Meet the team</h2>
-        <p class="section-sublead">20 agents, 4 levels — just like a real org.</p>
+        <p class="section-sublead-hero">24 agents. Zero salaries.</p>
+        <p class="section-sublead">4 levels, full autonomy — just like a real org.</p>
 
         <!-- Tier 1: Executive -->
         <div class="org-tier">
@@ -242,10 +266,16 @@ const installCmd = 'curl -fsSL https://raw.githubusercontent.com/wonton-web-work
             <div class="agent-card-sm">DevOps</div>
             <div class="agent-card-sm">API Design</div>
             <div class="agent-card-sm">Data</div>
-            <div class="agent-card-sm">Tech Writer</div>
-            <div class="agent-card-sm">Copywriter</div>
           </div>
-          <p class="tier-note mono">+ 12 more specialist agents</p>
+          <div class="tier-row tier-4" style="margin-top: 0.5rem;">
+            <div class="agent-card" style="border-color: #5C7A5C; max-width: 260px;">
+              <span class="agent-abbr mono" style="color: #5C7A5C;">SUP</span>
+              <span class="agent-role">Supervisor</span>
+              <p class="agent-bio">Watches your pipeline for depth violations, loops, and process drift. Alerts before failures cascade.</p>
+              <span class="agent-model mono" style="color: #5C7A5C; font-size: 0.7rem; margin-top: 0.5rem; display: block;">haiku</span>
+            </div>
+          </div>
+          <p class="tier-note mono">+ 17 more specialist agents</p>
         </div>
       </div>
     </section>
@@ -295,6 +325,10 @@ const installCmd = 'curl -fsSL https://raw.githubusercontent.com/wonton-web-work
     <!-- ============================================================
          VALUE CTA
     ============================================================ -->
+    <div class="spirit-divider">
+      <img src="/assets/capy/zen-meditating.png" alt="" class="spirit-divider-img" />
+    </div>
+
     <section class="value-cta">
       <div class="container">
         <h2 class="value-cta-headline">Replace a 5-person team.<br />Keep one engineer.</h2>
@@ -302,7 +336,7 @@ const installCmd = 'curl -fsSL https://raw.githubusercontent.com/wonton-web-work
           PrivateEnterprise runs your full development lifecycle — triage, planning, code, review, merge — 24/7. Pricing reflects team replacement, not tooling.
         </p>
         <div class="value-cta-actions">
-          <a href="/pilot" class="cta-primary">Start a Pilot</a>
+          <a href="https://github.com/wonton-web-works/miniature-guacamole" class="cta-primary">Get Started</a>
           <a
             href="mailto:byazaki@wontonwebworks.com?subject=PrivateEnterprise"
             class="cta-secondary"
@@ -319,7 +353,7 @@ const installCmd = 'curl -fsSL https://raw.githubusercontent.com/wonton-web-work
         <h2 class="section-heading">Changelog</h2>
 
         <div class="changelog-list">
-          {changelog.map(({ version, date, title, notes }) => (
+          {changelog.map(({ version, date, title, badges, notes }) => (
             <div class="changelog-entry">
               <div class="changelog-meta">
                 <span class="changelog-version mono">{version}</span>
@@ -327,6 +361,13 @@ const installCmd = 'curl -fsSL https://raw.githubusercontent.com/wonton-web-work
               </div>
               <div class="changelog-body">
                 <h3 class="changelog-title">{title}</h3>
+                <div class="skill-badges">
+                  {badges.map(({ label, color, icon }) => (
+                    <span class="skill-badge mono" style={`border-color: ${color}; color: ${color};`}>
+                      <span class="skill-badge-icon">{icon}</span> {label}
+                    </span>
+                  ))}
+                </div>
                 <ul class="changelog-notes">
                   {notes.map((note) => (
                     <li>{note}</li>
@@ -404,9 +445,33 @@ const installCmd = 'curl -fsSL https://raw.githubusercontent.com/wonton-web-work
      HERO
   ------------------------------------------------------- */
   .hero {
-    padding: clamp(80px, 12vw, 160px) 0 calc(clamp(60px, 8vw, 120px) + 40px);
-    clip-path: polygon(0 0, 100% 0, 100% calc(100% - 40px), 0 100%);
-    border-bottom: none;
+    padding: clamp(80px, 12vw, 160px) 0 clamp(60px, 8vw, 120px);
+    border-bottom: 1px solid var(--mg-surface);
+    overflow: visible;
+    position: relative;
+  }
+
+  .peeking-capy-wrapper {
+    position: absolute;
+    bottom: -40px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 2;
+  }
+
+  .peeking-capy {
+    width: 260px;
+    height: auto;
+    image-rendering: pixelated;
+  }
+
+  @media (max-width: 768px) {
+    .peeking-capy {
+      width: 180px;
+    }
+    .peeking-capy-wrapper {
+      bottom: -28px;
+    }
   }
 
   .hero-content {
@@ -416,21 +481,6 @@ const installCmd = 'curl -fsSL https://raw.githubusercontent.com/wonton-web-work
     align-items: center;
   }
 
-  @media (max-width: 768px) {
-    .hero-content {
-      grid-template-columns: 1fr;
-      gap: 40px;
-    }
-    .hero-terminal {
-      order: -1;
-    }
-    .hero-headline {
-      font-size: clamp(40px, 10vw, 56px);
-    }
-    .hero-subtitle {
-      max-width: 100%;
-    }
-  }
 
   .hero-headline {
     font-family: var(--font-display);
@@ -490,15 +540,136 @@ const installCmd = 'curl -fsSL https://raw.githubusercontent.com/wonton-web-work
     color: var(--mg-cilantro);
   }
 
-  /* Capybara characters — waiting for production art from WS-STUDIO-2 (#7) */
+  /* Hero terminal column */
+  .hero-terminal {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    width: 100%;
+  }
+
+  /* Wrapper holds the terminal + absolutely positioned capy */
+  .terminal-wrapper {
+    position: relative;
+    width: 100%;
+    height: 100%;
+  }
+
+  /* Capybara sitting inside the terminal — watermark style */
+  .terminal-capy {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    width: 130px;
+    height: auto;
+    image-rendering: pixelated;
+    transform: scaleX(-1);
+    pointer-events: none;
+    z-index: 1;
+    opacity: 0.4;
+  }
+
+  @media (max-width: 768px) {
+    .hero-content {
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+    }
+    .hero-terminal {
+      order: 0;
+    }
+    .terminal-capy {
+      width: 90px;
+    }
+    .hero-headline {
+      font-size: clamp(32px, 8vw, 48px);
+    }
+    .hero-subtitle {
+      max-width: 100%;
+      font-size: 13px;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .hero-content {
+      grid-template-columns: 1fr;
+      gap: 32px;
+    }
+    .hero-terminal {
+      order: -1;
+    }
+    .terminal-capy {
+      width: 70px;
+    }
+  }
+
+  /* Terminal fixed height — scroll-up requires explicit height */
+  :global(.terminal-box) {
+    height: 380px;
+  }
+
+  @media (max-width: 768px) {
+    :global(.terminal-box) {
+      height: 440px;
+    }
+  }
+
+  @media (max-width: 480px) {
+    :global(.terminal-box) {
+      height: 500px;
+    }
+  }
+
+  /* Terminal lines — text flows over the watermark capy */
+
+  /* Spirit guide divider — single use before CTA */
+  .spirit-divider {
+    display: flex;
+    justify-content: center;
+    padding: 40px 0;
+  }
+
+  .spirit-divider-img {
+    width: 160px;
+    height: auto;
+    image-rendering: pixelated;
+    border-radius: 12px;
+  }
+
+  @media (max-width: 768px) {
+    .spirit-divider-img {
+      width: 120px;
+    }
+  }
+
+  /* Skill-up badges for changelog */
+  .skill-badges {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 14px;
+  }
+
+  .skill-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 11px;
+    letter-spacing: 0.04em;
+    padding: 3px 10px;
+    border-radius: 20px;
+    border: 1px solid;
+    background: rgba(255, 255, 255, 0.03);
+  }
+
+  .skill-badge-icon {
+    font-size: 10px;
+  }
 
   /* -------------------------------------------------------
      WHAT IT DOES
   ------------------------------------------------------- */
   .what-it-does {
     padding: clamp(60px, 8vw, 120px) 0;
-    clip-path: polygon(0 40px, 100% 0, 100% 100%, 0 100%);
-    margin-top: -40px;
     border-bottom: 1px solid var(--mg-surface);
   }
 
@@ -562,6 +733,15 @@ const installCmd = 'curl -fsSL https://raw.githubusercontent.com/wonton-web-work
     color: var(--mg-text);
     letter-spacing: -0.02em;
     margin-bottom: 12px;
+  }
+
+  .section-sublead-hero {
+    font-family: var(--font-display);
+    font-size: clamp(22px, 3vw, 32px);
+    font-weight: 800;
+    color: var(--mg-text);
+    letter-spacing: -0.01em;
+    margin-bottom: 8px;
   }
 
   .section-sublead {
@@ -704,8 +884,8 @@ const installCmd = 'curl -fsSL https://raw.githubusercontent.com/wonton-web-work
     color: var(--mg-subtext);
     letter-spacing: 0.08em;
     text-transform: uppercase;
+    margin-top: 8px;
     margin-bottom: 48px;
-    margin-top: -28px;
   }
 
   .workflow-timeline {
@@ -776,6 +956,69 @@ const installCmd = 'curl -fsSL https://raw.githubusercontent.com/wonton-web-work
   }
 
   /* -------------------------------------------------------
+     INSTALL
+  ------------------------------------------------------- */
+  .install {
+    padding: clamp(80px, 12vw, 160px) 0;
+    border-bottom: 1px solid var(--mg-surface);
+  }
+
+  .install-block {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    background: var(--mg-surface);
+    border: 1px solid #263040;
+    border-radius: 6px;
+    padding: 18px 24px;
+    margin: 0 0 20px;
+    max-width: 100%;
+  }
+
+  @media (max-width: 560px) {
+    .install-block {
+      flex-direction: column;
+      align-items: stretch;
+      gap: 12px;
+    }
+    .copy-btn {
+      align-self: flex-start;
+    }
+  }
+
+  .install-cmd {
+    font-size: clamp(11px, 1.2vw, 13px);
+    color: var(--mg-text);
+    word-break: break-all;
+    flex: 1;
+    min-width: 0;
+    user-select: all;
+  }
+
+  .copy-btn {
+    background: none;
+    border: 1px solid var(--mg-subtext);
+    color: var(--mg-subtext);
+    font-size: 12px;
+    padding: 6px 14px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: border-color 0.15s, color 0.15s;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  .copy-btn:hover {
+    border-color: var(--mg-text);
+    color: var(--mg-text);
+  }
+
+  .install-note {
+    font-size: 13px;
+    color: var(--mg-subtext);
+  }
+
+  /* -------------------------------------------------------
      VALUE CTA
   ------------------------------------------------------- */
   .value-cta {
@@ -840,69 +1083,6 @@ const installCmd = 'curl -fsSL https://raw.githubusercontent.com/wonton-web-work
       max-width: 280px;
       text-align: center;
     }
-  }
-
-  /* -------------------------------------------------------
-     INSTALL
-  ------------------------------------------------------- */
-  .install {
-    padding: clamp(80px, 12vw, 160px) 0;
-    border-bottom: 1px solid var(--mg-surface);
-  }
-
-  .install-block {
-    display: flex;
-    align-items: center;
-    gap: 20px;
-    background: var(--mg-surface);
-    border: 1px solid #263040;
-    border-radius: 6px;
-    padding: 18px 24px;
-    margin: 0 0 20px;
-    max-width: 100%;
-  }
-
-  @media (max-width: 560px) {
-    .install-block {
-      flex-direction: column;
-      align-items: stretch;
-      gap: 12px;
-    }
-    .copy-btn {
-      align-self: flex-start;
-    }
-  }
-
-  .install-cmd {
-    font-size: clamp(11px, 1.2vw, 13px);
-    color: var(--mg-text);
-    word-break: break-all;
-    flex: 1;
-    min-width: 0;
-    user-select: all;
-  }
-
-  .copy-btn {
-    background: none;
-    border: 1px solid var(--mg-subtext);
-    color: var(--mg-subtext);
-    font-size: 12px;
-    padding: 6px 14px;
-    border-radius: 4px;
-    cursor: pointer;
-    transition: border-color 0.15s, color 0.15s;
-    white-space: nowrap;
-    flex-shrink: 0;
-  }
-
-  .copy-btn:hover {
-    border-color: var(--mg-text);
-    color: var(--mg-text);
-  }
-
-  .install-note {
-    font-size: 13px;
-    color: var(--mg-subtext);
   }
 
   /* -------------------------------------------------------

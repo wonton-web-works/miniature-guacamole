@@ -21,7 +21,6 @@ Classifies workstreams at intake, then coordinates the appropriate track: MECHAN
 2. **Tests before code** - MECHANICAL: Dev writes tests then implements. ARCHITECTURAL: QA writes tests first.
 3. **99% coverage** - Unit + integration combined, no exceptions
 4. **Escalate blockers** - Surface issues early to engineering-manager
-5. **Follow output format** — See `references/output-format.md` for standard visual patterns
 
 ## Flags
 

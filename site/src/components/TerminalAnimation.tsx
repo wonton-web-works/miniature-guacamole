@@ -13,6 +13,7 @@ const LINES: Line[] = [
   { text: '  Writing tests — 12 specs                  4.1s', prefix: '[DEV] ', prefixColor: '#E8E8E8' },
   { text: '  Implementing — all tests passing         18.7s', prefix: '[DEV] ', prefixColor: '#E8E8E8' },
   { text: '  Coverage 99.4% ✓  Lines 142 ✓             0.3s', prefix: '[GATE]', prefixColor: '#4A7C59' },
+  { text: '  Monitoring — depth 2/3, no loops detected ✓', prefix: '[SUP] ', prefixColor: '#5C7A5C' },
   { text: '  Done                                     23.3s', prefix: '[EM]  ', prefixColor: '#4A7C59' },
 ];
 
@@ -54,29 +55,45 @@ function StaticTerminal() {
         fontFamily: "'JetBrains Mono', 'Fira Code', monospace",
         fontSize: '14px',
         lineHeight: '1.8',
-        maxWidth: '580px',
+        width: '100%',
+        overflow: 'hidden',
+        display: 'flex',
+        flexDirection: 'column',
+        position: 'relative',
       }}
+      className="terminal-box"
     >
-      <div style={{ display: 'flex', gap: '6px', marginBottom: '20px' }}>
+      <div style={{ display: 'flex', gap: '6px', marginBottom: '20px', flexShrink: 0 }}>
         <span style={{ width: 12, height: 12, borderRadius: '50%', background: '#FF5F56', display: 'inline-block' }} />
         <span style={{ width: 12, height: 12, borderRadius: '50%', background: '#FFBD2E', display: 'inline-block' }} />
         <span style={{ width: 12, height: 12, borderRadius: '50%', background: '#27C93F', display: 'inline-block' }} />
       </div>
-      {LINES.map((line, i) => {
-        const full = line.prefix ? line.prefix + line.text : line.text;
-        return (
-          <div key={i} style={{ display: 'block' }}>
-            {line.prefix ? (
-              <>
-                <span style={{ color: line.prefixColor, fontWeight: 500 }}>{line.prefix}</span>
-                <span style={{ color: '#E8E8E8' }}>{line.text}</span>
-              </>
-            ) : (
-              <span style={{ color: '#8A9BB0' }}>{full}</span>
-            )}
-          </div>
-        );
-      })}
+      <div
+        className="terminal-lines"
+        style={{
+          flex: 1,
+          overflow: 'hidden',
+          display: 'flex',
+          flexDirection: 'column',
+          justifyContent: 'flex-end',
+        }}
+      >
+        {LINES.map((line, i) => {
+          const full = line.prefix ? line.prefix + line.text : line.text;
+          return (
+            <div key={i} style={{ display: 'block' }}>
+              {line.prefix ? (
+                <>
+                  <span style={{ color: line.prefixColor, fontWeight: 500 }}>{line.prefix}</span>
+                  <span style={{ color: '#E8E8E8' }}>{line.text}</span>
+                </>
+              ) : (
+                <span style={{ color: '#8A9BB0' }}>{full}</span>
+              )}
+            </div>
+          );
+        })}
+      </div>
     </div>
   );
 }
@@ -151,53 +168,69 @@ export default function TerminalAnimation() {
         fontFamily: "'JetBrains Mono', 'Fira Code', monospace",
         fontSize: '14px',
         lineHeight: '1.8',
-        maxWidth: '580px',
-        minHeight: '240px',
+        width: '100%',
+        overflow: 'hidden',
+        display: 'flex',
+        flexDirection: 'column',
+        position: 'relative',
       }}
+      className="terminal-box"
       aria-label="Terminal showing miniature-guacamole build workflow"
       role="img"
     >
       {/* Traffic lights */}
-      <div style={{ display: 'flex', gap: '6px', marginBottom: '20px' }}>
+      <div style={{ display: 'flex', gap: '6px', marginBottom: '20px', flexShrink: 0 }}>
         <span style={{ width: 12, height: 12, borderRadius: '50%', background: '#FF5F56', display: 'inline-block' }} />
         <span style={{ width: 12, height: 12, borderRadius: '50%', background: '#FFBD2E', display: 'inline-block' }} />
         <span style={{ width: 12, height: 12, borderRadius: '50%', background: '#27C93F', display: 'inline-block' }} />
       </div>
 
-      {/* Completed lines */}
-      {LINES.slice(0, completedLines).map((line, i) => {
-        const full = line.prefix ? line.prefix + line.text : line.text;
-        return (
-          <div key={i}>
-            {line.prefix ? (
-              <>
-                <span style={{ color: line.prefixColor, fontWeight: 500 }}>{line.prefix}</span>
-                <span style={{ color: '#E8E8E8' }}>{line.text}</span>
-              </>
-            ) : (
-              <span style={{ color: '#8A9BB0' }}>{full}</span>
-            )}
-          </div>
-        );
-      })}
+      {/* Lines container — flex-end stacking so new lines appear at bottom */}
+      <div
+        className="terminal-lines"
+        style={{
+          flex: 1,
+          overflow: 'hidden',
+          display: 'flex',
+          flexDirection: 'column',
+          justifyContent: 'flex-end',
+        }}
+      >
+        {/* Completed lines */}
+        {LINES.slice(0, completedLines).map((line, i) => {
+          const full = line.prefix ? line.prefix + line.text : line.text;
+          return (
+            <div key={i}>
+              {line.prefix ? (
+                <>
+                  <span style={{ color: line.prefixColor, fontWeight: 500 }}>{line.prefix}</span>
+                  <span style={{ color: '#E8E8E8' }}>{line.text}</span>
+                </>
+              ) : (
+                <span style={{ color: '#8A9BB0' }}>{full}</span>
+              )}
+            </div>
+          );
+        })}
 
-      {/* Currently typing line */}
-      {completedLines < LINES.length && (
-        <div>
-          {renderLine(LINES[completedLines], currentLineChars)}
-          <span
-            style={{
-              display: 'inline-block',
-              width: '8px',
-              height: '1em',
-              background: '#4A7C59',
-              marginLeft: '1px',
-              verticalAlign: 'text-bottom',
-              animation: 'blink 1s step-end infinite',
-            }}
-          />
-        </div>
-      )}
+        {/* Currently typing line */}
+        {completedLines < LINES.length && (
+          <div>
+            {renderLine(LINES[completedLines], currentLineChars)}
+            <span
+              style={{
+                display: 'inline-block',
+                width: '8px',
+                height: '1em',
+                background: '#4A7C59',
+                marginLeft: '1px',
+                verticalAlign: 'text-bottom',
+                animation: 'blink 1s step-end infinite',
+              }}
+            />
+          </div>
+        )}
+      </div>
 
       <style>{`
         @keyframes blink {

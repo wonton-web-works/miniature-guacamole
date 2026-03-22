@@ -2,38 +2,42 @@
 
 ## Overview
 
-miniature-guacamole simulates a complete product development organization within Claude Code. It provides 20 specialized agents organized in a realistic corporate hierarchy, enabling structured delegation and disciplined development workflows.
+miniature-guacamole simulates a complete product development organization within Claude Code. It provides 24 specialized agents organized in a realistic corporate hierarchy, enabling structured delegation and disciplined development workflows.
 
 ## Agent Hierarchy
 
 ```
                     ┌─────────┐
-                    │   CEO   │
+                    │  Sage   │   ← Project orchestrator (entry point)
                     └────┬────┘
-         ┌───────────┬───┴───┬───────────┐
-         │           │       │           │
-    ┌────▼───┐  ┌────▼───┐ ┌─▼──┐  ┌─────▼─────┐
-    │  CTO   │  │Eng Dir │ │ PO │  │Art Director│
-    └───┬────┘  └───┬────┘ └─┬──┘  └─────┬─────┘
-        │           │        │           │
-   ┌────▼────┐ ┌────▼───┐ ┌──▼──┐   ┌────▼────┐
-   │Staff Eng│ │Eng Mgr │ │ PM  │   │ Design  │
-   └────┬────┘ └───┬────┘ └──┬──┘   └─────────┘
-        │      ┌───┴───┐     │
-        │      │       │     │
-    ┌───▼──┐ ┌─▼──┐ ┌──▼─┐ ┌─▼─┐
-    │ Dev  │ │Dev │ │ QA │ │All│
-    └──────┘ └────┘ └────┘ └───┘
+         ┌──────────┬────┴────┬──────────┐
+         │          │         │          │
+    ┌────▼───┐ ┌────▼───┐ ┌───▼──┐ ┌────▼───┐
+    │  CEO   │ │  CTO   │ │ CMO  │ │  CFO   │
+    └────┬───┘ └────┬───┘ └───┬──┘ └────────┘
+         │          │         │
+    ┌────▼───┐  ┌───▼───┐ ┌───▼──────┐
+    │Eng Dir │  │Stf Eng│ │Art Dir/PO│
+    └────┬───┘  └───┬───┘ └──────────┘
+         │          │
+    ┌────▼───┐  ┌───▼──┐
+    │Eng Mgr │  │ Dev  │
+    └────┬───┘  └──────┘
+         │
+    ┌────┴────┐
+    │Dev  │QA │
+    └─────┴───┘
 ```
 
 ### Organizational Levels
 
-The hierarchy is organized into four levels:
+The hierarchy is organized into five levels:
 
-1. **Executive Level** - Strategic vision and high-level decisions (opus model)
-2. **Leadership Level** - Tactical planning and team coordination (sonnet model)
-3. **Individual Contributor Level** - Hands-on implementation (sonnet/haiku models)
-4. **Operations Level** - Deployment and infrastructure (sonnet model)
+1. **Sage** - Project orchestrator, session manager, and quality enforcer (opus model)
+2. **Executive Level** - Strategic vision and high-level decisions (opus/sonnet models)
+3. **Leadership Level** - Tactical planning and team coordination (sonnet model)
+4. **Individual Contributor Level** - Hands-on implementation (sonnet/haiku models)
+5. **Operations Level** - Deployment and infrastructure (sonnet model)
 
 ## Delegation Model
 
@@ -41,8 +45,11 @@ The hierarchy is organized into four levels:
 
 | Agent | Can Delegate To (Leadership) | Can Delegate To (IC via Task) |
 |-------|------------------------------|-------------------------------|
+| Sage | CEO, CTO, CMO, CFO, supervisor | - |
 | CEO | CTO, Engineering Director, Product Owner, Art Director | - |
 | CTO | Engineering Director, Staff Engineer | dev |
+| CMO | Art Director, Product Owner, Copywriter, Design | - |
+| CFO | (analysis only — no implementation delegation) | - |
 | Engineering Director | Engineering Manager, Staff Engineer | dev, qa |
 | Product Owner | Product Manager | - |
 | Product Manager | - | dev, qa, design |
@@ -88,7 +95,7 @@ The system prevents circular delegation:
 miniature-guacamole/
 ├── src/
 │   ├── framework/                  # Framework source
-│   │   ├── agents/                 # 19 specialized agent roles
+│   │   ├── agents/                 # 24 specialized agent roles
 │   │   ├── skills/                 # 18 team collaboration skills
 │   │   ├── shared/                 # 6 protocol documents
 │   │   ├── scripts/                # 17 mg-* utility commands

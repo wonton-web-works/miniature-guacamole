@@ -6,6 +6,7 @@ All skills inherit these shared behaviors. Skill-specific definitions override o
 
 - **Memory-first** - Read workstream context before acting, write decisions for team visibility
 - **Visual standards** - Follow standard output format in `references/output-format.md`
+- **Follow output format** — See `references/output-format.md` for standard visual patterns
 
 ## Memory Protocol
 

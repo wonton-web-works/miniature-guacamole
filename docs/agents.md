@@ -1,6 +1,37 @@
 # Agent Reference
 
-This page provides detailed specifications for all 20 agents in the system, organized by organizational level.
+This page provides detailed specifications for all 24 agents in the system, organized by organizational level.
+
+## Sage
+
+The Sage sits above all other roles. It is the project-level orchestrator and entry point for all miniature-guacamole work. One Sage per project.
+
+| Agent | Slash Command | Model | Role |
+|-------|---------------|-------|------|
+| **Sage** | `/sage` | opus | Project orchestrator, session manager, research evaluator, quality enforcer |
+
+### Sage
+
+**Responsibilities:**
+- Receive and route all incoming work (intake)
+- Assess scope and selectively spawn the appropriate C-Suite roles
+- Evaluate research quality using structured gap detection
+- Enforce gates and challenge shallow or skipped work
+- Manage session scope to prevent context bloat
+- Persist specialist knowledge across sessions
+
+**Delegation Authority:**
+- Can delegate to: CEO, CTO, CMO, CFO, supervisor
+- Does not reach past C-Suite — C-Suite spawns its own directors and ICs
+
+**Example Usage:**
+```
+/sage Plan the Q3 launch for the new dashboard feature
+/sage We need to evaluate migrating from REST to GraphQL
+/sage Research the tradeoffs between Postgres and DynamoDB for this use case
+```
+
+---
 
 ## Executive Level
 
@@ -10,6 +41,8 @@ Executive agents set strategic vision and make high-level decisions. They use th
 |-------|---------------|-------|------|----------------|
 | **CEO** | `/ceo` | opus | Sets business vision and strategic direction | CTO, Engineering Director, Product Owner, Art Director |
 | **CTO** | `/cto` | opus | Sets technical vision, evaluates architectures | Engineering Director, Staff Engineer |
+| **CMO/COO** | `/cmo` | opus | Sets marketing direction and operational standards | Art Director, Product Owner, Copywriter, Design |
+| **CFO** | `/cfo` | sonnet | Cost analysis, resource allocation, ROI assessment | (analysis only — no direct reports) |
 | **Engineering Director** | `/engineering-director` | opus | Oversees engineering operations and delivery | Engineering Manager, Staff Engineer |
 
 ### CEO (Chief Executive Officer)
@@ -50,6 +83,45 @@ Executive agents set strategic vision and make high-level decisions. They use th
 /cto Evaluate microservices vs monolith architecture
 /cto Review our database scaling strategy
 /cto Assess technical feasibility of real-time features
+```
+
+### CMO/COO (Chief Marketing Officer / Chief Operating Officer)
+
+**Responsibilities:**
+- Approve or block marketing campaigns and go-to-market plans
+- Set brand direction and voice standards
+- Evaluate operational readiness before launches
+- Ensure what is promised externally matches what can be delivered internally
+
+**Delegation Authority:**
+- Can delegate to: Art Director, Copywriter, Product Owner, Design
+- Escalates resource conflicts to CEO
+
+**Example Usage:**
+```
+/cmo Evaluate the GTM plan for the v4.2 release
+/cmo Review brand consistency across the new onboarding flow
+/cmo Assess operational readiness before we open the pilot
+```
+
+### CFO (Chief Financial Officer)
+
+**Responsibilities:**
+- Audit agent spawn patterns for cost efficiency
+- Recommend model tier selection (opus/sonnet/haiku) based on task complexity
+- Assess ROI of research spikes and feature investment
+- Challenge wasteful workflows or unjustified deep spawn chains
+- Flag sunk-cost reasoning
+
+**Delegation Authority:**
+- Analysis and recommendation only — does not delegate implementation
+- Escalates strategic resource conflicts to CEO
+
+**Example Usage:**
+```
+/cfo Audit the token cost of the current mg-build workflow
+/cfo Assess ROI of a three-day research spike on GraphQL migration
+/cfo Recommend model tiers for the new onboarding feature workstream
 ```
 
 ### Engineering Director
@@ -438,8 +510,11 @@ System agents provide monitoring and coordination functions.
 
 | Agent | Read | Glob | Grep | Edit | Write |
 |-------|------|------|------|------|-------|
+| Sage | ✅ | ✅ | ✅ | - | - |
 | CEO | - | - | - | - | - |
 | CTO | ✅ | ✅ | ✅ | ✅ | ✅ |
+| CMO/COO | ✅ | ✅ | ✅ | - | - |
+| CFO | ✅ | ✅ | ✅ | - | - |
 | Engineering Director | - | - | - | - | - |
 | Product Owner | - | - | - | - | - |
 | Product Manager | ✅ | ✅ | ✅ | - | - |

@@ -1,0 +1,24 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// REFERENCE COPY — do not add models here.
+//
+// The TheEngOrg / miniature-guacamole enterprise auth tables (MgOrganization,
+// MgOrgMember, MgLicense, MgSession, MgAuditLog) live in the Wonton schema:
+//
+//   /wonton/prisma/schema.prisma
+//
+// This file is retained as a placeholder so that tooling (IDE plugins, linters)
+// that expect a schema.prisma in this directory does not break.  All migrations
+// are managed from the Wonton repo.
+//
+// Migration history:
+//   20260322000003_mg_enterprise — initial MG enterprise tables
+// ─────────────────────────────────────────────────────────────────────────────
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}

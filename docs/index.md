@@ -10,7 +10,7 @@ Reference documentation for miniature-guacamole — an AI-powered product develo
 
 - [Getting Started](/getting-started) — Install, configure, and run your first build
 - [Architecture](/architecture) — Agent hierarchy, delegation, and coordination
-- [Agents](/agents) — All 20 agent definitions and capabilities
+- [Agents](/agents) — All 24 agent definitions and capabilities
 - [Workflows](/workflows) — CAD development cycle, MECHANICAL and ARCHITECTURAL tracks
 - [CLI Reference](/cli-reference) — All CLI commands
 - [Glossary](/glossary) — Key terms and concepts
@@ -18,7 +18,7 @@ Reference documentation for miniature-guacamole — an AI-powered product develo
 
 ## What is miniature-guacamole?
 
-miniature-guacamole transforms Claude Code into a complete product development team. 20 specialized agents — from CEO to QA to DevOps — coordinate through a structured workflow with quality gates, test-first development, and automated code review.
+miniature-guacamole transforms Claude Code into a complete product development team. 24 specialized agents — from Sage to CEO to QA to DevOps — coordinate through a structured workflow with quality gates, test-first development, and automated code review.
 
 The framework is open source. The daemon pipeline is available as a commercial product.
 

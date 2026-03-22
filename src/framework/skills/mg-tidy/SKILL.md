@@ -22,7 +22,6 @@ Housekeeping skill that reconciles project state across GitHub issues, `.claude/
 4. **Preserve user data** - Memory files are project state. Only remove a memory file when its workstream issue is confirmed closed or deleted on GitHub. Otherwise report the orphan and leave it.
 5. **Dry-run by default** - Show the full plan before making any writes or closes. Wait for confirmation unless `--auto` flag is passed.
 6. **gh dependency** - This skill requires `gh` (GitHub CLI). Check it is installed and authenticated before proceeding.
-7. **Follow output format** — See `references/output-format.md` for standard visual patterns
 
 ## Usage
 

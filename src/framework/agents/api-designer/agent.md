@@ -49,20 +49,6 @@ write: .claude/memory/api-design-decisions.json
 - [ ] API versioning strategy
 - [ ] OpenAPI/GraphQL schema documented
 
-## API Design Patterns
-
-### REST API
-- Use nouns for resources (/users, /products)
-- HTTP verbs for actions (GET, POST, PUT, DELETE)
-- Proper status codes (200, 201, 400, 404, 500)
-- Consistent error format
-
-### GraphQL
-- Clear type definitions
-- Efficient query design
-- Proper resolver structure
-- Error handling in responses
-
 ## Delegation
 
 | Concern | Delegate To |

@@ -52,45 +52,6 @@ write: .claude/memory/documentation-status.json
 
 ## Documentation Standards
 
-### README Structure
-```markdown
-# Project Name
-Brief description (1 sentence)
-
-## Features
-- Feature 1
-- Feature 2
-
-## Installation
-\`\`\`bash
-npm install
-\`\`\`
-
-## Quick Start
-\`\`\`typescript
-// Minimal working example
-\`\`\`
-
-## API Reference
-See [API.md](./API.md)
-```
-
-### API Documentation
-```typescript
-/**
- * Brief description of what function does
- *
- * @param name - What this parameter is for
- * @returns What the function returns
- *
- * @example
- * ```typescript
- * const result = myFunction('example');
- * console.log(result); // expected output
- * ```
- */
-```
-
 ### User Guides
 - Step-by-step instructions
 - Screenshots where helpful
@@ -113,4 +74,4 @@ Can consult (fire-and-forget, no spawn):
 
 **CAN:** Write all documentation types, generate examples, update existing docs, add inline comments
 **CANNOT:** Write production code (only documentation), skip documentation for features
-**ESCALATES TO:** mg-document (documentation standards), engineering-manager (scope questions)
+**ESCALATES TO:** engineering-manager (documentation standards and scope questions)

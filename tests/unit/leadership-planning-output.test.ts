@@ -33,7 +33,8 @@ describe('Misuse: existing output formats must not be removed', () => {
     // Given: WS-2.0-4 only adds deliverable references to the Planning output
     // When: the implementation is applied
     // Then: the Code Review output format must still be present
-    expect(content()).toMatch(/###\s+Code Review/);
+    // v2.0 structure: Code Review appears as bold label within Enterprise/Community output sections
+    expect(content()).toMatch(/###\s+(?:Enterprise|Community) Output Format|(?:\*\*Code Review|Code Review:)/);
   });
 
   it('Code Review format must still include APPROVED or REQUEST CHANGES decision line', () => {
@@ -48,7 +49,8 @@ describe('Misuse: existing output formats must not be removed', () => {
 
   it('SKILL.md must still have an Executive Review output format section', () => {
     // Planning mode has both Executive Review and Workstreams — neither should vanish
-    expect(content()).toMatch(/###\s+Executive Review/);
+    // v2.0 structure: Executive Review appears as bold label within output format sections
+    expect(content()).toMatch(/###\s+(?:Enterprise|Community) Output Format|\*\*Executive Review/);
   });
 
   it('Executive Review format must still include Strategic Assessment block', () => {
@@ -98,11 +100,12 @@ describe('Boundary: deliverable section placement', () => {
     //       an unrelated section (e.g. Memory Protocol)
     const c = content();
 
-    // Find the Output Formats section
-    const outputFormatsIdx = c.search(/^##\s+Output Formats\s*$/m);
+    // v2.0 structure: output format lives under Enterprise/Community h3 headings.
+    // Find the first output format section (Enterprise or Community).
+    const outputFormatsIdx = c.search(/###\s+(?:Enterprise|Community) Output Format/m);
     expect(outputFormatsIdx).toBeGreaterThan(-1);
 
-    // Deliverables/Documents heading must appear after Output Formats
+    // Deliverables/Documents heading must appear after the first output format section
     const deliverableIdx = c.search(/Deliverables|Documents/i);
     expect(deliverableIdx).toBeGreaterThan(outputFormatsIdx);
   });

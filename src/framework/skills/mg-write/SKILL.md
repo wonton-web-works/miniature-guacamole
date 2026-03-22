@@ -20,7 +20,6 @@ Coordinates art direction and copywriting for authentic, on-brand content.
 1. **Art Director leads** - Brand vision, creative direction, quality gate
 2. **Human voice mandatory** - No AI-isms, no generic copy
 3. **Quality over speed** - Reject copy that fails anti-AI-patterns check
-4. **Follow output format** — See `references/output-format.md` for standard visual patterns
 
 ## Workflow
 

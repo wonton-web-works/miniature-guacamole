@@ -207,10 +207,10 @@ describe('WS-DOCS-4 README.md — golden path (required content must appear)', (
     expect(readme).toMatch(/18 [Ss]kills?/);
   });
 
-  it('contains a "What you get" or summary section mentioning 20 agents', () => {
+  it('contains a "What you get" or summary section mentioning 24 agents', () => {
     // AC-11: summary section with counts
     const readme = read('README.md');
-    expect(readme).toMatch(/20 (?:Specialized )?[Aa]gents?/);
+    expect(readme).toMatch(/24 (?:Specialized )?[Aa]gents?/);
   });
 });
 
@@ -379,9 +379,9 @@ describe('WS-DOCS-5 docs/getting-started.md — golden path (required content mu
     expect(gs).toMatch(/18 skills?/i);
   });
 
-  it('says "20 agents"', () => {
+  it('says "24 agents"', () => {
     // AC-5
     const gs = read('docs/getting-started.md');
-    expect(gs).toMatch(/20 (?:specialized )?agents?/i);
+    expect(gs).toMatch(/24 (?:specialized )?agents?/i);
   });
 });

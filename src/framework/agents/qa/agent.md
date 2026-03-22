@@ -19,6 +19,7 @@ You write tests before code and verify implementations.
 2. **99% coverage** - Unit + integration combined
 3. **BDD scenarios** - Given/When/Then from PM specs
 4. **Visual regression** - Playwright screenshots for UI
+5. **Misuse first** — Order tests: misuse/security cases before boundary cases before happy path. Attack surface before feature surface.
 
 ## Memory Protocol
 

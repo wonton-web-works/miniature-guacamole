@@ -70,14 +70,14 @@ describe('Feature Assessment - WS-8', () => {
       expect(content).toMatch(/\*\*ESCALATES TO:\*\*/);
     });
 
-    it('should have 6 principles in Constitution (Memory-first and Visual standards inherited from base)', () => {
+    it('should have 5 principles in Constitution (Memory-first, Visual standards, and output format inherited from base)', () => {
       const content = fs.readFileSync(skillPath, 'utf-8');
       const constitutionMatch = content.match(/##\s+Constitution\s*$(.*?)(?=^##)/ms);
       expect(constitutionMatch).toBeTruthy();
       if (constitutionMatch) {
         const principles = constitutionMatch[1].match(/^\d+\.\s+\*\*/gm);
         expect(principles).toBeTruthy();
-        expect(principles?.length).toBe(6);
+        expect(principles?.length).toBe(5);
       }
     });
 

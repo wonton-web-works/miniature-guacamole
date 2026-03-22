@@ -21,7 +21,6 @@ Files a GitHub Issue directly from a Claude Code session. Assembles context auto
 3. **Graceful degradation** - If `.claude/memory/` is missing or unreadable, skip context attachment and proceed without it. Never block issue creation because of missing context.
 4. **Template system** - Apply `--bug`, `--feature`, or `--question` templates to set labels and body structure. Default = `--bug` when no flag given.
 5. **Title truncation** - The issue title is the first 100 chars of the description. When the description exceeds 100 chars, the title is capped at 100 chars but the full description goes into the issue body.
-6. **Follow output format** — See `references/output-format.md` for standard visual patterns
 
 ## Usage
 

@@ -23,6 +23,10 @@ Every output line has three parts:
 [ED]    (4 chars + 2 spaces)
 [PO]    (4 chars + 2 spaces)
 [TIDY]  (6 chars, no pad needed)
+[ART]   (5 chars + 1 space)
+[DOC]   (5 chars + 1 space)
+[SEC]   (5 chars + 1 space)
+[COPY]  (6 chars, no pad needed)
 ```
 
 **Two spaces** after the closing bracket before the status message.
@@ -53,6 +57,10 @@ Each prefix renders in a brand color. Reset after each prefix with `\033[0m`.
 [GATE]  #4A7C59  guac green    \033[38;2;74;124;89m
 [TIDY]  #4A7C59  guac green    \033[38;2;74;124;89m
 [ED]    #4A7C59  guac green    \033[38;2;74;124;89m
+[ART]   #C4875A  warm amber    \033[38;2;196;135;90m
+[DOC]   #5A8BA8  steel blue    \033[38;2;90;139;168m
+[SEC]   #A05A5A  muted red     \033[38;2;160;90;90m
+[COPY]  #7A8B5A  olive green   \033[38;2;122;139;90m
 ```
 
 Fallback: when color is not available, prefixes remain readable as plain `[EM]`, `[DEV]`, etc. Respect `NO_COLOR` env and `prefers-reduced-motion` where applicable to the rendering context.

@@ -62,14 +62,32 @@ mkdir -p "$DIST_CLAUDE"/{agents,skills,shared,hooks,scripts,memory}
 echo -e "${GREEN}Copying framework...${NC}"
 
 # Agents
+# NOTE: Enterprise-only agents are excluded from the community distribution.
+# They are identified by a .enterprise-only marker file in their directory.
+# Enterprise agents (excluded from community build):
+#   - sage  (TheEngOrg Enterprise — theengorg.wontonwebworks.com/enterprise)
 AGENT_COUNT=0
+ENTERPRISE_AGENTS=("sage")
 for agent_dir in "$FRAMEWORK_DIR/agents"/*; do
     if [[ -d "$agent_dir" ]]; then
+        agent_name=$(basename "$agent_dir")
+        # Skip enterprise-only agents
+        is_enterprise=0
+        for ea in "${ENTERPRISE_AGENTS[@]}"; do
+            if [[ "$agent_name" == "$ea" ]]; then
+                is_enterprise=1
+                break
+            fi
+        done
+        if [[ $is_enterprise -eq 1 ]]; then
+            echo "  [enterprise] skipping agent: $agent_name"
+            continue
+        fi
         cp -r "$agent_dir" "$DIST_CLAUDE/agents/"
         AGENT_COUNT=$((AGENT_COUNT + 1))
     fi
 done
-echo "  agents: $AGENT_COUNT"
+echo "  agents: $AGENT_COUNT (enterprise agents excluded from community build)"
 
 # Skills (skip _shared internal dir)
 SKILL_COUNT=0

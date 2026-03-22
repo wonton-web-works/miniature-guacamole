@@ -110,10 +110,10 @@ describe('README.md — golden path (correct values must appear)', () => {
     expect(readme).toMatch(/\*\*\d+ Skills?\*\*/);
   });
 
-  it('feature bullet list says "20 Specialized Agents"', () => {
+  it('feature bullet list says "24 Specialized Agents"', () => {
     // AC-4
     const readme = read('README.md');
-    expect(readme).toMatch(/\*\*20 Specialized Agents\*\*/);
+    expect(readme).toMatch(/\*\*24 Specialized Agents\*\*/);
   });
 
   it('/mg-ticket is mentioned somewhere in the README', () => {
@@ -191,10 +191,10 @@ describe('docs/getting-started.md — misuse cases (stale values must not appear
 });
 
 describe('docs/getting-started.md — golden path (correct values must appear)', () => {
-  it('Quick Start summary says "18 skills and 20 agents"', () => {
+  it('Quick Start summary says "18 skills and 24 agents"', () => {
     // AC-11
     const gs = read('docs/getting-started.md');
-    expect(gs).toMatch(/18 skills and 20 agents/);
+    expect(gs).toMatch(/18 skills and 24 agents/);
   });
 
   it('What Gets Installed section says "18 team collaboration workflows"', () => {
@@ -221,5 +221,113 @@ describe('docs/architecture.md — golden path (correct values must appear)', ()
     // AC-13
     const arch = read('docs/architecture.md');
     expect(arch).toMatch(/18 team collaboration skills/);
+  });
+});
+
+// ─────────────────────────────────────────────────────────────
+// Edition + Sage documentation accuracy
+// Tests ordered misuse-first: wrong counts / absent content before
+// correct counts / present content.
+// ─────────────────────────────────────────────────────────────
+
+describe('edition-docs — misuse cases (stale or wrong values must not appear)', () => {
+  it('docs/agents.md does not say "20 agents" — count must be 24', () => {
+    // Guard: the old 20-agent count must not appear in the agents reference.
+    const agents = read('docs/agents.md');
+    expect(agents).not.toMatch(/\ball 20 agents\b/i);
+    expect(agents).not.toMatch(/\b20 specialized agents\b/i);
+  });
+
+  it('docs/agents.md does not say "23 agents" — sage must not be excluded from docs', () => {
+    // Community edition excludes sage from the *dist bundle*, but the
+    // reference docs must document all 24 agents including sage.
+    const agents = read('docs/agents.md');
+    expect(agents).not.toMatch(/\ball 23 agents\b/i);
+    expect(agents).not.toMatch(/\b23 specialized agents\b/i);
+  });
+
+  it('docs/architecture.md does not describe a hierarchy without Sage at the top', () => {
+    // If Sage is absent from the hierarchy diagram, the architecture docs are wrong.
+    const arch = read('docs/architecture.md');
+    // The diagram must contain sage — a hierarchy starting with CEO would be incorrect.
+    expect(arch).not.toMatch(/^\s*│\s*CEO\s*│\s*←\s*(?:top|entry)/m);
+  });
+
+  it('README.md does not say "23 Specialized Agents" — sage must count in total', () => {
+    const readme = read('README.md');
+    expect(readme).not.toMatch(/\*\*23 Specialized Agents\*\*/);
+  });
+});
+
+describe('edition-docs — happy path (correct content must be present)', () => {
+  it('docs/agents.md total agent count is 24', () => {
+    // AC-EDITION-1: all 24 agents must be documented
+    const agents = read('docs/agents.md');
+    expect(agents).toMatch(/\ball 24 agents\b|\b24 agents\b|\b24 specialized\b/i);
+  });
+
+  it('docs/agents.md documents the Sage agent', () => {
+    // AC-EDITION-2: Sage must appear in the agents reference page
+    const agents = read('docs/agents.md');
+    expect(agents).toMatch(/##\s*Sage/);
+  });
+
+  it('docs/agents.md describes Sage as project orchestrator or entry point', () => {
+    // AC-EDITION-2: Sage description must convey its orchestrator role
+    const agents = read('docs/agents.md');
+    expect(agents).toMatch(/orchestrat|entry point/i);
+  });
+
+  it('docs/architecture.md shows Sage in the hierarchy diagram', () => {
+    // AC-EDITION-3: architecture hierarchy must place Sage at the top
+    const arch = read('docs/architecture.md');
+    expect(arch).toMatch(/Sage/);
+    // Sage must appear with the hierarchy diagram — look for the ASCII box
+    expect(arch).toMatch(/│\s*Sage\s*│/);
+  });
+
+  it('docs/architecture.md identifies Sage as the project orchestrator or entry point', () => {
+    // AC-EDITION-3: architecture must label Sage's role in the hierarchy
+    const arch = read('docs/architecture.md');
+    expect(arch).toMatch(/Sage.*orchestrat|orchestrat.*Sage|entry point/i);
+  });
+
+  it('docs/architecture.md states total agent count as 24', () => {
+    // AC-EDITION-3: agent count in architecture must be 24
+    const arch = read('docs/architecture.md');
+    expect(arch).toMatch(/24 specialized agent/i);
+  });
+
+  it('build.sh has ENTERPRISE_AGENTS exclusion list containing "sage"', () => {
+    // AC-EDITION-4: build.sh must have the sage exclusion gate
+    const buildSh = read('build.sh');
+    expect(buildSh).toMatch(/ENTERPRISE_AGENTS=\("sage"\)/);
+  });
+
+  it('build.sh documents the enterprise exclusion with a comment', () => {
+    // AC-EDITION-4: the exclusion must be documented in the script
+    const buildSh = read('build.sh');
+    expect(buildSh).toMatch(/enterprise.*agent|Enterprise.*agent/i);
+    expect(buildSh).toMatch(/exclude|skip/i);
+  });
+
+  it('LICENSE.enterprise file exists at repo root', () => {
+    // AC-EDITION-5: enterprise license file must be present
+    const { existsSync } = require('fs');
+    const licensePath = path.join(ROOT, 'LICENSE.enterprise');
+    expect(existsSync(licensePath)).toBe(true);
+  });
+
+  it('sage AGENT.md has enterprise copyright header', () => {
+    // AC-EDITION-6: sage AGENT.md must carry the enterprise license header
+    const sageContent = read('src/framework/agents/sage/AGENT.md');
+    expect(sageContent).toMatch(/Copyright.*Wonton Web Works/i);
+    expect(sageContent).toMatch(/Enterprise License/i);
+  });
+
+  it('sage AGENT.md copyright header references LICENSE.enterprise', () => {
+    // AC-EDITION-6: header must point to the license file
+    const sageContent = read('src/framework/agents/sage/AGENT.md');
+    expect(sageContent).toMatch(/LICENSE\.enterprise/);
   });
 });

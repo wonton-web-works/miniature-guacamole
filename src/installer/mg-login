@@ -1,0 +1,200 @@
+#!/usr/bin/env bash
+# mg-login — authenticate with TheEngOrg enterprise
+# Usage: mg-login
+set -euo pipefail
+
+# ─────────────────────────────────────────────────
+# Config
+# ─────────────────────────────────────────────────
+
+MG_API_URL="${MG_API_URL:-https://api.wontonwebworks.com}"
+SESSION_FILE="${HOME}/.claude/enterprise-session.json"
+
+# ─────────────────────────────────────────────────
+# Dependency checks
+# ─────────────────────────────────────────────────
+
+if ! command -v curl &>/dev/null; then
+  echo "Error: curl is required but not installed." >&2
+  exit 1
+fi
+
+HAS_JQ=false
+if command -v jq &>/dev/null; then
+  HAS_JQ=true
+fi
+
+# ─────────────────────────────────────────────────
+# JSON helpers (jq preferred, grep fallback)
+# ─────────────────────────────────────────────────
+
+json_get() {
+  local json="$1" key="$2"
+  if $HAS_JQ; then
+    echo "$json" | jq -r ".$key // empty"
+  else
+    # Minimal grep-based extraction — handles simple string values
+    echo "$json" | grep -o "\"${key}\"[[:space:]]*:[[:space:]]*\"[^\"]*\"" \
+      | head -1 \
+      | sed 's/.*:[[:space:]]*"\(.*\)"/\1/'
+  fi
+}
+
+json_get_nested() {
+  local json="$1" path="$2"
+  if $HAS_JQ; then
+    echo "$json" | jq -r ".$path // empty"
+  else
+    # path format: "parent.child"
+    local parent child
+    parent="${path%%.*}"
+    child="${path#*.}"
+    local sub
+    sub=$(echo "$json" | grep -o "\"${parent}\"[[:space:]]*:[[:space:]]*{[^}]*}" | head -1)
+    json_get "$sub" "$child"
+  fi
+}
+
+# ─────────────────────────────────────────────────
+# Machine ID: SHA256(hostname::username::platform::arch::homedir)[:16]
+# ─────────────────────────────────────────────────
+
+build_machine_id() {
+  local hostname username platform arch homedir raw
+
+  hostname="$(hostname 2>/dev/null || echo "unknown")"
+  username="$(whoami 2>/dev/null || echo "unknown")"
+  platform="$(uname -s 2>/dev/null || echo "unknown")"
+  arch="$(uname -m 2>/dev/null || echo "unknown")"
+  homedir="${HOME:-/unknown}"
+
+  raw="${hostname}::${username}::${platform}::${arch}::${homedir}"
+
+  if command -v sha256sum &>/dev/null; then
+    echo -n "$raw" | sha256sum | awk '{print $1}' | head -c 16
+  elif command -v shasum &>/dev/null; then
+    echo -n "$raw" | shasum -a 256 | awk '{print $1}' | head -c 16
+  else
+    # Fallback: use md5 (less ideal but universally available on macOS)
+    echo -n "$raw" | md5 2>/dev/null | head -c 16 \
+      || echo -n "$raw" | md5sum 2>/dev/null | awk '{print $1}' | head -c 16
+  fi
+}
+
+# ─────────────────────────────────────────────────
+# Prompt for credentials
+# ─────────────────────────────────────────────────
+
+echo ""
+echo "TheEngOrg Enterprise — Login"
+echo "────────────────────────────"
+
+read -r -p "Email: " EMAIL
+if [[ -z "$EMAIL" ]]; then
+  echo "Error: email is required." >&2
+  exit 1
+fi
+
+read -r -s -p "Password: " PASSWORD
+echo ""
+if [[ -z "$PASSWORD" ]]; then
+  echo "Error: password is required." >&2
+  exit 1
+fi
+
+MACHINE_ID="$(build_machine_id)"
+
+# ─────────────────────────────────────────────────
+# POST /api/mg/auth/login
+# ─────────────────────────────────────────────────
+
+REQUEST_BODY="$(printf '{"email":"%s","password":"%s","machineId":"%s"}' \
+  "$EMAIL" "$PASSWORD" "$MACHINE_ID")"
+
+HTTP_RESPONSE=$(curl \
+  --silent \
+  --show-error \
+  --write-out "\n__HTTP_STATUS__%{http_code}" \
+  --request POST \
+  --header "Content-Type: application/json" \
+  --data "$REQUEST_BODY" \
+  "${MG_API_URL}/api/mg/auth/login" 2>&1) || {
+    echo "Error: network request failed. Check your connection and MG_API_URL." >&2
+    exit 1
+  }
+
+HTTP_BODY=$(echo "$HTTP_RESPONSE" | sed -n '/^__HTTP_STATUS__/!p' | tr -d '\n' | sed 's/  */ /g')
+HTTP_STATUS=$(echo "$HTTP_RESPONSE" | grep '__HTTP_STATUS__' | sed 's/__HTTP_STATUS__//')
+
+# ─────────────────────────────────────────────────
+# Handle response
+# ─────────────────────────────────────────────────
+
+if [[ "$HTTP_STATUS" != "200" ]]; then
+  ERROR_MSG=$(json_get "$HTTP_BODY" "error")
+  if [[ -z "$ERROR_MSG" ]]; then
+    ERROR_MSG="HTTP $HTTP_STATUS"
+  fi
+  echo "Login failed: ${ERROR_MSG}" >&2
+  exit 1
+fi
+
+# Extract fields from response
+TOKEN=$(json_get "$HTTP_BODY" "token")
+USER_ID=$(json_get_nested "$HTTP_BODY" "user.id")
+USER_EMAIL=$(json_get_nested "$HTTP_BODY" "user.email")
+USER_NAME=$(json_get_nested "$HTTP_BODY" "user.name")
+ORG_ID=$(json_get_nested "$HTTP_BODY" "org.id")
+ORG_NAME=$(json_get_nested "$HTTP_BODY" "org.name")
+ORG_SLUG=$(json_get_nested "$HTTP_BODY" "org.slug")
+LIC_TIER=$(json_get_nested "$HTTP_BODY" "license.tier")
+LIC_SEATS=$(json_get_nested "$HTTP_BODY" "license.seats")
+LIC_EXPIRES=$(json_get_nested "$HTTP_BODY" "license.expiresAt")
+
+if [[ -z "$TOKEN" ]]; then
+  echo "Error: server returned success but no token. Please try again." >&2
+  exit 1
+fi
+
+CREATED_AT="$(date -u +"%Y-%m-%dT%H:%M:%SZ" 2>/dev/null || date +"%Y-%m-%dT%H:%M:%SZ")"
+
+# ─────────────────────────────────────────────────
+# Write session file
+# ─────────────────────────────────────────────────
+
+mkdir -p "$(dirname "$SESSION_FILE")"
+chmod 700 "$(dirname "$SESSION_FILE")" 2>/dev/null || true
+
+# Write with restricted permissions (token is sensitive)
+(umask 177 && cat > "$SESSION_FILE" <<SESSION_JSON
+{
+  "token": "${TOKEN}",
+  "user": {
+    "id": "${USER_ID}",
+    "email": "${USER_EMAIL}",
+    "name": "${USER_NAME}"
+  },
+  "org": {
+    "id": "${ORG_ID}",
+    "name": "${ORG_NAME}",
+    "slug": "${ORG_SLUG}"
+  },
+  "license": {
+    "tier": "${LIC_TIER}",
+    "seats": ${LIC_SEATS:-1},
+    "expiresAt": "${LIC_EXPIRES}"
+  },
+  "machineId": "${MACHINE_ID}",
+  "createdAt": "${CREATED_AT}"
+}
+SESSION_JSON
+)
+
+# ─────────────────────────────────────────────────
+# Success output
+# ─────────────────────────────────────────────────
+
+echo ""
+echo "Logged in as ${USER_NAME} (${USER_EMAIL}) — ${ORG_NAME} [${LIC_TIER}]"
+echo ""
+echo "Run \`mg-upgrade --enterprise\` to install enterprise features."

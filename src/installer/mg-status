@@ -1,0 +1,151 @@
+#!/usr/bin/env bash
+# mg-status — show enterprise license and session info
+# Usage: mg-status
+set -euo pipefail
+
+# ─────────────────────────────────────────────────
+# Config
+# ─────────────────────────────────────────────────
+
+MG_API_URL="${MG_API_URL:-https://api.wontonwebworks.com}"
+SESSION_FILE="${HOME}/.claude/enterprise-session.json"
+
+# ─────────────────────────────────────────────────
+# Dependency check
+# ─────────────────────────────────────────────────
+
+if ! command -v curl &>/dev/null; then
+  echo "Error: curl is required but not installed." >&2
+  exit 1
+fi
+
+HAS_JQ=false
+if command -v jq &>/dev/null; then
+  HAS_JQ=true
+fi
+
+# ─────────────────────────────────────────────────
+# JSON helpers
+# ─────────────────────────────────────────────────
+
+json_get() {
+  local json="$1" key="$2"
+  if $HAS_JQ; then
+    echo "$json" | jq -r ".$key // empty"
+  else
+    echo "$json" | grep -o "\"${key}\"[[:space:]]*:[[:space:]]*\"[^\"]*\"" \
+      | head -1 \
+      | sed 's/.*:[[:space:]]*"\(.*\)"/\1/'
+  fi
+}
+
+json_get_nested() {
+  local json="$1" path="$2"
+  if $HAS_JQ; then
+    echo "$json" | jq -r ".$path // empty"
+  else
+    local parent child
+    parent="${path%%.*}"
+    child="${path#*.}"
+    local sub
+    sub=$(echo "$json" | grep -o "\"${parent}\"[[:space:]]*:[[:space:]]*{[^}]*}" | head -1)
+    json_get "$sub" "$child"
+  fi
+}
+
+json_get_array() {
+  local json="$1" key="$2"
+  if $HAS_JQ; then
+    echo "$json" | jq -r ".$key[]? // empty" | paste -sd ", " -
+  else
+    echo "$json" | grep -o "\"${key}\"[[:space:]]*:[[:space:]]*\[[^]]*\]" \
+      | head -1 \
+      | sed 's/.*\[\(.*\)\]/\1/' \
+      | tr -d '"' \
+      | sed 's/,/, /g'
+  fi
+}
+
+# ─────────────────────────────────────────────────
+# Check session exists
+# ─────────────────────────────────────────────────
+
+if [[ ! -f "$SESSION_FILE" ]]; then
+  echo "Not authenticated. Run \`mg login\` first."
+  exit 0
+fi
+
+SESSION=$(cat "$SESSION_FILE")
+TOKEN=$(json_get "$SESSION" "token")
+
+if [[ -z "$TOKEN" ]]; then
+  echo "Session file is malformed. Run \`mg-login\` to re-authenticate."
+  exit 0
+fi
+
+# ─────────────────────────────────────────────────
+# GET /api/mg/enterprise/status
+# ─────────────────────────────────────────────────
+
+HTTP_RESPONSE=$(curl \
+  --silent \
+  --show-error \
+  --write-out "\n__HTTP_STATUS__%{http_code}" \
+  --request GET \
+  --header "Authorization: Bearer ${TOKEN}" \
+  "${MG_API_URL}/api/mg/enterprise/status" 2>&1) || {
+    echo "Error: network request failed. Check your connection and MG_API_URL." >&2
+    exit 1
+  }
+
+HTTP_BODY=$(echo "$HTTP_RESPONSE" | sed -n '/^__HTTP_STATUS__/!p' | tr -d '\r')
+HTTP_STATUS=$(echo "$HTTP_RESPONSE" | grep '__HTTP_STATUS__' | sed 's/__HTTP_STATUS__//')
+
+# ─────────────────────────────────────────────────
+# Handle errors
+# ─────────────────────────────────────────────────
+
+if [[ "$HTTP_STATUS" == "401" ]]; then
+  echo "Session expired. Run \`mg-login\` to re-authenticate."
+  exit 0
+fi
+
+if [[ "$HTTP_STATUS" != "200" ]]; then
+  ERROR_MSG=$(json_get "$HTTP_BODY" "error")
+  if [[ -z "$ERROR_MSG" ]]; then
+    ERROR_MSG="HTTP $HTTP_STATUS"
+  fi
+  echo "Error fetching status: ${ERROR_MSG}" >&2
+  exit 1
+fi
+
+# ─────────────────────────────────────────────────
+# Extract fields
+# ─────────────────────────────────────────────────
+
+ORG_NAME=$(json_get_nested "$HTTP_BODY" "org.name")
+LIC_TIER=$(json_get_nested "$HTTP_BODY" "license.tier")
+LIC_SEATS_USED=$(json_get_nested "$HTTP_BODY" "license.seatsUsed")
+LIC_SEATS_TOTAL=$(json_get_nested "$HTTP_BODY" "license.seats")
+LIC_EXPIRES=$(json_get_nested "$HTTP_BODY" "license.expiresAt")
+SESSION_EXPIRES=$(json_get_nested "$HTTP_BODY" "session.expiresAt")
+FEATURES=$(json_get_array "$HTTP_BODY" "features")
+
+# Fallbacks for seats display
+LIC_SEATS_USED="${LIC_SEATS_USED:-?}"
+LIC_SEATS_TOTAL="${LIC_SEATS_TOTAL:-?}"
+
+# ─────────────────────────────────────────────────
+# Print formatted status
+# ─────────────────────────────────────────────────
+
+echo ""
+echo "TheEngOrg Enterprise"
+echo "────────────────────────────────────"
+printf "Org:      %s\n"   "${ORG_NAME:-unknown}"
+printf "Tier:     %s\n"   "${LIC_TIER:-unknown}"
+printf "Seats:    %s/%s\n" "${LIC_SEATS_USED}" "${LIC_SEATS_TOTAL}"
+printf "Features: %s\n"   "${FEATURES:-none}"
+printf "Expires:  %s\n"   "${LIC_EXPIRES:-unknown}"
+printf "Session:  valid (expires %s)\n" "${SESSION_EXPIRES:-unknown}"
+echo ""

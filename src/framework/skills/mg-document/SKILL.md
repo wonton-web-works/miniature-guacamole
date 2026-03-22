@@ -21,7 +21,6 @@ Coordinates technical-writer for comprehensive documentation generation.
 2. **Show, don't tell** - Code examples over long explanations
 3. **Progressive disclosure** - Quick start → advanced → reference
 4. **Keep current** - Documentation is code; update it with features
-5. **Follow output format** — See `references/output-format.md` for standard visual patterns
 
 ## Documentation Types
 

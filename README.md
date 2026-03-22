@@ -29,7 +29,7 @@ Type a slash command. Get a team.
 - `/mg-ticket` files GitHub Issues directly from Claude Code, with workstream context attached
 - `/mg-tidy` reconciles project state — deduplicates issues, syncs memory, flags stale work
 
-**19 Skills**. **20 Specialized Agents**. One framework.
+**19 Skills**. **24 Specialized Agents**. One framework.
 
 ---
 
@@ -107,7 +107,7 @@ Every feature follows Constraint-Driven Agentic Development:
 | **Protocols** | 6 | Shared standards — CAD workflow, TDD, memory, handoff, engineering principles |
 
 [All 19 skills →](https://wonton-web-works.github.io/miniature-guacamole/workflows)
-[All 20 agents →](https://wonton-web-works.github.io/miniature-guacamole/agents)
+[All 24 agents →](https://wonton-web-works.github.io/miniature-guacamole/agents)
 
 ---
 
@@ -148,7 +148,7 @@ dist/miniature-guacamole/install.sh /path/to/your-project
 
 - [Getting Started](https://wonton-web-works.github.io/miniature-guacamole/getting-started) — Install, initialize, first workflow
 - [Architecture](https://wonton-web-works.github.io/miniature-guacamole/architecture) — Agent hierarchy, delegation model, memory layer
-- [Agents](https://wonton-web-works.github.io/miniature-guacamole/agents) — All 20 agents and their roles
+- [Agents](https://wonton-web-works.github.io/miniature-guacamole/agents) — All 24 agents and their roles
 - [Workflows](https://wonton-web-works.github.io/miniature-guacamole/workflows) — All 19 skills and the CAD cycle
 - [Contributing](https://wonton-web-works.github.io/miniature-guacamole/contributing) — How to extend the framework
 

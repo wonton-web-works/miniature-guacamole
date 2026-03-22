@@ -21,7 +21,6 @@ Coordinates technical evaluation through CTO, staff-engineer, api-designer, and 
 2. **Alternatives matter** - Evaluate multiple approaches with clear trade-offs
 3. **Risk transparency** - Identify technical risks, scalability limits, security concerns
 4. **Evidence-based** - Recommendations backed by performance, maintainability, technical debt analysis
-5. **Follow output format** — See `references/output-format.md` for standard visual patterns
 
 ## Evaluation Workflow
 

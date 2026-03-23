@@ -7,7 +7,7 @@
       {
         "hooks": [
           {
-            "command": "npx --yes block-no-verify@1.1.2",
+            "command": ".claude/hooks/block-no-verify.sh",
             "type": "command"
           }
         ],
@@ -76,20 +76,37 @@
       "Bash(awk:*)",
       "Bash(xargs:*)",
       "Bash(find:*)",
-      "Bash(rm:*)",
       "Bash(grep:*)",
       "Bash(tree:*)",
       "Bash(test:*)",
-      "Bash(bash:*)"
+      "Bash(gh:*)",
+      "Bash(rsync:*)",
+      "Bash(ssh:*)",
+      "Bash(du:*)",
+      "Bash(date:*)",
+      "Bash(python3:*)",
+      "Bash(chmod:*)",
+      "Bash(cd:*)",
+      "Bash(sleep:*)",
+      "Bash(curl:*)",
+      "Bash(pip:*)",
+      "Bash(pip3:*)"
     ],
     "deny": [
+      "Bash(bash:*)",
+      "Bash(sh:*)",
+      "Bash(zsh:*)",
       "Bash(rm -rf /)*",
       "Bash(rm -rf ~)*",
       "Bash(rm -rf $HOME)*",
+      "Bash(rm -rf .)*",
+      "Bash(rm:*)",
       "Bash(chmod -R 777)*",
       "Bash(dd if=)*",
       "Bash(mkfs)*",
-      "Bash(> /dev/)*"
+      "Bash(> /dev/)*",
+      "Bash(find:*-delete)*",
+      "Bash(find:*-exec rm)*"
     ]
   },
   "teammateMode": "auto"

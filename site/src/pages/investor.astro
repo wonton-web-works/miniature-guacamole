@@ -155,12 +155,16 @@ for (const [path, loader] of Object.entries(fundFiles)) {
 
         <div class="deck-block cta-block">
           <h2 class="block-heading">Next step</h2>
-          <a
-            href="mailto:byazaki@wontonwebworks.com?subject=PrivateEnterprise%20%E2%80%94%20Investment%20Conversation"
-            class="cta-link"
-          >
-            Schedule a conversation
-          </a>
+          <form class="investor-cta-form" id="investor-cta-form" action="https://formspree.io/f/xpqygjre" method="POST">
+            <input type="text" name="name" placeholder="Name" required class="email-input" autocomplete="name" style="margin-bottom:0.5rem;" />
+            <input type="email" name="email" placeholder="Email" required class="email-input" autocomplete="email" style="margin-bottom:0.5rem;" />
+            <input type="text" name="fund" placeholder="Fund / firm (optional)" class="email-input" style="margin-bottom:0.75rem;" />
+            <input type="hidden" name="role" value="investor" />
+            <input type="hidden" name="source" value="investor-page" />
+            <input type="text" name="_gotcha" style="display:none" />
+            <button type="submit" class="cta-link" id="investor-submit" style="border:none;cursor:pointer;">Schedule a conversation</button>
+          </form>
+          <p class="investor-success" id="investor-success" style="display:none;color:var(--mg-cilantro);font-family:var(--font-mono);font-size:0.875rem;margin-top:0.75rem;">Thanks! We'll reach out to schedule a call.</p>
         </div>
 
       </section>
@@ -248,6 +252,36 @@ for (const [path, loader] of Object.entries(fundFiles)) {
       });
     }
   }
+
+  // Investor CTA form submission
+  const ctaForm = document.getElementById('investor-cta-form');
+  const ctaBtn = document.getElementById('investor-submit');
+  const ctaSuccess = document.getElementById('investor-success');
+
+  ctaForm?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    if (!ctaBtn || !ctaForm) return;
+    ctaBtn.disabled = true;
+    ctaBtn.textContent = 'Sending...';
+    try {
+      const res = await fetch(ctaForm.action, {
+        method: 'POST',
+        body: new FormData(ctaForm),
+        headers: { 'Accept': 'application/json' },
+      });
+      if (res.ok) {
+        ctaForm.style.display = 'none';
+        if (ctaSuccess) ctaSuccess.style.display = 'block';
+        window.plausible?.('Investor Form', { props: { source: 'investor-page' } });
+      } else {
+        ctaBtn.textContent = 'Error — try again';
+        ctaBtn.disabled = false;
+      }
+    } catch {
+      ctaBtn.textContent = 'Error — try again';
+      ctaBtn.disabled = false;
+    }
+  });
 </script>
 
 <style>

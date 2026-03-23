@@ -138,10 +138,19 @@ fi
 
 # Config files
 cp "$FRAMEWORK_DIR/settings.json" "$DIST_CLAUDE/"
+cp "$FRAMEWORK_DIR/settings.enterprise.json" "$DIST_CLAUDE/"
 cp "$FRAMEWORK_DIR/CLAUDE.md" "$DIST_CLAUDE/"
 cp "$FRAMEWORK_DIR/team-config.yaml" "$DIST_CLAUDE/"
 cp "$FRAMEWORK_DIR/team-config.json" "$DIST_CLAUDE/"
-echo "  config: settings.json, CLAUDE.md, team-config.*"
+
+# Enterprise signing public key (for session verification)
+if [[ -d "$FRAMEWORK_DIR/keys" ]]; then
+  mkdir -p "$DIST_CLAUDE/keys"
+  cp "$FRAMEWORK_DIR/keys/enterprise-signing.pub" "$DIST_CLAUDE/keys/" 2>/dev/null || true
+  echo "  keys: enterprise-signing.pub"
+fi
+
+echo "  config: settings.json, settings.enterprise.json, CLAUDE.md, team-config.*"
 
 # Memory .gitignore
 cat > "$DIST_CLAUDE/memory/.gitignore" << 'EOF'

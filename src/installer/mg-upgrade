@@ -199,8 +199,63 @@ if [[ -n "$LEADERSHIP_SKILL_MD" ]]; then
 fi
 
 # ─────────────────────────────────────────────────
+# Apply enterprise permission profile
+# ─────────────────────────────────────────────────
+
+# Enterprise settings template is bundled in the distribution
+MG_HOME="${MG_HOME:-${HOME}/.miniature-guacamole}"
+ENT_SETTINGS="${MG_HOME}/.claude/settings.enterprise.json"
+
+apply_enterprise_permissions() {
+  local target_dir="$1"
+  local target_file="${target_dir}/settings.json"
+
+  if [[ ! -f "$ENT_SETTINGS" ]]; then
+    echo "  Warning: enterprise settings template not found at ${ENT_SETTINGS}" >&2
+    return
+  fi
+
+  if [[ ! -f "$target_file" ]]; then
+    cp "$ENT_SETTINGS" "$target_file"
+    echo "  Installed: ${target_file} (enterprise permissions)"
+    return
+  fi
+
+  # Merge enterprise deny rules into existing settings
+  if $HAS_JQ; then
+    local ent_deny ent_allow merged
+    ent_deny=$(jq '.permissions.deny' "$ENT_SETTINGS")
+    ent_allow=$(jq '.permissions.allow' "$ENT_SETTINGS")
+
+    # Replace allow + deny lists with enterprise versions, preserve hooks/env/other keys
+    merged=$(jq --argjson deny "$ent_deny" --argjson allow "$ent_allow" \
+      '.permissions.deny = $deny | .permissions.allow = $allow' "$target_file")
+
+    echo "$merged" > "$target_file"
+    echo "  Updated: ${target_file} (enterprise permissions merged)"
+  else
+    # No jq — replace entire file with enterprise template
+    cp "$ENT_SETTINGS" "$target_file"
+    echo "  Installed: ${target_file} (enterprise permissions — full replace, no jq)"
+  fi
+}
+
+# Apply to global settings
+if [[ -d "${HOME}/.claude" ]]; then
+  apply_enterprise_permissions "${HOME}/.claude"
+fi
+
+# Apply to project-local settings
+if [[ -d "${PWD}/.claude" ]]; then
+  apply_enterprise_permissions "${PWD}/.claude"
+fi
+
+# ─────────────────────────────────────────────────
 # Done
 # ─────────────────────────────────────────────────
 
 echo ""
 echo "Enterprise features installed. The Sage is ready."
+echo "  Sage agent:     installed"
+echo "  Leadership v2:  installed"
+echo "  Permissions:    enterprise profile applied"

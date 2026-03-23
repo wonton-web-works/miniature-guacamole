@@ -55,6 +55,8 @@ jobs:
           cache-dependency-path: dashboard/package-lock.json
       - name: Install dependencies
         run: npm ci
+      - name: Generate Prisma client (if schema exists)
+        run: if [ -d "prisma" ]; then npx prisma generate; fi
       - name: TypeScript type check
         run: npx tsc --noEmit
       - name: Run tests

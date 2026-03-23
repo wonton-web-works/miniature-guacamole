@@ -54,9 +54,18 @@ const ogImage = '/og-image.png';
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous" />
     <link
       href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;800&family=JetBrains+Mono:wght@400;500&display=swap"
-      rel="stylesheet"
+      rel="preload"
+      as="style"
       crossorigin="anonymous"
+      onload="this.onload=null;this.rel='stylesheet'"
     />
+    <noscript>
+      <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;800&family=JetBrains+Mono:wght@400;500&display=swap"
+        rel="stylesheet"
+        crossorigin="anonymous"
+      />
+    </noscript>
 
     <!-- Analytics — Plausible (privacy-friendly, no cookies) -->
     <script defer data-domain="private-enterprise.wontonwebworks.com" src="https://plausible.io/js/script.js"></script>

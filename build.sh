@@ -165,6 +165,11 @@ EOF
 
 echo -e "${GREEN}Copying installer...${NC}"
 
+# NOTE: Enterprise-only installer scripts are excluded from the community distribution.
+# Enterprise scripts (excluded from community build):
+#   - mg-dev-key  (PrivateEnterprise Enterprise — developer key provisioning, never ships in community)
+ENTERPRISE_SCRIPTS=("mg-dev-key")
+
 cp "$INSTALLER_DIR/install.sh" "$DIST_DIR/"
 cp "$INSTALLER_DIR/uninstall.sh" "$DIST_DIR/"
 cp "$INSTALLER_DIR/web-install.sh" "$DIST_DIR/"

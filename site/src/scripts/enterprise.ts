@@ -141,6 +141,10 @@
   const tabContainer = document.querySelector<HTMLElement>('.scenario-tabs');
 
   function drawSpawnLines(activeRoles: string[]) {
+    // Guard: skip if SVG hidden on mobile
+    const spawnSvg = document.getElementById('spawn-svg');
+    if (spawnSvg && getComputedStyle(spawnSvg).display === 'none') return;
+
     const svg = document.getElementById('spawn-svg') as SVGSVGElement | null;
     const spawnRight = document.querySelector('.spawning-right');
     if (!svg || !spawnRight) return;
@@ -322,6 +326,10 @@
   }
 
   function drawHierarchyLines() {
+    // Guard: skip if SVG hidden on mobile
+    const hierarchySvg = document.getElementById('hierarchy-svg');
+    if (hierarchySvg && getComputedStyle(hierarchySvg).display === 'none') return;
+
     const svg = document.getElementById('hierarchy-svg') as SVGSVGElement | null;
     const wrap = document.querySelector('.hierarchy-wrap');
     if (!svg || !wrap) return;

@@ -590,12 +590,23 @@ const entries: ChangelogEntry[] = changelogEntries;
         .hero-right { order: -1; }
         .hero-img { width: 100%; max-width: 280px; }
         :global(.hero-img-video) { width: 100%; max-width: 320px; }
-        #hero { padding: 48px 20px 40px; }
+        #hero { padding: 48px 16px 40px; }
         /* Value props stack on mobile */
         #value-props > .section-inner > ul:first-child {
           grid-template-columns: 1fr !important;
           gap: 24px !important;
         }
+        /* Tighten section padding on mobile */
+        section { padding: 48px 16px; }
+        .section-inner { padding: 0; }
+        .section-heading { font-size: clamp(1.5rem, 5vw, 2.2rem); }
+        /* Problem section mobile */
+        #the-problem .section-inner { padding: 0 4px; }
+        .problem-body { font-size: 0.9375rem; }
+        /* Hero CTA row wrap */
+        .hero-cta-row { gap: 1rem; }
+        /* Callout box tighter on mobile */
+        .hero-callout { padding: 1rem 1.25rem; margin-top: 1.5rem; }
       }
 
       /* ══════════════════════════════════════════════════════════
@@ -866,9 +877,17 @@ const entries: ChangelogEntry[] = changelogEntries;
       }
 
       @media (max-width: 767px) {
-        .sage-circle { width: 60px; height: 60px; }
-        .csuite-node { width: 90px; height: 48px; }
-        .tier-row { gap: 10px; }
+        .sage-circle { width: 56px; height: 56px; }
+        .csuite-node { width: 72px; height: 44px; padding: 4px 6px; }
+        .csuite-node .role-abbr { font-size: 0.8rem; }
+        .csuite-node .role-title { font-size: 0.55rem; }
+        .tier-row { gap: 8px; flex-wrap: wrap; justify-content: center; }
+        .dir-node { width: 64px; min-width: 64px; padding: 6px 4px; }
+        .dir-node .role-abbr { font-size: 0.7rem; }
+        .dir-node .role-title { font-size: 0.5rem; }
+        .ic-pill { font-size: 0.65rem; padding: 4px 8px; }
+        .ic-row { gap: 6px; flex-wrap: wrap; justify-content: center; }
+        #hierarchy { padding: 48px 12px; }
       }
 
       /* ══════════════════════════════════════════════════════════
@@ -1082,7 +1101,10 @@ const entries: ChangelogEntry[] = changelogEntries;
           scrollbar-width: none;
         }
         .scenario-tabs::-webkit-scrollbar { display: none; }
-        .scenario-tab { white-space: nowrap; min-width: 110px; font-size: 0.75rem; }
+        .scenario-tab { white-space: nowrap; min-width: unset; font-size: 0.7rem; padding: 6px 10px; }
+        .spawn-csuite-row { gap: 8px; flex-wrap: wrap; justify-content: center; }
+        .task-description { font-size: 0.8rem; }
+        #spawning { padding: 48px 12px; }
       }
 
       /* ══════════════════════════════════════════════════════════
@@ -1700,6 +1722,13 @@ const entries: ChangelogEntry[] = changelogEntries;
       @media (max-width: 640px) {
         .capability { grid-template-columns: 2.5rem 1fr; gap: 1rem; }
         .bench-grid { grid-template-columns: 1fr; }
+        .snapshot-pre { font-size: 0.65rem; overflow-x: auto; max-width: calc(100vw - 80px); }
+        .cap-detail { overflow-x: auto; }
+        .bench-metric { font-size: 1.25rem; }
+        .bench-desc { font-size: 0.75rem; }
+        .cap-heading { font-size: 0.9rem; }
+        .cap-body { font-size: 0.8125rem; }
+        #capabilities { padding: 48px 12px; }
       }
 
       /* ══════════════════════════════════════════════════════════

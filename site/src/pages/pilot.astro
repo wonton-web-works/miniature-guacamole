@@ -1,0 +1,485 @@
+---
+import Base from '../layouts/Base.astro';
+---
+
+<Base title="PrivateEnterprise — Founding Partner Pilot">
+  <div class="pilot-root">
+    <div class="container">
+
+      <!-- Gate: pre-verification state -->
+      <section id="gate" class="gate-section">
+        <p class="program-label">PrivateEnterprise</p>
+        <h1 class="gate-heading">Founding Partner Program</h1>
+        <p class="gate-sub">This pilot is invite-only. Enter the access code from your invite.</p>
+
+        <form class="gate-form" id="verify-form" onsubmit="return false;">
+          <input
+            type="text"
+            id="code-input"
+            class="email-input"
+            placeholder="Enter access code"
+            autocomplete="off"
+            autocorrect="off"
+            autocapitalize="none"
+            spellcheck="false"
+          />
+          <button type="submit" class="verify-btn" id="verify-btn">Unlock</button>
+        </form>
+
+        <p class="gate-error" id="gate-error" aria-live="polite"></p>
+      </section>
+
+      <!-- Program details: shown after successful verification -->
+      <section id="program" class="program-section" aria-hidden="true">
+        <header class="program-header">
+          <p class="program-label">Founding Partner Program</p>
+          <h1 class="program-heading">Welcome.</h1>
+          <p class="program-intro">
+            You've been selected as one of our first pilot partners.
+          </p>
+        </header>
+
+        <div class="program-body">
+
+          <div class="program-block">
+            <h2 class="block-heading">What you get</h2>
+
+            <div class="highlight-banner">
+              <span class="highlight-num">60</span>
+              <span class="highlight-label">day free pilot</span>
+            </div>
+
+            <ul class="benefit-list">
+              <li>Full autonomous daemon pipeline on your repos</li>
+              <li>24 AI agents: QA, Dev, Staff Engineer, Security, and more</li>
+              <li>24/7 ticket-to-PR automation (GitHub, JIRA, Linear)</li>
+              <li>White-glove setup — we configure everything for your stack</li>
+              <li>99% test coverage enforced on every PR</li>
+              <li>NDA-safe: your code never leaves your machine</li>
+            </ul>
+
+            <div class="pricing-callout">
+              <p class="pricing-label">Founding Partner pricing (after pilot)</p>
+              <ul class="pricing-list">
+                <li>80% off list price — locked forever</li>
+                <li>No price increases. Ever. Founding Partners are grandfathered permanently.</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="program-block">
+            <h2 class="block-heading">What we ask</h2>
+            <ul class="ask-list">
+              <li>Permission to write a case study (you approve before publish)</li>
+              <li>A testimonial quote we can use on the site</li>
+              <li>Access to metrics (PRs shipped, coverage, time saved)</li>
+              <li>Two 30-minute check-in calls (Day 30 and Day 60)</li>
+              <li>Willingness to take 2 reference calls from future prospects</li>
+            </ul>
+          </div>
+
+          <div class="program-block">
+            <h2 class="block-heading">Timeline</h2>
+            <ol class="timeline-list">
+              <li>
+                <span class="timeline-marker">Day 0</span>
+                <span class="timeline-detail">Onboarding call — we connect your repos and configure the daemon</span>
+              </li>
+              <li>
+                <span class="timeline-marker">Week 1–2</span>
+                <span class="timeline-detail">First PRs from the daemon, we tune for your codebase</span>
+              </li>
+              <li>
+                <span class="timeline-marker">Day 30</span>
+                <span class="timeline-detail">Check-in — metrics review, feedback</span>
+              </li>
+              <li>
+                <span class="timeline-marker">Day 60</span>
+                <span class="timeline-detail">Decision — convert to Founding Partner pricing or walk away</span>
+              </li>
+            </ol>
+          </div>
+
+          <div class="program-block cta-block">
+            <h2 class="block-heading">Ready to start?</h2>
+            <a
+              href="mailto:byazaki@wontonwebworks.com?subject=Founding%20Partner%20Pilot%20%E2%80%94%20Onboarding%20Call"
+              class="cta-link"
+            >
+              Schedule your onboarding call
+            </a>
+          </div>
+
+        </div>
+      </section>
+
+    </div>
+  </div>
+</Base>
+
+<script>
+  /*
+   * INVITE-ONLY MARKETING GATE — NOT A SECURITY BOUNDARY.
+   *
+   * This gate uses a shared access code given to invitees. It prevents casual
+   * discovery but is not a server-enforced security control. Sensitive
+   * operations (repo access, billing, account management) require server-side
+   * authentication via `mg login`.
+   *
+   * DO NOT add personal email addresses or PII to client-side code.
+   * Invitees receive the access code directly (email/DM), not via this file.
+   */
+
+  // Access code is a shared secret, not PII. Rotate it when the pilot cohort changes.
+  const ACCESS_CODE = 'sage2026';
+
+  const form = document.getElementById('verify-form') as HTMLFormElement;
+  const input = document.getElementById('code-input') as HTMLInputElement;
+  const errorEl = document.getElementById('gate-error') as HTMLParagraphElement;
+  const gate = document.getElementById('gate') as HTMLElement;
+  const program = document.getElementById('program') as HTMLElement;
+
+  form.addEventListener('submit', () => {
+    const code = input.value.trim().toLowerCase();
+
+    if (code === ACCESS_CODE) {
+      gate.style.display = 'none';
+      program.removeAttribute('aria-hidden');
+      program.classList.add('fade-in');
+    } else {
+      errorEl.textContent = 'Invalid access code. Check your invite.';
+      input.focus();
+    }
+  });
+
+  input.addEventListener('input', () => {
+    errorEl.textContent = '';
+  });
+</script>
+
+<style>
+  .pilot-root {
+    min-height: 100vh;
+    background-color: var(--mg-dark);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 4rem 1.5rem;
+  }
+
+  .container {
+    width: 100%;
+    max-width: 680px;
+  }
+
+  /* ---- Gate ---- */
+
+  .gate-section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 1.25rem;
+  }
+
+  .program-label {
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--mg-cilantro);
+  }
+
+  .gate-heading {
+    font-family: var(--font-display);
+    font-size: clamp(1.75rem, 4vw, 2.5rem);
+    font-weight: 800;
+    color: var(--mg-text);
+    line-height: 1.15;
+  }
+
+  .gate-sub {
+    font-size: 1rem;
+    color: var(--mg-subtext);
+  }
+
+  .gate-form {
+    display: flex;
+    gap: 0.5rem;
+    width: 100%;
+    max-width: 420px;
+    margin-top: 0.5rem;
+  }
+
+  .email-input {
+    flex: 1;
+    padding: 0.65rem 1rem;
+    background: var(--mg-surface);
+    border: 1px solid #2E3F52;
+    border-radius: 6px;
+    color: var(--mg-text);
+    font-family: var(--font-mono);
+    font-size: 0.9rem;
+    outline: none;
+    transition: border-color 0.15s ease;
+  }
+
+  .email-input::placeholder {
+    color: var(--mg-subtext);
+    opacity: 0.7;
+  }
+
+  .email-input:focus {
+    border-color: var(--mg-cilantro);
+  }
+
+  .verify-btn {
+    padding: 0.65rem 1.25rem;
+    background: var(--mg-cilantro);
+    border: none;
+    border-radius: 6px;
+    color: #fff;
+    font-family: var(--font-display);
+    font-size: 0.875rem;
+    font-weight: 600;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: opacity 0.15s ease;
+  }
+
+  .verify-btn:hover {
+    opacity: 0.88;
+  }
+
+  .gate-error {
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+    color: var(--mg-chili);
+    min-height: 1.2em;
+  }
+
+  /* ---- Program ---- */
+
+  .program-section {
+    display: none;
+  }
+
+  .program-section:not([aria-hidden]) {
+    display: block;
+  }
+
+  .fade-in {
+    animation: fadeIn 0.45s ease forwards;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .program-header {
+    margin-bottom: 3rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .program-heading {
+    font-family: var(--font-display);
+    font-size: clamp(2rem, 5vw, 3rem);
+    font-weight: 800;
+    color: var(--mg-text);
+    line-height: 1.1;
+  }
+
+  .program-intro {
+    font-size: 1.0625rem;
+    color: var(--mg-subtext);
+    max-width: 480px;
+  }
+
+  /* ---- Blocks ---- */
+
+  .program-body {
+    display: flex;
+    flex-direction: column;
+    gap: 3rem;
+  }
+
+  .program-block {
+    border-top: 1px solid #1E2A38;
+    padding-top: 2rem;
+  }
+
+  .block-heading {
+    font-family: var(--font-display);
+    font-size: 0.6875rem;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--mg-cilantro);
+    margin-bottom: 1.25rem;
+  }
+
+  /* What you get */
+
+  .highlight-banner {
+    display: flex;
+    align-items: baseline;
+    gap: 0.5rem;
+    margin-bottom: 1.25rem;
+  }
+
+  .highlight-num {
+    font-family: var(--font-display);
+    font-size: 3rem;
+    font-weight: 800;
+    color: var(--mg-text);
+    line-height: 1;
+  }
+
+  .highlight-label {
+    font-size: 1rem;
+    color: var(--mg-subtext);
+  }
+
+  .benefit-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+    margin-bottom: 1.75rem;
+  }
+
+  .benefit-list li,
+  .ask-list li {
+    padding-left: 1.25rem;
+    position: relative;
+    color: var(--mg-text);
+    font-size: 0.9375rem;
+    line-height: 1.6;
+  }
+
+  .benefit-list li::before,
+  .ask-list li::before {
+    content: '—';
+    position: absolute;
+    left: 0;
+    color: var(--mg-cilantro);
+    font-family: var(--font-mono);
+  }
+
+  .pricing-callout {
+    background: var(--mg-surface);
+    border: 1px solid #2E3F52;
+    border-left: 3px solid var(--mg-cilantro);
+    border-radius: 6px;
+    padding: 1.25rem 1.5rem;
+  }
+
+  .pricing-label {
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--mg-subtext);
+    margin-bottom: 0.75rem;
+  }
+
+  .pricing-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+  }
+
+  .pricing-list li {
+    color: var(--mg-text);
+    font-size: 0.9375rem;
+    line-height: 1.6;
+    padding-left: 1.25rem;
+    position: relative;
+  }
+
+  .pricing-list li::before {
+    content: '→';
+    position: absolute;
+    left: 0;
+    color: var(--mg-cilantro);
+    font-family: var(--font-mono);
+  }
+
+  /* What we ask */
+
+  .ask-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+  }
+
+  /* Timeline */
+
+  .timeline-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .timeline-list li {
+    display: grid;
+    grid-template-columns: 7rem 1fr;
+    gap: 1rem;
+    align-items: baseline;
+  }
+
+  .timeline-marker {
+    font-family: var(--font-mono);
+    font-size: 0.8125rem;
+    color: var(--mg-cilantro);
+    white-space: nowrap;
+  }
+
+  .timeline-detail {
+    font-size: 0.9375rem;
+    color: var(--mg-text);
+    line-height: 1.6;
+  }
+
+  /* CTA */
+
+  .cta-block {
+    margin-bottom: 4rem;
+  }
+
+  .cta-link {
+    display: inline-block;
+    padding: 0.75rem 1.5rem;
+    background: var(--mg-cilantro);
+    color: #fff;
+    text-decoration: none;
+    border-radius: 6px;
+    font-family: var(--font-display);
+    font-size: 0.9375rem;
+    font-weight: 600;
+    transition: opacity 0.15s ease;
+  }
+
+  .cta-link:hover {
+    opacity: 0.88;
+  }
+
+  /* Responsive */
+
+  @media (max-width: 480px) {
+    .gate-form {
+      flex-direction: column;
+    }
+
+    .timeline-list li {
+      grid-template-columns: 1fr;
+      gap: 0.25rem;
+    }
+  }
+</style>

@@ -29,7 +29,8 @@ The file is created with mode `0600` (owner read/write only). The `~/.claude/` d
     "expiresAt": "2027-03-22T00:00:00.000Z"
   },
   "machineId": "a1b2c3d4e5f6a7b8",
-  "createdAt": "2026-03-22T10:00:00Z"
+  "createdAt": "2026-03-22T10:00:00Z",
+  "signature": "base64-encoded-ed25519-signature"
 }
 ```
 
@@ -75,6 +76,27 @@ The machineId is stored in the API as `MgSession.machineId` for audit purposes. 
 3. Token is revoked server-side by `POST /api/mg/auth/logout`.
 4. Local session file is removed by `mg-logout` regardless of whether the server-side revocation succeeds (to handle network failures cleanly).
 5. If the token has expired or been revoked, the API returns `401`. CLI commands that receive a `401` direct the user to run `mg-login` again.
+
+## Signature Verification (v5.2+)
+
+Sessions include an Ed25519 `signature` field. The server signs the canonical JSON payload (all fields except `signature`, keys sorted) with the private key. The client verifies using the public key shipped with the framework at `keys/enterprise-signing.pub`.
+
+**Signing (server-side):**
+```
+payload = JSON.stringify(session_without_signature, sorted_keys)
+signature = Ed25519.sign(payload, private_key)
+session.signature = base64(signature)
+```
+
+**Verification (client-side):**
+```bash
+verify-session.sh [session-file]
+# Exit 0 = valid, Exit 1 = invalid/expired, Exit 2 = tooling unavailable
+```
+
+**Dev mode sessions** (created by `mg-dev-key` with `devMode: true`) skip signature verification. They are local-only, non-expiring, and intended for framework development.
+
+**Fallback behavior:** If verification fails, the system silently falls back to community mode. It never blocks work — only removes enterprise features.
 
 ## Security Notes
 

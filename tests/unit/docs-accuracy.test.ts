@@ -246,11 +246,12 @@ describe('edition-docs — misuse cases (stale or wrong values must not appear)'
     expect(agents).not.toMatch(/\b23 specialized agents\b/i);
   });
 
-  it('docs/architecture.md does not describe a hierarchy without Sage at the top', () => {
-    // If Sage is absent from the hierarchy diagram, the architecture docs are wrong.
+  it('docs/architecture.md mentions Sage and shows CEO at top of community hierarchy', () => {
+    // Sage is enterprise-only. Community hierarchy starts with CEO.
+    // Both should be present in the architecture docs.
     const arch = read('docs/architecture.md');
-    // The diagram must contain sage — a hierarchy starting with CEO would be incorrect.
-    expect(arch).not.toMatch(/^\s*│\s*CEO\s*│\s*←\s*(?:top|entry)/m);
+    expect(arch).toMatch(/Sage/); // Sage mentioned as enterprise
+    expect(arch).toMatch(/CEO/);  // CEO in active hierarchy
   });
 
   it('README.md does not say "23 Specialized Agents" — sage must count in total', () => {
@@ -278,12 +279,12 @@ describe('edition-docs — happy path (correct content must be present)', () => 
     expect(agents).toMatch(/orchestrat|entry point/i);
   });
 
-  it('docs/architecture.md shows Sage in the hierarchy diagram', () => {
-    // AC-EDITION-3: architecture hierarchy must place Sage at the top
+  it('docs/architecture.md mentions Sage as enterprise-only', () => {
+    // AC-EDITION-3: architecture must reference Sage (enterprise callout, not in active hierarchy)
     const arch = read('docs/architecture.md');
     expect(arch).toMatch(/Sage/);
-    // Sage must appear with the hierarchy diagram — look for the ASCII box
-    expect(arch).toMatch(/│\s*Sage\s*│/);
+    // Sage is marked enterprise-only in the docs (not in the active hierarchy box)
+    expect(arch).toMatch(/[Ee]nterprise/);
   });
 
   it('docs/architecture.md identifies Sage as the project orchestrator or entry point', () => {

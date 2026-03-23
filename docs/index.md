@@ -18,7 +18,7 @@ Reference documentation for miniature-guacamole — an AI-powered product develo
 
 ## What is miniature-guacamole?
 
-miniature-guacamole transforms Claude Code into a complete product development team. 24 specialized agents — from Sage to CEO to QA to DevOps — coordinate through a structured workflow with quality gates, test-first development, and automated code review.
+miniature-guacamole transforms Claude Code into a complete product development team. 24 specialized agents — from CEO to QA to DevOps — coordinate through a structured workflow with quality gates, test-first development, and automated code review.
 
 The framework is open source. The daemon pipeline is available as a commercial product.
 

@@ -2,34 +2,11 @@
 
 This page provides detailed specifications for all 24 agents in the system, organized by organizational level.
 
-## Sage
+## Sage (Enterprise)
 
-The Sage sits above all other roles. It is the project-level orchestrator and entry point for all miniature-guacamole work. One Sage per project.
+The Sage is the project-level orchestrator available in [TheEngOrg Enterprise](https://theengorg.wontonwebworks.com/enterprise). It provides selective agent routing, session management, research evaluation, and quality enforcement.
 
-| Agent | Slash Command | Model | Role |
-|-------|---------------|-------|------|
-| **Sage** | `/sage` | opus | Project orchestrator, session manager, research evaluator, quality enforcer |
-
-### Sage
-
-**Responsibilities:**
-- Receive and route all incoming work (intake)
-- Assess scope and selectively spawn the appropriate C-Suite roles
-- Evaluate research quality using structured gap detection
-- Enforce gates and challenge shallow or skipped work
-- Manage session scope to prevent context bloat
-- Persist specialist knowledge across sessions
-
-**Delegation Authority:**
-- Can delegate to: CEO, CTO, CMO, CFO, supervisor
-- Does not reach past C-Suite — C-Suite spawns its own directors and ICs
-
-**Example Usage:**
-```
-/sage Plan the Q3 launch for the new dashboard feature
-/sage We need to evaluate migrating from REST to GraphQL
-/sage Research the tradeoffs between Postgres and DynamoDB for this use case
-```
+For details on the Sage and enterprise features, visit [theengorg.wontonwebworks.com/enterprise](https://theengorg.wontonwebworks.com/enterprise).
 
 ---
 
@@ -510,7 +487,7 @@ System agents provide monitoring and coordination functions.
 
 | Agent | Read | Glob | Grep | Edit | Write |
 |-------|------|------|------|------|-------|
-| Sage | ✅ | ✅ | ✅ | - | - |
+| Sage | Enterprise only | | | | |
 | CEO | - | - | - | - | - |
 | CTO | ✅ | ✅ | ✅ | ✅ | ✅ |
 | CMO/COO | ✅ | ✅ | ✅ | - | - |

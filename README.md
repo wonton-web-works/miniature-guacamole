@@ -157,9 +157,8 @@ dist/miniature-guacamole/install.sh /path/to/your-project
 ## Changelog
 
 **Version 5.0** (March 2026)
-- The Sage — enterprise-only orchestrator agent with selective C-Suite spawning
+- Sage agent added (enterprise-only — see [private-enterprise.wontonwebworks.com/enterprise](https://private-enterprise.wontonwebworks.com/enterprise))
 - CMO/COO and CFO agents added; all existing agents upgraded
-- Config C — validated production config (opus Sage, sonnet C-Suite, 40% cost savings)
 - Enterprise auth pipeline, benchmark harness, 52 boundary integration tests
 - Agent count: 20 → 24
 

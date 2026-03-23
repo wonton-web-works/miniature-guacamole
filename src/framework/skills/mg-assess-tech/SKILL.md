@@ -118,13 +118,38 @@ Task:
 ## Output Format
 
 ```
-[CTO]   Architecture — {approach evaluated, verdict}
-[SE]    Code patterns — {assessment}
-[CTO]   Recommendation — {selected approach}         {elapsed}
-[EM]    Decision: {APPROVED | NEEDS CLARIFICATION}   {elapsed}
-```
+## Technical Assessment: {Feature/Module}
 
-Approach trade-offs, risk mitigation, and implementation considerations follow the decision line.
+### Approaches Evaluated
+1. **{Approach A}**
+   - Pros: {list}
+   - Cons: {list}
+   - Risks: {list}
+   - Technical Debt: {score}
+
+2. **{Approach B}**
+   - Pros: {list}
+   - Cons: {list}
+   - Risks: {list}
+   - Technical Debt: {score}
+
+### Recommendation
+**Selected:** {Approach}
+**Rationale:** {Why this approach best fits requirements and constraints}
+
+### Risk Mitigation
+- {Risk 1}: {Mitigation strategy}
+- {Risk 2}: {Mitigation strategy}
+
+### Implementation Considerations
+- Performance: {considerations}
+- Scalability: {considerations}
+- Security: {considerations}
+- Maintainability: {considerations}
+
+### Next Steps
+{What engineering team should do next}
+```
 
 See `references/model-escalation-guidance.md` for escalation criteria.
 

@@ -1,1 +1,96 @@
-{"env":{"CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS":"1"},"hooks":{"PreToolUse":[{"hooks":[{"command":"npx --yes block-no-verify@1.1.2","type":"command"}],"matcher":"Bash"}],"TaskCompleted":[{"hooks":[{"command":".claude/hooks/task-completed.sh","type":"command"}]}],"TeammateIdle":[{"hooks":[{"command":".claude/hooks/teammate-idle.sh","type":"command"}]}]},"permissions":{"allow":["Read","Glob","Grep","Edit","Write","WebFetch","WebSearch","Task","Bash(npm:*)","Bash(git:*)","Bash(node:*)","Bash(npx:*)","Bash(pnpm:*)","Bash(yarn:*)","Bash(vitest:*)","Bash(playwright:*)","Bash(tsc:*)","Bash(eslint:*)","Bash(prettier:*)","Bash(ls:*)","Bash(mkdir:*)","Bash(cp:*)","Bash(mv:*)","Bash(cat:*)","Bash(echo:*)","Bash(pwd:*)","Bash(which:*)","Bash(head:*)","Bash(tail:*)","Bash(wc:*)","Bash(sort:*)","Bash(uniq:*)","Bash(diff:*)","Bash(touch:*)","Bash(jq:*)","Bash(sed:*)","Bash(awk:*)","Bash(xargs:*)","Bash(find:*)","Bash(rm:*)","Bash(grep:*)","Bash(tree:*)","Bash(test:*)","Bash(bash:*)"],"deny":["Bash(rm -rf /)*","Bash(rm -rf ~)*","Bash(rm -rf $HOME)*","Bash(chmod -R 777)*","Bash(dd if=)*","Bash(mkfs)*","Bash(> /dev/)*"]},"teammateMode":"auto"}
+{
+  "env": {
+    "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1"
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "hooks": [
+          {
+            "command": "npx --yes block-no-verify@1.1.2",
+            "type": "command"
+          }
+        ],
+        "matcher": "Bash"
+      }
+    ],
+    "TaskCompleted": [
+      {
+        "hooks": [
+          {
+            "command": ".claude/hooks/task-completed.sh",
+            "type": "command"
+          }
+        ]
+      }
+    ],
+    "TeammateIdle": [
+      {
+        "hooks": [
+          {
+            "command": ".claude/hooks/teammate-idle.sh",
+            "type": "command"
+          }
+        ]
+      }
+    ]
+  },
+  "permissions": {
+    "allow": [
+      "Read",
+      "Glob",
+      "Grep",
+      "Edit",
+      "Write",
+      "WebFetch",
+      "WebSearch",
+      "Task",
+      "Bash(npm:*)",
+      "Bash(git:*)",
+      "Bash(node:*)",
+      "Bash(npx:*)",
+      "Bash(pnpm:*)",
+      "Bash(yarn:*)",
+      "Bash(vitest:*)",
+      "Bash(playwright:*)",
+      "Bash(tsc:*)",
+      "Bash(eslint:*)",
+      "Bash(prettier:*)",
+      "Bash(ls:*)",
+      "Bash(mkdir:*)",
+      "Bash(cp:*)",
+      "Bash(mv:*)",
+      "Bash(cat:*)",
+      "Bash(echo:*)",
+      "Bash(pwd:*)",
+      "Bash(which:*)",
+      "Bash(head:*)",
+      "Bash(tail:*)",
+      "Bash(wc:*)",
+      "Bash(sort:*)",
+      "Bash(uniq:*)",
+      "Bash(diff:*)",
+      "Bash(touch:*)",
+      "Bash(jq:*)",
+      "Bash(sed:*)",
+      "Bash(awk:*)",
+      "Bash(xargs:*)",
+      "Bash(find:*)",
+      "Bash(rm:*)",
+      "Bash(grep:*)",
+      "Bash(tree:*)",
+      "Bash(test:*)",
+      "Bash(bash:*)"
+    ],
+    "deny": [
+      "Bash(rm -rf /)*",
+      "Bash(rm -rf ~)*",
+      "Bash(rm -rf $HOME)*",
+      "Bash(chmod -R 777)*",
+      "Bash(dd if=)*",
+      "Bash(mkfs)*",
+      "Bash(> /dev/)*"
+    ]
+  },
+  "teammateMode": "auto"
+}

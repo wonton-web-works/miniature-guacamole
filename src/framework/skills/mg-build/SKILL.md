@@ -21,6 +21,7 @@ Classifies workstreams at intake, then coordinates the appropriate track: MECHAN
 2. **Tests before code** - MECHANICAL: Dev writes tests then implements. ARCHITECTURAL: QA writes tests first.
 3. **99% coverage** - Unit + integration combined, no exceptions
 4. **Escalate blockers** - Surface issues early to engineering-manager
+5. **Follow output format** — See `references/output-format.md` for standard visual patterns
 
 ## Flags
 
@@ -182,37 +183,14 @@ write: .claude/memory/workstream-{id}-state.json
   delegated_to: dev | qa | staff-engineer | leadership
   gate_status: pending | passed | failed
   blocker: {description if failed}
-  timing:
-    started_at: <ISO timestamp>
-    elapsed_ms: <total milliseconds>
-    steps:
-      - agent: <role>
-        elapsed_ms: <step milliseconds>
 ```
-
-## Timing
-
-Track wall-clock elapsed time throughout the build cycle.
-
-- Record `Date.now()` at invocation start
-- Each agent spawn completion: report `elapsed = now - start` formatted as:
-  - `Xs` for <60 seconds (e.g., `4.1s`)
-  - `Xm Ys` for >=60 seconds (e.g., `1m 09s`)
-- Final `[EM] Done` line includes total elapsed
-
-Timing is appended to each output line, right-aligned.
 
 ## Output Format
 
-Each line: `[ROLE]  action — result    {elapsed}`. Two tracks:
+- **Compact** (default): <=10 lines per build cycle — classification, progress lines, gate status only
+- **Full** (pass "verbose"): CAD pipeline diagram CLASSIFY → TEST → IMPL → VERIFY → REVIEW, status box, detailed progress
 
-```
-MECHANICAL:     [EM] classify → [DEV] tests+impl → [GATE] pass → [EM] Done
-ARCHITECTURAL:  [EM] classify → [CEO/CTO/ED] → [QA] → [DEV] → [SE] → [EM] Done
-```
-
-See `references/output-examples.md` for full annotated examples of both tracks.
-See `shared/visual-formatting.md` for the line format spec.
+See `references/output-examples.md` for full template examples.
 
 ## Boundaries
 

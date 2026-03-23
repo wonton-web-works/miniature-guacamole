@@ -22,6 +22,7 @@ Coordinates qa and dev through structured refactoring workflow with comprehensiv
 3. **Small steps** - Refactor in small, verified increments with continuous test validation
 4. **No behavior changes** - Refactoring changes structure, never functionality
 5. **99% coverage maintained** - Coverage must stay at or above 99% throughout refactor
+6. **Follow output format** — See `references/output-format.md` for standard visual patterns
 
 ## The Refactor Cycle
 
@@ -108,14 +109,11 @@ Task:
 
 ## Output Format
 
-```
-[DEV]   Characterization — {N} tests, coverage {baseline}%
-[SE]    Refactor — incremental, tests green
-[DEV]   Verification — coverage {current}%, no regressions   {elapsed}
-[EM]    Done — ready for code review                {elapsed}
-```
+- **Pipeline diagram**: CHARACTERIZE → REFACTOR → VERIFY → REVIEW (always shown at start)
+- **Status box**: phase, tests (with baseline), coverage (with baseline), green/red bar, blocker
+- **Detailed progress**: scope, refactor goals, baseline metrics, current metrics, next action
 
-On blocker: `[EM]  BLOCKED — {reason}`
+See `references/output-examples.md` for full template examples.
 
 ## Boundaries
 

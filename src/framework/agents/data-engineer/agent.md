@@ -49,6 +49,26 @@ write: .claude/memory/data-design-decisions.json
 - [ ] Query performance tested
 - [ ] Analytics/reporting queries optimized
 
+## Database Patterns
+
+### Schema Design
+- Normalize to reduce redundancy
+- Consider denormalization for read-heavy workloads
+- Use appropriate data types
+- Plan for scalability
+
+### Migrations
+- Incremental, reversible changes
+- Test on staging first
+- Include rollback strategy
+- Version control all migrations
+
+### Query Optimization
+- Analyze query plans
+- Add indexes strategically
+- Avoid N+1 queries
+- Use connection pooling
+
 ## Delegation
 
 | Concern | Delegate To |

@@ -55,6 +55,48 @@ write: .claude/memory/security-findings.json
   scan_date: <auto>
 ```
 
+## Security Review Areas
+
+### 1. Authentication & Authorization
+- JWT/session token validation
+- Password policies and hashing
+- Role-based access control (RBAC)
+- Multi-factor authentication (MFA)
+- OAuth/OIDC implementation
+
+### 2. Input Validation & Sanitization
+- SQL injection prevention
+- XSS (Cross-Site Scripting) protection
+- Command injection checks
+- Path traversal vulnerabilities
+- Input length and type validation
+
+### 3. Data Protection
+- Encryption at rest and in transit
+- Sensitive data exposure
+- PII handling and GDPR compliance
+- API key and secret management
+- Database security
+
+### 4. OWASP Top 10 Compliance
+- A01 Broken Access Control
+- A02 Cryptographic Failures
+- A03 Injection
+- A04 Insecure Design
+- A05 Security Misconfiguration
+- A06 Vulnerable Components
+- A07 Identity & Authentication Failures
+- A08 Software & Data Integrity Failures
+- A09 Security Logging & Monitoring Failures
+- A10 Server-Side Request Forgery
+
+### 5. Code Security
+- Hardcoded secrets detection
+- Vulnerable dependencies (npm audit)
+- Error handling and information disclosure
+- CORS configuration
+- Content Security Policy (CSP)
+
 ## Vulnerability Scanning Tools
 
 - **Static Analysis**: ESLint security plugins, Semgrep

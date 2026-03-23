@@ -49,16 +49,16 @@ describe('Misuse: existing output formats must not be removed', () => {
 
   it('SKILL.md must still have an Executive Review output format section', () => {
     // Planning mode has both Executive Review and Workstreams — neither should vanish
+    // v1.x structure: Executive Review appears as ### heading under ## Output Formats
     // v2.0 structure: Executive Review appears as bold label within output format sections
-    expect(content()).toMatch(/###\s+(?:Enterprise|Community) Output Format|\*\*Executive Review/);
+    expect(content()).toMatch(/###\s+(?:Enterprise|Community|Executive) (?:Output Format|Review)|\*\*Executive Review/);
   });
 
   it('Executive Review format must still include Strategic Assessment block', () => {
-    // The compact format uses [CEO]/[CTO]/[ED] lines which together constitute
-    // the strategic assessment — the label "Strategic Assessment" was replaced
-    // by the compact output block during the output format rewrite.
+    // The Strategic Assessment block documents CEO/CTO/Eng Dir perspectives.
+    // v1.x uses - **CEO (Business)**: format; v2.0 uses [CEO]/[CTO]/[ED] compact lines.
     const c = content();
-    expect(c).toMatch(/\[CEO\]|\[CTO\]|\[ED\]/);
+    expect(c).toMatch(/\[CEO\]|\[CTO\]|\[ED\]|CEO.*Business|Strategic Assessment/);
   });
 
   it('Executive Review format must still include CEO, CTO, and Eng Dir perspective lines', () => {
@@ -100,9 +100,10 @@ describe('Boundary: deliverable section placement', () => {
     //       an unrelated section (e.g. Memory Protocol)
     const c = content();
 
+    // v1.x structure: output format lives under ## Output Formats with ### Executive Review subsection.
     // v2.0 structure: output format lives under Enterprise/Community h3 headings.
-    // Find the first output format section (Enterprise or Community).
-    const outputFormatsIdx = c.search(/###\s+(?:Enterprise|Community) Output Format/m);
+    // Find the first output format section (either style).
+    const outputFormatsIdx = c.search(/##\s+Output Formats?|###\s+(?:Enterprise|Community) Output Format/m);
     expect(outputFormatsIdx).toBeGreaterThan(-1);
 
     // Deliverables/Documents heading must appear after the first output format section

@@ -22,6 +22,7 @@ Housekeeping skill that reconciles project state across GitHub issues, `.claude/
 4. **Preserve user data** - Memory files are project state. Only remove a memory file when its workstream issue is confirmed closed or deleted on GitHub. Otherwise report the orphan and leave it.
 5. **Dry-run by default** - Show the full plan before making any writes or closes. Wait for confirmation unless `--auto` flag is passed.
 6. **gh dependency** - This skill requires `gh` (GitHub CLI). Check it is installed and authenticated before proceeding.
+7. **Follow output format** — See `references/output-format.md` for standard visual patterns
 
 ## Usage
 
@@ -123,15 +124,37 @@ Output the canonical workstream list and a summary of what was changed.
 
 ## Output Format
 
-```
-[TIDY]  Preflight — gh authenticated ✓
-[TIDY]  Audit — {N} open issues, {N} duplicates, {N} stale
-[TIDY]  Memory — {N} state files, {N} orphaned, {N} missing
-[TIDY]  Plan — {N} closes, {N} removes, {N} creates
-[TIDY]  Done — state is clean                      {elapsed}
-```
+Follow `references/output-format.md`. Use the Audit/Reconcile pattern:
 
-The canonical workstream list and stale issue report follow the Done line.
+```markdown
+## mg-tidy: State Reconciliation
+
+### Preflight
+- gh: installed + authenticated
+- .claude/memory/: found (N files)
+
+### Audit Results
+- Open issues: N
+- Duplicates detected: N sets
+- Stale issues: N
+- Workstream state files: N
+- Orphaned memory: N
+- Missing memory: N
+
+### Changes Applied
+- Closed N duplicate issues
+- Removed N orphaned memory files
+- Created N missing memory files
+
+### Canonical Workstream List
+| ID    | Issue | Status | Memory File |
+|-------|-------|--------|-------------|
+| WS-42 | #47   | open   | workstream-WS-42-state.json |
+| WS-55 | #55   | open   | workstream-WS-55-state.json (created) |
+
+### Stale Issues (no action taken)
+- #31 "WS-10: Old feature" — last activity: 21 days ago
+```
 
 ## Error Handling
 

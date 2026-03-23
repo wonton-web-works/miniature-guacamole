@@ -21,6 +21,7 @@ Coordinates product-owner, product-manager, and design for product definition.
 2. **Clear acceptance** - No ambiguity in what "done" means
 3. **Three lenses** - Vision (PO), requirements (PM), experience (Design)
 4. **Enable engineering** - Provide everything they need to build
+5. **Follow output format** — See `references/output-format.md` for standard visual patterns
 
 ## Workflow
 
@@ -93,10 +94,25 @@ write: .claude/memory/agent-mg-spec-decisions.json
 ## Output Format
 
 ```
-[PO]    Vision — {strategic fit, priority}
-[PM]    Stories — {N} user stories, {N} acceptance criteria
-[PM]    Dependencies — {validated | spike required}  {elapsed}
-[EM]    Ready for engineering — {priority: high | medium | low}   {elapsed}
+## Product Spec: {Feature}
+
+### Vision (Product Owner)
+{Why this matters, strategic fit, priority}
+
+### Requirements (Product Manager)
+**User Stories:**
+- As a {user}, I want {goal} so that {benefit}
+
+**Acceptance Criteria:**
+- [ ] {criterion}
+
+### Design (Designer)
+{UX approach, accessibility, visual direction}
+
+### Ready for Engineering
+Priority: {high|medium|low}
+External Dependencies Validated: {yes|no|n/a}
+Next: /mg-build
 ```
 
 ## Document Output

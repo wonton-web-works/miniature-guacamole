@@ -21,6 +21,7 @@ Coordinates technical-writer for comprehensive documentation generation.
 2. **Show, don't tell** - Code examples over long explanations
 3. **Progressive disclosure** - Quick start → advanced → reference
 4. **Keep current** - Documentation is code; update it with features
+5. **Follow output format** — See `references/output-format.md` for standard visual patterns
 
 ## Documentation Types
 
@@ -81,11 +82,19 @@ Task:
 ## Output Format
 
 ```
-[DOC]   README — {generated | updated | skipped}
-[DOC]   API docs — {generated | updated | skipped}
-[DOC]   User guide — {generated | updated | skipped}
-[DOC]   Inline comments — {generated | updated | skipped}   {elapsed}
-[EM]    Done — {coverage summary}                   {elapsed}
+## Documentation: {Feature/Module}
+
+### Generated
+- README: {status}
+- API Docs: {status}
+- User Guide: {status}
+- Inline Comments: {status}
+
+### Coverage
+{What's documented, what's missing}
+
+### Next Action
+{Approval or revision requests}
 ```
 
 ## Boundaries

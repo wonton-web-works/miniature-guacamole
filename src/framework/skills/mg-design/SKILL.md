@@ -21,6 +21,7 @@ Coordinates art-director and design for visual excellence.
 2. **Accessibility first** - WCAG AA minimum, no exceptions
 3. **Art Director approval** - All visual work needs sign-off
 4. **No generic AI aesthetics** - Distinctive, thoughtful design
+5. **Follow output format** — See `references/output-format.md` for standard visual patterns
 
 ## Workflow
 
@@ -28,7 +29,7 @@ Coordinates art-director and design for visual excellence.
 1. Art Director: Creative direction, brand constraints
 2. Designer: Wireframes, mockups, interaction specs
 3. Art Director: Review and approve
-4. Hand off to engineering or /mg-build
+4. Hand off to engineering or /frontend-design
 ```
 
 ## Memory Protocol
@@ -55,7 +56,7 @@ write: .claude/memory/agent-mg-design-decisions.json
 
 | Need | Action |
 |------|--------|
-| Build UI | Recommend `/mg-build` with specs |
+| Build UI | Recommend `/frontend-design` with specs |
 | Design work | Spawn `design` |
 | Visual review | Art Director reviews, writes to memory |
 
@@ -70,11 +71,24 @@ When QA detects visual changes:
 ## Output Format
 
 ```
-[ART]   Creative direction — {vision, constraints}
-[ART]   Specs — {N} components, colors, typography, spacing
-[ART]   Accessibility — WCAG AA, contrast verified
-[ART]   Decision: {APPROVED | CHANGES NEEDED}       {elapsed}
-[EM]    Ready for /frontend-design                  {elapsed}
+## Design: {Component/Feature}
+
+### Creative Direction (Art Director)
+{Vision, brand, constraints}
+
+### Specifications (Designer)
+- Components: {list}
+- Colors: {palette}
+- Typography: {fonts}
+- Spacing: {system}
+
+### Accessibility
+- WCAG Level: AA
+- Keyboard: Yes
+- Contrast: Verified
+
+### Status
+{APPROVED | Ready for /frontend-design | Changes needed}
 ```
 
 ## Brand Kit Mode
@@ -100,5 +114,5 @@ Design agent produces wireframes as markdown or ASCII layout files in `docs/wire
 ## Boundaries
 
 **CAN:** Set design direction, create specs, approve visuals, spawn design
-**CANNOT:** Write production code (use /mg-build), skip accessibility
+**CANNOT:** Write production code (use /frontend-design), skip accessibility
 **ESCALATES TO:** mg-leadership-team (brand conflicts, resource constraints)

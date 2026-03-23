@@ -1,0 +1,15 @@
+fund_name: ""
+headline: "The AI engineering org your team is missing"
+body: >
+  Every engineering team has AI tools. Few have process. TheEngOrg gives your
+  portfolio companies a complete AI engineering organization — from intake to
+  merge — so their engineers ship faster with higher quality.
+metrics:
+  - label: "Gross margin"
+    value: "95%+"
+  - label: "Payback period"
+    value: "< 30 days"
+  - label: "Monthly API cost"
+    value: "~$5K"
+  - label: "Implementation"
+    value: "Zero infra"

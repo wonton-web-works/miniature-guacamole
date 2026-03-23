@@ -1,0 +1,561 @@
+---
+import Base from '../layouts/Base.astro';
+import { readFileSync } from 'node:fs';
+import { parse } from 'yaml';
+import { join } from 'node:path';
+
+// Load the general fund profile at build time as default
+const fundsDir = join(process.cwd(), 'src/data/funds');
+const generalYaml = readFileSync(join(fundsDir, 'general.yaml'), 'utf-8');
+const generalFund = parse(generalYaml);
+
+// Build a map of all fund profiles for client-side selection
+const fundFiles = import.meta.glob('../data/funds/*.yaml', { query: '?raw', import: 'default' });
+const fundMap: Record<string, any> = {};
+for (const [path, loader] of Object.entries(fundFiles)) {
+  const slug = path.split('/').pop()?.replace('.yaml', '') ?? '';
+  const raw = await loader() as string;
+  fundMap[slug] = parse(raw);
+}
+---
+
+<Base title="TheEngOrg — Investment Opportunity">
+  <div class="investor-root">
+    <div class="container">
+
+      <!-- Gate: pre-verification state -->
+      <section id="gate" class="gate-section">
+        <p class="program-label">TheEngOrg</p>
+        <h1 class="gate-heading">Investment Opportunity</h1>
+        <p class="gate-sub">This page is invite-only. Enter the access code from your contact.</p>
+
+        <form class="gate-form" id="verify-form" onsubmit="return false;">
+          <input
+            type="text"
+            id="code-input"
+            class="email-input"
+            placeholder="Enter access code"
+            autocomplete="off"
+            autocorrect="off"
+            autocapitalize="none"
+            spellcheck="false"
+          />
+          <button type="submit" class="verify-btn" id="verify-btn">Unlock</button>
+        </form>
+
+        <p class="gate-error" id="gate-error" aria-live="polite"></p>
+      </section>
+
+      <!-- Deck content: shown after successful verification -->
+      <section id="deck" class="deck-section" aria-hidden="true">
+
+        <header class="deck-header">
+          <p class="program-label">TheEngOrg</p>
+          <h1 class="deck-heading" id="deck-headline">The AI engineering org your team is missing</h1>
+          <p class="deck-intro" id="deck-body">
+            Every engineering team has AI tools. Few have process. TheEngOrg gives your
+            portfolio companies a complete AI engineering organization — from intake to
+            merge — so their engineers ship faster with higher quality.
+          </p>
+        </header>
+
+        <!-- Personalized section (populated by JS if fund param present) -->
+        <div class="deck-block" id="fund-section" style="display: none;">
+          <h2 class="block-heading" id="fund-headline"></h2>
+          <p class="deck-text" id="fund-body"></p>
+        </div>
+
+        <div class="deck-block">
+          <h2 class="block-heading">The opportunity</h2>
+          <div class="opportunity-grid">
+            <div class="opp-card">
+              <span class="opp-value">$120B+</span>
+              <span class="opp-label">Developer tooling market (2025)</span>
+            </div>
+            <div class="opp-card">
+              <span class="opp-value">0</span>
+              <span class="opp-label">Competitors with process-first AI engineering</span>
+            </div>
+            <div class="opp-card">
+              <span class="opp-value">24</span>
+              <span class="opp-label">Specialized agents — from CEO to Security</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="deck-block">
+          <h2 class="block-heading">Unit economics</h2>
+          <div class="metrics-grid" id="metrics-grid">
+            <div class="metric-item">
+              <span class="metric-value">95%+</span>
+              <span class="metric-label">Gross margin</span>
+            </div>
+            <div class="metric-item">
+              <span class="metric-value">< 30 days</span>
+              <span class="metric-label">Payback period</span>
+            </div>
+            <div class="metric-item">
+              <span class="metric-value">~$5K</span>
+              <span class="metric-label">Monthly API cost</span>
+            </div>
+            <div class="metric-item">
+              <span class="metric-value">Zero infra</span>
+              <span class="metric-label">Implementation</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="deck-block">
+          <h2 class="block-heading">How it works</h2>
+          <ol class="how-list">
+            <li>
+              <span class="how-num">1</span>
+              <div>
+                <strong>Intake.</strong> Every task starts with scope assessment — the Sage reads the work and assembles the right team.
+              </div>
+            </li>
+            <li>
+              <span class="how-num">2</span>
+              <div>
+                <strong>Build.</strong> Tests are written before code. QA specs come before implementation. Security audits before shipping.
+              </div>
+            </li>
+            <li>
+              <span class="how-num">3</span>
+              <div>
+                <strong>Review.</strong> Leadership reviews every deliverable against spec. Problems are caught before they spread.
+              </div>
+            </li>
+            <li>
+              <span class="how-num">4</span>
+              <div>
+                <strong>Ship.</strong> Approved code merges automatically. The pipeline runs 24/7 without human bottlenecks.
+              </div>
+            </li>
+          </ol>
+        </div>
+
+        <div class="deck-block">
+          <h2 class="block-heading">Traction</h2>
+          <ul class="traction-list">
+            <li>2 pilot partners onboarded (60-day free pilots)</li>
+            <li>Open-source framework with community adoption</li>
+            <li>Enterprise tier with Sage orchestration (proprietary)</li>
+            <li>Founding Partner pricing: 80% off list, locked forever</li>
+          </ul>
+        </div>
+
+        <div class="deck-block">
+          <h2 class="block-heading">The team</h2>
+          <p class="deck-text">
+            Solo technical founder. Built the entire framework, 24 agents, autonomous daemon
+            pipeline, and marketing site. Shipping multiple releases per day.
+          </p>
+        </div>
+
+        <div class="deck-block cta-block">
+          <h2 class="block-heading">Next step</h2>
+          <a
+            href="mailto:byazaki@wontonwebworks.com?subject=TheEngOrg%20%E2%80%94%20Investment%20Conversation"
+            class="cta-link"
+          >
+            Schedule a conversation
+          </a>
+        </div>
+
+      </section>
+
+    </div>
+  </div>
+</Base>
+
+<script define:vars={{ fundMap: JSON.stringify(fundMap) }}>
+  /*
+   * INVITE-ONLY MARKETING GATE — NOT A SECURITY BOUNDARY.
+   * Same pattern as /pilot. Client-side gating for casual access control.
+   */
+
+  const ACCESS_CODE = 'invest2026';
+  const funds = JSON.parse(fundMap);
+
+  const form = document.getElementById('verify-form');
+  const input = document.getElementById('code-input');
+  const errorEl = document.getElementById('gate-error');
+  const gate = document.getElementById('gate');
+  const deck = document.getElementById('deck');
+
+  form.addEventListener('submit', () => {
+    const code = input.value.trim().toLowerCase();
+
+    if (code === ACCESS_CODE) {
+      gate.style.display = 'none';
+      deck.removeAttribute('aria-hidden');
+      deck.classList.add('fade-in');
+      loadFundProfile();
+    } else {
+      errorEl.textContent = 'Invalid access code. Check your invite.';
+      input.focus();
+    }
+  });
+
+  input.addEventListener('input', () => {
+    errorEl.textContent = '';
+  });
+
+  function loadFundProfile() {
+    const params = new URLSearchParams(window.location.search);
+    const fundSlug = params.get('fund');
+    if (!fundSlug || !funds[fundSlug]) return;
+
+    const fund = funds[fundSlug];
+    if (!fund.fund_name) return;
+
+    // Update headline if fund has a custom one
+    if (fund.headline) {
+      document.getElementById('deck-headline').textContent = fund.headline;
+    }
+    if (fund.body) {
+      document.getElementById('deck-body').textContent = fund.body;
+    }
+
+    // Show personalized section
+    const fundSection = document.getElementById('fund-section');
+    const fundHeadline = document.getElementById('fund-headline');
+    const fundBody = document.getElementById('fund-body');
+
+    if (fund.fund_name) {
+      fundSection.style.display = 'block';
+      fundHeadline.textContent = `How TheEngOrg fits ${fund.fund_name}'s portfolio`;
+      fundBody.textContent = fund.body || '';
+    }
+
+    // Update metrics if provided — use textContent to avoid XSS from YAML data
+    if (fund.metrics) {
+      const grid = document.getElementById('metrics-grid');
+      grid.replaceChildren();
+      fund.metrics.forEach((m) => {
+        const item = document.createElement('div');
+        item.className = 'metric-item';
+        const val = document.createElement('span');
+        val.className = 'metric-value';
+        val.textContent = m.value;
+        const label = document.createElement('span');
+        label.className = 'metric-label';
+        label.textContent = m.label;
+        item.appendChild(val);
+        item.appendChild(label);
+        grid.appendChild(item);
+      });
+    }
+  }
+</script>
+
+<style>
+  .investor-root {
+    min-height: 100vh;
+    background-color: var(--mg-dark);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 4rem 1.5rem;
+  }
+
+  .container {
+    width: 100%;
+    max-width: 720px;
+  }
+
+  /* ---- Gate ---- */
+
+  .gate-section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 1.25rem;
+  }
+
+  .program-label {
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--mg-cilantro);
+  }
+
+  .gate-heading {
+    font-family: var(--font-display);
+    font-size: clamp(1.75rem, 4vw, 2.5rem);
+    font-weight: 800;
+    color: var(--mg-text);
+    line-height: 1.15;
+  }
+
+  .gate-sub {
+    font-size: 1rem;
+    color: var(--mg-subtext);
+  }
+
+  .gate-form {
+    display: flex;
+    gap: 0.5rem;
+    width: 100%;
+    max-width: 420px;
+    margin-top: 0.5rem;
+  }
+
+  .email-input {
+    flex: 1;
+    padding: 0.65rem 1rem;
+    background: var(--mg-surface);
+    border: 1px solid #2E3F52;
+    border-radius: 6px;
+    color: var(--mg-text);
+    font-family: var(--font-mono);
+    font-size: 0.9rem;
+    outline: none;
+    transition: border-color 0.15s ease;
+  }
+
+  .email-input::placeholder {
+    color: var(--mg-subtext);
+    opacity: 0.7;
+  }
+
+  .email-input:focus {
+    border-color: var(--mg-cilantro);
+  }
+
+  .verify-btn {
+    padding: 0.65rem 1.25rem;
+    background: var(--mg-cilantro);
+    border: none;
+    border-radius: 6px;
+    color: #fff;
+    font-family: var(--font-display);
+    font-size: 0.875rem;
+    font-weight: 600;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: opacity 0.15s ease;
+  }
+
+  .verify-btn:hover {
+    opacity: 0.88;
+  }
+
+  .gate-error {
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+    color: var(--mg-chili);
+    min-height: 1.2em;
+  }
+
+  /* ---- Deck ---- */
+
+  .deck-section {
+    display: none;
+  }
+
+  .deck-section:not([aria-hidden]) {
+    display: block;
+  }
+
+  .fade-in {
+    animation: fadeIn 0.45s ease forwards;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .deck-header {
+    margin-bottom: 3rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .deck-heading {
+    font-family: var(--font-display);
+    font-size: clamp(2rem, 5vw, 3rem);
+    font-weight: 800;
+    color: var(--mg-text);
+    line-height: 1.1;
+  }
+
+  .deck-intro {
+    font-size: 1.0625rem;
+    color: var(--mg-subtext);
+    line-height: 1.65;
+    max-width: 580px;
+  }
+
+  /* ---- Blocks ---- */
+
+  .deck-block {
+    border-top: 1px solid #1E2A38;
+    padding-top: 2rem;
+    margin-bottom: 2.5rem;
+  }
+
+  .block-heading {
+    font-family: var(--font-display);
+    font-size: 0.6875rem;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--mg-cilantro);
+    margin-bottom: 1.25rem;
+  }
+
+  .deck-text {
+    font-size: 0.9375rem;
+    color: var(--mg-text);
+    line-height: 1.65;
+  }
+
+  /* Opportunity grid */
+  .opportunity-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+  }
+
+  .opp-card {
+    background: var(--mg-surface);
+    border: 1px solid #2E3F52;
+    border-radius: 6px;
+    padding: 1.25rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .opp-value {
+    font-family: var(--font-display);
+    font-size: 1.75rem;
+    font-weight: 800;
+    color: var(--mg-text);
+  }
+
+  .opp-label {
+    font-size: 0.8125rem;
+    color: var(--mg-subtext);
+    line-height: 1.4;
+  }
+
+  /* Metrics grid */
+  .metrics-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+  }
+
+  .metric-item {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    padding: 1rem;
+    background: var(--mg-surface);
+    border: 1px solid #2E3F52;
+    border-radius: 6px;
+  }
+
+  .metric-value {
+    font-family: var(--font-display);
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: var(--mg-text);
+  }
+
+  .metric-label {
+    font-size: 0.8125rem;
+    color: var(--mg-subtext);
+  }
+
+  /* How it works */
+  .how-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+  }
+
+  .how-list li {
+    display: flex;
+    gap: 1rem;
+    align-items: flex-start;
+    font-size: 0.9375rem;
+    color: var(--mg-text);
+    line-height: 1.6;
+  }
+
+  .how-num {
+    font-family: var(--font-mono);
+    font-size: 0.8125rem;
+    color: var(--mg-cilantro);
+    min-width: 1.5rem;
+    padding-top: 2px;
+  }
+
+  /* Traction */
+  .traction-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+  }
+
+  .traction-list li {
+    padding-left: 1.25rem;
+    position: relative;
+    color: var(--mg-text);
+    font-size: 0.9375rem;
+    line-height: 1.6;
+  }
+
+  .traction-list li::before {
+    content: '\2014';
+    position: absolute;
+    left: 0;
+    color: var(--mg-cilantro);
+    font-family: var(--font-mono);
+  }
+
+  /* CTA */
+  .cta-block {
+    margin-bottom: 4rem;
+  }
+
+  .cta-link {
+    display: inline-block;
+    padding: 0.75rem 1.5rem;
+    background: var(--mg-cilantro);
+    color: #fff;
+    text-decoration: none;
+    border-radius: 6px;
+    font-family: var(--font-display);
+    font-size: 0.9375rem;
+    font-weight: 600;
+    transition: opacity 0.15s ease;
+  }
+
+  .cta-link:hover {
+    opacity: 0.88;
+  }
+
+  /* Responsive */
+  @media (max-width: 480px) {
+    .gate-form {
+      flex-direction: column;
+    }
+    .opportunity-grid {
+      grid-template-columns: 1fr;
+    }
+    .metrics-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

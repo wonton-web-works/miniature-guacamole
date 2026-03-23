@@ -1,11 +1,181 @@
 ---
 import Base from '../layouts/Base.astro';
 import ChromaKeyVideo from '../components/ChromaKeyVideo.tsx';
+
+const FALLBACK_CHANGELOG = [
+  {
+    version: 'v4.2.0',
+    date: '2026-03-20',
+    title: 'Full Pipeline',
+    badges: [
+      { label: '♥ reliability +1', color: '#7A5C8B' },
+      { label: '⚡ automation +3', color: '#D4A84B' },
+    ],
+    notes: [
+      'Post-PR code review — daemon invokes leadership review after every PR',
+      'Merge automation — approved PRs merge automatically, rejections loop back to dev',
+      'Lifecycle state sync — .claude/memory/ tracks every phase from planning to merged',
+    ],
+  },
+  {
+    version: 'v4.1.0',
+    date: '2026-03-19',
+    title: 'Output Parity',
+    badges: [
+      { label: '▸ dx +1', color: '#5CB8C2' },
+      { label: '⚡ speed +40%', color: '#D4A84B' },
+    ],
+    notes: [
+      'Compact [ROLE] prefix output — every agent speaks in one line',
+      'Timing instrumentation — per-step and total elapsed',
+      'ANSI color codes matching brand palette per agent',
+    ],
+  },
+  {
+    version: 'v4.0.0',
+    date: '2026-03-19',
+    title: 'Framework Hardening',
+    badges: [
+      { label: '● agents +3', color: '#2E6E8E' },
+      { label: '⚡ speed +60%', color: '#D4A84B' },
+      { label: '★ new skill', color: '#8ABB5A' },
+    ],
+    notes: [
+      'Base template inheritance — 42% less boilerplate per agent',
+      '2-track dev cycle — MECHANICAL (1 spawn) vs ARCHITECTURAL (5-6)',
+      'Agent message bus for inter-agent communication',
+    ],
+  },
+  {
+    version: 'v3.1.0',
+    date: '2026-03-19',
+    title: 'State Reconciliation',
+    badges: [
+      { label: '♥ reliability +1', color: '#7A5C8B' },
+      { label: '■ security +1', color: '#C75450' },
+    ],
+    notes: [
+      '/mg-tidy skill for issue dedup + memory sync',
+      'Daemon launchd auto-start with PATH fix',
+      'Post-approval state sync in development cycle',
+    ],
+  },
+  {
+    version: 'v4.0.1',
+    date: '2026-03-19',
+    title: 'Patch',
+    badges: [
+      { label: '♥ fix', color: '#7A5C8B' },
+    ],
+    notes: [
+      'Bugfixes and stability improvements',
+    ],
+  },
+  {
+    version: 'v3.0.0',
+    date: '2026-03-19',
+    title: 'Autonomous Daemon Pipeline',
+    badges: [
+      { label: '⚡ automation +5', color: '#D4A84B' },
+      { label: '■ security +3', color: '#C75450' },
+      { label: '● integrations +3', color: '#2E6E8E' },
+    ],
+    notes: [
+      'Jira, Linear, GraphQL, and GitHub Issues behind a single TicketProvider interface',
+      'Full MG team execution — planner uses /mg-leadership-team, executor uses /mg-build',
+      'Security review passes — web (OWASP), CTO (code quality), systems (process isolation)',
+      'OS-level safeguards — launchd service, crash-loop prevention, STOP sentinel',
+    ],
+  },
+  {
+    version: 'v2.2.3',
+    date: '2026-03-18',
+    title: 'Install Cleanup',
+    badges: [
+      { label: '♥ fix', color: '#7A5C8B' },
+    ],
+    notes: [
+      '/mg-init: unbound INSTALL_FLAGS empty array fix',
+      'install.sh: declare -A cleanup for --force',
+      'mg-diff-summary: scope counting fix',
+    ],
+  },
+  {
+    version: 'v2.2.2',
+    date: '2026-03-18',
+    title: 'macOS Compatibility',
+    badges: [
+      { label: '♥ fix', color: '#7A5C8B' },
+      { label: '● compat', color: '#8ABB5A' },
+    ],
+    notes: [
+      'Fixed INSTALL_FLAGS array expansion on macOS with set -u',
+      'Replaced associative arrays with pipe-delimited string matching for bash 3.2 compat',
+    ],
+  },
+];
+
+interface ChangelogEntry {
+  version: string;
+  date: string;
+  title: string;
+  badges: { label: string; color: string }[];
+  notes: string[];
+}
+
+function parseBadges(body: string): { label: string; color: string }[] {
+  const badges: { label: string; color: string }[] = [];
+  for (const line of body.split('\n')) {
+    const match = line.match(/^badge:\s*(.+?)\s+#([0-9A-Fa-f]{6})\s*$/);
+    if (match) badges.push({ label: match[1].trim(), color: `#${match[2]}` });
+  }
+  return badges;
+}
+
+function parseNotes(body: string): string[] {
+  return body
+    .split('\n')
+    .filter((l) => /^[-*]\s/.test(l.trim()))
+    .map((l) => l.trim().replace(/^[-*]\s+/, ''));
+}
+
+// Merge: use GitHub API for any NEW releases not in the curated fallback,
+// but prefer curated entries (with badges) for known versions.
+const changelogEntries: ChangelogEntry[] = await (async () => {
+  const curated = new Map(FALLBACK_CHANGELOG.map((e) => [e.version, e]));
+  try {
+    const res = await fetch(
+      'https://api.github.com/repos/wonton-web-works/miniature-guacamole/releases?per_page=6',
+      { headers: { Accept: 'application/vnd.github.v3+json' } }
+    );
+    if (!res.ok) return FALLBACK_CHANGELOG;
+    const releases = await res.json() as any[];
+    if (!Array.isArray(releases) || releases.length === 0) return FALLBACK_CHANGELOG;
+
+    return releases.map((r: any) => {
+      const version = r.tag_name ?? '';
+      // Use curated entry if we have one (preserves badges + notes)
+      if (curated.has(version)) return curated.get(version)!;
+      // Otherwise parse from API
+      return {
+        version,
+        date: r.published_at?.split('T')[0] ?? r.created_at?.split('T')[0] ?? '',
+        title: (r.name || r.tag_name) as string,
+        badges: parseBadges(r.body ?? ''),
+        notes: parseNotes(r.body ?? ''),
+      };
+    });
+  } catch {
+    return FALLBACK_CHANGELOG;
+  }
+})();
+
+const entries: ChangelogEntry[] = changelogEntries;
 ---
 
 <Base
   title="TheEngOrg Enterprise — Your AI Engineering Org"
-  description="A complete AI engineering org for every project. 24 agents — CEO, CTO, QA, Dev, Security, Design — led by The Sage. Enterprise-grade drift prevention, session management, and quality enforcement."
+  description="A complete AI engineering org for every project. 24 agents — CEO, CTO, QA, Dev, Security, Design — led by The Sage. Enterprise-grade quality enforcement, session management, and continuous oversight."
 >
   <style slot="head">
       /* ── Page-scoped design tokens ────────────────────────────── */
@@ -282,9 +452,40 @@ import ChromaKeyVideo from '../components/ChromaKeyVideo.tsx';
       .cta-primary:hover { opacity: 0.9; transform: translateY(-1px); }
       .cta-primary:focus-visible { outline: 2px solid var(--mg-lime-zest); }
 
+      .hero-cta-row {
+        display: flex;
+        align-items: center;
+        gap: 1.25rem;
+        flex-wrap: wrap;
+      }
+
+      .cta-secondary-link {
+        font-family: var(--font-mono);
+        font-size: 0.875rem;
+        color: var(--mg-subtext);
+        text-decoration: none;
+        border-bottom: 1px solid rgba(138,155,176,0.4);
+        padding-bottom: 2px;
+        transition: color 0.15s ease, border-color 0.15s ease;
+      }
+      .cta-secondary-link:hover {
+        color: var(--mg-text);
+        border-color: var(--mg-text);
+      }
+
+      /* Problem section */
+      .problem-body {
+        font-family: var(--font-display);
+        font-size: 1.0625rem;
+        color: var(--mg-subtext);
+        line-height: 1.7;
+        margin-bottom: 1rem;
+      }
+
       /* Terminal-behind-Sage layered hero */
       .hero-illustration {
         position: relative;
+        animation: float 6s ease-in-out infinite;
       }
 
       .hero-img {
@@ -296,12 +497,10 @@ import ChromaKeyVideo from '../components/ChromaKeyVideo.tsx';
         z-index: 3;
       }
 
-      /* Animated sage video in hero — matches .hero-img sizing */
+      /* Animated sage video in hero — the sizing anchor for everything */
       :global(.hero-img-video) {
         width: 440px;
         max-width: 100%;
-        animation: float 6s ease-in-out infinite;
-        filter: drop-shadow(0 0 32px rgba(212,168,75,0.25));
         position: relative;
         z-index: 3;
       }
@@ -312,9 +511,10 @@ import ChromaKeyVideo from '../components/ChromaKeyVideo.tsx';
         display: block;
       }
 
+      /* Terminal scrolls behind the sage — sized to match the video exactly */
       .hero-terminal-bg {
         position: absolute;
-        inset: -20px -30px;
+        inset: 0;
         z-index: 1;
         opacity: 0.13;
         overflow: hidden;
@@ -339,11 +539,7 @@ import ChromaKeyVideo from '../components/ChromaKeyVideo.tsx';
       }
 
       .hero-amber-glow {
-        position: absolute;
-        inset: 0;
-        z-index: 2;
-        pointer-events: none;
-        background: radial-gradient(ellipse 260px 280px at 50% 50%, rgba(212,168,75,0.18) 0%, transparent 70%);
+        display: none;
       }
 
       @keyframes float {
@@ -949,6 +1145,45 @@ import ChromaKeyVideo from '../components/ChromaKeyVideo.tsx';
 
       .drift-panel.bad .drift-panel-label  { color: var(--mg-chili-text); }
       .drift-panel.good .drift-panel-label { color: var(--mg-guac-text); }
+
+      .drift-illustration {
+        width: 100%;
+        height: auto;
+        border-radius: 8px;
+        margin-bottom: 16px;
+      }
+
+      .drift-data-strip {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 12px;
+        padding-top: 12px;
+        border-top: 1px solid rgba(138,155,176,0.12);
+      }
+
+      .drift-data-item {
+        text-align: center;
+      }
+
+      .drift-data-value {
+        display: block;
+        font-family: var(--font-display);
+        font-weight: 800;
+        font-size: 1.25rem;
+        line-height: 1;
+        margin-bottom: 4px;
+      }
+
+      .drift-data-value.bad-value { color: var(--mg-chili-text); }
+      .drift-data-value.good-value { color: var(--mg-guac-text); }
+
+      .drift-data-label {
+        font-family: var(--font-mono);
+        font-size: 0.6rem;
+        letter-spacing: 0.04em;
+        color: var(--mg-subtext);
+        text-transform: uppercase;
+      }
 
       .pipeline-wrap {
         position: relative;
@@ -1719,11 +1954,264 @@ import ChromaKeyVideo from '../components/ChromaKeyVideo.tsx';
       }
 
       /* ══════════════════════════════════════════════════════════
+         SECTION 5b — BY THE NUMBERS (value prop)
+      ══════════════════════════════════════════════════════════ */
+      #by-the-numbers {
+        background: var(--mg-surface);
+        border-top: 1px solid rgba(212,168,75,0.08);
+        border-bottom: 1px solid rgba(212,168,75,0.08);
+      }
+
+      .numbers-headline {
+        font-family: var(--font-display);
+        font-weight: 800;
+        font-size: clamp(1.75rem, 4vw, 2.8rem);
+        line-height: 1.1;
+        color: var(--mg-text);
+        text-align: center;
+        margin-bottom: 0.5rem;
+      }
+
+      .numbers-sub {
+        font-size: 1.0625rem;
+        color: var(--mg-subtext);
+        text-align: center;
+        max-width: 560px;
+        margin: 0 auto 3rem;
+        line-height: 1.6;
+      }
+
+      .numbers-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 24px;
+        max-width: 900px;
+        margin: 0 auto 2.5rem;
+      }
+
+      .number-card {
+        text-align: center;
+        padding: 24px 16px;
+        border: 1px solid rgba(46,63,82,0.4);
+        border-radius: 8px;
+        background: var(--mg-dark);
+      }
+
+      .number-value {
+        font-family: var(--font-display);
+        font-weight: 800;
+        font-size: clamp(2rem, 4vw, 2.8rem);
+        color: var(--sage-amber);
+        display: block;
+        line-height: 1;
+        margin-bottom: 8px;
+      }
+
+      .number-unit {
+        font-family: var(--font-mono);
+        font-size: 0.75rem;
+        letter-spacing: 0.06em;
+        color: var(--mg-subtext);
+        text-transform: uppercase;
+      }
+
+      .numbers-quote {
+        text-align: center;
+        max-width: 640px;
+        margin: 0 auto;
+        padding-top: 1.5rem;
+        border-top: 1px solid rgba(46,63,82,0.4);
+      }
+
+      .numbers-quote blockquote {
+        font-family: var(--font-display);
+        font-size: 1.125rem;
+        font-style: italic;
+        color: var(--mg-text);
+        line-height: 1.6;
+        margin: 0 0 0.75rem;
+      }
+
+      .numbers-quote cite {
+        font-family: var(--font-mono);
+        font-size: 0.75rem;
+        color: var(--mg-subtext);
+        font-style: normal;
+        letter-spacing: 0.04em;
+      }
+
+      @media (max-width: 767px) {
+        .numbers-grid { grid-template-columns: repeat(2, 1fr); }
+      }
+
+      @media (max-width: 480px) {
+        .numbers-grid { grid-template-columns: 1fr 1fr; gap: 16px; }
+        .number-card { padding: 16px 12px; }
+      }
+
+      /* ══════════════════════════════════════════════════════════
+         SECTION 5c — CHANGELOG
+      ══════════════════════════════════════════════════════════ */
+      #changelog {
+        background: var(--mg-dark);
+      }
+
+      .changelog-list {
+        max-width: 720px;
+        margin: 0 auto;
+        display: flex;
+        flex-direction: column;
+        gap: 2rem;
+      }
+
+      .changelog-entry {
+        display: grid;
+        grid-template-columns: 120px 1fr;
+        gap: 20px;
+        padding-bottom: 2rem;
+        border-bottom: 1px solid rgba(46,63,82,0.3);
+      }
+
+      .changelog-entry:last-child { border-bottom: none; padding-bottom: 0; }
+
+      .changelog-meta {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+      }
+
+      .changelog-version {
+        font-family: var(--font-mono);
+        font-size: 0.875rem;
+        font-weight: 600;
+        color: var(--sage-amber);
+      }
+
+      .changelog-date {
+        font-family: var(--font-mono);
+        font-size: 0.7rem;
+        color: var(--mg-subtext);
+      }
+
+      .changelog-title {
+        font-family: var(--font-display);
+        font-weight: 700;
+        font-size: 1rem;
+        color: var(--mg-text);
+        margin-bottom: 8px;
+      }
+
+      .changelog-badges {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+        margin-bottom: 10px;
+      }
+
+      .changelog-badge {
+        font-family: var(--font-mono);
+        font-size: 0.65rem;
+        letter-spacing: 0.04em;
+        padding: 3px 8px;
+        border-radius: 4px;
+        border: 1px solid;
+      }
+
+      .changelog-notes {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+      }
+
+      .changelog-notes li {
+        font-size: 0.875rem;
+        color: var(--mg-subtext);
+        line-height: 1.6;
+        padding-left: 1em;
+        position: relative;
+      }
+
+      .changelog-notes li::before {
+        content: '·';
+        position: absolute;
+        left: 0;
+        color: var(--sage-amber);
+        font-weight: 700;
+      }
+
+      @media (max-width: 640px) {
+        .changelog-entry { grid-template-columns: 1fr; gap: 8px; }
+      }
+
+      /* ══════════════════════════════════════════════════════════
          SECTION 6 — CTA
       ══════════════════════════════════════════════════════════ */
       #enterprise-cta {
         background: var(--mg-dark);
         text-align: center;
+      }
+
+      .cta-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 1.5rem;
+        max-width: 900px;
+        margin: 2rem auto 0;
+        text-align: left;
+      }
+
+      .cta-card {
+        background: var(--mg-surface);
+        border: 1px solid rgba(46,63,82,0.5);
+        border-radius: 8px;
+        padding: 1.75rem;
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+      }
+
+      .cta-card-subtle {
+        opacity: 0.85;
+      }
+
+      .cta-card-heading {
+        font-family: var(--font-display);
+        font-size: 1rem;
+        font-weight: 700;
+        color: var(--mg-text);
+        margin: 0;
+      }
+
+      .cta-card-body {
+        font-size: 0.875rem;
+        color: var(--mg-subtext);
+        line-height: 1.6;
+        flex: 1;
+      }
+
+      .cta-card .cta-btn-primary,
+      .cta-card .cta-btn-secondary {
+        text-align: center;
+        width: 100%;
+        box-sizing: border-box;
+      }
+
+      @media (max-width: 767px) {
+        .cta-grid { grid-template-columns: 1fr; }
+      }
+
+      /* Mid-page CTA */
+      .mid-cta {
+        text-align: center;
+        padding: 40px 24px;
+      }
+
+      .mid-cta-row {
+        display: flex;
+        gap: 1.25rem;
+        justify-content: center;
+        flex-wrap: wrap;
+        align-items: center;
       }
 
       .cta-heading {
@@ -1906,9 +2394,9 @@ import ChromaKeyVideo from '../components/ChromaKeyVideo.tsx';
             a full <span class="accent-amber">engineering org.</span>
           </h1>
           <p class="hero-lede">
-            24 agents. A C-Suite that makes real decisions. QA that writes tests before
-            code exists. Security that audits before you ship. And a Sage who makes sure
-            none of them cut corners.
+            Your team has AI tools. They don't have process. TheEngOrg gives every
+            project a complete engineering organization — planning, building, reviewing,
+            shipping — so your engineers focus on the problems that matter.
           </p>
           <p class="hero-stat">
             <span>24 agents</span>
@@ -1917,7 +2405,10 @@ import ChromaKeyVideo from '../components/ChromaKeyVideo.tsx';
             <span class="dot"> • </span>
             <span>zero micromanagement</span>
           </p>
-          <a href="#hierarchy" class="cta-primary">See how it works</a>
+          <div class="hero-cta-row">
+            <a href="#hierarchy" class="cta-primary">See how it works</a>
+            <a href="mailto:byazaki@wontonwebworks.com?subject=TheEngOrg%20%E2%80%94%20Learn%20More" class="cta-secondary-link" onclick="window.plausible?.('CTA Click', {props: {type: 'hero-talk'}})">Talk to us</a>
+          </div>
         </div>
 
         <div class="hero-right">
@@ -2009,15 +2500,35 @@ $ /mg-spec design payment-flow
     </section>
 
     <!-- ══════════════════════════════════════════════════════
+         SECTION 1c — THE PROBLEM
+    ══════════════════════════════════════════════════════ -->
+    <section id="the-problem" style="padding-top: 48px; padding-bottom: 48px;">
+      <div class="section-inner" style="max-width: 700px;">
+        <p class="section-label">The gap</p>
+        <h2 class="section-heading">Your team has AI tools.<br />They don't have process.</h2>
+        <p class="problem-body">
+          Leadership says "here's Copilot, go 10x." But raw tools without structure
+          produce inconsistent results. Code gets written without specs. Reviews skip edge
+          cases. Features ship without tests. Not because your engineers are bad — because
+          there's no system making sure the right work happens in the right order.
+        </p>
+        <p class="problem-body">
+          The gap isn't talent or tooling. It's the process between "ticket created"
+          and "code merged." That's what TheEngOrg fills.
+        </p>
+      </div>
+    </section>
+
+    <!-- ══════════════════════════════════════════════════════
          SECTION 2 — TEAM HIERARCHY
     ══════════════════════════════════════════════════════ -->
     <section id="hierarchy" aria-label="TheEngOrg team hierarchy — 24 agents across 4 tiers, led by The Sage">
 
       <div class="section-inner" style="text-align:center;">
         <p class="section-label">24 agents</p>
-        <h2 class="section-heading">The team the Sage commands.</h2>
+        <h2 class="section-heading">A full team. Assembled for the task.</h2>
         <p class="section-subhead" style="margin-bottom:48px;">
-          It doesn't spawn everything. It spawns exactly what you need.
+          Every project gets exactly the roles it needs — no more, no less.
         </p>
       </div>
 
@@ -2110,46 +2621,6 @@ $ /mg-spec design payment-flow
 
       </div>
 
-      <!-- Spawning logic table -->
-      <div class="spawning-table-wrap reveal reveal-up">
-        <p class="spawning-intro">
-          The Sage doesn't convene the whole board for a bug fix. It reads the work,
-          assembles the team that's actually needed, and keeps everyone else out of the context window.
-        </p>
-        <table class="spawning-table">
-          <thead>
-            <tr>
-              <th>Work type</th>
-              <th>Who the Sage spawns</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td>Pure engineering</td>
-              <td><span class="spawn-tag">CTO</span></td>
-            </tr>
-            <tr>
-              <td>Engineering + product</td>
-              <td><span class="spawn-tag">CTO</span> <span class="spawn-tag">CEO</span></td>
-            </tr>
-            <tr>
-              <td>Brand / marketing / UX</td>
-              <td><span class="spawn-tag">CTO</span> <span class="spawn-tag">CMO/COO</span></td>
-            </tr>
-            <tr>
-              <td>Cost or resource decisions</td>
-              <td><span class="spawn-tag">CTO</span> <span class="spawn-tag">CFO</span></td>
-            </tr>
-            <tr>
-              <td>Full initiative</td>
-              <td><span class="spawn-tag">CEO</span> <span class="spawn-tag">CTO</span> <span class="spawn-tag">CMO/COO</span> <span class="spawn-tag">CFO</span></td>
-            </tr>
-          </tbody>
-        </table>
-        <p class="spawning-note">
-          C-Suite agents cascade their own directors and ICs. The Sage doesn't reach past the C-Suite.
-        </p>
-      </div>
     </section>
 
     <!-- ══════════════════════════════════════════════════════
@@ -2158,9 +2629,9 @@ $ /mg-spec design payment-flow
     <section id="spawning">
       <div class="section-inner">
         <p class="section-label">Intelligent routing</p>
-        <h2 class="section-heading">The <span class="accent-amber">Sage</span> only wakes who you need.</h2>
+        <h2 class="section-heading">The right team for <span class="accent-amber">every task.</span></h2>
         <p class="section-subhead" style="font-size:0.85rem;margin-bottom:40px;">
-          The right specialists. No noise.
+          A bug fix doesn't need the whole org. A product launch does. TheEngOrg reads the work and assembles exactly the right people — keeping costs low and quality high.
         </p>
 
         <div class="spawning-section-wrap">
@@ -2169,10 +2640,10 @@ $ /mg-spec design payment-flow
             <div class="spawning-left">
               <p class="scenario-label">Task type</p>
               <div class="scenario-tabs" role="radiogroup" aria-label="Select task scenario">
+                <button class="scenario-tab" role="radio" aria-checked="true"  data-scenario="full-initiative">Full initiative</button>
                 <button class="scenario-tab" role="radio" aria-checked="false" data-scenario="pure-engineering">Pure engineering</button>
                 <button class="scenario-tab" role="radio" aria-checked="false" data-scenario="eng-product">Engineering + product</button>
                 <button class="scenario-tab" role="radio" aria-checked="false" data-scenario="brand-ux">Brand / UX</button>
-                <button class="scenario-tab" role="radio" aria-checked="true"  data-scenario="full-initiative">Full initiative</button>
               </div>
               <p class="task-sample-label">Sample task</p>
               <blockquote class="task-description" id="task-desc" aria-live="polite">
@@ -2226,57 +2697,37 @@ $ /mg-spec design payment-flow
     ══════════════════════════════════════════════════════ -->
     <section id="drift">
       <div class="section-inner">
-        <p class="section-label">Drift prevention</p>
+        <p class="section-label">Quality assurance</p>
         <h2 class="section-heading">
-          See the <span class="accent-chili">drift</span>. Or prevent it.
+          Same team. Same code.<br />One catches problems <span class="accent-amber">before they ship.</span>
         </h2>
 
-        <div class="drift-stat-callout">
-          <div class="drift-stat-number">20x</div>
-          <p class="drift-stat-desc">the cost of catching drift late vs. at source</p>
-        </div>
-
         <!-- Mobile-only narrative intro -->
-        <p class="drift-mobile-intro">The same pipeline. One difference: The Sage is watching.</p>
+        <p class="drift-mobile-intro">The same pipeline. One difference: quality checks at every step.</p>
 
         <div class="drift-panels">
 
-          <!-- Left: without the Sage -->
+          <!-- Left: without the Sage — bird getting lost -->
           <div class="drift-panel bad reveal reveal-up">
             <h3 class="drift-panel-label">Without the Sage</h3>
-
-            <div class="pipeline-wrap">
-              <div class="pipeline-nodes">
-                <div class="pipeline-node pn-commit">COMMIT</div>
-                <div class="pipeline-node pn-ci">CI TESTS</div>
-                <div class="pipeline-node pn-review">
-                  REVIEW
-                  <div class="drift-problem-tag">shallow review slipped through</div>
-                </div>
-                <div class="pipeline-node pn-staging">STAGING</div>
-                <div class="pipeline-node pn-prod">PRODUCTION</div>
+            <img
+              src="/assets/capy/drift/bird-lost-journey.png"
+              alt="A bird walking on a path that gradually becomes dark and tangled — getting more lost at each step"
+              class="drift-illustration"
+            />
+            <div class="drift-data-strip">
+              <div class="drift-data-item">
+                <span class="drift-data-value bad-value">1.5 / 3</span>
+                <span class="drift-data-label">problems caught</span>
               </div>
-
-              <!-- Drift arrows column -->
-              <div class="drift-arrows-col" aria-hidden="true">
-                <svg width="24" height="20" viewBox="0 0 24 20">
-                  <path d="M4 2 L18 18" stroke="#C94D3A" stroke-width="1.5" fill="none"/>
-                  <polygon points="18,18 10,14 14,10" fill="#C94D3A"/>
-                </svg>
-                <svg width="30" height="26" viewBox="0 0 30 26">
-                  <path d="M4 2 L24 24" stroke="#C94D3A" stroke-width="1.5" fill="none"/>
-                  <polygon points="24,24 15,18 19,13" fill="#C94D3A"/>
-                </svg>
-                <svg width="36" height="32" viewBox="0 0 36 32">
-                  <path d="M4 2 L30 30" stroke="#C94D3A" stroke-width="2" fill="none"/>
-                  <polygon points="30,30 20,22 25,16" fill="#C94D3A"/>
-                </svg>
+              <div class="drift-data-item">
+                <span class="drift-data-value bad-value">3–5</span>
+                <span class="drift-data-label">rework cycles</span>
               </div>
-            </div>
-
-            <div class="bird-lost" aria-hidden="true">
-              <img data-capy src="/assets/capy/sage-character/sage-pixel-bird-teal-for-web.png" alt="" width="28" height="28" />
-              <span class="bird-lost-label">lost in production</span>
+              <div class="drift-data-item">
+                <span class="drift-data-value bad-value">1</span>
+                <span class="drift-data-label">security incident</span>
+              </div>
             </div>
           </div>
 
@@ -2288,37 +2739,27 @@ $ /mg-spec design payment-flow
             </div>
           </div>
 
-          <!-- Right: with the Sage -->
+          <!-- Right: with the Sage — bird guided safely -->
           <div class="drift-panel good reveal reveal-up" style="transition-delay:0.25s">
             <h3 class="drift-panel-label">With the Sage</h3>
-
-            <div class="pipeline-wrap">
-              <div class="pipeline-nodes">
-                <div class="pipeline-node pn-commit">COMMIT</div>
-                <div class="pipeline-node pn-ci">CI TESTS</div>
-                <div class="pipeline-node pn-review">
-                  REVIEW
-                  <div class="sage-interception">
-                    <svg class="sage-intercept-icon" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                      <path d="M8 2L14 5V9C14 12 11 14.5 8 15C5 14.5 2 12 2 9V5L8 2Z" stroke="#D4A84B" stroke-width="1.2" fill="rgba(212,168,75,0.15)"/>
-                      <circle cx="8" cy="9" r="2" fill="#D4A84B"/>
-                      <path d="M6 7 Q8 5 10 7" stroke="#D4A84B" stroke-width="0.8" fill="none"/>
-                    </svg>
-                    <span class="sage-intercept-label">drift caught at root</span>
-                  </div>
-                </div>
-                <div class="pipeline-node pn-staging">STAGING</div>
-                <div class="pipeline-node pn-prod">PRODUCTION</div>
+            <img
+              src="/assets/capy/drift/bird-guided-journey.png"
+              alt="The Sage capybara guides the bird along a lit path with agent checkpoints"
+              class="drift-illustration"
+            />
+            <div class="drift-data-strip">
+              <div class="drift-data-item">
+                <span class="drift-data-value good-value">3 / 3</span>
+                <span class="drift-data-label">problems caught early</span>
               </div>
-            </div>
-
-            <div class="bird-guided" aria-hidden="true">
-              <img data-capy src="/assets/capy/sage-character/sage-pixel-bird-teal-for-web.png" alt="" width="28" height="28" />
-              <span class="bird-guided-label">guided through</span>
-            </div>
-
-            <div class="sage-mini-panel" aria-hidden="true">
-              <img data-capy src="/assets/capy/sage-character/sage-pixel-meditating-no-bg.png" alt="" width="56" height="56" />
+              <div class="drift-data-item">
+                <span class="drift-data-value good-value">0</span>
+                <span class="drift-data-label">rework cycles</span>
+              </div>
+              <div class="drift-data-item">
+                <span class="drift-data-value good-value">0</span>
+                <span class="drift-data-label">security incidents</span>
+              </div>
             </div>
           </div>
 
@@ -2326,8 +2767,8 @@ $ /mg-spec design payment-flow
 
         <!-- Screen reader description -->
         <p class="sr-only">
-          Pipeline without the Sage: a shallow review passes undetected through CI, staging, and reaches production as a failure.
-          Pipeline with the Sage: drift is caught at the review stage and does not cascade.
+          Without the Sage: a bird starts on a clear path but gets increasingly lost in dark, tangled code thorns.
+          With the Sage: the capybara guide walks alongside the bird, lighting the path with its orb while agent capybaras serve as checkpoints.
         </p>
 
         <!-- Narrative context below panels -->
@@ -2340,33 +2781,33 @@ $ /mg-spec design payment-flow
                 The Supervisor watches your pipeline and raises alerts when something looks wrong.
                 Good for catching problems. Not for stopping them before they start.
               </p>
-              <span class="drift-tier-verdict">Alerts after drift begins.</span>
+              <span class="drift-tier-verdict">Alerts after issues begin.</span>
             </div>
             <div class="drift-tier drift-tier-enterprise">
               <span class="drift-tier-label">Enterprise</span>
               <p class="drift-tier-body">
                 The Sage compares every deliverable against its spec before any downstream
-                workstream touches it. Scope creep at line one gets caught at line one.
-                Not when three other workstreams have already built on top of it.
+                work touches it. Scope creep at line one gets caught at line one —
+                not after three teams have already built on top of it.
               </p>
-              <span class="drift-tier-verdict">Drift never reaches the cascade.</span>
+              <span class="drift-tier-verdict">Problems stopped before they spread.</span>
             </div>
           </div>
 
           <div class="metrics-grid">
             <div class="metric-card">
               <span class="metric-num">20x</span>
-              <span class="metric-label">ROI on drift prevention</span>
+              <span class="metric-label">ROI on early detection</span>
               <p class="metric-context">
-                Catching a scope creep issue costs ~1.5K tokens. Missing it — and watching
-                it cascade across three workstreams — costs 83–120K.
+                Catching a scope issue early takes minutes. Missing it — and watching
+                three teams build on the wrong foundation — costs days of rework.
               </p>
             </div>
             <div class="metric-card">
               <span class="metric-num">3/3</span>
-              <span class="metric-label">Drifts caught before cascade</span>
+              <span class="metric-label">Problems caught before they spread</span>
               <p class="metric-context">
-                Without the Sage: 1.5 out of 3 drifts detected. With the Sage: all three.
+                Without the Sage: 1.5 out of 3 issues detected. With the Sage: all three.
                 The half-catch is the dangerous one — you know something's wrong, but too late.
               </p>
             </div>
@@ -2375,16 +2816,16 @@ $ /mg-spec design payment-flow
               <span class="metric-label">Security incidents</span>
               <p class="metric-context">
                 Unorchestrated pipeline: one security incident (secrets displayed in the UI).
-                The Sage caught the upstream scope creep that caused it — before WS-C ever
-                built against the wrong API.
+                The Sage caught the upstream scope creep that caused it — before the next
+                team built against the wrong API.
               </p>
             </div>
             <div class="metric-card">
-              <span class="metric-num">~50K</span>
-              <span class="metric-label">Tokens saved per 3-workstream feature</span>
+              <span class="metric-num">80%</span>
+              <span class="metric-label">Less rework per feature</span>
               <p class="metric-context">
-                Clean pipeline, right agents, no rework cycles. The savings compound
-                with every workstream. So does the quality.
+                Clean pipeline, right team, no wasted cycles. The savings compound
+                with every task. So does the quality.
               </p>
             </div>
           </div>
@@ -2476,10 +2917,10 @@ $ /mg-spec design payment-flow
               <span class="cap-line"></span>
             </div>
             <div class="cap-content">
-              <h3 class="cap-heading">Drift detection — real-time, not gate-based</h3>
+              <h3 class="cap-heading">Continuous quality checks — not just at milestones</h3>
               <p class="cap-body">
-                Most pipelines check quality at gates. The Sage checks constantly.
-                The moment a deliverable lands, it's compared against the approved spec.
+                Most pipelines check quality at milestones. The Sage checks constantly.
+                The moment work is delivered, it's compared against the approved spec.
                 Scope creep, skipped tests, shortcut reasoning — caught before anything
                 downstream builds on top of it.
               </p>
@@ -2646,25 +3087,135 @@ next_session:
     </section>
 
     <!-- ══════════════════════════════════════════════════════
+         SECTION 5b — BY THE NUMBERS
+    ══════════════════════════════════════════════════════ -->
+    <section id="by-the-numbers">
+      <div class="section-inner">
+        <p class="section-label reveal reveal-up">The economics</p>
+        <h2 class="numbers-headline reveal reveal-up">Give your engineers<br />superpowers.</h2>
+        <p class="numbers-sub reveal reveal-up">
+          Your team handles the hard problems. TheEngOrg handles the process — triage, planning, reviews, gates — so your engineers have more time, more confidence, and more impact.
+        </p>
+
+        <div class="numbers-grid">
+          <div class="number-card reveal reveal-up" style="--reveal-delay: 0ms;">
+            <span class="number-value">6x</span>
+            <span class="number-unit">Velocity per engineer</span>
+          </div>
+          <div class="number-card reveal reveal-up" style="--reveal-delay: 80ms;">
+            <span class="number-value">~$5K</span>
+            <span class="number-unit">Monthly API cost</span>
+          </div>
+          <div class="number-card reveal reveal-up" style="--reveal-delay: 160ms;">
+            <span class="number-value">0</span>
+            <span class="number-unit">Process overhead for devs</span>
+          </div>
+          <div class="number-card reveal reveal-up" style="--reveal-delay: 240ms;">
+            <span class="number-value">24/7</span>
+            <span class="number-unit">Always shipping</span>
+          </div>
+        </div>
+
+        <div class="numbers-quote reveal reveal-up" style="--reveal-delay: 320ms;">
+          <blockquote>"Our engineers stopped context-switching on process and started solving the problems that actually move the product forward."</blockquote>
+          <cite>— What it feels like when the busywork disappears</cite>
+        </div>
+      </div>
+    </section>
+
+    <!-- Mid-page CTA -->
+    <div class="mid-cta">
+      <div class="mid-cta-row">
+        <a href="mailto:byazaki@wontonwebworks.com?subject=TheEngOrg%20%E2%80%94%20Pilot%20Inquiry" class="cta-btn-primary" onclick="window.plausible?.('CTA Click', {props: {type: 'mid-pilot'}})">See it on your codebase</a>
+        <a href="https://github.com/wonton-web-works/miniature-guacamole" class="cta-btn-secondary" target="_blank" rel="noopener noreferrer" onclick="window.plausible?.('CTA Click', {props: {type: 'mid-github'}})">Try it free on GitHub</a>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════════════════
          SECTION 6 — CTA
     ══════════════════════════════════════════════════════ -->
     <section id="enterprise-cta">
       <div class="section-inner" style="text-align:center;">
-        <h2 class="cta-heading">Ready for a Sage on your project?</h2>
+        <h2 class="cta-heading">Ready to get started?</h2>
         <p class="cta-body">
-          TheEngOrg enterprise is invite-only right now. We onboard teams directly
-          and configure the Sage for your stack.
+          Whether you're leading an engineering team, building open source, or evaluating
+          the opportunity — there's a path for you.
         </p>
-        <div class="cta-actions">
-          <a
-            href="mailto:byazaki@wontonwebworks.com?subject=TheEngOrg%20Enterprise%20%E2%80%94%20Inquiry"
-            class="cta-btn-primary"
-          >
-            Talk to us
-          </a>
-          <a href="mailto:enterprise@wontonwebworks.com?subject=TheEngOrg%20Enterprise%20—%20Demo%20Request" class="cta-btn-secondary">
-            Request a demo
-          </a>
+        <div class="cta-grid">
+          <div class="cta-card">
+            <h3 class="cta-card-heading">Engineering leaders</h3>
+            <p class="cta-card-body">See TheEngOrg on your codebase. We'll configure it for your stack and walk you through a live pilot.</p>
+            <a
+              href="mailto:byazaki@wontonwebworks.com?subject=TheEngOrg%20%E2%80%94%20Pilot%20Inquiry&body=Role%3A%20Engineering%20Leader"
+              class="cta-btn-primary"
+              onclick="window.plausible?.('CTA Click', {props: {type: 'leader-pilot'}})"
+            >
+              Talk to us
+            </a>
+          </div>
+          <div class="cta-card">
+            <h3 class="cta-card-heading">Developers</h3>
+            <p class="cta-card-body">Try the open-source framework. 24 agents, 16 skills, project-local memory. Free forever.</p>
+            <a
+              href="https://github.com/wonton-web-works/miniature-guacamole"
+              class="cta-btn-secondary"
+              target="_blank"
+              rel="noopener noreferrer"
+              onclick="window.plausible?.('CTA Click', {props: {type: 'dev-github'}})"
+            >
+              Get started on GitHub
+            </a>
+          </div>
+          <div class="cta-card cta-card-subtle">
+            <h3 class="cta-card-heading">Investors</h3>
+            <p class="cta-card-body">See the market opportunity, unit economics, and our thesis on AI-native engineering process.</p>
+            <a
+              href="mailto:byazaki@wontonwebworks.com?subject=TheEngOrg%20%E2%80%94%20Investment%20Inquiry&body=Role%3A%20Investor"
+              class="cta-btn-secondary"
+              onclick="window.plausible?.('CTA Click', {props: {type: 'investor-inquiry'}})"
+            >
+              Learn more
+            </a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══════════════════════════════════════════════════════
+         SECTION 7 — CHANGELOG (bottom of page)
+    ══════════════════════════════════════════════════════ -->
+    <section id="changelog">
+      <div class="section-inner">
+        <p class="section-label reveal reveal-up">Shipping fast</p>
+        <h2 class="section-heading reveal reveal-up" style="text-align: center;">Changelog</h2>
+        <p class="section-subhead reveal reveal-up" style="text-align: center; margin: 0 auto 2.5rem;">We ship multiple times a day. Here's what's recent.</p>
+
+        <div class="changelog-list">
+          {entries.map((entry, i) => (
+            <div class="changelog-entry reveal reveal-up" style={`--reveal-delay: ${i * 80}ms;`}>
+              <div class="changelog-meta">
+                <span class="changelog-version">{entry.version}</span>
+                <span class="changelog-date">{entry.date}</span>
+              </div>
+              <div>
+                <h3 class="changelog-title">{entry.title}</h3>
+                {entry.badges.length > 0 && (
+                  <div class="changelog-badges">
+                    {entry.badges.map((badge) => (
+                      <span class="changelog-badge" style={`border-color: ${badge.color}; color: ${badge.color};`}>{badge.label}</span>
+                    ))}
+                  </div>
+                )}
+                {entry.notes.length > 0 && (
+                  <ul class="changelog-notes">
+                    {entry.notes.map((note) => (
+                      <li>{note}</li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+            </div>
+          ))}
         </div>
       </div>
     </section>

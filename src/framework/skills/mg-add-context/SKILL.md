@@ -21,6 +21,7 @@ Registers external projects as read-only context references for miniature-guacam
 2. **No shared memory** - Each project's .claude/memory/ is private and isolated
 3. **Context, not coupling** - References are informational, not dependencies
 4. **Explicit boundaries** - Clear separation between read and write operations
+5. **Follow output format** — See `references/output-format.md` for standard visual patterns
 
 ## Purpose
 
@@ -212,13 +213,13 @@ Once a project context is registered, agents can:
 
 ## Output Format
 
-```
-[EM]    Context — {alias} ({local | github})
-[EM]    Extracted — {project type}, {N} key files
-[EM]    Registered — {alias} available to agents    {elapsed}
-```
+Four modes with structured output:
+- **Add**: Registration confirmation with key files and agent usage instructions
+- **List**: Table of all registered contexts (alias, type, path, summary, date)
+- **Inspect**: Detailed info with file access examples (Read/Grep/Glob)
+- **Remove**: Confirmation with optional cache cleanup for GitHub clones
 
-List mode outputs a table (alias, type, path, summary, date). Inspect mode shows key files and agent access examples. Remove mode confirms unregistration.
+See `references/output-examples.md` for full template examples.
 
 ## Security Considerations
 

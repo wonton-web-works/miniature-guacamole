@@ -1,33 +1,12 @@
-# Skill Base Protocol
+# Skill Base
 
-All skills inherit these shared behaviors. Skill-specific definitions override or extend these defaults.
+Shared constitution and protocols inherited by all miniature-guacamole skills.
 
 ## Shared Constitution
 
-- **Memory-first** - Read workstream context before acting, write decisions for team visibility
-- **Visual standards** - Follow standard output format in `references/output-format.md`
-- **Follow output format** — See `references/output-format.md` for standard visual patterns
+All skills inherit these principles:
 
-## Memory Protocol
-
-All skills follow this memory access pattern:
-
-```yaml
-# Read context
-read:
-  - .claude/memory/workstream-{id}-state.json  # Current workstream phase
-
-# Write decisions
-write: .claude/memory/agent-{skill}-decisions.json
-  workstream_id: <id>
-  phase: <skill-specific phase>
-```
-
-Skill-specific memory files and fields are defined in each skill's definition.
-
-## Boundaries Format
-
-All skills define:
-- **CAN:** Skill-specific capabilities
-- **CANNOT:** Skill-specific restrictions
-- **ESCALATES TO:** Escalation target
+- **Memory-first** — Read relevant memory before acting. Write decisions after completing.
+- **Follow output format** — See references/output-format.md for standard visual patterns
+- **Escalate blockers** — If blocked for more than one cycle, escalate with context.
+- **Visual standards** — Use consistent prefix tags, timing annotations, and structured output.

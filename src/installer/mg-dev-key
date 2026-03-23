@@ -1,0 +1,70 @@
+#!/usr/bin/env bash
+# mg-dev-key — Generate a local developer session for MG enterprise development.
+# This bypasses API auth and creates a non-expiring session file.
+# Only for framework developers. Not for client distribution.
+
+set -euo pipefail
+
+SESSION_FILE="${HOME}/.claude/enterprise-session.json"
+
+# ── Require confirmation ────────────────────────────────
+echo "⚠️  This creates a LOCAL developer session for MG enterprise."
+echo "   It does NOT authenticate with the TheEngOrg API."
+echo "   Use this only for framework development."
+echo ""
+read -r -p "Email (for session record): " DEV_EMAIL
+read -r -p "Name: " DEV_NAME
+
+if [[ -z "$DEV_EMAIL" || -z "$DEV_NAME" ]]; then
+  echo "Error: Email and name required."
+  exit 1
+fi
+
+# ── Generate machineId ──────────────────────────────────
+MACHINE_RAW="$(hostname)::$(whoami)::$(uname -s)::$(uname -m)::${HOME}"
+if command -v sha256sum &>/dev/null; then
+  MACHINE_ID=$(echo -n "$MACHINE_RAW" | sha256sum | cut -c1-16)
+elif command -v shasum &>/dev/null; then
+  MACHINE_ID=$(echo -n "$MACHINE_RAW" | shasum -a 256 | cut -c1-16)
+else
+  MACHINE_ID="dev-$(whoami | cut -c1-8)"
+fi
+
+# ── Write session file ──────────────────────────────────
+mkdir -p "$(dirname "$SESSION_FILE")"
+
+cat > "$SESSION_FILE" <<ENDJSON
+{
+  "token": "dev-local-${MACHINE_ID}",
+  "user": {
+    "id": "dev-${MACHINE_ID}",
+    "email": "${DEV_EMAIL}",
+    "name": "${DEV_NAME}"
+  },
+  "org": {
+    "id": "wonton-web-works",
+    "name": "Wonton Web Works",
+    "slug": "wonton-web-works"
+  },
+  "license": {
+    "tier": "enterprise",
+    "features": ["sage", "selective-routing", "session-management", "research-specialists", "drift-enforcement"],
+    "seats": 999,
+    "expiresAt": "2099-12-31T23:59:59Z"
+  },
+  "machineId": "${MACHINE_ID}",
+  "createdAt": "$(date -u +%Y-%m-%dT%H:%M:%SZ)",
+  "devMode": true
+}
+ENDJSON
+
+chmod 600 "$SESSION_FILE"
+
+echo ""
+echo "✓ Developer session created at ${SESSION_FILE}"
+echo "  Email:     ${DEV_EMAIL}"
+echo "  Machine:   ${MACHINE_ID}"
+echo "  Tier:      enterprise (dev mode)"
+echo "  Expires:   never"
+echo ""
+echo "  The Sage is ready. Run /mg-leadership-team to verify enterprise mode."

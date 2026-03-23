@@ -131,14 +131,48 @@ Task:
 ## Output Format
 
 ```
-[ART]   Brand consistency — {PASS | CHANGES REQUESTED}
-[ART]   Visual hierarchy — {PASS | CHANGES REQUESTED}
-[ART]   UX patterns — {PASS | CHANGES REQUESTED}
-[ART]   Responsive — {PASS | CHANGES REQUESTED}     {elapsed}
-[EM]    Decision: {APPROVED | CHANGES REQUESTED | BLOCKED}   {elapsed}
-```
+## Design Review: {Feature/Component}
 
-Change requests (if any) follow the decision line as a numbered list with rationale.
+### Brand Consistency
+Status: {APPROVED | CHANGES REQUESTED}
+- Colors: {feedback}
+- Typography: {feedback}
+- Spacing: {feedback}
+- Brand elements: {feedback}
+
+### Visual Hierarchy
+Status: {APPROVED | CHANGES REQUESTED}
+- Information architecture: {feedback}
+- Visual weight: {feedback}
+- Contrast: {feedback}
+- Readability: {feedback}
+
+### UX Patterns
+Status: {APPROVED | CHANGES REQUESTED}
+- Interactions: {feedback}
+- Navigation: {feedback}
+- Forms/inputs: {feedback}
+- Feedback states: {feedback}
+
+### Responsive Design
+Status: {APPROVED | CHANGES REQUESTED}
+- Mobile: {feedback}
+- Tablet: {feedback}
+- Desktop: {feedback}
+
+### Micro-interactions
+Status: {APPROVED | CHANGES REQUESTED}
+- Hover states: {feedback}
+- Transitions: {feedback}
+- Loading states: {feedback}
+
+### Overall Decision
+{APPROVED | CHANGES REQUESTED | BLOCKED}
+
+### Change Requests (if any)
+1. {Specific change with rationale}
+2. {Specific change with rationale}
+```
 
 See `references/model-escalation-guidance.md` for escalation criteria.
 

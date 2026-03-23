@@ -9,7 +9,7 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import { readFileSync } from 'fs';
+import { readFileSync, existsSync } from 'fs';
 import path from 'path';
 
 const ROOT = path.join(__dirname, '../..');
@@ -299,17 +299,10 @@ describe('edition-docs — happy path (correct content must be present)', () => 
     expect(arch).toMatch(/24 specialized agent/i);
   });
 
-  it('build.sh has ENTERPRISE_AGENTS exclusion list containing "sage"', () => {
-    // AC-EDITION-4: build.sh must have the sage exclusion gate
+  it('build.sh documents that enterprise agents live in private repo', () => {
+    // AC-EDITION-4: build.sh must note enterprise separation
     const buildSh = read('build.sh');
-    expect(buildSh).toMatch(/ENTERPRISE_AGENTS=\("sage"\)/);
-  });
-
-  it('build.sh documents the enterprise exclusion with a comment', () => {
-    // AC-EDITION-4: the exclusion must be documented in the script
-    const buildSh = read('build.sh');
-    expect(buildSh).toMatch(/enterprise.*agent|Enterprise.*agent/i);
-    expect(buildSh).toMatch(/exclude|skip/i);
+    expect(buildSh).toMatch(/enterprise.*private|theengorg-enterprise/i);
   });
 
   it('LICENSE.enterprise file exists at repo root', () => {
@@ -319,16 +312,9 @@ describe('edition-docs — happy path (correct content must be present)', () => 
     expect(existsSync(licensePath)).toBe(true);
   });
 
-  it('sage AGENT.md has enterprise copyright header', () => {
-    // AC-EDITION-6: sage AGENT.md must carry the enterprise license header
-    const sageContent = read('src/framework/agents/sage/AGENT.md');
-    expect(sageContent).toMatch(/Copyright.*Wonton Web Works/i);
-    expect(sageContent).toMatch(/Enterprise License/i);
-  });
-
-  it('sage AGENT.md copyright header references LICENSE.enterprise', () => {
-    // AC-EDITION-6: header must point to the license file
-    const sageContent = read('src/framework/agents/sage/AGENT.md');
-    expect(sageContent).toMatch(/LICENSE\.enterprise/);
+  it('sage AGENT.md is NOT present in public repo (moved to enterprise)', () => {
+    // AC-EDITION-6: sage has been moved to private theengorg-enterprise repo
+    const sagePath = path.join(__dirname, '../../src/framework/agents/sage/AGENT.md');
+    expect(existsSync(sagePath)).toBe(false);
   });
 });

@@ -127,12 +127,26 @@ done
 
 log_success "All requirements met"
 
-# Check if already installed
+# Check if already installed — compare versions and auto-update if newer available
 if [[ -f "$MG_HOME/VERSION.json" ]] && [[ "$FORCE" != "true" ]]; then
     INSTALLED_VERSION=$(python3 -c "import json; print(json.load(open('$MG_HOME/VERSION.json')).get('version', 'unknown'))" 2>/dev/null || echo "unknown")
-    log_warning "miniature-guacamole $INSTALLED_VERSION is already installed at $MG_HOME"
-    echo "Use --force to re-install"
-    exit 0
+
+    # Fetch latest version from GitHub API
+    LATEST_VERSION=""
+    if [[ "$RELEASE_TAG" == "latest" ]]; then
+        LATEST_VERSION=$(curl -fsSL "https://api.github.com/repos/$GITHUB_REPO/releases/latest" 2>/dev/null \
+            | python3 -c "import json,sys; print(json.load(sys.stdin).get('tag_name','').lstrip('v'))" 2>/dev/null || echo "")
+    fi
+
+    if [[ -n "$LATEST_VERSION" ]] && [[ "$INSTALLED_VERSION" == "$LATEST_VERSION" ]]; then
+        log_success "miniature-guacamole $INSTALLED_VERSION is already up to date"
+        exit 0
+    elif [[ -n "$LATEST_VERSION" ]]; then
+        log_info "Updating miniature-guacamole $INSTALLED_VERSION → $LATEST_VERSION"
+    else
+        # Couldn't determine latest version — proceed with install to be safe
+        log_info "miniature-guacamole $INSTALLED_VERSION installed, checking for updates..."
+    fi
 fi
 
 # ============================================================================

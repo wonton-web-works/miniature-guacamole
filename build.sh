@@ -199,7 +199,13 @@ fi
 
 echo -e "${GREEN}Generating VERSION.json...${NC}"
 
-VERSION=$(node -p "require('./package.json').version" 2>/dev/null || echo "1.0.0")
+# Use git tag if building from a tagged commit (CI releases), fall back to package.json
+GIT_TAG=$(git describe --tags --exact-match HEAD 2>/dev/null | sed 's/^v//' || echo "")
+if [[ -n "$GIT_TAG" ]]; then
+    VERSION="$GIT_TAG"
+else
+    VERSION=$(node -p "require('./package.json').version" 2>/dev/null || echo "1.0.0")
+fi
 GIT_SHA=$(git rev-parse --short HEAD 2>/dev/null || echo "unknown")
 BUILD_DATE=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
 

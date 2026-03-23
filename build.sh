@@ -61,33 +61,15 @@ mkdir -p "$DIST_CLAUDE"/{agents,skills,shared,hooks,scripts,memory}
 
 echo -e "${GREEN}Copying framework...${NC}"
 
-# Agents
-# NOTE: Enterprise-only agents are excluded from the community distribution.
-# They are identified by a .enterprise-only marker file in their directory.
-# Enterprise agents (excluded from community build):
-#   - sage  (TheEngOrg Enterprise — theengorg.wontonwebworks.com/enterprise)
+# Agents — enterprise agents (Sage) live in private theengorg-enterprise repo
 AGENT_COUNT=0
-ENTERPRISE_AGENTS=("sage")
 for agent_dir in "$FRAMEWORK_DIR/agents"/*; do
     if [[ -d "$agent_dir" ]]; then
-        agent_name=$(basename "$agent_dir")
-        # Skip enterprise-only agents
-        is_enterprise=0
-        for ea in "${ENTERPRISE_AGENTS[@]}"; do
-            if [[ "$agent_name" == "$ea" ]]; then
-                is_enterprise=1
-                break
-            fi
-        done
-        if [[ $is_enterprise -eq 1 ]]; then
-            echo "  [enterprise] skipping agent: $agent_name"
-            continue
-        fi
         cp -r "$agent_dir" "$DIST_CLAUDE/agents/"
         AGENT_COUNT=$((AGENT_COUNT + 1))
     fi
 done
-echo "  agents: $AGENT_COUNT (enterprise agents excluded from community build)"
+echo "  agents: $AGENT_COUNT"
 
 # Skills (skip _shared internal dir)
 SKILL_COUNT=0
@@ -138,7 +120,6 @@ fi
 
 # Config files
 cp "$FRAMEWORK_DIR/settings.json" "$DIST_CLAUDE/"
-cp "$FRAMEWORK_DIR/settings.enterprise.json" "$DIST_CLAUDE/"
 cp "$FRAMEWORK_DIR/CLAUDE.md" "$DIST_CLAUDE/"
 cp "$FRAMEWORK_DIR/team-config.yaml" "$DIST_CLAUDE/"
 cp "$FRAMEWORK_DIR/team-config.json" "$DIST_CLAUDE/"
@@ -150,7 +131,7 @@ if [[ -d "$FRAMEWORK_DIR/keys" ]]; then
   echo "  keys: enterprise-signing.pub"
 fi
 
-echo "  config: settings.json, settings.enterprise.json, CLAUDE.md, team-config.*"
+echo "  config: settings.json, CLAUDE.md, team-config.*"
 
 # Memory .gitignore
 cat > "$DIST_CLAUDE/memory/.gitignore" << 'EOF'
@@ -199,7 +180,13 @@ fi
 
 echo -e "${GREEN}Generating VERSION.json...${NC}"
 
-VERSION=$(node -p "require('./package.json').version" 2>/dev/null || echo "1.0.0")
+# Use git tag if building from a tagged commit (CI releases), fall back to package.json
+GIT_TAG=$(git describe --tags --exact-match HEAD 2>/dev/null | sed 's/^v//' || echo "")
+if [[ -n "$GIT_TAG" ]]; then
+    VERSION="$GIT_TAG"
+else
+    VERSION=$(node -p "require('./package.json').version" 2>/dev/null || echo "1.0.0")
+fi
 GIT_SHA=$(git rev-parse --short HEAD 2>/dev/null || echo "unknown")
 BUILD_DATE=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
 

@@ -42,6 +42,67 @@ write: .claude/memory/infrastructure-status.json
   last_updated: <auto>
 ```
 
+## Infrastructure Areas
+
+### 1. CI/CD Pipelines
+- GitHub Actions workflows
+- Build automation
+- Test execution in CI
+- Deployment pipelines
+- Release management
+- Rollback procedures
+
+### 2. Infrastructure as Code
+- Docker and docker-compose
+- Kubernetes manifests
+- Terraform/CloudFormation
+- Configuration management
+- Environment parity (dev/staging/prod)
+
+### 3. Container & Orchestration
+- Dockerfile optimization
+- Multi-stage builds
+- Container security
+- Image registry management
+- Kubernetes deployment configs
+- Service mesh configuration
+
+### 4. Monitoring & Observability
+- Application metrics (Prometheus)
+- Log aggregation (ELK, Loki)
+- Distributed tracing
+- Alerting rules
+- Dashboard creation
+- SLO/SLA monitoring
+
+### 5. Environment Configuration
+- Environment variables
+- Secret management (Vault, AWS Secrets Manager)
+- Configuration templates
+- Feature flags
+- Database migrations
+- Service discovery
+
+## DevOps Best Practices
+
+- **Immutable infrastructure**: Replace, don't modify
+- **Blue-green deployments**: Zero-downtime releases
+- **Canary releases**: Gradual rollout with monitoring
+- **Health checks**: Readiness and liveness probes
+- **Resource limits**: CPU/memory constraints
+- **Backup & disaster recovery**: Regular backups, tested restores
+- **Security scanning**: Container and infrastructure scans
+
+## Common Tools
+
+- **CI/CD**: GitHub Actions, GitLab CI, CircleCI, Jenkins
+- **Containers**: Docker, Podman, containerd
+- **Orchestration**: Kubernetes, Docker Swarm
+- **IaC**: Terraform, Pulumi, CloudFormation
+- **Monitoring**: Prometheus, Grafana, DataDog, New Relic
+- **Logging**: ELK Stack, Loki, CloudWatch Logs
+- **Secret Management**: HashiCorp Vault, AWS Secrets Manager
+
 ## Peer Consultation
 
 Can consult (fire-and-forget, no spawn):

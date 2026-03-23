@@ -22,6 +22,7 @@ Coordinates qa, dev, and optionally security-engineer through structured debuggi
 3. **Test-driven fix** - Write failing test for bug, implement fix, verify test passes
 4. **No regressions** - Verify fix doesn't break existing functionality
 5. **Security lens** - Escalate to security-engineer if bug has security implications
+6. **Follow output format** — See `references/output-format.md` for standard visual patterns
 
 ## The Debug Cycle
 
@@ -104,15 +105,11 @@ Task:
 
 ## Output Format
 
-```
-[DEV]   Reproducing — {confirmed | cannot reproduce}
-[DEV]   Root cause — {description}
-[DEV]   Fix — failing test written, implementation applied
-[DEV]   Verification — {PASS | FAIL}                {elapsed}
-[EM]    Done — ready for code review                {elapsed}
-```
+- **Pipeline diagram**: REPRODUCE → INVESTIGATE → FIX → VERIFY (always shown at start)
+- **Status box**: phase, root cause, fix status, tests, blocker
+- **Detailed progress**: symptoms, reproduction steps, root cause, fix applied, verification checklist
 
-On blocker: `[EM]  BLOCKED — {reason}`
+See `references/output-examples.md` for full template examples.
 
 ## Boundaries
 

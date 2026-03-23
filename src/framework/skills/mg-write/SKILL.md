@@ -20,6 +20,7 @@ Coordinates art direction and copywriting for authentic, on-brand content.
 1. **Art Director leads** - Brand vision, creative direction, quality gate
 2. **Human voice mandatory** - No AI-isms, no generic copy
 3. **Quality over speed** - Reject copy that fails anti-AI-patterns check
+4. **Follow output format** — See `references/output-format.md` for standard visual patterns
 
 ## Workflow
 
@@ -132,13 +133,14 @@ prompt: |
 
 ## Output Format
 
-```
-[ART]   Brand direction — {voice, constraints}
-[COPY]  Draft — {content_type}, {N} sections
-[ART]   Anti-AI check — {PASS | FAIL}
-[ART]   Voice quality — {PASS | FAIL}               {elapsed}
-[ART]   Decision: {APPROVED | NEEDS REVISION}       {elapsed}
-```
+Structured report with sections:
+- Brand Direction (Art Director): creative vision, voice guidance, constraints
+- Draft (Copywriter): copy organized by section/component
+- Voice Quality Review: Anti-AI-Patterns, Sentence Variation, Conversational Register, Medium Appropriateness — each PASS | FAIL
+- Decision: APPROVED | NEEDS REVISION with feedback
+- Next Action: hand off, request revision, or escalate
+
+See `references/output-examples.md` for full template examples.
 
 ## Voice Quality Standards
 

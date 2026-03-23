@@ -141,14 +141,13 @@ Pass → Done. No leadership review. No merge gate beyond bash.
 **Total spawns: 5-6**
 
 ```
-Step 1:   /mg-leadership-team — Executive Review + Workstream Plan
-Step 1.5: State Sync — tracker, memory, specs (automatic after approval)
-Step 2:   QA writes tests (can run parallel with Dev once plan exists)
-Step 3:   Dev implements against QA tests
+Step 1: /mg-leadership-team — Executive Review + Workstream Plan
+Step 2: QA writes tests (can run parallel with Dev once plan exists)
+Step 3: Dev implements against QA tests
 Step 3.5: Dual-specialist review (if deliverable contains code blocks)
-Step 4:   Staff Engineer internal review
-Step 5:   /mg-leadership-team Code Review + Approval → State Sync
-Step 6:   /deployment-engineer merge
+Step 4: Staff Engineer internal review
+Step 5: /mg-leadership-team Code Review + Approval
+Step 6: /deployment-engineer merge
 ```
 
 ### /mg-leadership-team (Step 1)
@@ -160,17 +159,6 @@ Step 6:   /deployment-engineer merge
 4. APPROVES or REQUESTS CHANGES
 
 **Output:** Executive Review + Workstream Plan OR Code Review Decision
-
-### State Sync (Step 1.5 — automatic after every APPROVED decision)
-
-After leadership approves (planning or code review), the following MUST happen before handoff:
-
-1. **Tracker updated** — GH issues created/updated for each workstream (or JIRA/Linear per project). Issues include acceptance criteria. Daemon-eligible issues labeled `mg-daemon`.
-2. **Memory updated** — `workstream-{id}-state.json` created or updated. Closed issues marked closed. `decisions.json` updated with the approval.
-3. **Workstreams specced** — Each workstream has acceptance criteria, classification (MECHANICAL/ARCHITECTURAL), dependencies, and priority order.
-4. **Handoff** — State report output to user. Ready for `/mg-build` or verification.
-
-This step also runs after Step 5 (code review approval) to sync post-merge state.
 
 ### QA (Step 2) — can overlap with Dev
 
@@ -321,8 +309,7 @@ chore: Merge WS-X: [description]           # Merge
 | User | mg-build | Both | New workstream | `/mg-build execute WS-X` |
 | mg-build | dev | MECHANICAL | Classified at intake | Combined test+impl prompt |
 | mg-build | mg-leadership-team | ARCHITECTURAL | After classification | Describe initiative |
-| mg-leadership-team | **State Sync** | ARCHITECTURAL | APPROVED decision | Auto: tracker + memory + specs |
-| **State Sync** | mg-build | ARCHITECTURAL | Sync complete | `/mg-build execute WS-X` |
+| mg-leadership-team | mg-build | ARCHITECTURAL | Workstream defined | `/mg-build execute WS-X` |
 | mg-build | mg-leadership-team | ARCHITECTURAL | Workstream complete | `/mg-leadership-team review WS-X` |
 | mg-leadership-team | deployment-engineer | ARCHITECTURAL | Approved | `/deployment-engineer merge` |
 | mg-leadership-team | mg-build | ARCHITECTURAL | Rejected | Specific feedback |

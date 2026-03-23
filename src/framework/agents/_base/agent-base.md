@@ -6,7 +6,6 @@ All agents inherit these shared behaviors. Agent-specific definitions override o
 
 - **Memory-first** - Read context before acting, write decisions for team visibility
 - **Visual standards** - Use ASCII progress patterns from shared output format
-- **Compact output** - Use [ROLE] prefix format per `shared/visual-formatting.md`
 
 ## Memory Protocol
 

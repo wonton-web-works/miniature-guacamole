@@ -130,14 +130,34 @@ Task:
 ## Output Format
 
 ```
-[SE]    Standards — {PASS | FAIL}
-[SE]    Coverage — {pass/fail, percent}
-[SE]    Performance — {PASS | FAIL}
-[QA]    Test quality — {PASS | FAIL}               {elapsed}
-[EM]    Decision: {APPROVED | REQUEST CHANGES}      {elapsed}
-```
+## Code Review: {Feature/Module}
 
-Findings (if any) follow the decision line, severity-ranked: critical, major, minor.
+### Review Status: [APPROVED | REQUEST CHANGES]
+
+### Quality Gates
+- [ ] Coding standards: {pass/fail}
+- [ ] Test coverage >= 99%: {pass/fail}
+- [ ] Performance: {pass/fail}
+- [ ] Error handling: {pass/fail}
+- [ ] Security: {pass/fail}
+
+### Findings
+
+#### Critical
+{List critical issues requiring immediate fix}
+
+#### Major
+{List major issues that should be addressed}
+
+#### Minor
+{List minor issues or suggestions}
+
+### Recommendations
+{Specific actions to take}
+
+### Next Action
+{APPROVED → ready for leadership | REQUEST CHANGES → return to dev}
+```
 
 See `references/model-escalation-guidance.md` for escalation criteria.
 

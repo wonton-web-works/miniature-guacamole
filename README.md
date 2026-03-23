@@ -2,19 +2,19 @@
 
 > A complete AI-powered product development organization for Claude Code.
 
-**Version:** 3.1.0 · **License:** MIT · [Documentation](https://wonton-web-works.github.io/miniature-guacamole/) · [Issues](https://github.com/wonton-web-works/miniature-guacamole/issues)
+**Version:** 5.0 · **License:** MIT · [Documentation](https://wonton-web-works.github.io/miniature-guacamole/) · [Issues](https://github.com/wonton-web-works/miniature-guacamole/issues)
 
 ---
 
-## What's New in v3.1.0
+## What's New in v5.0
 
 **Autonomous daemon, security domains, and state reconciliation** (March 2026):
 - **Autonomous Daemon Pipeline** (v3.0.0) — turns a Mac Mini into a 24/7 ticket-to-PR machine. Supports Jira, Linear, and GitHub Issues
 - **Security Domain Expansion** — security-engineer agent now loads domain-specific checklists (web, systems, cloud, crypto) automatically
 - **`/mg-tidy`** — reconciles project state across GitHub issues and memory files. Closed 38 duplicate issues in its first run
 - **Ticket Triage Gate** — daemon now runs `/mg-assess` before planning, filtering low-value tickets
-- **Base Template Inheritance** — all 20 agents and 19 skills inherit from shared base protocols, eliminating duplication
-- 19 skills, 20 agents
+- **Base Template Inheritance** — all 24 agents and 19 skills inherit from shared base protocols, eliminating duplication
+- 19 skills, 24 agents
 
 ---
 
@@ -102,7 +102,7 @@ Every feature follows Constraint-Driven Agentic Development:
 | Component | Count | Description |
 |-----------|-------|-------------|
 | **Skills** | 19 | Slash-command workflows — `/mg` dispatcher, build, ticket, tidy, debug, and more |
-| **Agents** | 20 | Specialized roles from CEO to QA, each with clear delegation authority |
+| **Agents** | 24 | Specialized roles from CEO to QA, each with clear delegation authority |
 | **Scripts** | 17 | `mg-*` CLI utilities for memory, workstreams, Postgres, and git |
 | **Protocols** | 6 | Shared standards — CAD workflow, TDD, memory, handoff, engineering principles |
 
@@ -156,6 +156,21 @@ dist/miniature-guacamole/install.sh /path/to/your-project
 
 ## Changelog
 
+**Version 5.0** (March 2026)
+- The Sage — enterprise-only orchestrator agent with selective C-Suite spawning
+- CMO/COO and CFO agents added; all existing agents upgraded
+- Config C — validated production config (opus Sage, sonnet C-Suite, 40% cost savings)
+- Enterprise auth pipeline, benchmark harness, 52 boundary integration tests
+- Agent count: 20 → 24
+
+**Version 4.1.0** (March 2026)
+- Runtime output matches marketing site terminal animation
+- Compact output protocol, ANSI color codes, timing instrumentation
+
+**Version 4.0.0** (March 2026)
+- Base template inheritance, 2-track development cycle, inter-agent message bus
+- MECHANICAL track: 1 spawn (down from 11), 42% boilerplate reduction
+
 **Version 3.1.0** (March 2026)
 - `/mg-tidy` — state reconciliation skill; deduplicates issues, syncs memory, flags stale work
 - Base template inheritance — all agents/skills inherit from shared `_base/` protocols
@@ -167,15 +182,6 @@ dist/miniature-guacamole/install.sh /path/to/your-project
 - Jira, Linear, and GitHub Issues ticket providers
 - Security hardening (3 review passes), OS-level safeguards
 - 1082 tests passing, zero new npm dependencies
-
-**Version 2.2.0** (March 2026)
-- Two-phase install — global CLI installer + per-project init
-
-**Version 2.1.0** (March 2026)
-- MCP server removed, `mg` CLI router added as unified entrypoint
-
-**Version 2.0.0** (March 2026)
-- `/mg` dispatcher, PRD/tech design templates, 18 skills, 20 agents
 
 ---
 

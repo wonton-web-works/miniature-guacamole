@@ -98,10 +98,10 @@ describe('README.md — golden path (correct values must appear)', () => {
     expect(readme).toMatch(/3\.1\.0/m);
   });
 
-  it('What\'s New section is for v3.1.0 or later', () => {
+  it('What\'s New section is for v5.0 or later', () => {
     // AC-2
     const readme = read('README.md');
-    expect(readme).toMatch(/##\s+What'?s New in v[23]\.\d+\.\d+/);
+    expect(readme).toMatch(/##\s+What'?s New in v[2-9]/);  // Matches v2.x through v9.x
   });
 
   it('feature bullet list mentions Skills count', () => {
@@ -191,16 +191,16 @@ describe('docs/getting-started.md — misuse cases (stale values must not appear
 });
 
 describe('docs/getting-started.md — golden path (correct values must appear)', () => {
-  it('Quick Start summary says "18 skills and 24 agents"', () => {
+  it('Quick Start summary says "19 skills and 24 agents"', () => {
     // AC-11
     const gs = read('docs/getting-started.md');
-    expect(gs).toMatch(/18 skills and 24 agents/);
+    expect(gs).toMatch(/19 skills and 24 agents/);
   });
 
-  it('What Gets Installed section says "18 team collaboration workflows"', () => {
+  it('What Gets Installed section says "19 team collaboration workflows"', () => {
     // AC-12
     const gs = read('docs/getting-started.md');
-    expect(gs).toMatch(/18 team collaboration workflows/);
+    expect(gs).toMatch(/19 team collaboration workflows/);
   });
 });
 

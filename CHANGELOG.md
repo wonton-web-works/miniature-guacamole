@@ -9,6 +9,44 @@ Versioning follows [Semantic Versioning](https://semver.org/): MAJOR.MINOR.PATCH
 
 ---
 
+## [5.0.0] — 2026-03-22
+
+### Added
+- **The Sage** — enterprise-only orchestrator agent with selective C-Suite spawning
+- **CMO/COO agent** — operations, marketing, go-to-market, brand consistency
+- **CFO agent** — cost analysis, token budget management, ROI assessment
+- **Config C** — validated production config (opus Sage, sonnet C-Suite, 40% cost savings)
+- **Enterprise auth pipeline** — mg login/logout/upgrade/status CLI commands
+- **Benchmark harness** — 7 task types, 4 model configs, drift cost analysis
+- **Enterprise boundary tests** — 52 integration tests for zero enterprise→community leakage
+- **Session management** — dependency-based session breaks, context snapshots, cold-start primers
+- **Research specialist persistence** — domain experts saved and reused across sessions
+
+### Changed
+- Agent count: 20 → 24 (added Sage, CMO, CFO; all existing agents upgraded)
+- CEO, CTO, ED constitutions strengthened with 5-6 concrete decision heuristics each
+- /mg-leadership-team v2.0 — dual enterprise/community mode with edition detection
+- Supervisor: upgraded as community quality watchdog, escalates to Sage in enterprise
+- 19 skill constitutions: "Follow output format" consolidated to skill-base.md
+- ~169 lines of tutorial content removed from technical agents (devops, data, api, security, technical-writer)
+- Design agent: "your code ships" → "specs first"
+- Visual formatting: 4 new color codes ([ART], [DOC], [SEC], [COPY])
+
+### Security
+- LICENSE.enterprise for proprietary Sage distribution
+- build.sh excludes Sage from community distribution
+- Enterprise session validation with machineId fingerprinting
+- Security headers (_headers), robots.txt, pilot gate hardened
+
+## [4.2.0] — 2026-03-20
+
+### Added
+- Value CTA section on marketing site
+- Daemon documentation updates
+- v4.2.0 changelog on site
+
+---
+
 ## [4.1.0] - 2026-03-19 — Output Parity
 
 Runtime output now matches the marketing site terminal animation.
@@ -544,6 +582,10 @@ communication protocols.
 
 | Version | Date       | Codename               | Key Milestone                              |
 |---------|------------|------------------------|--------------------------------------------|
+| **5.0.0** | **2026-03-22** | **Enterprise & Sage** | **Sage orchestrator, CMO/COO, CFO, Config C, 52 boundary tests, 24 agents** |
+| **4.2.0** | **2026-03-20** | **Value CTA** | **Marketing value section, daemon docs, site changelog** |
+| **4.1.0** | **2026-03-19** | **Output Parity** | **Compact output protocol, ANSI colors, timing, marketing site** |
+| **4.0.0** | **2026-03-19** | **Framework Hardening** | **Base template inheritance, 2-track dev cycle, agent message bus** |
 | **3.1.0** | **2026-03-19** | **State Reconciliation** | **`/mg-tidy`, base template inheritance, security domain expansion** |
 | **3.0.0** | **2026-03-19** | **Autonomous Daemon** | **24/7 ticket-to-PR pipeline, Jira/Linear/GitHub, 1082 tests** |
 | **2.2.0** | **2026-03-18** | **Two-Phase Install** | **Global CLI installer + per-project init** |

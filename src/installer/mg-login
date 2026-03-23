@@ -28,6 +28,24 @@ fi
 # JSON helpers (jq preferred, grep fallback)
 # ─────────────────────────────────────────────────
 
+# json_escape VALUE
+# Outputs the value as a JSON string literal (with surrounding quotes).
+# Uses jq when available; falls back to sed-based escaping.
+json_escape() {
+  if $HAS_JQ; then
+    printf '%s' "$1" | jq -Rs '.'
+  else
+    local escaped
+    # Escape backslash first, then double-quote, then control characters.
+    escaped="$(printf '%s' "$1" \
+      | sed 's/\\/\\\\/g; s/"/\\"/g; s/	/\\t/g' \
+      | tr -d '\r' \
+      | awk '{printf "%s\\n", $0}' \
+      | sed '$ s/\\n$//')"
+    printf '"%s"' "$escaped"
+  fi
+}
+
 json_get() {
   local json="$1" key="$2"
   if $HAS_JQ; then
@@ -108,8 +126,10 @@ MACHINE_ID="$(build_machine_id)"
 # POST /api/mg/auth/login
 # ─────────────────────────────────────────────────
 
-REQUEST_BODY="$(printf '{"email":"%s","password":"%s","machineId":"%s"}' \
-  "$EMAIL" "$PASSWORD" "$MACHINE_ID")"
+REQUEST_BODY="$(printf '{"email":%s,"password":%s,"machineId":%s}' \
+  "$(json_escape "$EMAIL")" \
+  "$(json_escape "$PASSWORD")" \
+  "$(json_escape "$MACHINE_ID")")"
 
 HTTP_RESPONSE=$(curl \
   --silent \

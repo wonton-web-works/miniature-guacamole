@@ -2200,6 +2200,103 @@ const entries: ChangelogEntry[] = changelogEntries;
         .cta-grid { grid-template-columns: 1fr; }
       }
 
+      /* CTA layout — form + side cards */
+      .cta-layout {
+        display: grid;
+        grid-template-columns: 1.2fr 1fr;
+        gap: 1.5rem;
+        max-width: 900px;
+        margin: 2rem auto 0;
+        text-align: left;
+      }
+
+      .cta-form-card {
+        background: var(--mg-surface);
+        border: 1px solid rgba(46,63,82,0.5);
+        border-radius: 8px;
+        padding: 1.75rem;
+      }
+
+      .cta-side-cards {
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
+      }
+
+      .contact-form {
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+        margin-top: 1rem;
+      }
+
+      .form-input {
+        padding: 0.65rem 1rem;
+        background: var(--mg-dark);
+        border: 1px solid #2E3F52;
+        border-radius: 6px;
+        color: var(--mg-text);
+        font-family: var(--font-display);
+        font-size: 0.875rem;
+        outline: none;
+        transition: border-color 0.15s ease;
+        width: 100%;
+        box-sizing: border-box;
+      }
+
+      .form-input::placeholder {
+        color: var(--mg-subtext);
+        opacity: 0.7;
+      }
+
+      .form-input:focus {
+        border-color: var(--sage-amber);
+      }
+
+      .form-select {
+        appearance: none;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%238A9BB0' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: right 1rem center;
+        padding-right: 2.5rem;
+      }
+
+      .form-select option {
+        background: var(--mg-dark);
+        color: var(--mg-text);
+      }
+
+      .form-textarea {
+        resize: vertical;
+        min-height: 60px;
+        font-family: var(--font-display);
+      }
+
+      .form-submit {
+        align-self: flex-start;
+        cursor: pointer;
+        border: none;
+        margin-top: 0.25rem;
+      }
+
+      .form-submit:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+      }
+
+      .form-success {
+        font-family: var(--font-mono);
+        font-size: 0.875rem;
+        color: var(--mg-guac-text);
+        margin-top: 0.75rem;
+      }
+
+      @media (max-width: 767px) {
+        .cta-layout {
+          grid-template-columns: 1fr;
+        }
+      }
+
       /* Mid-page CTA */
       .mid-cta {
         text-align: center;
@@ -2407,7 +2504,7 @@ const entries: ChangelogEntry[] = changelogEntries;
           </p>
           <div class="hero-cta-row">
             <a href="#hierarchy" class="cta-primary">See how it works</a>
-            <a href="mailto:byazaki@wontonwebworks.com?subject=PrivateEnterprise%20%E2%80%94%20Learn%20More" class="cta-secondary-link" onclick="window.plausible?.('CTA Click', {props: {type: 'hero-talk'}})">Talk to us</a>
+            <a href="#enterprise-cta" class="cta-secondary-link" onclick="window.plausible?.('CTA Click', {props: {type: 'hero-talk'}})">Talk to us</a>
           </div>
         </div>
 
@@ -3126,7 +3223,7 @@ next_session:
     <!-- Mid-page CTA -->
     <div class="mid-cta">
       <div class="mid-cta-row">
-        <a href="mailto:byazaki@wontonwebworks.com?subject=PrivateEnterprise%20%E2%80%94%20Pilot%20Inquiry" class="cta-btn-primary" onclick="window.plausible?.('CTA Click', {props: {type: 'mid-pilot'}})">See it on your codebase</a>
+        <a href="#enterprise-cta" class="cta-btn-primary" onclick="window.plausible?.('CTA Click', {props: {type: 'mid-pilot'}})">See it on your codebase</a>
         <a href="https://github.com/wonton-web-works/miniature-guacamole" class="cta-btn-secondary" target="_blank" rel="noopener noreferrer" onclick="window.plausible?.('CTA Click', {props: {type: 'mid-github'}})">Try it free on GitHub</a>
       </div>
     </div>
@@ -3135,47 +3232,63 @@ next_session:
          SECTION 6 — CTA
     ══════════════════════════════════════════════════════ -->
     <section id="enterprise-cta">
-      <div class="section-inner" style="text-align:center;">
-        <h2 class="cta-heading">Ready to get started?</h2>
-        <p class="cta-body">
+      <div class="section-inner">
+        <h2 class="cta-heading" style="text-align:center;">Ready to get started?</h2>
+        <p class="cta-body" style="text-align:center;">
           Whether you're leading an engineering team, building open source, or evaluating
           the opportunity — there's a path for you.
         </p>
-        <div class="cta-grid">
-          <div class="cta-card">
-            <h3 class="cta-card-heading">Engineering leaders</h3>
-            <p class="cta-card-body">See PrivateEnterprise on your codebase. We'll configure it for your stack and walk you through a live pilot.</p>
-            <a
-              href="mailto:byazaki@wontonwebworks.com?subject=PrivateEnterprise%20%E2%80%94%20Pilot%20Inquiry&body=Role%3A%20Engineering%20Leader"
-              class="cta-btn-primary"
-              onclick="window.plausible?.('CTA Click', {props: {type: 'leader-pilot'}})"
-            >
-              Talk to us
-            </a>
+
+        <div class="cta-layout">
+          <!-- Contact form (primary) -->
+          <div class="cta-form-card" id="contact-form-card">
+            <h3 class="cta-card-heading">Get in touch</h3>
+            <p class="cta-card-body">Tell us about your team and what you're looking for. We'll get back to you within a day.</p>
+            <form class="contact-form" id="contact-form" action="https://formspree.io/f/xgonjlyq" method="POST">
+              <input type="text" name="name" placeholder="Name" required class="form-input" autocomplete="name" />
+              <input type="email" name="email" placeholder="Work email" required class="form-input" autocomplete="email" />
+              <select name="role" class="form-input form-select" required>
+                <option value="" disabled selected>I am a...</option>
+                <option value="engineering-leader">Engineering leader</option>
+                <option value="developer">Developer / IC</option>
+                <option value="investor">Investor</option>
+                <option value="other">Other</option>
+              </select>
+              <textarea name="message" placeholder="What are you looking for?" rows="3" class="form-input form-textarea"></textarea>
+              <input type="text" name="_gotcha" style="display:none" />
+              <button type="submit" class="cta-btn-primary form-submit" id="form-submit">Send</button>
+            </form>
+            <p class="form-success" id="form-success" style="display:none;">Thanks! We'll be in touch soon.</p>
           </div>
-          <div class="cta-card">
-            <h3 class="cta-card-heading">Developers</h3>
-            <p class="cta-card-body">Try the open-source framework. 24 agents, 16 skills, project-local memory. Free forever.</p>
-            <a
-              href="https://github.com/wonton-web-works/miniature-guacamole"
-              class="cta-btn-secondary"
-              target="_blank"
-              rel="noopener noreferrer"
-              onclick="window.plausible?.('CTA Click', {props: {type: 'dev-github'}})"
-            >
-              Get started on GitHub
-            </a>
-          </div>
-          <div class="cta-card cta-card-subtle">
-            <h3 class="cta-card-heading">Investors</h3>
-            <p class="cta-card-body">See the market opportunity, unit economics, and our thesis on AI-native engineering process.</p>
-            <a
-              href="mailto:byazaki@wontonwebworks.com?subject=PrivateEnterprise%20%E2%80%94%20Investment%20Inquiry&body=Role%3A%20Investor"
-              class="cta-btn-secondary"
-              onclick="window.plausible?.('CTA Click', {props: {type: 'investor-inquiry'}})"
-            >
-              Learn more
-            </a>
+
+          <!-- Side cards -->
+          <div class="cta-side-cards">
+            <div class="cta-card">
+              <h3 class="cta-card-heading">Developers</h3>
+              <p class="cta-card-body">Try the open-source framework. 24 agents, 16 skills, project-local memory. Free forever.</p>
+              <a
+                href="https://github.com/wonton-web-works/miniature-guacamole"
+                class="cta-btn-secondary"
+                target="_blank"
+                rel="noopener noreferrer"
+                onclick="window.plausible?.('CTA Click', {props: {type: 'dev-github'}})"
+              >
+                Get started on GitHub
+              </a>
+            </div>
+            <div class="cta-card cta-card-subtle">
+              <h3 class="cta-card-heading">Investors</h3>
+              <p class="cta-card-body">See the market opportunity and our thesis on AI-native engineering process.</p>
+              <form class="contact-form investor-form" action="https://formspree.io/f/xpqygjre" method="POST">
+                <input type="email" name="email" placeholder="Your email" required class="form-input" autocomplete="email" />
+                <input type="hidden" name="role" value="investor" />
+                <input type="text" name="_gotcha" style="display:none" />
+                <button type="submit" class="cta-btn-secondary investor-submit" style="width:100%;text-align:center;cursor:pointer;border:none;">
+                  Learn more
+                </button>
+              </form>
+              <p class="form-success investor-success" style="display:none;">Thanks! We'll send you details.</p>
+            </div>
           </div>
         </div>
       </div>
@@ -3260,5 +3373,57 @@ next_session:
          script-src 'self' in Content-Security-Policy.
     ══════════════════════════════════════════════════════ -->
     <script src="../scripts/enterprise.ts"></script>
+
+    <!-- Contact form handler -->
+    <script>
+      const form = document.getElementById('contact-form') as HTMLFormElement | null;
+      const btn = document.getElementById('form-submit') as HTMLButtonElement | null;
+      const success = document.getElementById('form-success') as HTMLElement | null;
+
+      // Investor mini-form
+      document.querySelector('.investor-form')?.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const f = e.target as HTMLFormElement;
+        const b = f.querySelector('.investor-submit') as HTMLButtonElement;
+        const s = f.nextElementSibling as HTMLElement;
+        b.disabled = true;
+        b.textContent = 'Sending...';
+        try {
+          const res = await fetch(f.action, { method: 'POST', body: new FormData(f), headers: { 'Accept': 'application/json' } });
+          if (res.ok) { f.style.display = 'none'; if (s) s.style.display = 'block'; window.plausible?.('Investor Form', { props: { source: 'cta-card' } }); }
+          else { b.textContent = 'Error — retry'; b.disabled = false; }
+        } catch { b.textContent = 'Error — retry'; b.disabled = false; }
+      });
+
+      form?.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        if (!btn || !form) return;
+
+        btn.disabled = true;
+        btn.textContent = 'Sending...';
+
+        try {
+          const res = await fetch(form.action, {
+            method: 'POST',
+            body: new FormData(form),
+            headers: { 'Accept': 'application/json' },
+          });
+
+          if (res.ok) {
+            form.style.display = 'none';
+            if (success) success.style.display = 'block';
+            window.plausible?.('Contact Form', { props: {
+              role: (form.elements.namedItem('role') as HTMLSelectElement)?.value ?? 'unknown'
+            }});
+          } else {
+            btn.textContent = 'Error — try again';
+            btn.disabled = false;
+          }
+        } catch {
+          btn.textContent = 'Error — try again';
+          btn.disabled = false;
+        }
+      });
+    </script>
 
 </Base>

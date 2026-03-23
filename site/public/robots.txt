@@ -1,6 +1,4 @@
 User-agent: *
 Allow: /
-Disallow: /pilot
-Disallow: /wireframe
 
 Sitemap: https://theengorg.wontonwebworks.com/sitemap.xml

@@ -590,23 +590,10 @@ const entries: ChangelogEntry[] = changelogEntries;
         .hero-right { order: -1; }
         .hero-img { width: 100%; max-width: 280px; }
         :global(.hero-img-video) { width: 100%; max-width: 320px; }
-        #hero { padding: 48px 16px 40px; }
-        /* Value props stack on mobile */
-        #value-props > .section-inner > ul:first-child {
-          grid-template-columns: 1fr !important;
-          gap: 24px !important;
-        }
-        /* Tighten section padding on mobile */
-        section { padding: 48px 16px; }
-        .section-inner { padding: 0; }
-        .section-heading { font-size: clamp(1.5rem, 5vw, 2.2rem); }
-        /* Problem section mobile */
-        #the-problem .section-inner { padding: 0 4px; }
-        .problem-body { font-size: 0.9375rem; }
-        /* Hero CTA row wrap */
+        #hero { padding: 56px 20px 40px !important; }
         .hero-cta-row { gap: 1rem; }
-        /* Callout box tighter on mobile */
         .hero-callout { padding: 1rem 1.25rem; margin-top: 1.5rem; }
+        .hero-lede { font-size: 0.9rem; }
       }
 
       /* ══════════════════════════════════════════════════════════
@@ -877,17 +864,28 @@ const entries: ChangelogEntry[] = changelogEntries;
       }
 
       @media (max-width: 767px) {
-        .sage-circle { width: 56px; height: 56px; }
-        .csuite-node { width: 72px; height: 44px; padding: 4px 6px; }
-        .csuite-node .role-abbr { font-size: 0.8rem; }
-        .csuite-node .role-title { font-size: 0.55rem; }
-        .tier-row { gap: 8px; flex-wrap: wrap; justify-content: center; }
-        .dir-node { width: 64px; min-width: 64px; padding: 6px 4px; }
-        .dir-node .role-abbr { font-size: 0.7rem; }
-        .dir-node .role-title { font-size: 0.5rem; }
-        .ic-pill { font-size: 0.65rem; padding: 4px 8px; }
-        .ic-row { gap: 6px; flex-wrap: wrap; justify-content: center; }
-        #hierarchy { padding: 48px 12px; }
+        #hierarchy { padding: 56px 20px !important; }
+        .sage-circle { width: 64px; height: 64px; }
+        .sage-node { margin-bottom: 32px; }
+        /* C-Suite: 2x2 grid */
+        #csuite-row {
+          display: grid !important;
+          grid-template-columns: 1fr 1fr;
+          gap: 12px;
+          max-width: 300px;
+          margin: 0 auto;
+        }
+        .csuite-node { width: auto !important; height: 52px !important; }
+        .csuite-node .role-abbr { font-size: 0.875rem; }
+        .csuite-node .role-title { font-size: 0.6rem; }
+        /* Hide director row, SVG lines */
+        #dir-row { display: none !important; }
+        .hierarchy-svg-layer { display: none !important; }
+        /* Show mobile summary */
+        .dir-summary-mobile { display: flex !important; justify-content: center; margin: 16px 0 20px; }
+        /* IC pills */
+        .ic-row { flex-wrap: wrap; justify-content: center; gap: 6px; }
+        .ic-pill { height: 26px; padding: 0 10px; font-size: 0.7rem; }
       }
 
       /* ══════════════════════════════════════════════════════════
@@ -1078,33 +1076,60 @@ const entries: ChangelogEntry[] = changelogEntries;
       .teacher-img  { width: 120px; height: auto; object-fit: contain; }
 
       @media (max-width: 767px) {
-        .spawning-panel {
-          grid-template-columns: 1fr;
-          padding: 20px;
-          overflow: hidden;
-        }
+        #spawning { padding: 56px 20px !important; }
         .teacher-wrap { display: none; }
-        .spawn-node {
-          width: 60px;
-          min-width: 60px;
-          padding: 6px 4px;
+        /* Remove panel border/bg — becomes transparent wrapper */
+        .spawning-panel {
+          display: flex !important;
+          flex-direction: column;
+          gap: 12px;
+          padding: 0 !important;
+          background: transparent !important;
+          border: none !important;
         }
-        .spawn-node .role-abbr { font-size: 0.75rem; }
-        .spawn-node .role-title { font-size: 0.55rem; }
+        /* Card 1: scenario selector */
+        .spawning-left {
+          background: var(--mg-surface);
+          border: 1px solid rgba(138,155,176,0.15);
+          border-radius: 12px;
+          padding: 20px;
+          position: relative;
+        }
+        /* Card 2: spawn viz */
+        .spawning-right {
+          background: var(--mg-surface);
+          border: 1px solid rgba(138,155,176,0.15);
+          border-radius: 12px;
+          padding: 24px 20px;
+          overflow: visible !important;
+        }
+        /* Scenario tabs: horizontal scroll with fade */
         .scenario-tabs {
-          flex-direction: row;
-          flex-wrap: nowrap;
+          flex-direction: row !important;
+          flex-wrap: nowrap !important;
           overflow-x: auto;
           -webkit-overflow-scrolling: touch;
           gap: 8px;
-          padding-bottom: 4px;
+          padding-bottom: 6px;
           scrollbar-width: none;
+          mask-image: linear-gradient(to right, black calc(100% - 32px), transparent 100%);
+          -webkit-mask-image: linear-gradient(to right, black calc(100% - 32px), transparent 100%);
         }
         .scenario-tabs::-webkit-scrollbar { display: none; }
-        .scenario-tab { white-space: nowrap; min-width: unset; font-size: 0.7rem; padding: 6px 10px; }
-        .spawn-csuite-row { gap: 8px; flex-wrap: wrap; justify-content: center; }
-        .task-description { font-size: 0.8rem; }
-        #spawning { padding: 48px 12px; }
+        .scenario-tab { white-space: nowrap; font-size: 0.7rem; padding: 8px 12px; }
+        /* Spawn nodes: 2x2 grid */
+        #spawn-sage { width: 48px; height: 48px; margin-bottom: 20px; }
+        #spawn-sage img { width: 48px; height: 48px; }
+        #spawn-nodes {
+          display: grid !important;
+          grid-template-columns: 1fr 1fr;
+          gap: 10px;
+        }
+        .spawn-node { width: auto !important; min-width: unset !important; height: 52px !important; }
+        .spawn-node .role-abbr { font-size: 0.8rem; }
+        .spawn-node .role-title { font-size: 0.6rem; }
+        /* Hide SVG lines */
+        #spawn-svg, .spawn-lines-svg { display: none !important; }
       }
 
       /* ══════════════════════════════════════════════════════════
@@ -1606,6 +1631,7 @@ const entries: ChangelogEntry[] = changelogEntries;
         display: flex;
         flex-direction: column;
         gap: 0.875rem;
+        min-width: 0;
       }
 
       .cap-heading {
@@ -1672,6 +1698,7 @@ const entries: ChangelogEntry[] = changelogEntries;
         white-space: pre;
         margin-top: 0.625rem;
         overflow-x: auto;
+        max-width: 100%;
       }
 
       .benchmark-callout {
@@ -2493,8 +2520,22 @@ const entries: ChangelogEntry[] = changelogEntries;
          RESPONSIVE TWEAKS
       ══════════════════════════════════════════════════════════ */
       @media (max-width: 767px) {
-        section { padding: 48px 20px; }
+        section { padding: 56px 20px !important; }
         .section-heading { font-size: clamp(1.5rem, 6vw, 2rem); }
+      }
+
+      /* Desktop-only: hide mobile director summary */
+      .dir-summary-mobile { display: none; }
+      .dir-summary-pill {
+        display: inline-flex;
+        align-items: center;
+        height: 26px;
+        padding: 0 12px;
+        border-radius: 4px;
+        border: 1px solid rgba(46,110,142,0.4);
+        font-family: var(--font-mono);
+        font-size: 0.7rem;
+        color: var(--mg-subtext);
       }
   </style>
   <noscript slot="head"><style>.reveal{opacity:1!important;transform:none!important}</style></noscript>
@@ -2597,7 +2638,7 @@ $ /mg-spec design payment-flow
     <!-- ══════════════════════════════════════════════════════
          SECTION 1b — VALUE PROPS (moved from hero)
     ══════════════════════════════════════════════════════ -->
-    <section id="value-props" style="padding-top: 40px; padding-bottom: 40px;">
+    <section id="value-props">
       <div class="section-inner">
         <ul style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 32px; max-width: 900px; margin: 0 auto; list-style: none; padding: 0;">
           <li class="hero-quality">
@@ -2628,7 +2669,7 @@ $ /mg-spec design payment-flow
     <!-- ══════════════════════════════════════════════════════
          SECTION 1c — THE PROBLEM
     ══════════════════════════════════════════════════════ -->
-    <section id="the-problem" style="padding-top: 48px; padding-bottom: 48px;">
+    <section id="the-problem">
       <div class="section-inner" style="max-width: 700px;">
         <p class="section-label">The gap</p>
         <h2 class="section-heading">Your team has AI tools.<br />They don't have process.</h2>
@@ -2726,6 +2767,11 @@ $ /mg-spec design payment-flow
           <div class="dir-node reveal reveal-up" data-role="more" style="--delay:240ms">
             <span class="role-abbr" style="font-size:0.75rem;color:var(--mg-subtext);">+N more</span>
           </div>
+        </div>
+
+        <!-- Director tier mobile summary (hidden on desktop, shown via mobile CSS) -->
+        <div class="dir-summary-mobile" aria-label="Director tier: EM, TL, PO, QAL and 1 more">
+          <span class="dir-summary-pill">EM · TL · PO · QAL · +1 more</span>
         </div>
 
         <!-- IC tier -->

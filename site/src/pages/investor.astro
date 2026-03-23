@@ -23,7 +23,9 @@ for (const [path, loader] of Object.entries(fundFiles)) {
   <div class="investor-root">
     <div class="container">
 
-      <!-- Gate: pre-verification state -->
+      <!-- =========================================================
+           GATE: pre-verification state
+      ========================================================= -->
       <section id="gate" class="gate-section">
         <p class="program-label">PrivateEnterprise</p>
         <h1 class="gate-heading">Investment Opportunity</h1>
@@ -46,133 +48,645 @@ for (const [path, loader] of Object.entries(fundFiles)) {
         <p class="gate-error" id="gate-error" aria-live="polite"></p>
       </section>
 
-      <!-- Deck content: shown after successful verification -->
+      <!-- =========================================================
+           DECK: shown after successful verification
+      ========================================================= -->
       <section id="deck" class="deck-section" aria-hidden="true">
 
-        <header class="deck-header">
-          <p class="program-label">PrivateEnterprise</p>
-          <h1 class="deck-heading" id="deck-headline">The AI engineering org your team is missing</h1>
-          <p class="deck-intro" id="deck-body">
-            Every engineering team has AI tools. Few have process. PrivateEnterprise gives your
-            portfolio companies a complete AI engineering organization — from intake to
-            merge — so their engineers ship faster with higher quality.
-          </p>
-        </header>
-
-        <!-- Personalized section (populated by JS if fund param present) -->
-        <div class="deck-block" id="fund-section" style="display: none;">
-          <h2 class="block-heading" id="fund-headline"></h2>
-          <p class="deck-text" id="fund-body"></p>
+        <!-- ── SLIDE 1: Cover ─────────────────────────────────── -->
+        <div class="slide slide-cover">
+          <p class="slide-label">Seed Round</p>
+          <h1 class="cover-headline">PrivateEnterprise</h1>
+          <p class="cover-sub">The AI Engineering Organization.</p>
+          <p class="cover-ask" id="cover-raise">$3M Seed &nbsp;|&nbsp; March 2026</p>
+          <p class="cover-fund" id="cover-fund" style="display:none;"></p>
         </div>
 
-        <div class="deck-block">
-          <h2 class="block-heading">The opportunity</h2>
-          <div class="opportunity-grid">
-            <div class="opp-card">
-              <span class="opp-value">$120B+</span>
-              <span class="opp-label">Developer tooling market (2025)</span>
+        <!-- ── SLIDE 2: The Problem ───────────────────────────── -->
+        <div class="slide slide-problem">
+          <p class="slide-label">The Problem</p>
+          <h2 class="slide-headline">AI copilots made developers faster.<br>They made teams slower.</h2>
+
+          <blockquote class="problem-quote">
+            <p class="quote-text">"I used to be a craftsman. Now I feel like a factory manager of Ikea."</p>
+            <cite class="quote-cite">Michael Parker, VP Engineering, TurinTech</cite>
+          </blockquote>
+
+          <div class="data-grid">
+            <div class="data-card bad">
+              <span class="data-value bad">41%</span>
+              <span class="data-label">more bugs with Copilot</span>
+              <span class="data-source">Uplevel — 800 devs, 2024</span>
             </div>
-            <div class="opp-card">
-              <span class="opp-value">0</span>
-              <span class="opp-label">Competitors with process-first AI engineering</span>
+            <div class="data-card bad">
+              <span class="data-value bad">44%</span>
+              <span class="data-label">increase in code churn</span>
+              <span class="data-source">GitClear — 211M lines, 2025</span>
             </div>
-            <div class="opp-card">
-              <span class="opp-value">24</span>
-              <span class="opp-label">Specialized agents — from CEO to Security</span>
+            <div class="data-card bad">
+              <span class="data-value bad">10x</span>
+              <span class="data-label">security vulnerabilities</span>
+              <span class="data-source">Apiiro — 62K repos, 2025</span>
+            </div>
+            <div class="data-card bad">
+              <span class="data-value bad">19%</span>
+              <span class="data-label">slower — despite feeling 20% faster</span>
+              <span class="data-source">METR — RCT study, 2025</span>
             </div>
           </div>
         </div>
 
-        <div class="deck-block">
-          <h2 class="block-heading">Unit economics</h2>
-          <div class="metrics-grid" id="metrics-grid">
-            <div class="metric-item">
-              <span class="metric-value">95%+</span>
-              <span class="metric-label">Gross margin</span>
+        <!-- ── SLIDE 3: The Cost ──────────────────────────────── -->
+        <div class="slide slide-cost">
+          <p class="slide-label">The Cost</p>
+          <h2 class="slide-headline">The cost of uncoordinated intelligence</h2>
+
+          <div class="big-numbers">
+            <div class="big-num-item">
+              <span class="big-num bad">73%</span>
+              <span class="big-num-label">of AI projects fail to reach production</span>
             </div>
-            <div class="metric-item">
-              <span class="metric-value">< 30 days</span>
-              <span class="metric-label">Payback period</span>
+            <div class="big-num-item">
+              <span class="big-num bad">$847K</span>
+              <span class="big-num-label">average cost per failed AI project</span>
             </div>
-            <div class="metric-item">
-              <span class="metric-value">~$5K</span>
-              <span class="metric-label">Monthly API cost</span>
+            <div class="big-num-item">
+              <span class="big-num bad">4.2x</span>
+              <span class="big-num-label">longer to debug AI-generated code</span>
             </div>
-            <div class="metric-item">
-              <span class="metric-value">10:1</span>
-              <span class="metric-label">ROI vs. process overhead</span>
+          </div>
+
+          <p class="slide-callout">The problem is not the AI. The problem is the org chart.</p>
+        </div>
+
+        <!-- ── SLIDE 4: The Insight / Solution ───────────────── -->
+        <div class="slide slide-solution">
+          <p class="slide-label">The Insight</p>
+          <h2 class="slide-headline">AI copilots help developers write code.<br>We replaced the org chart.</h2>
+
+          <div class="spectrum">
+            <div class="spectrum-item">
+              <span class="spectrum-label muted">Copilot</span>
+              <span class="spectrum-desc muted">Writes lines</span>
             </div>
-            <div class="metric-item">
-              <span class="metric-value">Zero infra</span>
-              <span class="metric-label">Customer-side implementation</span>
+            <div class="spectrum-arrow">&#8594;</div>
+            <div class="spectrum-item">
+              <span class="spectrum-label muted">AI Agent</span>
+              <span class="spectrum-desc muted">Runs tasks</span>
             </div>
-            <div class="metric-item">
-              <span class="metric-value">6x</span>
-              <span class="metric-label">Engineer velocity multiplier</span>
+            <div class="spectrum-arrow">&#8594;</div>
+            <div class="spectrum-item active">
+              <span class="spectrum-label">AI Eng Org</span>
+              <span class="spectrum-desc">Replaces the org chart</span>
+            </div>
+          </div>
+
+          <div class="org-chart">
+            <pre class="org-pre">
+              <span class="org-sage">[Sage]</span>  The meditating capybara. Orchestrates everything.
+                  |
+         +--------+--------+
+         |        |        |
+       <span class="org-c">[CEO]</span>  <span class="org-c">[CTO]</span>  <span class="org-c">[CFO]</span>   C-Suite: strategy, architecture, finance
+         |        |
+    +----+    +---+---+
+    |         |       |
+  <span class="org-d">[EM]</span>      <span class="org-d">[QA]</span>  <span class="org-d">[Sec]</span>   Directors: engineering, quality, security
+    |
+  <span class="org-ic">[Dev]</span> <span class="org-ic">[Des]</span> <span class="org-ic">[DevOps]</span>     ICs: build, design, ship
+            </pre>
+          </div>
+
+          <p class="slide-callout">24 agents. One org chart. Zero humans required to coordinate.</p>
+        </div>
+
+        <!-- ── SLIDE 5: The Product ───────────────────────────── -->
+        <div class="slide slide-product">
+          <p class="slide-label">The Product</p>
+          <h2 class="slide-headline">Terminal-native. Zero infrastructure.</h2>
+
+          <div class="terminal-window">
+            <div class="term-bar">
+              <span class="term-dot red"></span>
+              <span class="term-dot yellow"></span>
+              <span class="term-dot green"></span>
+              <span class="term-title">private-enterprise</span>
+            </div>
+            <pre class="term-body">$ /mg-build implement payment-flow
+
+<span class="t-sage">[Sage]</span>  Classifying workstream...
+<span class="t-cto">[CTO]</span>   Architecture review — 3 components affected
+<span class="t-em">[EM]</span>    Classifying... ARCHITECTURAL              0.4s
+<span class="t-qa">[QA]</span>    Writing test spec — 8 acceptance criteria  6.2s
+<span class="t-dev">[Dev]</span>   Implementing against spec                 21.1s
+<span class="t-gate">[GATE]</span>  Coverage 99.4% ✓  Lines 142 ✓             0.3s
+<span class="t-sec">[Sec]</span>   Scanning for vulnerabilities...  <span class="t-ok">PASS</span>
+<span class="t-em">[EM]</span>    Done                                      27.7s
+
+<span class="t-ok">PR ready for review. All gates passing.</span></pre>
+          </div>
+
+          <div class="product-callouts">
+            <div class="pcallout">
+              <span class="pcallout-val">$5K/mo</span>
+              <span class="pcallout-label">API cost for a 24-agent team</span>
+            </div>
+            <div class="pcallout">
+              <span class="pcallout-val">Zero</span>
+              <span class="pcallout-label">servers to run or maintain</span>
+            </div>
+            <div class="pcallout">
+              <span class="pcallout-val">~95%</span>
+              <span class="pcallout-label">gross margin at scale</span>
             </div>
           </div>
         </div>
 
-        <div class="deck-block">
-          <h2 class="block-heading">How it works</h2>
-          <ol class="how-list">
-            <li>
-              <span class="how-num">1</span>
-              <div>
-                <strong>Intake.</strong> Every task starts with scope assessment — the Sage reads the work and assembles the right team.
+        <!-- ── SLIDE 6: The Moat ──────────────────────────────── -->
+        <div class="slide slide-moat">
+          <p class="slide-label">The Moat</p>
+          <h2 class="slide-headline">Better constitutions beat better models.</h2>
+
+          <div class="benchmark-block">
+            <div class="bench-row">
+              <span class="bench-label muted">Config A — weak constitution + Opus 4</span>
+              <div class="bench-bar-wrap">
+                <div class="bench-bar" style="width:95.7%;"></div>
               </div>
-            </li>
-            <li>
-              <span class="how-num">2</span>
-              <div>
-                <strong>Build.</strong> Tests are written before code. QA specs come before implementation. Security audits before shipping.
+              <span class="bench-score muted">0.957</span>
+            </div>
+            <div class="bench-row">
+              <span class="bench-label highlight">Config C — strong constitution + Sonnet 4.5</span>
+              <div class="bench-bar-wrap">
+                <div class="bench-bar highlight" style="width:100%;"></div>
               </div>
-            </li>
-            <li>
-              <span class="how-num">3</span>
-              <div>
-                <strong>Review.</strong> Leadership reviews every deliverable against spec. Problems are caught before they spread.
+              <span class="bench-score highlight">1.000</span>
+            </div>
+            <p class="bench-note">The cheaper model with a stronger constitution wins every time.</p>
+          </div>
+
+          <details class="bench-methodology">
+            <summary class="bench-methodology-toggle">How we benchmark — methodology</summary>
+            <div class="bench-methodology-content">
+              <p class="bench-methodology-intro">
+                No industry benchmark exists for multi-agent AI coordination — SWE-bench tests single-agent code generation,
+                HumanEval tests completion. Neither measures organizational intelligence. We defined this benchmark because
+                nobody else is measuring what matters: does the system coordinate reliably?
+              </p>
+
+              <div class="bench-tasks">
+                <p class="bench-section-label">5 weighted tasks</p>
+                <div class="bench-task-grid">
+                  <div class="bench-task-item">
+                    <span class="bench-task-weight">0.30</span>
+                    <span class="bench-task-name">Decision Quality</span>
+                    <span class="bench-task-desc">Do agents produce specific, differentiated, actionable assessments? Scored on specificity, differentiation, and actionability (1-5 each) + swap test.</span>
+                  </div>
+                  <div class="bench-task-item">
+                    <span class="bench-task-weight">0.25</span>
+                    <span class="bench-task-name">Research Depth</span>
+                    <span class="bench-task-desc">Does the Sage map the problem space before researching? 4 binary gates: problem mapping, shallow detection, specialist spawning, ceiling recognition.</span>
+                  </div>
+                  <div class="bench-task-item">
+                    <span class="bench-task-weight">0.20</span>
+                    <span class="bench-task-name">Drift Detection</span>
+                    <span class="bench-task-desc">Given a deliberately flawed scenario (skipped gate, false approval), does the Sage catch it, name the violations, and propose recovery?</span>
+                  </div>
+                  <div class="bench-task-item">
+                    <span class="bench-task-weight">0.15</span>
+                    <span class="bench-task-name">Intake Routing</span>
+                    <span class="bench-task-desc">Does the Sage correctly identify which C-Suite roles a task requires? 3 prompts with known-correct routing, binary correct/incorrect.</span>
+                  </div>
+                  <div class="bench-task-item">
+                    <span class="bench-task-weight">0.10</span>
+                    <span class="bench-task-name">Session Management</span>
+                    <span class="bench-task-desc">Does the Sage break multi-session work at dependency boundaries? Scored on break points, snapshot quality, and cold-start priming.</span>
+                  </div>
+                </div>
               </div>
-            </li>
-            <li>
-              <span class="how-num">4</span>
-              <div>
-                <strong>Ship.</strong> Approved code merges automatically. The pipeline runs 24/7 without human bottlenecks.
+
+              <div class="bench-configs">
+                <p class="bench-section-label">4 configurations tested</p>
+                <div class="bench-config-table">
+                  <div class="bench-config-row header">
+                    <span>Config</span>
+                    <span>Setup</span>
+                    <span>Score</span>
+                    <span>Cost</span>
+                  </div>
+                  <div class="bench-config-row">
+                    <span>A</span>
+                    <span>Weak constitutions + Opus 4</span>
+                    <span class="muted">0.957</span>
+                    <span>~100%</span>
+                  </div>
+                  <div class="bench-config-row">
+                    <span>B</span>
+                    <span>Strong constitutions + Opus 4</span>
+                    <span>1.000</span>
+                    <span>100%</span>
+                  </div>
+                  <div class="bench-config-row highlight-row">
+                    <span>C</span>
+                    <span>Strong constitutions + tiered (Opus/Sonnet)</span>
+                    <span class="highlight">1.000</span>
+                    <span class="highlight">~60%</span>
+                  </div>
+                  <div class="bench-config-row">
+                    <span>D</span>
+                    <span>Strong constitutions + Sonnet only</span>
+                    <span class="muted">0.957</span>
+                    <span>~40%</span>
+                  </div>
+                </div>
               </div>
-            </li>
-          </ol>
+
+              <div class="bench-insight">
+                <p class="bench-insight-text">
+                  <strong>Key finding:</strong> Config A (weak prompts, best model) = Config D (strong prompts, cheaper model) = 0.957.
+                  Constitution quality and model quality are interchangeable investments. We invest in constitutions — that's
+                  the moat. Full methodology available on request.
+                </p>
+              </div>
+            </div>
+          </details>
+
+          <div class="moat-layers">
+            <div class="moat-layer">
+              <span class="moat-tier">Layer 1</span>
+              <span class="moat-name">Community (OSS)</span>
+              <span class="moat-desc">Open-source distribution builds trust and top-of-funnel adoption</span>
+            </div>
+            <div class="moat-layer">
+              <span class="moat-tier highlight">Layer 2</span>
+              <span class="moat-name highlight">Enterprise Sage</span>
+              <span class="moat-desc">Proprietary orchestration layer — the constitution that makes 1.000 possible</span>
+            </div>
+            <div class="moat-layer">
+              <span class="moat-tier">Layer 3</span>
+              <span class="moat-name">Constitution R&amp;D Flywheel</span>
+              <span class="moat-desc">Every pilot improves the constitution. The moat compounds.</span>
+            </div>
+          </div>
         </div>
 
-        <div class="deck-block">
-          <h2 class="block-heading">Traction</h2>
-          <ul class="traction-list">
-            <li>2 pilot partners onboarded (60-day free pilots)</li>
-            <li>Open-source framework with community adoption</li>
-            <li>Enterprise tier with Sage orchestration (proprietary)</li>
-            <li>Founding Partner pricing: 80% off list, locked forever</li>
-          </ul>
+        <!-- ── SLIDE 7: The Market ────────────────────────────── -->
+        <div class="slide slide-market">
+          <p class="slide-label">The Market</p>
+          <h2 class="slide-headline">$800B in dev spend. The coordination layer doesn't exist yet.</h2>
+
+          <div class="tam-block">
+            <div class="tam-ring tam-3">
+              <span class="tam-label">TAM</span>
+              <span class="tam-val">$800B</span>
+              <span class="tam-sub">Global dev spend</span>
+              <div class="tam-ring tam-2">
+                <span class="tam-label">SAM</span>
+                <span class="tam-val">$120B</span>
+                <span class="tam-sub">Dev tooling market</span>
+                <div class="tam-ring tam-1">
+                  <span class="tam-label">SOM</span>
+                  <span class="tam-val">$4.2B</span>
+                  <span class="tam-sub">AI eng orgs 2026</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="comp-table">
+            <div class="comp-header">
+              <span>Tool</span>
+              <span>Writes code</span>
+              <span>Org structure</span>
+              <span>Process gates</span>
+              <span>Valuation</span>
+            </div>
+            <div class="comp-row muted">
+              <span>Copilot / Cursor</span>
+              <span class="t-ok">Yes</span>
+              <span class="bad-x">No</span>
+              <span class="bad-x">No</span>
+              <span class="muted">$400M+</span>
+            </div>
+            <div class="comp-row muted">
+              <span>Devin / Factory</span>
+              <span class="t-ok">Yes</span>
+              <span class="bad-x">No</span>
+              <span class="bad-x">No</span>
+              <span class="muted">$2B</span>
+            </div>
+            <div class="comp-row highlight-row">
+              <span class="highlight">PrivateEnterprise</span>
+              <span class="t-ok">Yes</span>
+              <span class="t-ok">Yes (24)</span>
+              <span class="t-ok">Enforced</span>
+              <span class="highlight">$9M pre</span>
+            </div>
+          </div>
         </div>
 
-        <div class="deck-block">
-          <h2 class="block-heading">The team</h2>
-          <p class="deck-text">
-            Solo technical founder. Built the entire framework, 24 agents, autonomous daemon
-            pipeline, and marketing site. Shipping multiple releases per day.
-          </p>
+        <!-- ── SLIDE 8: Business Model ────────────────────────── -->
+        <div class="slide slide-biz">
+          <p class="slide-label">Business Model</p>
+          <h2 class="slide-headline">Open-source distribution. Enterprise monetization. No server bill.</h2>
+
+          <div class="tier-cards">
+            <div class="tier-card">
+              <span class="tier-name">Community</span>
+              <span class="tier-price">Free</span>
+              <ul class="tier-features">
+                <li>Open-source framework</li>
+                <li>20 base agents</li>
+                <li>Community support</li>
+              </ul>
+            </div>
+            <div class="tier-card highlight-card">
+              <span class="tier-badge">Primary revenue</span>
+              <span class="tier-name">Enterprise</span>
+              <span class="tier-price">$10,000<span class="tier-period">/mo</span></span>
+              <ul class="tier-features">
+                <li>Sage orchestration (proprietary)</li>
+                <li>24 agents + custom roles</li>
+                <li>Priority support + onboarding</li>
+              </ul>
+            </div>
+            <div class="tier-card">
+              <span class="tier-name">Strategic</span>
+              <span class="tier-price">$18,000<span class="tier-period">/mo</span></span>
+              <ul class="tier-features">
+                <li>Custom constitution R&amp;D</li>
+                <li>Dedicated success team</li>
+                <li>SLA + compliance</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="unit-econ">
+            <div class="ue-item">
+              <span class="ue-val">$1,200</span>
+              <span class="ue-label">CAC</span>
+            </div>
+            <div class="ue-item">
+              <span class="ue-val">$240K</span>
+              <span class="ue-label">LTV (Enterprise, 24mo)</span>
+            </div>
+            <div class="ue-item highlight">
+              <span class="ue-val">16x</span>
+              <span class="ue-label">LTV:CAC ratio</span>
+            </div>
+            <div class="ue-item highlight">
+              <span class="ue-val">~95%</span>
+              <span class="ue-label">Gross margin</span>
+            </div>
+          </div>
+
+          <!-- Fund thesis alignment — shown if fund param present -->
+          <div class="fund-thesis" id="fund-thesis" style="display:none;">
+            <p class="slide-label">Thesis alignment</p>
+            <p class="fund-thesis-body" id="fund-thesis-body"></p>
+          </div>
         </div>
 
-        <div class="deck-block cta-block">
-          <h2 class="block-heading">Next step</h2>
-          <form class="investor-cta-form" id="investor-cta-form" action="https://formspree.io/f/xpqygjre" method="POST">
-            <input type="text" name="name" placeholder="Name" required class="email-input" autocomplete="name" style="margin-bottom:0.5rem;" />
-            <input type="email" name="email" placeholder="Email" required class="email-input" autocomplete="email" style="margin-bottom:0.5rem;" />
-            <input type="text" name="fund" placeholder="Fund / firm (optional)" class="email-input" style="margin-bottom:0.75rem;" />
-            <input type="hidden" name="role" value="investor" />
-            <input type="hidden" name="source" value="investor-page" />
-            <input type="text" name="_gotcha" style="display:none" />
-            <button type="submit" class="cta-link" id="investor-submit" style="border:none;cursor:pointer;">Schedule a conversation</button>
-          </form>
-          <p class="investor-success" id="investor-success" style="display:none;color:var(--mg-cilantro);font-family:var(--font-mono);font-size:0.875rem;margin-top:0.75rem;">Thanks! We'll reach out to schedule a call.</p>
+        <!-- ── SLIDE 9: Financial Model ───────────────────────── -->
+        <div class="slide slide-financials">
+          <p class="slide-label">Financial Model</p>
+          <h2 class="slide-headline">Cash-flow positive at Month 5.</h2>
+
+          <div class="fin-table">
+            <div class="fin-header">
+              <span></span>
+              <span>Y1</span>
+              <span>Y2</span>
+              <span>Y3</span>
+            </div>
+            <div class="fin-row">
+              <span class="fin-scenario muted">Base ARR</span>
+              <span id="fin-y1-base">$1.2M</span>
+              <span id="fin-y2-base">$3.6M</span>
+              <span id="fin-y3-base">$7.2M</span>
+            </div>
+            <div class="fin-row highlight-row">
+              <span class="fin-scenario highlight">Expected ARR</span>
+              <span id="fin-y1-expected">$2.4M</span>
+              <span id="fin-y2-expected">$7.2M</span>
+              <span id="fin-y3-expected">$12M+</span>
+            </div>
+          </div>
+
+          <div class="fin-callouts">
+            <div class="fin-callout highlight">
+              <span class="fin-callout-val" id="fin-cashflow">Month 5</span>
+              <span class="fin-callout-label">Cash-flow positive</span>
+            </div>
+            <div class="fin-callout">
+              <span class="fin-callout-val" id="fin-min-cash">$2.9M</span>
+              <span class="fin-callout-label">Minimum cash position (M12)</span>
+            </div>
+            <div class="fin-callout highlight">
+              <span class="fin-callout-val" id="fin-series-a">Optional</span>
+              <span class="fin-callout-label">The Series A</span>
+            </div>
+          </div>
+
+          <p class="slide-callout">$35K/month burn. 85+ months of runway on the raise.</p>
+        </div>
+
+        <!-- ── SLIDE 10: Traction ─────────────────────────────── -->
+        <div class="slide slide-traction">
+          <p class="slide-label">Traction</p>
+          <h2 class="slide-headline">Two pilots live. Sage scores 1.000.</h2>
+
+          <div class="traction-cols">
+            <div class="traction-col">
+              <span class="traction-col-title">Product</span>
+              <ul class="traction-list">
+                <li>v4.2 shipped — 24 agents</li>
+                <li>Autonomous daemon pipeline</li>
+                <li>Agent message bus live</li>
+                <li>Multiple releases per day</li>
+              </ul>
+            </div>
+            <div class="traction-col">
+              <span class="traction-col-title">Benchmarks</span>
+              <ul class="traction-list">
+                <li>Sage score: 1.000 / 1.000</li>
+                <li>Previous config: 0.957</li>
+                <li>4.5% improvement in 1 sprint</li>
+                <li>Model-agnostic results</li>
+              </ul>
+            </div>
+            <div class="traction-col">
+              <span class="traction-col-title">Pilots</span>
+              <ul class="traction-list">
+                <li>2 startup clients onboarded</li>
+                <li>60-day structured pilots</li>
+                <li>Founding Partner pricing locked</li>
+                <li>Conversion discussions begun</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="timeline">
+            <div class="tl-item">
+              <span class="tl-dot"></span>
+              <span class="tl-label">v3.0</span>
+              <span class="tl-desc">First multi-agent framework</span>
+            </div>
+            <div class="tl-line"></div>
+            <div class="tl-item">
+              <span class="tl-dot"></span>
+              <span class="tl-label">v4.0</span>
+              <span class="tl-desc">Base templates + 2-track cycle</span>
+            </div>
+            <div class="tl-line"></div>
+            <div class="tl-item">
+              <span class="tl-dot"></span>
+              <span class="tl-label">v4.2</span>
+              <span class="tl-desc">Agent message bus + Sage</span>
+            </div>
+            <div class="tl-line"></div>
+            <div class="tl-item">
+              <span class="tl-dot active"></span>
+              <span class="tl-label active">Pilots</span>
+              <span class="tl-desc">2 clients, scoring 1.000</span>
+            </div>
+            <div class="tl-line"></div>
+            <div class="tl-item">
+              <span class="tl-dot future"></span>
+              <span class="tl-label future">Raise</span>
+              <span class="tl-desc">March 2026</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── SLIDE 11: Returns ──────────────────────────────── -->
+        <div class="slide slide-returns">
+          <p class="slide-label">Returns</p>
+          <h2 class="slide-headline" id="returns-headline">$3M at $9M pre. Base case: 15x.</h2>
+
+          <div class="returns-table">
+            <div class="ret-header">
+              <span>Scenario</span>
+              <span>Exit ARR</span>
+              <span>Multiple</span>
+              <span>Return</span>
+            </div>
+            <div class="ret-row">
+              <span class="ret-scenario muted">Base</span>
+              <span id="ret-base-arr">$15M ARR</span>
+              <span id="ret-base-mult">6x ARR</span>
+              <span class="ret-val" id="ret-base-return">15x &mdash; $45M</span>
+            </div>
+            <div class="ret-row highlight-row">
+              <span class="ret-scenario highlight">Expected</span>
+              <span id="ret-exp-arr">$20M ARR</span>
+              <span id="ret-exp-mult">8x ARR</span>
+              <span class="ret-val" id="ret-exp-return">16x &mdash; $48M</span>
+            </div>
+            <div class="ret-row">
+              <span class="ret-scenario">Upside</span>
+              <span id="ret-upside-arr">$100M ARR</span>
+              <span id="ret-upside-mult">15x ARR</span>
+              <span class="ret-val" id="ret-upside-return">48–66x</span>
+            </div>
+          </div>
+
+          <div class="ev-callout">
+            <span class="ev-label">Probability-weighted EV</span>
+            <span class="ev-val" id="ev-val">21.5x</span>
+          </div>
+
+          <p class="slide-callout">"Devin raised at $2B. Cursor at $400M. You're buying at $9M."</p>
+        </div>
+
+        <!-- ── SLIDE 12: Team ─────────────────────────────────── -->
+        <div class="slide slide-team">
+          <p class="slide-label">Team</p>
+          <h2 class="slide-headline">Founding Team</h2>
+
+          <div class="founder-block">
+            <p class="founder-bio">
+              Solo technical founder. Built the entire framework — 24 agents, autonomous daemon
+              pipeline, agent message bus, marketing site, and enterprise tier — shipping multiple
+              releases per day. Current burn: $35K/month.
+            </p>
+          </div>
+
+          <div class="hire-plan">
+            <p class="slide-label" style="margin-bottom:1rem;">Execution plan</p>
+            <div class="hire-timeline">
+              <div class="hire-item">
+                <span class="hire-when">Month 1</span>
+                <span class="hire-role">Dev team + Sales</span>
+              </div>
+              <div class="hire-arrow">&#8594;</div>
+              <div class="hire-item">
+                <span class="hire-when">Month 2</span>
+                <span class="hire-role">Signing customers</span>
+              </div>
+              <div class="hire-arrow">&#8594;</div>
+              <div class="hire-item">
+                <span class="hire-when">Month 3</span>
+                <span class="hire-role">Integration + feedback</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── SLIDE 13: The Ask ───────────────────────────────── -->
+        <div class="slide slide-ask">
+          <p class="slide-label">The Ask</p>
+          <h2 class="slide-headline" id="ask-headline">$3M to own the AI org layer.</h2>
+
+          <div class="ask-grid">
+            <div class="ask-card highlight-card">
+              <span class="ask-card-label">Round</span>
+              <span class="ask-card-val" id="ask-raise-line">$3M Seed  |  $9M Pre-Money</span>
+            </div>
+            <div class="ask-card">
+              <span class="ask-card-label">Y1 use</span>
+              <span class="ask-card-val">Team + pilots</span>
+              <span class="ask-card-sub">Hire, close 10 enterprise clients</span>
+            </div>
+            <div class="ask-card">
+              <span class="ask-card-label">Y2 use</span>
+              <span class="ask-card-val">Scale + moat</span>
+              <span class="ask-card-sub">Constitution R&amp;D, community growth</span>
+            </div>
+          </div>
+
+          <div class="ask-path">
+            <div class="path-item">
+              <span class="path-label">Cash-flow positive</span>
+              <span class="path-val">Month 5</span>
+            </div>
+            <div class="path-item">
+              <span class="path-label">Cash at M12</span>
+              <span class="path-val">$2.9M+</span>
+            </div>
+            <div class="path-item">
+              <span class="path-label">Path to Series A</span>
+              <span class="path-val">Optional</span>
+            </div>
+          </div>
+
+          <p class="ask-cta-line">The most capital-efficient AI seed deal in the market.</p>
+
+          <!-- Personalized closing line (shown if fund param present) -->
+          <p class="ask-fund-line" id="ask-fund-line" style="display:none;"></p>
+
+          <div class="cta-block">
+            <form class="investor-cta-form" id="investor-cta-form" action="https://formspree.io/f/xpqygjre" method="POST">
+              <input type="text" name="name" placeholder="Name" required class="email-input" autocomplete="name" style="margin-bottom:0.5rem;" />
+              <input type="email" name="email" placeholder="Email" required class="email-input" autocomplete="email" style="margin-bottom:0.5rem;" />
+              <input type="text" name="fund" placeholder="Fund / firm (optional)" class="email-input" style="margin-bottom:0.75rem;" />
+              <input type="hidden" name="role" value="investor" />
+              <input type="hidden" name="source" value="investor-page" />
+              <input type="text" name="_gotcha" style="display:none" />
+              <button type="submit" class="cta-btn" id="investor-submit">Schedule a conversation</button>
+            </form>
+            <p class="investor-success" id="investor-success" style="display:none;">Thanks! We'll reach out to schedule a call.</p>
+          </div>
         </div>
 
       </section>
@@ -187,8 +701,16 @@ for (const [path, loader] of Object.entries(fundFiles)) {
    * Same pattern as /pilot. Client-side gating for casual access control.
    */
 
-  const ACCESS_CODE = 'invest2026';
+  const FALLBACK_CODE = 'invest2026';
   const funds = JSON.parse(fundMap);
+
+  // Build a code → fund slug lookup from all fund profiles
+  const codeLookup = {};
+  for (const [slug, fund] of Object.entries(funds)) {
+    if (fund.access_code) {
+      codeLookup[fund.access_code.toLowerCase()] = slug;
+    }
+  }
 
   const form = document.getElementById('verify-form');
   const input = document.getElementById('code-input');
@@ -196,14 +718,28 @@ for (const [path, loader] of Object.entries(fundFiles)) {
   const gate = document.getElementById('gate');
   const deck = document.getElementById('deck');
 
+  let matchedFundSlug = null;
+
   form.addEventListener('submit', () => {
     const code = input.value.trim().toLowerCase();
 
-    if (code === ACCESS_CODE) {
+    // Check per-fund codes first, then fallback
+    if (codeLookup[code]) {
+      matchedFundSlug = codeLookup[code];
       gate.style.display = 'none';
       deck.removeAttribute('aria-hidden');
       deck.classList.add('fade-in');
-      loadFundProfile();
+      loadFundProfile(matchedFundSlug);
+      window.plausible?.('Investor Unlock', { props: { fund: matchedFundSlug } });
+    } else if (code === FALLBACK_CODE) {
+      gate.style.display = 'none';
+      deck.removeAttribute('aria-hidden');
+      deck.classList.add('fade-in');
+      // Check URL param as before
+      const params = new URLSearchParams(window.location.search);
+      const fundParam = params.get('fund');
+      if (fundParam) loadFundProfile(fundParam);
+      window.plausible?.('Investor Unlock', { props: { fund: 'general' } });
     } else {
       errorEl.textContent = 'Invalid access code. Check your invite.';
       input.focus();
@@ -214,50 +750,104 @@ for (const [path, loader] of Object.entries(fundFiles)) {
     errorEl.textContent = '';
   });
 
-  function loadFundProfile() {
-    const params = new URLSearchParams(window.location.search);
-    const fundSlug = params.get('fund');
-    if (!fundSlug || !funds[fundSlug]) return;
+  function loadFundProfile(slug) {
+    if (!slug || !funds[slug]) return;
 
-    const fund = funds[fundSlug];
+    const fund = funds[slug];
     if (!fund.fund_name) return;
 
-    // Update headline if fund has a custom one
-    if (fund.headline) {
-      document.getElementById('deck-headline').textContent = fund.headline;
+    // Helper: safe textContent update
+    function setText(id, text) {
+      const el = document.getElementById(id);
+      if (el && text) el.textContent = text;
     }
+    function show(id) {
+      const el = document.getElementById(id);
+      if (el) el.style.display = 'block';
+    }
+
+    // ── Cover slide: "Prepared for [Fund Name]" ──
+    setText('cover-fund', `Prepared for ${fund.fund_name}`);
+    show('cover-fund');
+
+    // ── Cover slide: raise amount ──
+    if (fund.raise) {
+      setText('cover-raise', `${fund.raise.amount} Seed  |  March 2026`);
+    }
+
+    // ── Business model slide: fund thesis alignment ──
     if (fund.body) {
-      document.getElementById('deck-body').textContent = fund.body;
+      const fundThesis = document.getElementById('fund-thesis');
+      const fundThesisBody = document.getElementById('fund-thesis-body');
+      if (fundThesis && fundThesisBody) {
+        fundThesisBody.textContent = fund.body;
+        fundThesis.style.display = 'block';
+      }
     }
 
-    // Show personalized section
-    const fundSection = document.getElementById('fund-section');
-    const fundHeadline = document.getElementById('fund-headline');
-    const fundBody = document.getElementById('fund-body');
-
+    // ── The Ask slide ──
+    if (fund.raise) {
+      setText('ask-headline', `${fund.raise.amount} to own the AI org layer.`);
+      setText('ask-raise-line', `${fund.raise.amount} Seed  |  ${fund.raise.pre_money} Pre-Money`);
+    }
     if (fund.fund_name) {
-      fundSection.style.display = 'block';
-      fundHeadline.textContent = `How PrivateEnterprise fits ${fund.fund_name}'s portfolio`;
-      fundBody.textContent = fund.body || '';
+      const askFundLine = document.getElementById('ask-fund-line');
+      if (askFundLine) {
+        askFundLine.textContent = `We'd be proud to build this with ${fund.fund_name}.`;
+        askFundLine.style.display = 'block';
+      }
     }
 
-    // Update metrics if provided — use textContent to avoid XSS from YAML data
+    // ── Financial model slide ──
+    if (fund.financials) {
+      const f = fund.financials;
+      setText('fin-y1-base', f.y1_base_arr);
+      setText('fin-y2-base', f.y2_base_arr);
+      setText('fin-y3-base', f.y3_base_arr);
+      setText('fin-y1-expected', f.y1_expected_arr);
+      setText('fin-y2-expected', f.y2_expected_arr);
+      setText('fin-y3-expected', f.y3_expected_arr);
+      setText('fin-cashflow', f.cashflow_positive);
+      setText('fin-min-cash', f.min_cash);
+      setText('fin-series-a', f.series_a);
+    }
+
+    // ── Returns slide ──
+    if (fund.returns) {
+      const r = fund.returns;
+      setText('ret-base-arr', r.base_exit_arr);
+      setText('ret-base-mult', r.base_multiple);
+      setText('ret-base-return', `${r.base_return} — ${r.base_return_dollar}`);
+      setText('ret-exp-arr', r.expected_exit_arr);
+      setText('ret-exp-mult', r.expected_multiple);
+      setText('ret-exp-return', `${r.expected_return} — ${r.expected_return_dollar}`);
+      setText('ret-upside-arr', r.upside_exit_arr);
+      setText('ret-upside-mult', r.upside_multiple);
+      setText('ret-upside-return', r.upside_return);
+      setText('ev-val', r.ev_weighted);
+      // Update returns headline
+      setText('returns-headline', `${fund.raise.amount} at ${fund.raise.pre_money} pre. Base case: ${r.base_return}.`);
+    }
+
+    // ── Update metrics grid ──
     if (fund.metrics) {
       const grid = document.getElementById('metrics-grid');
-      grid.replaceChildren();
-      fund.metrics.forEach((m) => {
-        const item = document.createElement('div');
-        item.className = 'metric-item';
-        const val = document.createElement('span');
-        val.className = 'metric-value';
-        val.textContent = m.value;
-        const label = document.createElement('span');
-        label.className = 'metric-label';
-        label.textContent = m.label;
-        item.appendChild(val);
-        item.appendChild(label);
-        grid.appendChild(item);
-      });
+      if (grid) {
+        grid.replaceChildren();
+        fund.metrics.forEach((m) => {
+          const item = document.createElement('div');
+          item.className = 'metric-item';
+          const val = document.createElement('span');
+          val.className = 'metric-value';
+          val.textContent = m.value;
+          const label = document.createElement('span');
+          label.className = 'metric-label';
+          label.textContent = m.label;
+          item.appendChild(val);
+          item.appendChild(label);
+          grid.appendChild(item);
+        });
+      }
     }
   }
 
@@ -293,21 +883,25 @@ for (const [path, loader] of Object.entries(fundFiles)) {
 </script>
 
 <style>
+  /* ================================================================
+     ROOT / LAYOUT
+  ================================================================ */
+
   .investor-root {
     min-height: 100vh;
     background-color: var(--mg-dark);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 4rem 1.5rem;
+    padding: 2rem 1.5rem 6rem;
   }
 
   .container {
     width: 100%;
     max-width: 720px;
+    margin: 0 auto;
   }
 
-  /* ---- Gate ---- */
+  /* ================================================================
+     GATE
+  ================================================================ */
 
   .gate-section {
     display: flex;
@@ -315,14 +909,8 @@ for (const [path, loader] of Object.entries(fundFiles)) {
     align-items: center;
     text-align: center;
     gap: 1.25rem;
-  }
-
-  .program-label {
-    font-family: var(--font-mono);
-    font-size: 0.75rem;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    color: var(--mg-cilantro);
+    min-height: 100vh;
+    justify-content: center;
   }
 
   .gate-heading {
@@ -346,8 +934,32 @@ for (const [path, loader] of Object.entries(fundFiles)) {
     margin-top: 0.5rem;
   }
 
+  .gate-error {
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+    color: var(--mg-chili);
+    min-height: 1.2em;
+  }
+
+  /* ================================================================
+     SHARED INPUT / BUTTON / LABEL PRIMITIVES
+  ================================================================ */
+
+  .program-label,
+  .slide-label {
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--mg-cilantro);
+    margin-bottom: 0.75rem;
+    display: block;
+  }
+
   .email-input {
     flex: 1;
+    width: 100%;
     padding: 0.65rem 1rem;
     background: var(--mg-surface);
     border: 1px solid #2E3F52;
@@ -386,14 +998,32 @@ for (const [path, loader] of Object.entries(fundFiles)) {
     opacity: 0.88;
   }
 
-  .gate-error {
-    font-family: var(--font-mono);
-    font-size: 0.8rem;
-    color: var(--mg-chili);
-    min-height: 1.2em;
+  .cta-btn {
+    display: inline-block;
+    padding: 0.75rem 1.5rem;
+    background: var(--mg-cilantro);
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    font-family: var(--font-display);
+    font-size: 0.9375rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: opacity 0.15s ease;
   }
 
-  /* ---- Deck ---- */
+  .cta-btn:hover {
+    opacity: 0.88;
+  }
+
+  .cta-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  /* ================================================================
+     DECK (outer wrapper)
+  ================================================================ */
 
   .deck-section {
     display: none;
@@ -412,150 +1042,999 @@ for (const [path, loader] of Object.entries(fundFiles)) {
     to   { opacity: 1; transform: translateY(0); }
   }
 
-  .deck-header {
-    margin-bottom: 3rem;
+  /* ================================================================
+     SLIDE PRIMITIVES
+  ================================================================ */
+
+  .slide {
     display: flex;
     flex-direction: column;
-    gap: 0.75rem;
+    justify-content: flex-start;
+    padding: 4.5rem 0 5rem;
+    border-bottom: 1px solid #1E2A38;
   }
 
-  .deck-heading {
+  .slide:last-child {
+    border-bottom: none;
+  }
+
+  .slide-headline {
     font-family: var(--font-display);
-    font-size: clamp(2rem, 5vw, 3rem);
+    font-size: clamp(1.5rem, 3.5vw, 2.25rem);
     font-weight: 800;
     color: var(--mg-text);
-    line-height: 1.1;
+    line-height: 1.2;
+    margin-bottom: 2rem;
   }
 
-  .deck-intro {
-    font-size: 1.0625rem;
-    color: var(--mg-subtext);
-    line-height: 1.65;
-    max-width: 580px;
-  }
-
-  /* ---- Blocks ---- */
-
-  .deck-block {
-    border-top: 1px solid #1E2A38;
-    padding-top: 2rem;
-    margin-bottom: 2.5rem;
-  }
-
-  .block-heading {
-    font-family: var(--font-display);
-    font-size: 0.6875rem;
-    font-weight: 700;
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-    color: var(--mg-cilantro);
-    margin-bottom: 1.25rem;
-  }
-
-  .deck-text {
+  .slide-callout {
+    font-family: var(--font-mono);
     font-size: 0.9375rem;
-    color: var(--mg-text);
-    line-height: 1.65;
+    color: var(--mg-subtext);
+    margin-top: 2rem;
+    padding: 1rem 1.25rem;
+    border-left: 2px solid var(--mg-cilantro);
+    background: rgba(46, 139, 139, 0.06);
+    border-radius: 0 4px 4px 0;
   }
 
-  /* Opportunity grid */
-  .opportunity-grid {
+  .slide-cost .slide-callout {
+    margin-top: 1.25rem;
+  }
+
+  /* Color helpers */
+  .bad   { color: #E8715F; }
+  .muted { color: var(--mg-subtext); }
+  .highlight { color: #D4A84B; }
+  .t-ok  { color: #4A9B6F; }
+
+  /* ================================================================
+     SLIDE 1: COVER
+  ================================================================ */
+
+  .slide-cover {
+    align-items: flex-start;
+    justify-content: flex-end;
+    padding-bottom: 5rem;
+  }
+
+  .slide-ask {
+    padding-top: 5.5rem;
+  }
+
+  .cover-headline {
+    font-family: var(--font-display);
+    font-size: clamp(3rem, 8vw, 5.5rem);
+    font-weight: 900;
+    color: var(--mg-text);
+    line-height: 1.0;
+    margin-bottom: 0.5rem;
+    letter-spacing: -0.02em;
+  }
+
+  .cover-sub {
+    font-family: var(--font-display);
+    font-size: clamp(1.125rem, 2.5vw, 1.5rem);
+    color: var(--mg-subtext);
+    font-weight: 400;
+    margin-bottom: 1.5rem;
+  }
+
+  .cover-ask {
+    font-family: var(--font-mono);
+    font-size: 0.9375rem;
+    color: #D4A84B;
+    letter-spacing: 0.05em;
+    margin-bottom: 0.75rem;
+  }
+
+  .cover-fund {
+    font-family: var(--font-mono);
+    font-size: 0.8125rem;
+    color: var(--mg-cilantro);
+    letter-spacing: 0.08em;
+  }
+
+  /* ================================================================
+     SLIDE 2: PROBLEM
+  ================================================================ */
+
+  .problem-quote {
+    background: var(--mg-surface);
+    border-left: 3px solid #E8715F;
+    border-radius: 0 6px 6px 0;
+    padding: 1.25rem 1.5rem;
+    margin-bottom: 2rem;
+  }
+
+  .quote-text {
+    font-family: var(--font-display);
+    font-size: 1.0625rem;
+    font-style: italic;
+    color: var(--mg-text);
+    line-height: 1.6;
+    margin-bottom: 0.5rem;
+  }
+
+  .quote-cite {
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    color: var(--mg-subtext);
+    font-style: normal;
+    letter-spacing: 0.04em;
+  }
+
+  .data-grid {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(2, 1fr);
     gap: 1rem;
   }
 
-  .opp-card {
+  .data-card {
     background: var(--mg-surface);
     border: 1px solid #2E3F52;
     border-radius: 6px;
     padding: 1.25rem;
     display: flex;
     flex-direction: column;
+    gap: 0.35rem;
+  }
+
+  .data-card.bad {
+    border-color: rgba(232, 113, 95, 0.3);
+  }
+
+  .data-value {
+    font-family: var(--font-mono);
+    font-size: 2.5rem;
+    font-weight: 700;
+    line-height: 1;
+  }
+
+  .data-label {
+    font-size: 0.875rem;
+    color: var(--mg-text);
+    line-height: 1.4;
+  }
+
+  .data-source {
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    color: var(--mg-subtext);
+    margin-top: 0.25rem;
+  }
+
+  /* ================================================================
+     SLIDE 3: COST
+  ================================================================ */
+
+  .big-numbers {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.5rem;
+    margin-bottom: 1rem;
+  }
+
+  .big-num-item {
+    display: flex;
+    flex-direction: column;
     gap: 0.5rem;
   }
 
-  .opp-value {
-    font-family: var(--font-display);
-    font-size: 1.75rem;
-    font-weight: 800;
-    color: var(--mg-text);
+  .big-num {
+    font-family: var(--font-mono);
+    font-size: clamp(2.25rem, 5vw, 3rem);
+    font-weight: 700;
+    line-height: 1;
   }
 
-  .opp-label {
+  .big-num-label {
     font-size: 0.8125rem;
     color: var(--mg-subtext);
     line-height: 1.4;
   }
 
-  /* Metrics grid */
-  .metrics-grid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
+  /* ================================================================
+     SLIDE 4: SOLUTION
+  ================================================================ */
+
+  .spectrum {
+    display: flex;
+    align-items: center;
     gap: 1rem;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
   }
 
-  .metric-item {
+  .spectrum-item {
     display: flex;
     flex-direction: column;
     gap: 0.25rem;
-    padding: 1rem;
+    padding: 0.75rem 1rem;
     background: var(--mg-surface);
     border: 1px solid #2E3F52;
     border-radius: 6px;
+    flex: 1;
+    min-width: 130px;
   }
 
-  .metric-value {
-    font-family: var(--font-display);
-    font-size: 1.5rem;
+  .spectrum-item.active {
+    border-color: #D4A84B;
+    background: rgba(212, 168, 75, 0.06);
+  }
+
+  .spectrum-item.active .spectrum-label {
+    color: #D4A84B;
     font-weight: 800;
+  }
+
+  .spectrum-label {
+    font-family: var(--font-display);
+    font-size: 0.875rem;
+    font-weight: 700;
     color: var(--mg-text);
   }
 
-  .metric-label {
-    font-size: 0.8125rem;
+  .spectrum-label.muted {
     color: var(--mg-subtext);
   }
 
-  /* How it works */
-  .how-list {
+  .spectrum-desc {
+    font-size: 0.75rem;
+    color: var(--mg-text);
+  }
+
+  .spectrum-desc.muted {
+    color: var(--mg-subtext);
+  }
+
+  .spectrum-arrow {
+    color: var(--mg-subtext);
+    font-size: 1.25rem;
+    flex-shrink: 0;
+  }
+
+  .org-chart {
+    background: var(--mg-surface);
+    border: 1px solid #2E3F52;
+    border-radius: 6px;
+    padding: 1.5rem;
+    margin-bottom: 1rem;
+    overflow-x: auto;
+  }
+
+  .org-pre {
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    line-height: 1.8;
+    color: var(--mg-subtext);
+    white-space: pre;
+    margin: 0;
+  }
+
+  .org-sage { color: #D4A84B; font-weight: 700; }
+  .org-c    { color: #2E8B8B; }
+  .org-d    { color: #4A7C59; }
+  .org-ic   { color: var(--mg-subtext); }
+
+  /* ================================================================
+     SLIDE 5: PRODUCT
+  ================================================================ */
+
+  .terminal-window {
+    background: #0D1117;
+    border: 1px solid #2E3F52;
+    border-radius: 8px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    margin-bottom: 2rem;
+  }
+
+  .term-bar {
+    background: #1A2232;
+    padding: 0.625rem 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    border-bottom: 1px solid #2E3F52;
+  }
+
+  .term-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+  }
+
+  .term-dot.red    { background: #E8715F; }
+  .term-dot.yellow { background: #D4A84B; }
+  .term-dot.green  { background: #4A9B6F; }
+
+  .term-title {
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    color: var(--mg-subtext);
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .term-body {
+    font-family: var(--font-mono);
+    font-size: 0.8125rem;
+    line-height: 1.75;
+    color: #8A9BB0;
+    padding: 1.25rem 1.5rem;
+    margin: 0;
+    white-space: pre;
+  }
+
+  .t-sage  { color: #D4A84B; }
+  .t-cto   { color: #2E6E8E; }
+  .t-em    { color: #4A7C59; }
+  .t-qa    { color: #7A5C8B; }
+  .t-dev   { color: #3D5A6B; }
+  .t-gate  { color: #2E8B8B; }
+  .t-sec   { color: #6B8B3D; }
+  .t-ok    { color: #4A9B6F; }
+
+  .product-callouts {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+  }
+
+  .pcallout {
+    background: var(--mg-surface);
+    border: 1px solid #2E3F52;
+    border-radius: 6px;
+    padding: 1rem 1.25rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+
+  .pcallout-val {
+    font-family: var(--font-mono);
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: #D4A84B;
+  }
+
+  .pcallout-label {
+    font-size: 0.8125rem;
+    color: var(--mg-subtext);
+    line-height: 1.4;
+  }
+
+  /* ================================================================
+     SLIDE 6: MOAT
+  ================================================================ */
+
+  .benchmark-block {
+    background: var(--mg-surface);
+    border: 1px solid #2E3F52;
+    border-radius: 6px;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .bench-row {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+
+  .bench-label {
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    min-width: 220px;
+    flex-shrink: 0;
+  }
+
+  .bench-bar-wrap {
+    flex: 1;
+    height: 6px;
+    background: #1A2232;
+    border-radius: 3px;
+    overflow: hidden;
+  }
+
+  .bench-bar {
+    height: 100%;
+    background: var(--mg-subtext);
+    border-radius: 3px;
+    transition: width 0.6s ease;
+  }
+
+  .bench-bar.highlight {
+    background: #D4A84B;
+  }
+
+  .bench-score {
+    font-family: var(--font-mono);
+    font-size: 0.875rem;
+    font-weight: 700;
+    min-width: 3rem;
+    text-align: right;
+  }
+
+  .bench-note {
+    font-size: 0.8125rem;
+    color: var(--mg-subtext);
+    font-style: italic;
+    margin-top: 0;
+  }
+
+  /* Benchmark methodology expandable */
+  .bench-methodology {
+    margin-top: 1.25rem;
+    border: 1px solid rgba(46,63,82,0.4);
+    border-radius: 8px;
+    overflow: hidden;
+  }
+
+  .bench-methodology-toggle {
+    display: block;
+    padding: 0.75rem 1rem;
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    color: var(--mg-cilantro);
+    cursor: pointer;
+    letter-spacing: 0.04em;
     list-style: none;
+  }
+
+  .bench-methodology-toggle::-webkit-details-marker { display: none; }
+  .bench-methodology-toggle::before {
+    content: '+ ';
+    font-weight: 700;
+  }
+  details[open] .bench-methodology-toggle::before {
+    content: '− ';
+  }
+
+  .bench-methodology-content {
+    padding: 0 1rem 1.25rem;
     display: flex;
     flex-direction: column;
     gap: 1.25rem;
   }
 
-  .how-list li {
+  .bench-methodology-intro {
+    font-size: 0.8125rem;
+    color: var(--mg-subtext);
+    line-height: 1.65;
+  }
+
+  .bench-section-label {
+    font-family: var(--font-mono);
+    font-size: 0.65rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--mg-cilantro);
+    margin-bottom: 0.75rem;
+  }
+
+  .bench-task-grid {
     display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .bench-task-item {
+    display: grid;
+    grid-template-columns: 2.5rem 8rem 1fr;
+    gap: 0.75rem;
+    align-items: baseline;
+    font-size: 0.8125rem;
+    line-height: 1.5;
+  }
+
+  .bench-task-weight {
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    color: #D4A84B;
+    font-weight: 700;
+  }
+
+  .bench-task-name {
+    font-weight: 600;
+    color: var(--mg-text);
+  }
+
+  .bench-task-desc {
+    color: var(--mg-subtext);
+    font-size: 0.75rem;
+  }
+
+  .bench-config-table {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+  }
+
+  .bench-config-row {
+    display: grid;
+    grid-template-columns: 3rem 1fr 4rem 4rem;
+    gap: 0.75rem;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid rgba(46,63,82,0.2);
+    font-size: 0.8125rem;
+    color: var(--mg-text);
+    align-items: center;
+  }
+
+  .bench-config-row.header {
+    font-family: var(--font-mono);
+    font-size: 0.65rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--mg-subtext);
+    border-bottom: 1px solid rgba(46,63,82,0.4);
+  }
+
+  .bench-config-row.highlight-row {
+    background: rgba(212, 168, 75, 0.04);
+  }
+
+  .bench-insight {
+    background: var(--mg-surface);
+    border: 1px solid rgba(46,63,82,0.4);
+    border-left: 3px solid var(--mg-cilantro);
+    border-radius: 6px;
+    padding: 1rem 1.25rem;
+  }
+
+  .bench-insight-text {
+    font-size: 0.8125rem;
+    color: var(--mg-subtext);
+    line-height: 1.65;
+  }
+
+  .bench-insight-text strong {
+    color: var(--mg-text);
+  }
+
+  @media (max-width: 480px) {
+    .bench-task-item {
+      grid-template-columns: 2.5rem 1fr;
+    }
+    .bench-task-desc {
+      grid-column: 1 / -1;
+    }
+    .bench-config-row {
+      grid-template-columns: 2rem 1fr 3.5rem 3.5rem;
+      font-size: 0.75rem;
+    }
+  }
+
+  .moat-layers {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+  }
+
+  .moat-layer {
+    display: grid;
+    grid-template-columns: 60px 160px 1fr;
     gap: 1rem;
-    align-items: flex-start;
+    align-items: center;
+    padding: 0.875rem 0;
+    border-bottom: 1px solid #1E2A38;
+  }
+
+  .moat-layer:last-child {
+    border-bottom: none;
+  }
+
+  .moat-tier {
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    color: var(--mg-subtext);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+  }
+
+  .moat-tier.highlight { color: #D4A84B; }
+
+  .moat-name {
+    font-family: var(--font-display);
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--mg-text);
+  }
+
+  .moat-name.highlight { color: #D4A84B; }
+
+  .moat-desc {
+    font-size: 0.8125rem;
+    color: var(--mg-subtext);
+    line-height: 1.5;
+  }
+
+  /* ================================================================
+     SLIDE 7: MARKET
+  ================================================================ */
+
+  .tam-block {
+    margin-bottom: 2rem;
+    display: flex;
+    justify-content: center;
+  }
+
+  .tam-ring {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    position: relative;
+    text-align: center;
+  }
+
+  .tam-3 {
+    width: 280px;
+    height: 280px;
+    background: rgba(46, 139, 139, 0.08);
+    border: 1px solid rgba(46, 139, 139, 0.3);
+  }
+
+  .tam-2 {
+    width: 200px;
+    height: 200px;
+    background: rgba(46, 139, 139, 0.12);
+    border: 1px solid rgba(46, 139, 139, 0.4);
+  }
+
+  .tam-1 {
+    width: 130px;
+    height: 130px;
+    background: rgba(212, 168, 75, 0.12);
+    border: 1px solid rgba(212, 168, 75, 0.5);
+  }
+
+  .tam-label {
+    font-family: var(--font-mono);
+    font-size: 0.6rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--mg-subtext);
+    display: block;
+    position: absolute;
+    top: 10px;
+  }
+
+  .tam-val {
+    font-family: var(--font-mono);
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--mg-text);
+    display: block;
+  }
+
+  .tam-sub {
+    font-size: 0.625rem;
+    color: var(--mg-subtext);
+    display: block;
+    line-height: 1.3;
+  }
+
+  .comp-table {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    border: 1px solid #2E3F52;
+    border-radius: 6px;
+    overflow: hidden;
+  }
+
+  .comp-header,
+  .comp-row {
+    display: grid;
+    grid-template-columns: 1.5fr 1fr 1.25fr 1.25fr 1fr;
+    gap: 0;
+    padding: 0.75rem 1rem;
+    font-size: 0.8125rem;
+    align-items: center;
+  }
+
+  .comp-header {
+    background: #1A2232;
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--mg-subtext);
+    border-bottom: 1px solid #2E3F52;
+  }
+
+  .comp-row {
+    border-bottom: 1px solid #1E2A38;
+    color: var(--mg-text);
+  }
+
+  .comp-row:last-child {
+    border-bottom: none;
+  }
+
+  .comp-row.muted {
+    color: var(--mg-subtext);
+  }
+
+  .comp-row.highlight-row {
+    background: rgba(212, 168, 75, 0.05);
+  }
+
+  .bad-x { color: #E8715F; }
+
+  /* ================================================================
+     SLIDE 8: BUSINESS MODEL
+  ================================================================ */
+
+  .tier-cards {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+    margin-bottom: 2rem;
+  }
+
+  .tier-card {
+    background: var(--mg-surface);
+    border: 1px solid #2E3F52;
+    border-radius: 8px;
+    padding: 1.5rem 1.25rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    position: relative;
+  }
+
+  .tier-card.highlight-card {
+    border-color: #D4A84B;
+    background: rgba(212, 168, 75, 0.05);
+  }
+
+  .tier-badge {
+    position: absolute;
+    top: -10px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #D4A84B;
+    color: #0D1117;
+    font-family: var(--font-mono);
+    font-size: 0.625rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 0.2rem 0.6rem;
+    border-radius: 3px;
+    white-space: nowrap;
+  }
+
+  .tier-name {
+    font-family: var(--font-display);
+    font-size: 0.875rem;
+    font-weight: 700;
+    color: var(--mg-text);
+    margin-top: 0.5rem;
+  }
+
+  .tier-price {
+    font-family: var(--font-mono);
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #D4A84B;
+    line-height: 1;
+  }
+
+  .tier-period {
+    font-size: 0.875rem;
+    font-weight: 400;
+    color: var(--mg-subtext);
+  }
+
+  .tier-features {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+    margin-top: 0.5rem;
+  }
+
+  .tier-features li {
+    font-size: 0.8125rem;
+    color: var(--mg-subtext);
+    padding-left: 1rem;
+    position: relative;
+  }
+
+  .tier-features li::before {
+    content: '\2014';
+    position: absolute;
+    left: 0;
+    color: var(--mg-cilantro);
+    font-family: var(--font-mono);
+  }
+
+  .unit-econ {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0.75rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .ue-item {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    padding: 0.875rem;
+    background: var(--mg-surface);
+    border: 1px solid #2E3F52;
+    border-radius: 6px;
+  }
+
+  .ue-item.highlight {
+    border-color: rgba(212, 168, 75, 0.4);
+  }
+
+  .ue-val {
+    font-family: var(--font-mono);
+    font-size: 1.375rem;
+    font-weight: 700;
+    color: var(--mg-text);
+  }
+
+  .ue-item.highlight .ue-val {
+    color: #D4A84B;
+  }
+
+  .ue-label {
+    font-size: 0.75rem;
+    color: var(--mg-subtext);
+    line-height: 1.3;
+  }
+
+  .fund-thesis {
+    background: rgba(46, 139, 139, 0.06);
+    border: 1px solid rgba(46, 139, 139, 0.25);
+    border-radius: 6px;
+    padding: 1.25rem 1.5rem;
+    margin-top: 1.5rem;
+  }
+
+  .fund-thesis-body {
     font-size: 0.9375rem;
     color: var(--mg-text);
-    line-height: 1.6;
+    line-height: 1.65;
   }
 
-  .how-num {
+  /* ================================================================
+     SLIDE 9: FINANCIALS
+  ================================================================ */
+
+  .fin-table {
+    display: flex;
+    flex-direction: column;
+    border: 1px solid #2E3F52;
+    border-radius: 6px;
+    overflow: hidden;
+    margin-bottom: 2rem;
+  }
+
+  .fin-header,
+  .fin-row {
+    display: grid;
+    grid-template-columns: 1.5fr 1fr 1fr 1fr;
+    padding: 0.875rem 1.25rem;
     font-family: var(--font-mono);
     font-size: 0.8125rem;
-    color: var(--mg-cilantro);
-    min-width: 1.5rem;
-    padding-top: 2px;
+    align-items: center;
   }
 
-  /* Traction */
+  .fin-header {
+    background: #1A2232;
+    color: var(--mg-subtext);
+    font-size: 0.6875rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    border-bottom: 1px solid #2E3F52;
+  }
+
+  .fin-row {
+    border-bottom: 1px solid #1E2A38;
+    color: var(--mg-text);
+  }
+
+  .fin-row:last-child {
+    border-bottom: none;
+  }
+
+  .fin-row.highlight-row {
+    background: rgba(212, 168, 75, 0.05);
+  }
+
+  .fin-scenario.muted   { color: var(--mg-subtext); }
+  .fin-scenario.highlight { color: #D4A84B; }
+
+  .fin-callouts {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+    margin-bottom: 1rem;
+  }
+
+  .fin-callout {
+    background: var(--mg-surface);
+    border: 1px solid #2E3F52;
+    border-radius: 6px;
+    padding: 1rem 1.25rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+
+  .fin-callout.highlight {
+    border-color: rgba(212, 168, 75, 0.4);
+    background: rgba(212, 168, 75, 0.04);
+  }
+
+  .fin-callout-val {
+    font-family: var(--font-mono);
+    font-size: 1.625rem;
+    font-weight: 700;
+    color: var(--mg-text);
+  }
+
+  .fin-callout.highlight .fin-callout-val {
+    color: #D4A84B;
+  }
+
+  .fin-callout-label {
+    font-size: 0.8125rem;
+    color: var(--mg-subtext);
+  }
+
+  /* ================================================================
+     SLIDE 10: TRACTION
+  ================================================================ */
+
+  .traction-cols {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+  }
+
+  .traction-col {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .traction-col-title {
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--mg-cilantro);
+  }
+
   .traction-list {
     list-style: none;
     display: flex;
     flex-direction: column;
-    gap: 0.6rem;
+    gap: 0.5rem;
   }
 
   .traction-list li {
-    padding-left: 1.25rem;
-    position: relative;
+    font-size: 0.875rem;
     color: var(--mg-text);
-    font-size: 0.9375rem;
-    line-height: 1.6;
+    padding-left: 1rem;
+    position: relative;
+    line-height: 1.5;
   }
 
   .traction-list li::before {
@@ -566,38 +2045,400 @@ for (const [path, loader] of Object.entries(fundFiles)) {
     font-family: var(--font-mono);
   }
 
-  /* CTA */
-  .cta-block {
-    margin-bottom: 4rem;
+  .timeline {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    padding: 1.5rem 0;
+    overflow-x: auto;
   }
 
-  .cta-link {
-    display: inline-block;
-    padding: 0.75rem 1.5rem;
-    background: var(--mg-cilantro);
-    color: #fff;
-    text-decoration: none;
+  .tl-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.35rem;
+    flex-shrink: 0;
+  }
+
+  .tl-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--mg-surface);
+    border: 2px solid var(--mg-subtext);
+  }
+
+  .tl-dot.active {
+    background: #D4A84B;
+    border-color: #D4A84B;
+  }
+
+  .tl-dot.future {
+    background: transparent;
+    border-color: #2E3F52;
+    border-style: dashed;
+  }
+
+  .tl-label {
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--mg-subtext);
+  }
+
+  .tl-label.active  { color: #D4A84B; }
+  .tl-label.future  { color: #2E3F52; }
+
+  .tl-desc {
+    font-size: 0.6875rem;
+    color: var(--mg-subtext);
+    text-align: center;
+    max-width: 100px;
+    line-height: 1.3;
+  }
+
+  .tl-line {
+    flex: 1;
+    height: 1px;
+    background: #2E3F52;
+    min-width: 2rem;
+    align-self: flex-start;
+    margin-top: 0.625rem;
+  }
+
+  /* ================================================================
+     SLIDE 11: RETURNS
+  ================================================================ */
+
+  .returns-table {
+    display: flex;
+    flex-direction: column;
+    border: 1px solid #2E3F52;
     border-radius: 6px;
-    font-family: var(--font-display);
-    font-size: 0.9375rem;
+    overflow: hidden;
+    margin-bottom: 1.5rem;
+  }
+
+  .ret-header,
+  .ret-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr 1.25fr;
+    padding: 0.875rem 1.25rem;
+    font-size: 0.875rem;
+    align-items: center;
+  }
+
+  .ret-header {
+    background: #1A2232;
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--mg-subtext);
+    border-bottom: 1px solid #2E3F52;
+  }
+
+  .ret-row {
+    border-bottom: 1px solid #1E2A38;
+    color: var(--mg-text);
+  }
+
+  .ret-row:last-child {
+    border-bottom: none;
+  }
+
+  .ret-row.highlight-row {
+    background: rgba(212, 168, 75, 0.05);
+  }
+
+  .ret-scenario.muted     { color: var(--mg-subtext); }
+  .ret-scenario.highlight { color: #D4A84B; }
+
+  .ret-val {
+    font-family: var(--font-mono);
+    font-weight: 700;
+    color: #D4A84B;
+  }
+
+  .ev-callout {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: var(--mg-surface);
+    border: 1px solid rgba(212, 168, 75, 0.4);
+    border-radius: 6px;
+    padding: 1rem 1.5rem;
+    margin-bottom: 1rem;
+  }
+
+  .ev-label {
+    font-family: var(--font-mono);
+    font-size: 0.8125rem;
+    color: var(--mg-subtext);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+
+  .ev-val {
+    font-family: var(--font-mono);
+    font-size: 2.75rem;
+    font-weight: 700;
+    color: #D4A84B;
+  }
+
+  /* ================================================================
+     SLIDE 12: TEAM
+  ================================================================ */
+
+  .founder-block {
+    background: var(--mg-surface);
+    border: 1px solid #2E3F52;
+    border-radius: 6px;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+  }
+
+  .founder-bio {
+    font-size: 1rem;
+    color: var(--mg-text);
+    line-height: 1.7;
+  }
+
+  .hire-plan {
+    background: rgba(46, 139, 139, 0.04);
+    border: 1px solid rgba(46, 139, 139, 0.2);
+    border-radius: 6px;
+    padding: 1.5rem;
+  }
+
+  .hire-timeline {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+  }
+
+  .hire-item {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    background: var(--mg-surface);
+    border: 1px solid #2E3F52;
+    border-radius: 6px;
+    padding: 0.625rem 0.875rem;
+    min-width: 110px;
+  }
+
+  .hire-when {
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    color: var(--mg-cilantro);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+
+  .hire-role {
+    font-size: 0.875rem;
     font-weight: 600;
-    transition: opacity 0.15s ease;
+    color: var(--mg-text);
   }
 
-  .cta-link:hover {
-    opacity: 0.88;
+  .hire-arrow {
+    color: var(--mg-subtext);
+    font-size: 1rem;
+    flex-shrink: 0;
   }
 
-  /* Responsive */
+  /* ================================================================
+     SLIDE 13: THE ASK
+  ================================================================ */
+
+  .ask-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .ask-card {
+    background: var(--mg-surface);
+    border: 1px solid #2E3F52;
+    border-radius: 8px;
+    padding: 1.5rem 1.25rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .ask-card.highlight-card {
+    border-color: #D4A84B;
+    background: rgba(212, 168, 75, 0.06);
+  }
+
+  .ask-card-label {
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    color: var(--mg-subtext);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+  }
+
+  .ask-card-val {
+    font-family: var(--font-display);
+    font-size: 1.25rem;
+    font-weight: 800;
+    color: var(--mg-text);
+  }
+
+  .ask-card.highlight-card .ask-card-val {
+    color: #D4A84B;
+  }
+
+  .ask-card-sub {
+    font-size: 0.8125rem;
+    color: var(--mg-subtext);
+    line-height: 1.4;
+  }
+
+  .ask-path {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+  }
+
+  .path-item {
+    flex: 1;
+    min-width: 150px;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    padding: 0.875rem 1rem;
+    background: var(--mg-surface);
+    border: 1px solid #2E3F52;
+    border-radius: 6px;
+  }
+
+  .path-label {
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    color: var(--mg-subtext);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+
+  .path-val {
+    font-family: var(--font-mono);
+    font-size: 1.125rem;
+    font-weight: 700;
+    color: #D4A84B;
+  }
+
+  .ask-cta-line {
+    font-family: var(--font-display);
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--mg-text);
+    margin-bottom: 1rem;
+  }
+
+  .ask-fund-line {
+    font-family: var(--font-mono);
+    font-size: 0.875rem;
+    color: var(--mg-cilantro);
+    margin-bottom: 2rem;
+  }
+
+  .cta-block {
+    margin-top: 2rem;
+    padding-top: 2rem;
+    border-top: 1px solid #1E2A38;
+  }
+
+  .investor-success {
+    color: var(--mg-cilantro);
+    font-family: var(--font-mono);
+    font-size: 0.875rem;
+    margin-top: 0.75rem;
+  }
+
+  .form-field {
+    margin-bottom: 0.5rem;
+  }
+
+  .form-field-lg {
+    margin-bottom: 0.75rem;
+  }
+
+  /* ================================================================
+     RESPONSIVE
+  ================================================================ */
+
   @media (max-width: 480px) {
     .gate-form {
       flex-direction: column;
     }
-    .opportunity-grid {
+
+    .slide {
+      padding: 3rem 0;
+    }
+
+    .data-grid,
+    .product-callouts,
+    .tier-cards,
+    .traction-cols,
+    .unit-econ,
+    .fin-callouts,
+    .ask-grid,
+    .big-numbers {
       grid-template-columns: 1fr;
     }
-    .metrics-grid {
-      grid-template-columns: 1fr;
+
+    .comp-table {
+      font-size: 0.75rem;
     }
+
+    .comp-header,
+    .comp-row {
+      grid-template-columns: 1.5fr 0.75fr 1fr 1fr 0.75fr;
+      padding: 0.625rem 0.75rem;
+    }
+
+    .bench-label {
+      min-width: 0;
+      font-size: 0.6875rem;
+      word-break: break-word;
+    }
+
+    .moat-layer {
+      grid-template-columns: 1fr;
+      gap: 0.25rem;
+    }
+
+    .spectrum {
+      flex-direction: column;
+    }
+
+    .spectrum-arrow {
+      transform: rotate(90deg);
+    }
+
+    .hire-timeline {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+
+    .hire-arrow {
+      transform: rotate(90deg);
+    }
+
+    .cover-headline {
+      font-size: clamp(2.5rem, 12vw, 3.5rem);
+    }
+
+    .tam-ring.tam-3 { width: 220px; height: 220px; }
+    .tam-ring.tam-2 { width: 155px; height: 155px; }
+    .tam-ring.tam-1 { width: 95px;  height: 95px;  }
   }
 </style>

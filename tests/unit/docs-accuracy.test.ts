@@ -312,9 +312,17 @@ describe('edition-docs — happy path (correct content must be present)', () => 
     expect(existsSync(licensePath)).toBe(true);
   });
 
-  it('sage AGENT.md is NOT present in public repo (moved to enterprise)', () => {
-    // AC-EDITION-6: sage has been moved to private private-enterprise-enterprise repo
+  it('sage AGENT.md is NOT git-tracked in public repo (moved to enterprise)', () => {
+    // AC-EDITION-6: sage has been moved to private private-enterprise-enterprise repo.
+    // sage/ may exist on disk as a TEO install artifact (gitignored) — check git tracking.
+    const { existsSync } = require('fs');
+    const { execSync } = require('child_process');
     const sagePath = path.join(__dirname, '../../src/framework/agents/sage/AGENT.md');
-    expect(existsSync(sagePath)).toBe(false);
+    if (existsSync(sagePath)) {
+      const tracked = execSync(`git ls-files "${sagePath}"`, { cwd: ROOT, encoding: 'utf-8' }).trim();
+      expect(tracked).toBe('');
+    } else {
+      expect(existsSync(sagePath)).toBe(false);
+    }
   });
 });

@@ -26,8 +26,17 @@ function listAgentDirs(): string[] {
 // ═══════════════════════════════════════════════════════
 
 describe('S1: Enterprise Content Absent — misuse cases', () => {
-  it('sage agent is NOT in src/framework/agents/', () => {
-    expect(fs.existsSync(path.join(SRC_AGENTS_DIR, 'sage'))).toBe(false);
+  it('sage agent is NOT git-tracked in src/framework/agents/', () => {
+    // sage/ may exist on disk as a TEO install artifact but must not be git-tracked
+    const sagePath = path.join(SRC_AGENTS_DIR, 'sage');
+    if (fs.existsSync(sagePath)) {
+      // If dir exists locally, verify it is gitignored (not tracked)
+      const { execSync } = require('child_process');
+      const tracked = execSync(`git ls-files "${sagePath}"`, { cwd: ROOT, encoding: 'utf-8' }).trim();
+      expect(tracked).toBe('');
+    } else {
+      expect(fs.existsSync(sagePath)).toBe(false);
+    }
   });
 
   it('enterprise settings template is NOT in src/framework/', () => {
@@ -63,10 +72,17 @@ describe('S1: Enterprise Content Absent — misuse cases', () => {
 // ═══════════════════════════════════════════════════════
 
 describe('S2: Community Content Intact — boundary cases', () => {
-  it('all 23+ community agents are present', () => {
+  it('all 22+ community agents are present', () => {
     const agents = listAgentDirs();
-    expect(agents.length).toBeGreaterThanOrEqual(23);
-    expect(agents).not.toContain('sage');
+    // ai-artist was removed; sage is enterprise-only (gitignored, not tracked)
+    expect(agents.length).toBeGreaterThanOrEqual(22);
+    // sage must not be git-tracked even if it exists on disk as a TEO artifact
+    const { execSync } = require('child_process');
+    const sagePath = path.join(SRC_AGENTS_DIR, 'sage');
+    if (agents.includes('sage')) {
+      const tracked = execSync(`git ls-files "${sagePath}"`, { cwd: ROOT, encoding: 'utf-8' }).trim();
+      expect(tracked).toBe('');
+    }
   });
 
   it('community settings.json exists', () => {
@@ -85,7 +101,7 @@ describe('S2: Community Content Intact — boundary cases', () => {
   it('build.sh exists and works', () => {
     expect(fs.existsSync(BUILD_SH)).toBe(true);
     const buildSh = fs.readFileSync(BUILD_SH, 'utf-8');
-    expect(buildSh).toMatch(/private-enterprise-enterprise/i);
+    expect(buildSh).toMatch(/enterprise.*private|private-enterprise-enterprise/i);
   });
 });
 

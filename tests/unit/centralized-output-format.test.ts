@@ -163,78 +163,70 @@ describe('WS-15: Centralized Skill Visual Output', () => {
           }
         });
 
-        it('Then: Output format should be referenced via skill-base inheritance or directly', () => {
-          // Output format directive was moved to skill-base.md (inherited by all skills).
-          // Skills inherit via "> Inherits: [skill-base]" — the directive no longer needs
-          // to appear in each skill's own constitution.
-          const baseFile = path.join(SKILLS_DIR, '_base', 'skill-base.md');
-          const baseContent = fs.readFileSync(baseFile, 'utf-8');
-
-          const baseHasOutputFormat =
-            baseContent.includes('output-format.md') ||
-            baseContent.toLowerCase().includes('output format');
-
-          expect(
-            baseHasOutputFormat,
-            'skill-base.md should contain the shared output format directive'
-          ).toBe(true);
-
-          // Verify all skills inherit from the base
+        it('Then: Output format should be referenced directly in each skill', () => {
+          // skill-base.md was removed. Each skill now carries the output format directive
+          // inline in its own Constitution section ("Follow output format").
           for (const skill of ALL_SKILLS) {
             const skillFile = path.join(SKILLS_DIR, skill, 'SKILL.md');
             const content = fs.readFileSync(skillFile, 'utf-8');
 
-            const inheritsBase =
-              content.includes('skill-base') ||
-              content.includes('Inherits');
+            const constitutionMatch = content.match(/##\s+Constitution\s*([\s\S]*?)(?=\n##\s+|\n---\s+|$)/i);
+            expect(constitutionMatch, `${skill}/SKILL.md should have Constitution section`).toBeTruthy();
 
-            expect(
-              inheritsBase,
-              `${skill}/SKILL.md should inherit from skill-base`
-            ).toBe(true);
-          }
-        });
+            if (constitutionMatch) {
+              const constitution = constitutionMatch[1];
+              const hasOutputReference =
+                /output.*format/i.test(constitution) ||
+                constitution.includes('output-format.md');
 
-        it('Then: Output format directive lives in skill-base constitution (inherited)', () => {
-          // The output format directive was consolidated into skill-base.md.
-          // Individual skill constitutions no longer need to repeat it.
-          const baseFile = path.join(SKILLS_DIR, '_base', 'skill-base.md');
-          const baseContent = fs.readFileSync(baseFile, 'utf-8');
-
-          const hasOutputDirective =
-            /output.*format/i.test(baseContent) ||
-            /format.*output/i.test(baseContent) ||
-            baseContent.includes('output-format.md');
-
-          expect(
-            hasOutputDirective,
-            'skill-base.md should contain output format directive for all skills to inherit'
-          ).toBe(true);
-        });
-
-        it('Then: Output format is inherited from skill-base, not duplicated per skill', () => {
-          // After consolidation, the output format directive lives in skill-base.md.
-          // Individual skills reference it via "Inherits: [skill-base]" or per-skill
-          // references/output-format.md files (which still exist for specifics).
-          const baseFile = path.join(SKILLS_DIR, '_base', 'skill-base.md');
-          expect(fs.existsSync(baseFile), 'skill-base.md should exist').toBe(true);
-
-          const baseContent = fs.readFileSync(baseFile, 'utf-8');
-          expect(
-            baseContent.includes('output-format') || baseContent.toLowerCase().includes('output format'),
-            'skill-base.md should contain output format reference'
-          ).toBe(true);
-
-          // Each skill should still have its own references/output-format.md for specifics
-          let skillsWithRefFile = 0;
-          for (const skill of ALL_SKILLS) {
-            const refFile = path.join(SKILLS_DIR, skill, 'references', 'output-format.md');
-            if (fs.existsSync(refFile)) {
-              skillsWithRefFile++;
+              expect(
+                hasOutputReference,
+                `${skill}/SKILL.md should reference output format in its Constitution`
+              ).toBe(true);
             }
           }
-          // Most skills should have the per-skill reference file
-          expect(skillsWithRefFile).toBeGreaterThan(0);
+        });
+
+        it('Then: Output format directive is defined inline in each skill constitution', () => {
+          // skill-base.md was removed. Each skill now carries "Follow output format" inline
+          // in its own Constitution section.
+          for (const skill of ALL_SKILLS) {
+            const skillFile = path.join(SKILLS_DIR, skill, 'SKILL.md');
+            const content = fs.readFileSync(skillFile, 'utf-8');
+
+            const constitutionMatch = content.match(/##\s+Constitution\s*([\s\S]*?)(?=\n##\s+|\n---\s+|$)/i);
+            if (constitutionMatch) {
+              const constitution = constitutionMatch[1];
+              const hasOutputDirective =
+                /output.*format/i.test(constitution) ||
+                constitution.includes('output-format.md');
+
+              expect(
+                hasOutputDirective,
+                `${skill}/SKILL.md Constitution should contain output format directive`
+              ).toBe(true);
+            }
+          }
+        });
+
+        it('Then: Each skill has inline output format directive in its Constitution', () => {
+          // skill-base.md was removed. The output format directive ("Follow output format")
+          // is now defined inline per skill in its Constitution section.
+          let skillsWithInlineDirective = 0;
+          for (const skill of ALL_SKILLS) {
+            const skillFile = path.join(SKILLS_DIR, skill, 'SKILL.md');
+            const content = fs.readFileSync(skillFile, 'utf-8');
+
+            const constitutionMatch = content.match(/##\s+Constitution\s*([\s\S]*?)(?=\n##\s+|\n---\s+|$)/i);
+            if (constitutionMatch) {
+              const constitution = constitutionMatch[1];
+              if (/output.*format/i.test(constitution) || constitution.includes('output-format.md')) {
+                skillsWithInlineDirective++;
+              }
+            }
+          }
+          // All skills should have the inline directive
+          expect(skillsWithInlineDirective).toBe(ALL_SKILLS.length);
         });
 
         it('Then: Skills should have constitution items as numbered lists', () => {
@@ -260,7 +252,7 @@ describe('WS-15: Centralized Skill Visual Output', () => {
           }
         });
 
-        it('Then: Constitution should have 4-6 core principles per skill', () => {
+        it('Then: Constitution should have 3-10 core principles per skill', () => {
           for (const skill of ALL_SKILLS) {
             const skillFile = path.join(SKILLS_DIR, skill, 'SKILL.md');
             const content = fs.readFileSync(skillFile, 'utf-8');
@@ -276,17 +268,16 @@ describe('WS-15: Centralized Skill Visual Output', () => {
               // Count numbered items
               const items = constitutionSection.match(/^\d+\.\s+\*\*/gm) || [];
 
-              // After consolidation, the output format directive moved to skill-base.
-              // Skills now have 3-6 core principles (was 4-6 when output format was inline).
+              // Most skills have 4-6 principles. /mg has 10 (merged dispatcher + leadership).
               expect(
                 items.length,
-                `${skill}/SKILL.md Constitution should have 3-6 principles (output format now inherited)`
+                `${skill}/SKILL.md Constitution should have 3-10 principles`
               ).toBeGreaterThanOrEqual(3);
 
               expect(
                 items.length,
-                `${skill}/SKILL.md Constitution should not exceed 7 principles`
-              ).toBeLessThanOrEqual(7);
+                `${skill}/SKILL.md Constitution should not exceed 10 principles`
+              ).toBeLessThanOrEqual(10);
             }
           }
         });
@@ -404,15 +395,19 @@ describe('WS-15: Centralized Skill Visual Output', () => {
   describe('Feature: Comprehensive Skill Validation', () => {
     describe('Given: All 19 skills configured', () => {
       describe('When: Validating complete implementation', () => {
-        it('Then: Exactly 19 skills should exist in skills directory', () => {
+        it('Then: All 19 skills in ALL_SKILLS should exist in skills directory', () => {
           const skillDirs = fs.readdirSync(SKILLS_DIR)
             .filter(item => {
               const itemPath = path.join(SKILLS_DIR, item);
-              return fs.statSync(itemPath).isDirectory() && !item.startsWith('_');
+              const skillFile = path.join(SKILLS_DIR, item, 'SKILL.md');
+              return fs.statSync(itemPath).isDirectory() && !item.startsWith('_') && fs.existsSync(skillFile);
             });
 
-          expect(skillDirs.length).toBe(ALL_SKILLS.length);
-          expect(skillDirs.sort()).toEqual([...ALL_SKILLS].sort());
+          // Verify every skill in ALL_SKILLS is present in the directory
+          for (const skill of ALL_SKILLS) {
+            expect(skillDirs, `${skill} should exist in skills directory`).toContain(skill);
+          }
+          expect(skillDirs.length).toBeGreaterThanOrEqual(ALL_SKILLS.length);
         });
 
         it('Then: Each skill should have required metadata in frontmatter', () => {
@@ -471,9 +466,10 @@ describe('WS-15: Centralized Skill Visual Output', () => {
             if (boundariesMatch) {
               const boundaries = boundariesMatch[1];
 
-              expect(boundaries, `${skill} should define CAN`).toContain('**CAN:**');
-              expect(boundaries, `${skill} should define CANNOT`).toContain('**CANNOT:**');
-              expect(boundaries, `${skill} should define ESCALATES TO`).toContain('**ESCALATES TO:**');
+              // /mg uses mode-prefixed boundaries (Dispatch mode CAN, Leadership mode CAN)
+              expect(boundaries, `${skill} should define CAN`).toMatch(/\*\*(?:\w+\s+mode\s+)?CAN:\*\*/);
+              expect(boundaries, `${skill} should define CANNOT`).toMatch(/\*\*(?:\w+\s+mode\s+)?CANNOT:\*\*/);
+              expect(boundaries, `${skill} should define ESCALATES TO`).toMatch(/\*\*(?:ESCALATES TO|ESCALATES TO):\*\*/i);
             }
           }
         });

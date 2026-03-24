@@ -43,6 +43,10 @@ export default defineConfig({
       {
         text: 'GitHub',
         link: 'https://github.com/wonton-web-works/miniature-guacamole'
+      },
+      {
+        text: 'Enterprise',
+        link: 'https://theengorg.com?utm_source=mg-docs&utm_medium=nav'
       }
     ],
 
@@ -92,7 +96,7 @@ export default defineConfig({
     ],
 
     footer: {
-      message: 'Built with Claude Code',
+      message: 'Built with Claude Code | <a href="https://theengorg.com?utm_source=mg-docs&utm_medium=footer" target="_blank" rel="noopener noreferrer">Enterprise</a>',
       copyright: 'MIT Licensed'
     },
 

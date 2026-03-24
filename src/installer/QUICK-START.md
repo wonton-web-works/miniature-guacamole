@@ -90,7 +90,7 @@ Skips Postgres setup. Runs entirely on local JSON files.
 
 ### Skills (Use in Chat)
 ```
-/mg-leadership-team review WS-42
+/mg review WS-42
 /mg-build implement feature X
 /mg-code-review check PR-123
 ```

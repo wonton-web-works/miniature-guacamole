@@ -94,7 +94,7 @@ progress: Step [n]/4 [status]
 │  📊 DELEGATION CHAIN                                        │
 ├─────────────────────────────────────────────────────────────┤
 │                                                             │
-│  [USER] ──▶ [mg-leadership-team] ──▶ [mg-build]       │
+│  [USER] ──▶ [/mg] ──▶ [mg-build]       │
 │                                          │                  │
 │                                          ├──▶ [qa] ✅       │
 │                                          └──▶ [dev] 🔄      │
@@ -148,7 +148,7 @@ Three styles available based on context:
 
 ### Style 1: Live Activity Feed (for Teams)
 
-Use this for team skills (mg-build, mg-leadership-team, mg-design):
+Use this for team skills (mg-build, /mg, mg-design):
 
 ```
 ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓

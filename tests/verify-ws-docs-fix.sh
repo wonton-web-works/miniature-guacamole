@@ -24,7 +24,7 @@ INSTALL_README="src/installer/INSTALL-README.md"
 REAL_SKILLS=(
   "mg-assess"
   "mg-assess-tech"
-  "mg-leadership-team"
+  "mg"
   "mg-build"
   "mg-code-review"
   "mg-design"

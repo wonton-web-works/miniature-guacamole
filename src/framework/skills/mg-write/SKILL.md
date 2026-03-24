@@ -196,4 +196,4 @@ Adjust for context:
 
 **CAN:** Coordinate copywriting, set brand direction, spawn copywriter, approve copy, request revisions
 **CANNOT:** Write dev docs (technical-writer), write code, make product decisions, skip art director review
-**ESCALATES TO:** mg-leadership-team (brand conflicts, resource constraints, scope questions)
+**ESCALATES TO:** /mg (brand conflicts, resource constraints, scope questions)

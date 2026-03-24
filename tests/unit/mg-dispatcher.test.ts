@@ -28,7 +28,6 @@ const ROUTABLE_SKILLS = [
   'mg-design-review',
   'mg-document',
   'mg-init',
-  'mg-leadership-team',
   'mg-refactor',
   'mg-security-review',
   'mg-spec',
@@ -102,11 +101,19 @@ describe('mg dispatcher — misuse cases (tested first)', () => {
       expect(body).not.toMatch(/subagent_type/);
     });
 
-    it('SKILL.md must NOT claim to spawn or execute agents', () => {
-      // A dispatcher's job is routing. Claiming to spawn agents is a misuse of the role.
-      const bodyStart = content().indexOf('---', 3) + 3;
-      const body = content().slice(bodyStart);
-      expect(body).not.toMatch(/spawns agents|spawn agents|executes agents|Task\(subagent/i);
+    it('SKILL.md dispatch mode must explicitly state it does NOT spawn agents', () => {
+      // Dispatch mode (Path 1) is routing-only. Leadership mode (Path 2) may spawn — that is intentional.
+      // We verify the dispatch mode section explicitly forbids spawning.
+      const dispatchMatch = content().match(
+        /##\s+Path 1.*?Dispatch Mode\s*([\s\S]*?)(?=\n##\s+Path 2|$)/i
+      );
+      if (dispatchMatch) {
+        // Dispatch mode boundaries must explicitly say CANNOT spawn
+        expect(dispatchMatch[1]).toMatch(/cannot.*spawn|does not spawn|never spawn|only routes?/i);
+      } else {
+        // Fall back to checking the overall boundaries section for dispatch restriction
+        expect(content()).toMatch(/Dispatch mode CANNOT.*spawn|only routes?|does not spawn/i);
+      }
     });
 
     it('SKILL.md must explicitly state it only routes — not executes', () => {
@@ -166,8 +173,8 @@ describe('mg dispatcher — misuse cases (tested first)', () => {
 
 describe('mg dispatcher — boundary cases', () => {
   describe('skill count precision', () => {
-    it('no-args section must list exactly 18 skills (not 17, not 19)', () => {
-      // Acceptance criteria 9: the skill count is 18 (17 original + mg-tidy)
+    it('no-args section must list exactly 17 skills (not 16, not 18)', () => {
+      // Acceptance criteria 9: the skill count is 17 (mg-leadership-team merged into /mg)
       // We count distinct mg-* skill names listed in the no-args section.
       // Strategy: find the no-args section and count mg-* occurrences there.
       const noArgsMatch = content().match(
@@ -181,8 +188,8 @@ describe('mg dispatcher — boundary cases', () => {
         const uniqueSkills = new Set(listedSkills);
         expect(
           uniqueSkills.size,
-          `Expected 18 unique skills in no-args section, found: ${[...uniqueSkills].join(', ')}`
-        ).toBe(18);
+          `Expected 17 unique skills in no-args section, found: ${[...uniqueSkills].join(', ')}`
+        ).toBe(17);
       }
     });
 
@@ -231,8 +238,9 @@ describe('mg dispatcher — boundary cases', () => {
 
   describe('boundaries section completeness', () => {
     it('Boundaries section must have CAN, CANNOT, and ESCALATES TO — all on non-empty lines', () => {
-      const canMatch = content().match(/\*\*CAN:\*\*\s+(.+)/);
-      const cannotMatch = content().match(/\*\*CANNOT:\*\*\s+(.+)/);
+      // Post-merger: boundaries are split by mode. Accept mode-prefixed labels.
+      const canMatch = content().match(/\*\*(?:Dispatch mode )?CAN:\*\*\s+(.+)/);
+      const cannotMatch = content().match(/\*\*(?:Dispatch mode )?CANNOT:\*\*\s+(.+)/);
       const escalatesMatch = content().match(/\*\*ESCALATES TO:\*\*\s+(.+)/);
 
       expect(canMatch?.[1].trim().length).toBeGreaterThan(0);
@@ -241,8 +249,8 @@ describe('mg dispatcher — boundary cases', () => {
     });
 
     it('Boundaries CANNOT field must explicitly mention spawning agents', () => {
-      // The boundaries section must make clear the restriction on agent spawning
-      const cannotMatch = content().match(/\*\*CANNOT:\*\*\s+([\s\S]*?)(?=\*\*[A-Z]|\n##\s+|$)/);
+      // Post-merger: dispatch mode CANNOT must explicitly forbid spawning agents
+      const cannotMatch = content().match(/\*\*(?:Dispatch mode )?CANNOT:\*\*\s+([\s\S]*?)(?=\*\*[A-Z]|\n##\s+|$)/);
       if (cannotMatch) {
         expect(cannotMatch[1]).toMatch(/spawn|execute.*work|perform.*work|run.*work/i);
       }
@@ -255,7 +263,7 @@ describe('mg dispatcher — boundary cases', () => {
 // ─────────────────────────────────────────────────────────────
 
 describe('mg dispatcher — golden path', () => {
-  describe('all 17 routable skills are listed in no-args output', () => {
+  describe('all 16 routable skills are listed in no-args output', () => {
     for (const skill of ROUTABLE_SKILLS) {
       it(`no-args section lists ${skill}`, () => {
         const noArgsMatch = content().match(
@@ -298,12 +306,14 @@ describe('mg dispatcher — golden path', () => {
   });
 
   describe('structure contract', () => {
-    it('has ## No-Args section', () => {
-      expect(content()).toMatch(/^##\s+No.?Args/im);
+    it('has No-Args section (## or ### level)', () => {
+      // Post-merger: No-Args is a subsection (### No-Args Menu) under ## Path 1 — Dispatch Mode
+      expect(content()).toMatch(/^#{2,3}\s+No.?Args/im);
     });
 
-    it('has ## Routing Table section', () => {
-      expect(content()).toMatch(/^##\s+Routing\s*Table?/im);
+    it('has Routing Table section (## or ### level)', () => {
+      // Post-merger: Routing Table is a subsection (### Routing Table) under ## Path 1 — Dispatch Mode
+      expect(content()).toMatch(/^#{2,3}\s+Routing\s*Table?/im);
     });
 
     it('has ## Boundaries section', () => {
@@ -315,8 +325,10 @@ describe('mg dispatcher — golden path', () => {
     });
 
     it('Boundaries fields are in correct order: CAN before CANNOT before ESCALATES TO', () => {
-      const canIndex = content().search(/\*\*CAN:\*\*/);
-      const cannotIndex = content().search(/\*\*CANNOT:\*\*/);
+      // Post-merger: boundaries are split by mode. Accept both standard (**CAN:**)
+      // and mode-prefixed (**Dispatch mode CAN:**) patterns.
+      const canIndex = content().search(/\*\*(?:Dispatch mode )?CAN:\*\*/);
+      const cannotIndex = content().search(/\*\*(?:Dispatch mode )?CANNOT:\*\*/);
       const escalatesIndex = content().search(/\*\*ESCALATES TO:\*\*/);
 
       expect(canIndex).toBeGreaterThan(-1);
@@ -343,8 +355,9 @@ describe('mg dispatcher — frontmatter contract', () => {
     expect(content()).toMatch(/description:\s*"[^"]+"/);
   });
 
-  it('has model: sonnet', () => {
-    expect(content()).toMatch(/model:\s+sonnet/);
+  it('has model: opus', () => {
+    // /mg runs leadership mode (spawns agents) — opus is required for that
+    expect(content()).toMatch(/model:\s+opus/);
   });
 
   it('has allowed-tools field', () => {

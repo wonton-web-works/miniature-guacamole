@@ -211,7 +211,7 @@ The standard CAD development cycle looks like this:
 
 **1. Plan the work**
 ```
-/mg-leadership-team Build a user authentication system
+/mg Build a user authentication system
 ```
 Output: Executive review + workstream plan (WS-1, WS-2, WS-3, ...)
 
@@ -223,7 +223,7 @@ QA writes failing tests → Dev implements → QA verifies 99% coverage → Staf
 
 **3. Leadership approves**
 ```
-/mg-leadership-team Review WS-1 on branch feature/ws-1-login
+/mg review WS-1 on branch feature/ws-1-login
 ```
 
 **4. Merge**

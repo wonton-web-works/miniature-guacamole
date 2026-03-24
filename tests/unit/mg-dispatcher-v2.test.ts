@@ -33,7 +33,6 @@ const ALL_17_SKILLS = [
   'mg-design-review',
   'mg-document',
   'mg-init',
-  'mg-leadership-team',
   'mg-refactor',
   'mg-security-review',
   'mg-spec',
@@ -42,20 +41,20 @@ const ALL_17_SKILLS = [
 ] as const;
 
 // Skills that /mg plan must describe routing to (AC 3)
+// mg-leadership-team merged into /mg — strategic planning is handled in /mg leadership mode
 const PLAN_ROUTING_TARGETS = [
   'mg-assess',
   'mg-assess-tech',
   'mg-spec',
-  'mg-leadership-team',
 ] as const;
 
 // Skills that /mg review must describe routing to (AC 4)
+// mg-leadership-team merged into /mg — workstream approval is handled in /mg leadership mode
 const REVIEW_ROUTING_TARGETS = [
   'mg-code-review',
   'mg-security-review',
   'mg-design-review',
   'mg-accessibility-review',
-  'mg-leadership-team',
 ] as const;
 
 // Required group names in the grouped display (AC 2)
@@ -191,8 +190,9 @@ describe('mg dispatcher v2 — misuse cases', () => {
 
 describe('mg dispatcher v2 — boundary cases', () => {
   describe('grouped display: skill count still adds up', () => {
-    it('total skills across all group entries must equal 17', () => {
-      // After grouping, the same 17 skills should appear — no more, no less.
+    it('total skills across all group entries must equal 16', () => {
+      // After grouping, the same 16 skills should appear — no more, no less.
+      // mg-leadership-team merged into /mg — 17 original skills minus 1 = 16.
       // We scan the full file for mg-* skill references and deduplicate.
       const allMgSkills = content().match(/mg-[\w-]+/g) ?? [];
       const uniqueSkills = new Set(
@@ -200,8 +200,8 @@ describe('mg dispatcher v2 — boundary cases', () => {
       );
       expect(
         uniqueSkills.size,
-        `Expected exactly 17 skill references, found: ${[...uniqueSkills].join(', ')}`
-      ).toBe(17);
+        `Expected exactly 16 skill references, found: ${[...uniqueSkills].join(', ')}`
+      ).toBe(16);
     });
 
     it('grouped display sections must not list the same skill in two different groups', () => {
@@ -269,7 +269,8 @@ describe('mg dispatcher v2 — boundary cases', () => {
       expect(reviewSection, '/mg review section must exist').toBeTruthy();
       if (reviewSection) {
         // Section must present multiple options (more than one mg-*-review skill mentioned)
-        const reviewSkills = reviewSection.match(/mg-[\w-]+-review|mg-leadership-team/g) ?? [];
+        // mg-leadership-team merged into /mg — workstream approval is handled in /mg leadership mode
+        const reviewSkills = reviewSection.match(/mg-[\w-]+-review/g) ?? [];
         const unique = new Set(reviewSkills);
         expect(
           unique.size,
@@ -390,14 +391,14 @@ describe('mg dispatcher v2 — golden path', () => {
       }
     });
 
-    it('/mg plan section specifies strategic review → mg-leadership-team routing', () => {
+    it('/mg plan section specifies strategic review → leadership mode (within /mg)', () => {
+      // mg-leadership-team merged into /mg — strategic planning stays in /mg leadership mode
       const planSection = extractSection(
         /##\s+\/mg plan\s*([\s\S]*?)(?=\n##\s+|$)/i
       );
       expect(planSection, '/mg plan section must exist').toBeTruthy();
       if (planSection) {
         expect(planSection).toMatch(/strategic|leadership|executive|roadmap/i);
-        expect(planSection).toMatch(/mg-leadership-team/);
       }
     });
   });
@@ -467,19 +468,20 @@ describe('mg dispatcher v2 — golden path', () => {
       }
     });
 
-    it('/mg review section specifies workstream approval → mg-leadership-team routing', () => {
+    it('/mg review section specifies workstream approval → leadership mode (within /mg)', () => {
+      // mg-leadership-team merged into /mg — workstream approval stays in /mg leadership mode
       const reviewSection = extractSection(
         /##\s+\/mg review\s*([\s\S]*?)(?=\n##\s+|$)/i
       );
       expect(reviewSection, '/mg review section must exist').toBeTruthy();
       if (reviewSection) {
         expect(reviewSection).toMatch(/workstream|approval|leadership|executive/i);
-        expect(reviewSection).toMatch(/mg-leadership-team/);
       }
     });
   });
 
-  describe('AC 5: all 17 original skills still referenced', () => {
+  describe('AC 5: all 16 routable skills still referenced', () => {
+    // mg-leadership-team was merged into /mg and is no longer a separate routable skill
     for (const skill of ALL_17_SKILLS) {
       it(`${skill} is still referenced in SKILL.md`, () => {
         expect(content()).toContain(skill);

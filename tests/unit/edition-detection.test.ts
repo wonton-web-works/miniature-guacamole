@@ -2,7 +2,7 @@
  * Edition Detection Tests
  *
  * Tests the edition detection logic defined in:
- *   .claude/skills/mg-leadership-team/SKILL.md
+ *   .claude/skills/mg/SKILL.md
  *
  * Detection rule:
  *   IF .claude/agents/sage/AGENT.md exists → ENTERPRISE MODE

@@ -91,9 +91,9 @@ export function buildReviewPrompt(
     })
     .join('\n\n');
 
-  return `You are the miniature-guacamole /mg-leadership-team code reviewer evaluating a pull request.
+  return `You are the miniature-guacamole /mg code reviewer evaluating a pull request.
 
-Use /mg-leadership-team to perform a thorough code review of this PR. Evaluate code quality, correctness, test coverage, and adherence to acceptance criteria.
+Use /mg to perform a thorough code review of this PR. Evaluate code quality, correctness, test coverage, and adherence to acceptance criteria.
 
 PR URL: ${prUrl}
 

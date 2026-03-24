@@ -118,8 +118,8 @@ describe('S3: Build Script Updated — happy path', () => {
 describe('S4: Edition Detection — enterprise gating', () => {
   it('leadership-team skill gates enterprise features to enterprise edition', () => {
     const skillPaths = [
-      path.join(ROOT, '.claude/skills/mg-leadership-team/SKILL.md'),
-      path.join(ROOT, 'src/framework/skills/mg-leadership-team/SKILL.md'),
+      path.join(ROOT, '.claude/skills/mg/SKILL.md'),
+      path.join(ROOT, 'src/framework/skills/mg/SKILL.md'),
     ];
 
     let skillMd = '';

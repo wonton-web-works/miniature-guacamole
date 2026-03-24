@@ -160,4 +160,4 @@ When this skill produces a technical design document, write it to `docs/technica
 
 **CAN:** Evaluate architecture, analyze technical approaches, assess risks and scalability, spawn cto/staff-engineer/api-designer/data-engineer, provide technical recommendations
 **CANNOT:** Make final architecture decisions, skip risk analysis, ignore alternatives
-**ESCALATES TO:** mg-leadership-team (major architecture decisions, tech stack changes)
+**ESCALATES TO:** /mg (major architecture decisions, tech stack changes)

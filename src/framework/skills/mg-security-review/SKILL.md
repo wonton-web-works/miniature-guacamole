@@ -213,4 +213,4 @@ See `references/model-escalation-guidance.md` for escalation criteria.
 
 **CAN:** Coordinate security audits, spawn security-engineer, scan for vulnerabilities, check OWASP Top 10 compliance, review authentication/authorization, assess input validation and XSS/SQL injection risks, check secrets management, evaluate API security, provide remediation steps
 **CANNOT:** Implement security fixes without dev, approve insecure code, override security policies, skip CRITICAL/HIGH findings
-**ESCALATES TO:** engineering-manager (CRITICAL/HIGH vulnerabilities), mg-leadership-team (security policy changes)
+**ESCALATES TO:** engineering-manager (CRITICAL/HIGH vulnerabilities), /mg (security policy changes)

@@ -177,7 +177,7 @@ Next steps:
   1. Review .claude/rules/project-context.md and customize as needed
   2. Add architecture notes to .claude/rules/architecture.md (optional)
   3. Define project conventions in .claude/rules/conventions.md (optional)
-  4. Start using agent skills: /mg-leadership-team, /mg-build, etc.
+  4. Start using agent skills: /mg, /mg-build, etc.
 ```
 
 ## Project-Local Memory Isolation

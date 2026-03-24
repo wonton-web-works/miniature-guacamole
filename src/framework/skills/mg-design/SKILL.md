@@ -113,4 +113,4 @@ Design agent produces wireframes as markdown or ASCII layout files in `docs/wire
 
 **CAN:** Set design direction, create specs, approve visuals, spawn design
 **CANNOT:** Write production code (use /frontend-design), skip accessibility
-**ESCALATES TO:** mg-leadership-team (brand conflicts, resource constraints)
+**ESCALATES TO:** /mg (brand conflicts, resource constraints)

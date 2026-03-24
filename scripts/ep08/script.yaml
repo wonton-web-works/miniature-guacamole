@@ -30,7 +30,7 @@ scenes:
     narrator_agent: "cto"
     narration: "Now run a workstream in client-a. Create a memory entry, make a decision, write a handoff. Then switch to client-b and check whether any of that bleeds over."
     terminal_commands:
-      - command: "cd ~/projects/client-a && /mg-leadership-team plan new user onboarding flow"
+      - command: "cd ~/projects/client-a && /mg plan new user onboarding flow"
         wait_after_ms: 2000
       - command: "cd ~/projects/client-b && cat .claude/memory/decisions.json"
         wait_after_ms: 1000

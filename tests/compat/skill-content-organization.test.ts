@@ -29,7 +29,7 @@ import * as path from 'path';
 
 const SKILLS_SRC = path.resolve(__dirname, '../../src/framework/skills');
 
-// All 16 skill directory names
+// All 16 skill directory names (mg-leadership-team merged into mg)
 const ALL_SKILLS = [
   'mg-accessibility-review',
   'mg-add-context',
@@ -42,7 +42,6 @@ const ALL_SKILLS = [
   'mg-design-review',
   'mg-document',
   'mg-init',
-  'mg-leadership-team',
   'mg-refactor',
   'mg-security-review',
   'mg-spec',
@@ -75,10 +74,9 @@ const VERBOSE_OUTPUT_SKILLS = [
 ];
 
 // Skills that are already short (≤ 150 lines total) and require NO reference
-// files — they must stay untouched.
+// files — they must stay untouched. mg-leadership-team merged into mg.
 const SHORT_SKILLS = [
   'mg-design',
-  'mg-leadership-team',
   'mg-document',
   'mg-spec',
 ];
@@ -309,9 +307,10 @@ describe('WS-COMPAT-2 — Misuse: non-compliant body patterns are detectable', (
 
 describe('WS-COMPAT-2 — Boundary: exceptions and edge cases', () => {
 
-  it('short skills (mg-design, mg-leadership-team, mg-document, mg-spec) have no references/model-escalation-guidance.md', () => {
+  it('short skills (mg-design, mg-document, mg-spec) have no references/model-escalation-guidance.md', () => {
     // These skills are already ≤ 150 lines and have no ## Model Escalation section.
     // They must NOT get reference files from this workstream.
+    // mg-leadership-team merged into mg.
     for (const skill of SHORT_SKILLS) {
       const refPath = path.join(SKILLS_SRC, skill, 'references', 'model-escalation-guidance.md');
       expect(
@@ -321,7 +320,7 @@ describe('WS-COMPAT-2 — Boundary: exceptions and edge cases', () => {
     }
   });
 
-  it('short skills (mg-design, mg-leadership-team, mg-document, mg-spec) have no references/output-examples.md', () => {
+  it('short skills (mg-design, mg-document, mg-spec) have no references/output-examples.md', () => {
     for (const skill of SHORT_SKILLS) {
       const refPath = path.join(SKILLS_SRC, skill, 'references', 'output-examples.md');
       expect(
@@ -345,7 +344,7 @@ describe('WS-COMPAT-2 — Boundary: exceptions and edge cases', () => {
     }
   });
 
-  it('the ## Boundaries section still exists in all 16 SKILL.md files after extraction', () => {
+  it('the ## Boundaries section still exists in all 15 SKILL.md files after extraction', () => {
     // Boundaries is the terminal section — it must never be accidentally removed.
     for (const skill of ALL_SKILLS) {
       const content = readSkill(skill);
@@ -494,7 +493,7 @@ describe('WS-COMPAT-2 — Golden path: all extractions complete and correct', ()
 
   // --- Body length targets ---
 
-  it('all 16 SKILL.md body lengths are ≤ 250 lines (soft target — warn on violations)', () => {
+  it('all 15 SKILL.md body lengths are ≤ 250 lines (soft target — warn on violations)', () => {
     // 250 lines is the soft ceiling. Skills still at 300+ lines need attention.
     const violations: string[] = [];
     for (const skill of ALL_SKILLS) {
@@ -513,7 +512,7 @@ describe('WS-COMPAT-2 — Golden path: all extractions complete and correct', ()
 
   // --- Content integrity (nothing accidentally removed) ---
 
-  it('all 16 SKILL.md files still have ## Constitution section', () => {
+  it('all 15 SKILL.md files still have ## Constitution section', () => {
     for (const skill of ALL_SKILLS) {
       const content = readSkill(skill);
       expect(

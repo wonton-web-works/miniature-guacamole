@@ -337,8 +337,8 @@ setup() {
     [ "$status" -eq 0 ]
 }
 
-@test "[GOLDEN] README mentions mg-leadership-team" {
-    run grep -q "mg-leadership-team" "$README"
+@test "[GOLDEN] README mentions /mg leadership mode" {
+    run grep -q "/mg.*leadership" "$README"
     [ "$status" -eq 0 ]
 }
 

@@ -93,7 +93,7 @@ Use code blocks to show structure, tables for comparisons:
 
 ## Skill Type Specific Guidance
 
-### Team Skills (mg-leadership-team, mg-build, mg-spec, mg-design, mg-document, mg-write)
+### Team Skills (/mg, mg-build, mg-spec, mg-design, mg-document, mg-write)
 
 **Pattern**: Strategic assessment → Decision → Delegation
 
@@ -197,7 +197,7 @@ Coverage: {percent}%
 
 ## Examples
 
-### Example: Team Skill Output (mg-leadership-team)
+### Example: Team Skill Output (/mg)
 
 ```markdown
 ## Executive Review: User Authentication Feature
@@ -279,7 +279,7 @@ GO - with phased rollout
 - WS-204: Presence indicators - User cursors and selections visible
 
 ### Next Action
-Present to mg-leadership-team for strategic approval and resource allocation
+Present to /mg for strategic approval and resource allocation
 ```
 
 ## ASCII Visual Progress Patterns

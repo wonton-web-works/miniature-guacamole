@@ -72,7 +72,7 @@ Scoring: 1 = poor, 5 = excellent
 | mg-design-review | 4 | 4 | 4 | 3 | Review criteria are well-organized. The "micro-interactions" section is more detailed than necessary given that this is a review skill, not an implementation skill. Could be condensed. |
 | mg-document | 4 | 4 | 4 | 4 | Clean, minimal, delegates correctly. The documentation types table is useful framing. Minor: workflow step 3 "Review for clarity, completeness, accuracy" is unattributed — who does the review? The skill itself? That's vague for an orchestration skill. |
 | mg-init | 5 | 5 | 5 | 3 | Architecture decisions (DEC-INIT-002, etc.) are well-embedded. The idempotency guarantee is correctly enforced in the constitution. Example execution flow with exact output format is excellent for model comprehension. The "Implementation Notes" section at the bottom duplicates what's already in "What This Skill Does" — remove the duplication. |
-| mg-leadership-team | 5 | 5 | 5 | 4 | State sync checklist after approval is excellent — prevents the most common drift problem. The post-approval state sync protocol makes this more than just a review gate; it's a system synchronization step. Minor: "Workstream clarity" constitution clause should specify what "testable workstreams" means (currently undefined). |
+| mg | 5 | 5 | 5 | 4 | State sync checklist after approval is excellent — prevents the most common drift problem. The post-approval state sync protocol makes this more than just a review gate; it's a system synchronization step. Minor: "Workstream clarity" constitution clause should specify what "testable workstreams" means (currently undefined). |
 | mg-refactor | 5 | 5 | 5 | 4 | Characterization tests first is correctly enforced. "No behavior changes" guardrail is clear. Step 4 code review is optional but well-flagged. The spawn pattern prompt for step 2 includes "No functional changes" — correct and necessary. |
 | mg-security-review | 5 | 5 | 5 | 3 | Domain inference heuristics table is one of the best-designed pieces in the framework. Auto-detecting security domain from file patterns removes a friction point that would otherwise cause shallow reviews. The severity level action table (CRITICAL → block deployment) is correctly specified. The domains_reviewed memory field should match the security-engineer agent's memory schema — verify these are in sync. |
 | mg-spec | 4 | 4 | 5 | 4 | External dependency policy (Tier 1/Tier 2 classification before writing specs) is excellent — prevents the "spec against non-existent APIs" failure mode. Financial data warning (never fabricate figures) is a strong guardrail. |
@@ -108,10 +108,10 @@ The clause `"Follow output format — See references/output-format.md for standa
 CEO, CTO, and engineering-director agents all follow the same pattern: three-bullet constitutions with high-level role descriptions. None of them contain:
 - Decision heuristics ("when technical debt is mentioned, always ask for a payoff timeline")
 - Activation criteria ("spawn only when X type of work is involved")
-- Output formats (unlike most agents, their outputs are described in the SKILL.md of mg-leadership-team, not in their own AGENT.md)
+- Output formats (unlike most agents, their outputs are described in the SKILL.md of /mg, not in their own AGENT.md)
 - Conflict resolution approaches
 
-This means that when these agents are spawned, Claude will produce polished-sounding but generic executive assessments. The mg-leadership-team skill partially compensates by providing structured output formats, but the agent definitions themselves provide no differentiation between CEO and CTO perspectives beyond job title.
+This means that when these agents are spawned, Claude will produce polished-sounding but generic executive assessments. The /mg skill partially compensates by providing structured output formats, but the agent definitions themselves provide no differentiation between CEO and CTO perspectives beyond job title.
 
 **Recommendation:** Add 3-5 lines to each C-Suite agent specifying what that role uniquely contributes to a decision. For CEO: business model impact, market timing, resource trade-offs. For CTO: build-vs-buy, technical debt horizon, team capability alignment. For engineering-director: delivery risk, capacity, dependency sequencing.
 
@@ -195,7 +195,7 @@ The design agent's constitution says "Production-ready — Your code ships, not 
 | mg-design-review | ~550 | ~80 | Micro-interactions section too detailed |
 | mg-document | ~300 | ~30 | Review attribution gap |
 | mg-init | ~700 | ~100 | Implementation Notes duplicates What This Skill Does |
-| mg-leadership-team | ~600 | ~50 | "testable workstreams" undefined |
+| mg | ~600 | ~50 | "testable workstreams" undefined |
 | mg-refactor | ~500 | ~30 | Minor |
 | mg-security-review | ~650 | ~80 | Severity table detail level |
 | mg-spec | ~500 | ~30 | Minor |
@@ -270,7 +270,7 @@ Add `[ART]`, `[DOC]`, `[SEC]`, `[COPY]` to visual-formatting.md ANSI color secti
 ### P3 — Completeness
 
 **13. Add C-Suite output format ownership**
-CEO, CTO, and engineering-director currently have no output format defined in their own AGENT.md — they inherit it from mg-leadership-team SKILL.md. Consider adding a minimal "Expected Output" section to each so they can be spawned outside the leadership-team skill context.
+CEO, CTO, and engineering-director currently have no output format defined in their own AGENT.md — they inherit it from /mg SKILL.md. Consider adding a minimal "Expected Output" section to each so they can be spawned outside the leadership-team skill context.
 
 **14. Clarify dual-specialist review activation in mg-build**
 Step 3.5 triggers on "fenced code blocks" in deliverables. This is correct but the term "deliverable" is ambiguous — is this the dev output file, the workstream state file, or the PR description? Specify: "If any file modified by dev contains fenced code blocks."

@@ -67,7 +67,7 @@ NEW_SKILLS=(
     "mg-design-review"
     "mg-document"
     "mg-init"
-    "mg-leadership-team"
+    "mg"
     "mg-refactor"
     "mg-security-review"
     "mg-spec"

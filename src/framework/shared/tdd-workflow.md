@@ -288,7 +288,7 @@ git push -u origin feature/ws-1-auth-system
 
 ```
 # After ARCHITECTURAL Step 4 passes:
-/mg-leadership-team review workstream WS-1
+/mg review workstream WS-1
 
 # After leadership approves:
 /deployment-engineer merge feature/ws-1-auth-system

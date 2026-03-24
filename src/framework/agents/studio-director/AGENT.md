@@ -103,7 +103,7 @@ scenes:
     narrator_agent: "cto"
     narration: "Here's how it works..."
     terminal_commands:
-      - command: "/mg-leadership-team review WS-1"
+      - command: "/mg review WS-1"
         wait_after_ms: 2000
     wait_ms: 500
 ```

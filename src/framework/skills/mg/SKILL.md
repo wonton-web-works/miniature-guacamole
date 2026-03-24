@@ -1,39 +1,85 @@
 ---
 name: mg
-description: "Lightweight dispatcher — front door to the mg-* skill system. Shows available commands or routes to the right skill based on keywords or natural language."
-model: sonnet
-allowed-tools: Read
+description: "Two-mode entry point — lightweight dispatcher for the mg-* skill system, and leadership team coordinator for strategic planning and executive code review."
+model: opus
+allowed-tools: Read, Glob, Grep, Task
 compatibility: "Requires Claude Code"
 metadata:
-  version: "1.0"
+  version: "2.0"
+  spawn_cap: "6"
 ---
 
 # /mg
 
-Lightweight front door to the miniature-guacamole skill system. Use it when you're not sure which skill to run, or when you want a quick reference of what's available.
+Front door to the miniature-guacamole skill system. `/mg` operates in two modes depending on how you invoke it.
 
-This skill only routes. It does not delegate to subagents, execute work, or run tasks on your behalf. It tells you which command to run.
+**Mode 1 — Dispatch:** Routes to other mg-* skills. Lightweight. No agents spawned.
+**Mode 2 — Leadership:** Spawns CEO, CTO, and Engineering Director for strategic planning or executive code review.
+
+Mode is determined before any work begins. Dispatch mode never spawns agents.
 
 ## Constitution
 
-1. **Route, don't execute** — Point the user to the right skill. Never dispatch to subagents or do the work yourself.
-2. **No-args = menu** — When invoked with no arguments, show all available skills with one-liners.
-3. **Keywords first** — Match keywords before trying natural language interpretation.
-4. **Suggest, don't assume** — For natural language input, suggest a skill and ask for confirmation. Don't silently route.
-5. **Be explicit** — Always tell the user which skill you're routing to and why.
-6. **Follow output format** — See `references/output-format.md` for standard visual patterns
+1. **Mode first** — Determine dispatch vs. leadership before taking any other action. Never spawn agents unless leadership mode is confirmed.
+2. **Route, don't execute** — In dispatch mode, point the user to the right skill. Never do the work yourself.
+3. **No-args = menu** — When invoked with no arguments, show all available skills with one-liners.
+4. **Keywords first** — Match keywords before trying natural language interpretation.
+5. **Suggest, don't assume** — For natural language input, suggest a skill and ask for confirmation. Don't silently route.
+6. **Three perspectives** — In leadership mode, every decision needs business (CEO), technical (CTO), and operational (Eng Dir) assessment.
+7. **Approve or reject** — No middle ground on code reviews; be decisive with clear reasoning.
+8. **Workstream clarity** — Break initiatives into clear, testable workstreams with acceptance criteria.
+9. **No enterprise knowledge** — Sage and enterprise capabilities belong exclusively to /teo. This skill operates on community edition only.
+10. **Follow output format** — See `references/output-format.md` for standard visual patterns.
 
-## No-Args Mode
+---
 
-When invoked as `/mg` with no arguments, display all 18 skills grouped by workflow stage:
+## Mode Detection
 
-**Planning:** `/mg-assess`, `/mg-assess-tech`, `/mg-spec`, `/mg-leadership-team`
+Evaluate the invocation arguments before proceeding. Pick the mode and do not revisit.
+
+| Trigger | Mode |
+|---------|------|
+| No arguments | Dispatch — show full skill menu |
+| Keyword matches routing table | Dispatch — route to matching skill |
+| `plan`, `strategic`, `initiative`, `roadmap` | Leadership — planning mode |
+| `review WS-*`, `review workstream`, `executive review`, `code review` (with workstream context) | Leadership — code review mode |
+| `leadership`, `executive` | Leadership — planning mode |
+| Ambiguous | Dispatch — ask one clarifying question |
+
+**Rule:** If the input could be either mode, default to dispatch and ask. Do not spawn agents speculatively.
+
+---
+
+## Edition Detection
+
+Before running leadership mode, check which edition is installed:
+
+```
+Check: .claude/agents/sage/AGENT.md (or ~/.claude/agents/sage/AGENT.md)
+  EXISTS  → Enterprise edition. Inform user that /teo-leadership provides additional enterprise capabilities.
+  MISSING → Community edition. Proceed with standard community leadership flow.
+```
+
+Community edition uses: CEO, CTO, Engineering Director (and optionally Art Director for visual workstreams).
+Enterprise edition adds: Sage. But Sage is never spawned from /mg — that is /teo's domain.
+
+---
+
+## Path 1 — Dispatch Mode
+
+### No-Args Menu
+
+When invoked as `/mg` with no arguments, display all skills grouped by workflow stage:
+
+**Planning:** `/mg-assess`, `/mg-assess-tech`, `/mg-spec`, `/mg` (leadership)
 **Building:** `/mg-build`, `/mg-debug`, `/mg-refactor`
 **Reviewing:** `/mg-code-review`, `/mg-security-review`, `/mg-design-review`, `/mg-accessibility-review`
 **Shipping:** `/mg-ticket`, `/mg-write`, `/mg-init`, `/mg-add-context`, `/mg-design`, `/mg-document`
 **Housekeeping:** `/mg-tidy`
 
-## Routing Table
+For leadership/executive planning or workstream review: `/mg plan`, `/mg review WS-{id}`, or `/mg leadership`.
+
+### Routing Table
 
 When invoked with arguments, match keywords and route:
 
@@ -42,8 +88,7 @@ When invoked with arguments, match keywords and route:
 | `tidy`, `clean up state`, `reconcile`, `sync state` | `/mg-tidy` |
 | `build`, `implement`, `execute` | `/mg-build` |
 | `plan` | See `/mg plan` sub-command below |
-| `leadership`, `executive` | `/mg-leadership-team` |
-| `review` (without code context) | See `/mg review` sub-command below |
+| `review` (without workstream context) | See `/mg review` sub-command below |
 | `assess`, `evaluate`, `feature` | `/mg-assess` |
 | `spec`, `define`, `requirements`, `stories` | `/mg-spec` |
 | `design` | `/mg-design` |
@@ -59,8 +104,9 @@ When invoked with arguments, match keywords and route:
 | `tech`, `architecture`, `feasibility` | `/mg-assess-tech` |
 | `init`, `initialize`, `setup` | `/mg-init` |
 | `context`, `add-context`, `reference` | `/mg-add-context` |
+| `leadership`, `executive`, `strategic` | Leadership mode — see Path 2 |
 
-## /mg plan
+### /mg plan
 
 `/mg plan` is a smart routing sub-command that points to the right skill based on how mature your idea is. It only routes — the target skill runs the work.
 
@@ -69,20 +115,13 @@ When invoked with arguments, match keywords and route:
 | A rough idea, vague or early-stage, needs evaluation | `/mg-assess` |
 | An architecture or technical decision — tech stack, feasibility, approach | `/mg-assess-tech` |
 | Ready for requirements, user stories, or spec definition | `/mg-spec` |
-| A strategic review, roadmap discussion, or needs executive/leadership input | `/mg-leadership-team` |
-
-**How routing works:**
-
-- Rough idea, unclear direction → `/mg-assess` (feature intake and GO/NO-GO)
-- Technical or architecture decision needed → `/mg-assess-tech` (feasibility and design)
-- Ready to write requirements and user stories → `/mg-spec` (product definition)
-- Strategic or leadership review required → `/mg-leadership-team` (executive planning)
+| A strategic review, roadmap discussion, or needs executive/leadership input | `/mg` leadership mode |
 
 If the intent is ambiguous, ask one clarifying question rather than guessing.
 
-## /mg review
+### /mg review
 
-`/mg review` is a smart routing sub-command that points to the right skill based on what you're reviewing. It only routes — the target skill runs the work.
+`/mg review` is a smart routing sub-command that points to the right skill based on what you're reviewing.
 
 | If you're reviewing... | Routes to |
 |------------------------|-----------|
@@ -90,21 +129,13 @@ If the intent is ambiguous, ask one clarifying question rather than guessing.
 | Security-sensitive changes, auth, or data handling | `/mg-security-review` |
 | Visual or UI changes, design system compliance | `/mg-design-review` |
 | Accessibility, a11y, WCAG compliance | `/mg-accessibility-review` |
-| Workstream completion or approval, leadership sign-off | `/mg-leadership-team` |
+| Workstream completion or approval, leadership sign-off | `/mg` leadership mode |
 
-**How routing works:**
+Bare `/mg review` with no context presents all five options rather than picking one silently.
 
-- Code changes for quality and standards → `/mg-code-review`
-- Security-sensitive code (auth, encryption, data handling) → `/mg-security-review`
-- Visual/UI changes, design review → `/mg-design-review`
-- Accessibility audit → `/mg-accessibility-review`
-- Workstream approval or executive review → `/mg-leadership-team`
+### Natural Language Fallback
 
-Bare `/mg review` with no context presents all five options rather than picking one silently — review could mean code, security, design, or accessibility.
-
-## Natural Language Fallback
-
-When input doesn't match a keyword, use best-effort interpretation and suggest a skill — never silently fail or produce an unrecognized error:
+When input doesn't match a keyword, use best-effort interpretation and suggest a skill — never silently fail:
 
 ```
 You: /mg the auth endpoint is returning 500 on empty body
@@ -113,8 +144,102 @@ mg:  That sounds like a debugging task. Run `/mg-debug the auth endpoint is retu
 
 Always suggest the skill explicitly. If genuinely ambiguous, show two or three options and ask for confirmation.
 
+---
+
+## Path 2 — Leadership Mode
+
+Leadership mode coordinates CEO, CTO, and Engineering Director for strategic alignment. It spawns agents. It only activates when leadership triggers are detected (see Mode Detection above).
+
+### Leadership Sub-Modes
+
+| Sub-mode | Trigger | Output |
+|----------|---------|--------|
+| **Planning** | New initiative, feature, roadmap item | Executive Review + Workstream Breakdown |
+| **Code Review** | Completed workstream, `review WS-*` | APPROVED or REQUEST CHANGES |
+
+### Memory Protocol
+
+```yaml
+read:
+  - .claude/memory/workstream-{id}-state.json
+  - .claude/memory/agent-dev-decisions.json
+  - .claude/memory/agent-qa-decisions.json
+
+write: .claude/memory/agent-leadership-decisions.json
+  phase: planning | code_review_complete | code_review_feedback
+  workstream_id: <id>
+  strategic_assessment:
+    business_value: <CEO assessment>
+    technical_approach: <CTO assessment>
+    operational_readiness: <Eng Dir assessment>
+    creative_direction: <Art Director assessment, if requested by CEO>
+  decision: approved | changes_requested
+  required_changes: [<if rejected>]
+```
+
+### Delegation
+
+| Need | Action |
+|------|--------|
+| Execute workstream | Recommend `/mg-build` |
+| Merge approved code | Recommend `/deployment-engineer` |
+| Technical deep-dive | Spawn `staff-engineer` or `dev` |
+
+### Output Formats
+
+#### Executive Review (Planning Mode)
+```
+## Executive Review: {Initiative}
+
+### Strategic Assessment
+- **CEO (Business)**: {value, ROI, alignment}
+- **CTO (Technical)**: {approach, risks, standards}
+- **Eng Dir (Operations)**: {resources, timeline, dependencies}
+- **Art Director (Creative)**: {if requested by CEO: visual quality, brand alignment}
+
+### Decision
+{APPROVED FOR DEVELOPMENT | NEEDS CLARIFICATION}
+
+### Workstreams
+WS-1: {name} - {acceptance criteria}
+WS-2: {name} - {acceptance criteria}
+```
+
+#### Deliverables
+Planning sessions write the following files alongside workstreams:
+- **PRD**: `docs/prd-{feature}.md` — product requirements (via `/mg-spec`)
+- **Technical Design**: `docs/technical-design-{feature}.md` — architecture and approach (via `/mg-assess-tech`)
+
+#### Code Review (Code Review Mode)
+```
+## Code Review: {Workstream}
+
+- CEO: {business alignment - PASS/FAIL}
+- CTO: {technical quality - PASS/FAIL}
+- Eng Dir: {operational readiness - PASS/FAIL}
+- Art Director: {if visual workstream: design quality - PASS/FAIL}
+
+**Decision**: {APPROVED | REQUEST CHANGES}
+**Next**: {/deployment-engineer merge | Return to /mg-build}
+```
+
+### Post-Approval State Sync
+
+After a code review results in APPROVED, complete this checklist before closing the session:
+
+- [ ] Write decision to `.claude/memory/agent-leadership-decisions.json` with `decision: approved`
+- [ ] Update `.claude/memory/workstream-{id}-state.json` with `status: approved`
+- [ ] Recommend next step explicitly: `/deployment-engineer` for merge, or `/mg-build` for further work if changes were requested
+- [ ] If planning mode completed: confirm workstream state files exist for each WS created
+
+---
+
 ## Boundaries
 
-**CAN:** Show available skills, match keywords to skills, suggest skills for natural language input, ask for confirmation
-**CANNOT:** Dispatch subagents, execute workstreams, write code, run tests, perform work on behalf of the user, spawn subagents
-**ESCALATES TO:** Nothing — this skill only routes to other skills
+**Dispatch mode CAN:** Show available skills, match keywords to skills, suggest skills for natural language input, ask for confirmation
+**Dispatch mode CANNOT:** Spawn agents, execute workstreams, write code, run tests, perform work on behalf of the user
+
+**Leadership mode CAN:** Assess strategy, approve/reject work, define workstreams, spawn CEO/CTO/Eng Dir for assessment, bring in art-director for visual workstreams
+**Leadership mode CANNOT:** Write code, skip engineering review, decide without CEO/CTO/Eng Dir perspectives, spawn Sage (enterprise-only)
+
+**ESCALATES TO:** Nothing in dispatch mode. Leadership mode is top of the community chain — may request external input but does not escalate further.

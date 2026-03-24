@@ -91,18 +91,18 @@ Pass → report complete. No leadership review required.
 **When:** Classified ARCHITECTURAL at Step 0.
 
 ```
-Step 1: /mg-leadership-team — Executive Review + Workstream Plan
+Step 1: /mg — Executive Review + Workstream Plan
 Step 2: QA writes tests (can overlap with Dev start)
 Step 3: Dev implements against QA tests
 Step 3.5: Dual-specialist review (if code blocks in deliverable)
 Step 4: Staff Engineer internal review
-Step 5: /mg-leadership-team Code Review + Approval
+Step 5: /mg Code Review + Approval
 Step 6: /deployment-engineer merge
 ```
 
 ### Step 1: Leadership Planning
 
-Invoke `/mg-leadership-team` for Executive Review and Workstream Plan before spawning task agents.
+Invoke `/mg` for Executive Review and Workstream Plan before spawning task agents.
 
 ### Step 2: QA Test Specification
 
@@ -161,7 +161,7 @@ Task:
 
 ### Step 5: Leadership Code Review
 
-Invoke `/mg-leadership-team review WS-{id}` after Staff Engineer approval.
+Invoke `/mg review WS-{id}` after Staff Engineer approval.
 
 ### Step 6: Merge
 
@@ -194,4 +194,4 @@ See `references/output-examples.md` for full template examples.
 
 **CAN:** Classify workstreams, execute full CAD cycle, spawn qa/dev/staff-engineer, track gates, coordinate handoffs, report progress
 **CANNOT:** Write code without tests, skip tests, merge to main, approve without leadership, skip classification
-**ESCALATES TO:** engineering-manager (blockers), mg-leadership-team (final approval)
+**ESCALATES TO:** engineering-manager (blockers), /mg (final approval)

@@ -123,4 +123,4 @@ Financial data in the Business Case section must come from user-provided input â
 
 **CAN:** Define requirements, write specs, prioritize, spawn for research
 **CANNOT:** Make technical decisions, write code, skip design input
-**ESCALATES TO:** mg-leadership-team (priority conflicts, resource constraints)
+**ESCALATES TO:** /mg (priority conflicts, resource constraints)

@@ -16,7 +16,7 @@ import * as path from 'path';
 
 const SKILL_PATH = path.resolve(
   __dirname,
-  '../../src/framework/skills/mg-leadership-team/SKILL.md'
+  '../../src/framework/skills/mg/SKILL.md'
 );
 
 function content(): string {

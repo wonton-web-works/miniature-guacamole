@@ -287,14 +287,14 @@ describe('buildReviewPrompt() — boundary tests (WS-DAEMON-16)', () => {
       expect(prompt).toContain(prUrl);
     });
 
-    it('GIVEN workstreams with acceptance criteria WHEN buildReviewPrompt called THEN includes /mg-leadership-team review instruction', () => {
+    it('GIVEN workstreams with acceptance criteria WHEN buildReviewPrompt called THEN includes /mg review instruction', () => {
       const prompt = buildReviewPrompt(
         'https://github.com/org/repo/pull/3',
         [WS_MECHANICAL],
         [RESULT_PASS]
       );
-      // Must trigger the leadership team review skill
-      expect(prompt.toLowerCase()).toMatch(/mg-leadership-team|leadership[\s-]team/);
+      // Must trigger the leadership team review via /mg
+      expect(prompt.toLowerCase()).toMatch(/\/mg\b|leadership[\s-]team/);
     });
 
     it('GIVEN buildReviewPrompt called THEN prompt instructs Claude to output APPROVED or REQUEST_CHANGES token', () => {

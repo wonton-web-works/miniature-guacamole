@@ -35,7 +35,7 @@ Classification happens **at intake** (Step 0), before any agent spawns. This det
             │                                        │
             ▼                                        ▼
 ┌───────────────────────┐               ┌─────────────────────────┐
-│   Dev (single spawn)  │               │  /mg-leadership-team    │
+│   Dev (single spawn)  │               │  /mg    │
 │   Writes tests +      │               │  Executive Review +     │
 │   implements (TDD)    │               │  Workstream Plan        │
 └───────────┬───────────┘               └────────────┬────────────┘
@@ -60,7 +60,7 @@ Classification happens **at intake** (Step 0), before any agent spawns. This det
                                                     │
                                                     ▼
                                        ┌─────────────────────────┐
-                                       │  /mg-leadership-team    │
+                                       │  /mg    │
                                        │  Code Review + Approve  │
                                        └────────────┬────────────┘
                                                     │
@@ -141,16 +141,16 @@ Pass → Done. No leadership review. No merge gate beyond bash.
 **Total spawns: 5-6**
 
 ```
-Step 1: /mg-leadership-team — Executive Review + Workstream Plan
+Step 1: /mg — Executive Review + Workstream Plan
 Step 2: QA writes tests (can run parallel with Dev once plan exists)
 Step 3: Dev implements against QA tests
 Step 3.5: Dual-specialist review (if deliverable contains code blocks)
 Step 4: Staff Engineer internal review
-Step 5: /mg-leadership-team Code Review + Approval
+Step 5: /mg Code Review + Approval
 Step 6: /deployment-engineer merge
 ```
 
-### /mg-leadership-team (Step 1)
+### /mg (Step 1)
 
 **Does:**
 1. Creates Executive Review (CEO, CTO, Eng Dir perspectives)
@@ -206,7 +206,7 @@ Spawn two specialists in parallel:
 
 **Output:** Internal review approval
 
-### /mg-leadership-team (Step 5)
+### /mg (Step 5)
 
 **Does:**
 1. Final code review
@@ -228,7 +228,7 @@ Spawn two specialists in parallel:
 | Dev | Full TDD cycle (tests + impl) | Implementation only |
 | QA | None | Test specs (Step 2) |
 | Staff Engineer | None | Internal review (Step 4) |
-| /mg-leadership-team | None | Planning + final approval |
+| /mg | None | Planning + final approval |
 | /deployment-engineer | None | Merge |
 | Bash Gate | Auto-verifies (Step 2) | Not used |
 
@@ -289,12 +289,12 @@ chore: Merge WS-X: [description]           # Merge
 
 ### Start a new initiative (ARCHITECTURAL only)
 ```
-/mg-leadership-team [describe the initiative]
+/mg [describe the initiative]
 ```
 
 ### Request code review (ARCHITECTURAL)
 ```
-/mg-leadership-team review workstream WS-1 on branch feature/ws-1-[name]
+/mg review workstream WS-1 on branch feature/ws-1-[name]
 ```
 
 ### Merge after approval (ARCHITECTURAL)
@@ -308,11 +308,11 @@ chore: Merge WS-X: [description]           # Merge
 |------|-----|-------|---------|---------|
 | User | mg-build | Both | New workstream | `/mg-build execute WS-X` |
 | mg-build | dev | MECHANICAL | Classified at intake | Combined test+impl prompt |
-| mg-build | mg-leadership-team | ARCHITECTURAL | After classification | Describe initiative |
-| mg-leadership-team | mg-build | ARCHITECTURAL | Workstream defined | `/mg-build execute WS-X` |
-| mg-build | mg-leadership-team | ARCHITECTURAL | Workstream complete | `/mg-leadership-team review WS-X` |
-| mg-leadership-team | deployment-engineer | ARCHITECTURAL | Approved | `/deployment-engineer merge` |
-| mg-leadership-team | mg-build | ARCHITECTURAL | Rejected | Specific feedback |
+| mg-build | /mg | ARCHITECTURAL | After classification | Describe initiative |
+| /mg | mg-build | ARCHITECTURAL | Workstream defined | `/mg-build execute WS-X` |
+| mg-build | /mg | ARCHITECTURAL | Workstream complete | `/mg review WS-X` |
+| /mg | deployment-engineer | ARCHITECTURAL | Approved | `/deployment-engineer merge` |
+| /mg | mg-build | ARCHITECTURAL | Rejected | Specific feedback |
 
 ## Quality Gates
 

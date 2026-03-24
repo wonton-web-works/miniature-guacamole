@@ -69,7 +69,7 @@ $ grep "^| /mg-" .claude/README.md | wc -l
 - mg-design-review
 - mg-document
 - mg-init
-- mg-leadership-team
+- mg
 - mg-refactor
 - mg-security-review
 - mg-spec
@@ -277,7 +277,7 @@ $ ls -1 .claude/scripts/ | grep "^mg-" | wc -l
 9. mg-design-review
 10. mg-document
 11. mg-init
-12. mg-leadership-team
+12. mg
 13. mg-refactor
 14. mg-security-review
 15. mg-spec

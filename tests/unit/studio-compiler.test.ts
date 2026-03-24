@@ -29,7 +29,7 @@ const VALID_SCRIPT: Script = {
       narrator_agent: 'engineering-manager',
       narration: 'What if your Claude Code session had a full engineering team behind it?',
       terminal_commands: [
-        { command: '/mg-leadership-team review WS-42', wait_after_ms: 2000 },
+        { command: '/mg review WS-42', wait_after_ms: 2000 },
       ],
       wait_ms: 500,
     },
@@ -51,7 +51,7 @@ scenes:
     narrator_agent: "engineering-manager"
     narration: "What if your Claude Code session had a full engineering team behind it?"
     terminal_commands:
-      - command: "/mg-leadership-team review WS-42"
+      - command: "/mg review WS-42"
         wait_after_ms: 2000
     wait_ms: 500
   - scene_id: "02-narration-only"
@@ -578,7 +578,7 @@ describe('compiler.ts — Golden Path', () => {
       expect(scene.narrator_agent).toBe('engineering-manager');
       expect(scene.narration).toContain('engineering team');
       expect(scene.terminal_commands).toHaveLength(1);
-      expect(scene.terminal_commands[0].command).toBe('/mg-leadership-team review WS-42');
+      expect(scene.terminal_commands[0].command).toBe('/mg review WS-42');
       expect(scene.terminal_commands[0].wait_after_ms).toBe(2000);
       expect(scene.wait_ms).toBe(500);
     });
@@ -626,7 +626,7 @@ describe('compiler.ts — Golden Path', () => {
 
     it('includes Type and Enter directives for each terminal command', () => {
       const tape = generateTape(VALID_SCRIPT);
-      expect(tape).toContain('Type "/mg-leadership-team review WS-42"');
+      expect(tape).toContain('Type "/mg review WS-42"');
       expect(tape).toContain('Enter');
     });
 
@@ -649,7 +649,7 @@ describe('compiler.ts — Golden Path', () => {
 
     it('produces tape lines in scene order', () => {
       const tape = generateTape(VALID_SCRIPT);
-      const hookIndex = tape.indexOf('mg-leadership-team');
+      const hookIndex = tape.indexOf('/mg review WS-42');
       // The hook scene command should appear before scene 02's sleep
       expect(hookIndex).toBeGreaterThan(-1);
     });
@@ -696,7 +696,7 @@ describe('compiler.ts — Golden Path', () => {
       await compile(scriptPath, outputPath);
 
       const content = fs.readFileSync(outputPath, 'utf-8');
-      expect(content).toContain('Type "/mg-leadership-team review WS-42"');
+      expect(content).toContain('Type "/mg review WS-42"');
     });
   });
 });

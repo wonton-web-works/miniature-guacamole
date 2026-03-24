@@ -173,10 +173,10 @@ describe('WS-DOCS-4 README.md — golden path (required content must appear)', (
     }
   });
 
-  it('contains the CAD cycle ASCII diagram with mg-leadership-team', () => {
-    // AC-4: CAD cycle diagram must be present
+  it('contains the CAD cycle ASCII diagram with /mg', () => {
+    // AC-4: CAD cycle diagram must be present (mg-leadership-team merged into /mg)
     const readme = read('README.md');
-    expect(readme).toMatch(/mg-leadership-team/);
+    expect(readme).toMatch(/\/mg\b/);
   });
 
   it('contains the CAD cycle ASCII diagram with mg-build', () => {
@@ -259,9 +259,9 @@ describe('WS-DOCS-5 docs/getting-started.md — misuse cases (stale values must 
     // AC-3: the cycle must show plan → build → review → merge (4 steps)
     const gs = read('docs/getting-started.md');
     // All four step commands must appear in the getting-started workflow section
-    expect(gs).toMatch(/mg-leadership-team/);   // step 1: plan
-    expect(gs).toMatch(/mg-build/);             // step 2: build
-    // step 3: review is another mg-leadership-team call (already covered above)
+    expect(gs).toMatch(/\/mg\b/);                        // step 1: plan (via /mg)
+    expect(gs).toMatch(/mg-build/);                      // step 2: build
+    // step 3: review is another /mg call (already covered above)
     expect(gs).toMatch(/deployment-engineer|\/deploy/i); // step 4: merge/deploy
   });
 });
@@ -335,10 +335,10 @@ describe('WS-DOCS-5 docs/getting-started.md — golden path (required content mu
     expect(gs).toMatch(/Output:|# Output/i);
   });
 
-  it('shows the full CAD cycle plan step (/mg-leadership-team)', () => {
-    // AC-3: step 1 — plan
+  it('shows the full CAD cycle plan step (/mg)', () => {
+    // AC-3: step 1 — plan (mg-leadership-team merged into /mg)
     const gs = read('docs/getting-started.md');
-    expect(gs).toMatch(/\/mg-leadership-team/);
+    expect(gs).toMatch(/\/mg\b/);
   });
 
   it('shows the full CAD cycle build step (/mg-build)', () => {
@@ -347,11 +347,11 @@ describe('WS-DOCS-5 docs/getting-started.md — golden path (required content mu
     expect(gs).toMatch(/\/mg-build/);
   });
 
-  it('shows the full CAD cycle review step (another /mg-leadership-team or explicit review label)', () => {
+  it('shows the full CAD cycle review step (another /mg or explicit review label)', () => {
     // AC-3: step 3 — leadership review
-    // The review step is another /mg-leadership-team call with "Review" argument
+    // The review step is another /mg call with "Review" argument (mg-leadership-team merged into /mg)
     const gs = read('docs/getting-started.md');
-    expect(gs).toMatch(/\/mg-leadership-team\s+Review|Step [3-4].*review/i);
+    expect(gs).toMatch(/\/mg\s+[Rr]eview|Step [3-4].*review/i);
   });
 
   it('shows the full CAD cycle merge step (/deployment-engineer or deploy)', () => {

@@ -24,7 +24,7 @@ Type a slash command. Get a team.
 
 - `/mg` is the front door — shows all commands or routes by keyword to the right skill
 - `/mg-build` runs a full test-first development cycle — QA writes failing tests, Dev implements, QA verifies 99% coverage, Staff Engineer reviews
-- `/mg-leadership-team` coordinates CEO, CTO, and Engineering Director for planning and code approval
+- `/mg` (leadership mode) coordinates CEO, CTO, and Engineering Director for planning and code approval
 - `/mg-assess` evaluates feature ideas with product and technical perspectives before you write a line of code
 - `/mg-ticket` files GitHub Issues directly from Claude Code, with workstream context attached
 - `/mg-tidy` reconciles project state — deduplicates issues, syncs memory, flags stale work

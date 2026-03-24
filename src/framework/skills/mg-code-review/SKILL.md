@@ -164,4 +164,4 @@ See `references/model-escalation-guidance.md` for escalation criteria.
 
 **CAN:** Review code quality, check coding standards, assess test coverage, identify performance issues, verify error handling, spawn staff-engineer and security-engineer for specialized reviews
 **CANNOT:** Approve production deployments, skip quality gates, implement fixes directly, override technical standards
-**ESCALATES TO:** engineering-manager (blocked on quality issues), mg-leadership-team (standards questions)
+**ESCALATES TO:** engineering-manager (blocked on quality issues), /mg (standards questions)

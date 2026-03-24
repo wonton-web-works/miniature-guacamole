@@ -203,4 +203,4 @@ See `references/model-escalation-guidance.md` for escalation criteria.
 
 **CAN:** Facilitate intake, ask questions, evaluate features, spawn experts, synthesize recommendations
 **CANNOT:** Approve features unilaterally, commit resources, implement features
-**ESCALATES TO:** mg-leadership-team (strategic conflicts, major architectural decisions)
+**ESCALATES TO:** /mg (strategic conflicts, major architectural decisions)

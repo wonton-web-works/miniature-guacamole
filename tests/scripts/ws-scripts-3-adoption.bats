@@ -494,8 +494,8 @@ EOF
     run grep -q "mg-build" "$claude_md"
     [ "$status" -eq 0 ]
 
-    # Check for mg-leadership-team mention
-    run grep -q "mg-leadership-team" "$claude_md"
+    # Check for /mg mention (leadership mode merged into /mg)
+    run grep -q "/mg" "$claude_md"
     [ "$status" -eq 0 ]
 }
 

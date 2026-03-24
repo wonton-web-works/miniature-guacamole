@@ -35,7 +35,7 @@ Added: `mg-debug` (6 principles, Constitution format), `mg-refactor` (6 principl
 Deferred: `mg-deploy` (needs composition primitive), `mg-qa` (redundant with mg-build Step 1).
 
 **Final skill list (16):**
-mg-build, mg-spec, mg-design, mg-document, mg-write, mg-code-review, mg-design-review, mg-security-review, mg-accessibility-review, mg-assess, mg-assess-tech, mg-init, mg-add-context, mg-debug, mg-refactor, mg-leadership-team
+mg-build, mg-spec, mg-design, mg-document, mg-write, mg-code-review, mg-design-review, mg-security-review, mg-accessibility-review, mg-assess, mg-assess-tech, mg-init, mg-add-context, mg-debug, mg-refactor, mg
 
 ## Consequences
 

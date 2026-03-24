@@ -363,13 +363,13 @@ Product definition, user stories, and design specs. Define requirements before e
 /mg-spec define user-onboarding
 ```
 
-#### /mg-leadership-team
+#### /mg (leadership mode)
 
 Strategic decisions, executive reviews, and code review approvals. Use for planning new initiatives or reviewing completed work.
 
 ```
-/mg-leadership-team review WS-42
-/mg-leadership-team plan new-auth-system
+/mg review WS-42
+/mg plan new-auth-system
 ```
 
 ### Building & Implementation

@@ -6,7 +6,7 @@
  * Supervisor respects its hard CANNOT boundaries.
  *
  * Source of truth:
- *   .claude/skills/mg-leadership-team/SKILL.md  (community flow, step 3)
+ *   .claude/skills/mg/SKILL.md  (community flow, step 3)
  *   .claude/agents/supervisor/AGENT.md          (boundaries)
  *
  * Test order: misuse → boundary → happy path (TDD-workflow.md).

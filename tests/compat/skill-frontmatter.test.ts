@@ -32,7 +32,6 @@ const ALL_SKILLS = [
   'mg-design-review',
   'mg-document',
   'mg-init',
-  'mg-leadership-team',
   'mg-refactor',
   'mg-security-review',
   'mg-spec',
@@ -40,7 +39,8 @@ const ALL_SKILLS = [
 ];
 
 // Skills whose model should be opus (not sonnet)
-const OPUS_SKILLS = new Set(['mg-leadership-team', 'mg-spec']);
+// mg absorbed mg-leadership-team and now runs on opus
+const OPUS_SKILLS = new Set(['mg', 'mg-spec']);
 
 // mg-init has no Task tool — compatibility text must not require Task tool agent spawning
 const NO_TASK_SKILLS = new Set(['mg-add-context', 'mg-init']);
@@ -154,9 +154,9 @@ describe('WS-COMPAT-1 — Boundary: exceptions and edge cases', () => {
     }
   });
 
-  it('mg-leadership-team with model: opus is still compliant after migration', () => {
-    // model: opus must be preserved — only frontmatter structure changes, not model value
-    const content = readSkill('mg-leadership-team');
+  it('mg (formerly mg-leadership-team) with model: opus is still compliant after migration', () => {
+    // model: opus must be preserved — mg absorbed mg-leadership-team and runs on opus
+    const content = readSkill('mg');
     const fm = extractFrontmatter(content);
     expect(fm).not.toBeNull();
     expect(/^model:\s+opus/m.test(fm!)).toBe(true);
@@ -235,16 +235,18 @@ describe('WS-COMPAT-1 — Boundary: exceptions and edge cases', () => {
 // These tests WILL FAIL in Red phase (before implementation).
 // ============================================================================
 
-describe('WS-COMPAT-1 — Golden path: all 16 skills are fully compliant', () => {
+describe('WS-COMPAT-1 — Golden path: all 15 non-mg skills are fully compliant', () => {
+  // mg-leadership-team was merged into mg; ALL_SKILLS covers the 15 remaining mg-* skills.
+  // The mg skill itself is validated separately (opus model, opus OPUS_SKILLS set).
 
-  it('all 16 skill SKILL.md files exist in src/framework/skills/', () => {
+  it('all 15 skill SKILL.md files exist in src/framework/skills/', () => {
     for (const skill of ALL_SKILLS) {
       const skillPath = path.join(SKILLS_SRC, skill, 'SKILL.md');
       expect(fs.existsSync(skillPath), `Missing: ${skill}/SKILL.md`).toBe(true);
     }
   });
 
-  it('all 16 skill files have name: field matching their directory name', () => {
+  it('all 15 skill files have name: field matching their directory name', () => {
     for (const skill of ALL_SKILLS) {
       const content = readSkill(skill);
       const fm = extractFrontmatter(content);
@@ -255,7 +257,7 @@ describe('WS-COMPAT-1 — Golden path: all 16 skills are fully compliant', () =>
     }
   });
 
-  it('all 16 skill files have non-empty description: field under 1024 chars', () => {
+  it('all 15 skill files have non-empty description: field under 1024 chars', () => {
     for (const skill of ALL_SKILLS) {
       const content = readSkill(skill);
       const fm = extractFrontmatter(content);
@@ -268,7 +270,7 @@ describe('WS-COMPAT-1 — Golden path: all 16 skills are fully compliant', () =>
     }
   });
 
-  it('all 16 skill files have allowed-tools: field (not tools:)', () => {
+  it('all 15 skill files have allowed-tools: field (not tools:)', () => {
     for (const skill of ALL_SKILLS) {
       const content = readSkill(skill);
       const fm = extractFrontmatter(content);
@@ -278,7 +280,7 @@ describe('WS-COMPAT-1 — Golden path: all 16 skills are fully compliant', () =>
     }
   });
 
-  it('all 16 skill files have compatibility: field', () => {
+  it('all 15 skill files have compatibility: field', () => {
     for (const skill of ALL_SKILLS) {
       const content = readSkill(skill);
       const fm = extractFrontmatter(content);
@@ -287,7 +289,7 @@ describe('WS-COMPAT-1 — Golden path: all 16 skills are fully compliant', () =>
     }
   });
 
-  it('all 16 skill files have a metadata.version field', () => {
+  it('all 15 skill files have a metadata.version field', () => {
     for (const skill of ALL_SKILLS) {
       const content = readSkill(skill);
       const fm = extractFrontmatter(content);
@@ -299,7 +301,7 @@ describe('WS-COMPAT-1 — Golden path: all 16 skills are fully compliant', () =>
     }
   });
 
-  it('15 skills (all except mg-init) have metadata.spawn_cap: "6"', () => {
+  it('14 skills (all except mg-init) have metadata.spawn_cap: "6"', () => {
     const skillsNeedingSpawnCap = ALL_SKILLS.filter((s) => !NO_SPAWN_CAP_SKILLS.has(s));
     for (const skill of skillsNeedingSpawnCap) {
       const content = readSkill(skill);
@@ -311,7 +313,7 @@ describe('WS-COMPAT-1 — Golden path: all 16 skills are fully compliant', () =>
     }
   });
 
-  it('no skill file has a top-level spawn_cap: field', () => {
+  it('no mg-* skill file has a top-level spawn_cap: field', () => {
     for (const skill of ALL_SKILLS) {
       const content = readSkill(skill);
       const fm = extractFrontmatter(content);
@@ -321,7 +323,7 @@ describe('WS-COMPAT-1 — Golden path: all 16 skills are fully compliant', () =>
     }
   });
 
-  it('no skill file has decorative comment lines inside the frontmatter block', () => {
+  it('no mg-* skill file has decorative comment lines inside the frontmatter block', () => {
     for (const skill of ALL_SKILLS) {
       const content = readSkill(skill);
       const fm = extractFrontmatter(content);
@@ -348,7 +350,7 @@ describe('WS-COMPAT-1 — Golden path: all 16 skills are fully compliant', () =>
     }
   });
 
-  it('skills with Task in allowed-tools have "Task tool (agent spawning)" in compatibility', () => {
+  it('mg-* skills with Task in allowed-tools have "Task tool (agent spawning)" in compatibility', () => {
     const taskSkills = ALL_SKILLS.filter((s) => !NO_TASK_SKILLS.has(s));
     for (const skill of taskSkills) {
       const content = readSkill(skill);
@@ -382,8 +384,9 @@ describe('WS-COMPAT-1 — Golden path: all 16 skills are fully compliant', () =>
     expect(compatLine).not.toMatch(/Task tool \(agent spawning\)/);
   });
 
-  it('mg-leadership-team retains model: opus after migration', () => {
-    const content = readSkill('mg-leadership-team');
+  it('mg (formerly mg-leadership-team) retains model: opus after migration', () => {
+    // mg absorbed mg-leadership-team — must still use opus model
+    const content = readSkill('mg');
     const fm = extractFrontmatter(content);
     expect(fm).not.toBeNull();
     expect(fm!).toMatch(/^model:\s+opus/m);

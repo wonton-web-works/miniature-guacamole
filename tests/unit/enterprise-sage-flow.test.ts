@@ -10,7 +10,7 @@
  *   - Handles edge cases gracefully (empty prompt, missing C-Suite agents)
  *
  * Source of truth:
- *   .claude/skills/mg-leadership-team/SKILL.md (Enterprise Mode section)
+ *   .claude/skills/mg/SKILL.md (Enterprise Mode section)
  *   .claude/agents/sage/AGENT.md (C-Suite Spawning table, Memory Protocol)
  *
  * Test order: misuse → boundary → happy path (TDD-workflow.md).
@@ -228,7 +228,7 @@ describe.skip('enterprise-sage-flow — happy path [TDD red phase — implementa
 
     const log: SageSessionLog = {
       session: 1,
-      skill: 'mg-leadership-team',
+      skill: 'mg',
       scope_assessment: 'engineering + product domains detected',
       c_suite_spawned: [
         { role: 'cto', rationale: 'technical architecture decisions' },
@@ -238,7 +238,7 @@ describe.skip('enterprise-sage-flow — happy path [TDD red phase — implementa
     };
 
     expect(log.session).toBeGreaterThan(0);
-    expect(log.skill).toBe('mg-leadership-team');
+    expect(log.skill).toBe('mg');
     expect(log.scope_assessment).toBeDefined();
     expect(Array.isArray(log.c_suite_spawned)).toBe(true);
     expect(['approved', 'changes_requested']).toContain(log.decision);
@@ -262,7 +262,7 @@ describe.skip('enterprise-sage-flow — happy path [TDD red phase — implementa
   it('session log c_suite_spawned includes rationale for each role', () => {
     const log: SageSessionLog = {
       session: 2,
-      skill: 'mg-leadership-team',
+      skill: 'mg',
       scope_assessment: 'brand refresh and UX overhaul',
       c_suite_spawned: [
         { role: 'cto', rationale: 'technical feasibility of redesign' },

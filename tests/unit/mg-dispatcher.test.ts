@@ -94,13 +94,16 @@ describe('mg dispatcher — root guard', () => {
 
 describe('mg dispatcher — misuse cases (tested first)', () => {
   describe('no agent spawning', () => {
-    it('SKILL.md body must NOT contain "subagent_type" — dispatcher never spawns agents', () => {
-      // Given: a dispatcher that only routes
-      // When: scanning SKILL.md for agent-spawning patterns
-      // Then: "subagent_type" must not appear anywhere in the body
-      const bodyStart = content().indexOf('---', 3) + 3; // skip frontmatter
-      const body = content().slice(bodyStart);
-      expect(body).not.toMatch(/subagent_type/);
+    it('SKILL.md dispatch mode section must NOT use "subagent_type" to spawn agents', () => {
+      // Given: a dispatcher that only routes (dispatch mode, Path 1)
+      // When: scanning the dispatch mode section for agent-spawning patterns
+      // Then: "subagent_type" must not appear in the dispatch section as a spawn directive
+      // NOTE: subagent_type may appear in the Custom Agents documentation section —
+      // that is legitimate user-facing guidance, not dispatch mode behavior.
+      const dispatchSection = content().match(
+        /## Path 1[^\n]*\n([\s\S]*?)(?=\n## Path 2|\n## Custom Agents|\n## Boundaries|$)/
+      )?.[1] ?? '';
+      expect(dispatchSection).not.toMatch(/subagent_type/);
     });
 
     it('SKILL.md dispatch mode must explicitly state it does NOT spawn agents', () => {

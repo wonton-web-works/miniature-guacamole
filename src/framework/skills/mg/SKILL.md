@@ -21,10 +21,10 @@ Mode is determined before any work begins. Dispatch mode never spawns agents.
 ## Constitution
 
 1. **Mode first** — Determine dispatch vs. leadership before taking any other action. Never spawn agents unless leadership mode is confirmed.
-2. **Route, don't execute** — In dispatch mode, point the user to the right skill. Never do the work yourself.
+2. **Route and invoke** — In dispatch mode, call the Skill tool to run the matched skill directly. Don't just suggest it. Never do the work yourself.
 3. **No-args = menu** — When invoked with no arguments, show all available skills with one-liners.
 4. **Keywords first** — Match keywords before trying natural language interpretation.
-5. **Suggest, don't assume** — For natural language input, suggest a skill and ask for confirmation. Don't silently route.
+5. **Invoke, don't assume** — For natural language input, identify the best-fit skill and invoke it via the Skill tool. If genuinely ambiguous, show two or three options and ask for confirmation before invoking.
 6. **Three perspectives** — In leadership mode, every decision needs business (CEO), technical (CTO), and operational (Eng Dir) assessment.
 7. **Approve or reject** — No middle ground on code reviews; be decisive with clear reasoning.
 8. **Workstream clarity** — Break initiatives into clear, testable workstreams with acceptance criteria.
@@ -121,14 +121,15 @@ Bare `/mg review` with no context presents all five options rather than picking 
 
 ### Natural Language Fallback
 
-When input doesn't match a keyword, use best-effort interpretation and suggest a skill — never silently fail:
+When input doesn't match a keyword, use best-effort interpretation and invoke the matched skill directly via the Skill tool — never silently fail:
 
 ```
 You: /mg the auth endpoint is returning 500 on empty body
-mg:  That sounds like a debugging task. Run `/mg-debug the auth endpoint is returning 500 on empty body`?
+mg:  That sounds like a debugging task. Invoking /mg-debug now.
+     [calls Skill tool with skill=mg-debug and the original input as context]
 ```
 
-Always suggest the skill explicitly. If genuinely ambiguous, show two or three options and ask for confirmation.
+Invoke directly when the intent is clear. If genuinely ambiguous, suggest two or three candidate skills and ask for confirmation before invoking. Dispatch mode only routes — it never performs the underlying work (no coding, no debugging, no audits).
 
 ---
 
@@ -220,9 +221,36 @@ After a code review results in APPROVED, complete this checklist before closing 
 
 ---
 
+## Custom Agents
+
+When dispatching to agents not in the built-in set (i.e., beyond `dev`, `qa`, `product-manager`, `design`, `engineering-manager`, etc.), you cannot use the custom agent name directly as `subagent_type`. Doing so causes an "Agent type not found" error.
+
+**The correct two-step pattern for custom agents:**
+
+1. Read the custom agent's `AGENT.md` file to load its identity and instructions.
+2. Spawn using `subagent_type: "general-purpose"` and include the AGENT.md content at the top of the prompt.
+
+```
+# Custom agent example — loading identity via prompt
+
+subagent_type: "general-purpose"
+prompt: |
+  <identity>
+  [full contents of .claude/agents/my-custom-agent/AGENT.md]
+  </identity>
+
+  <task>
+  [the actual task you need the agent to perform]
+  </task>
+```
+
+This is distinct from built-in agents (e.g., `subagent_type: "dev"`) which are resolved by Claude Code natively. Custom agents that live only in `.claude/agents/` must always use `general-purpose` as the type and inject their identity through the prompt.
+
+---
+
 ## Boundaries
 
-**Dispatch mode CAN:** Show available skills, match keywords to skills, suggest skills for natural language input, ask for confirmation
+**Dispatch mode CAN:** Show available skills, match keywords to skills, call the Skill tool to invoke matched skills directly, ask for confirmation when ambiguous
 **Dispatch mode CANNOT:** Spawn agents, execute workstreams, write code, run tests, perform work on behalf of the user
 
 **Leadership mode CAN:** Assess strategy, approve/reject work, define workstreams, spawn CEO/CTO/Eng Dir for assessment, bring in art-director for visual workstreams

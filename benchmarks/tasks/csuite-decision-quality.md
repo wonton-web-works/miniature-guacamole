@@ -77,7 +77,7 @@ The CTO should reason about: at 3-8 concurrent agents, Option A is adequate; the
 
 **Expected unique angle:** Operational complexity and its downstream effects on user experience and go-to-market.
 
-The CMO/COO should reason about: a deployment dependency changes the install story. Redis adds operational overhead for users. If the framework gains an enterprise tier, a message queue becomes a selling point (reliability, audit logs). What does "message loss" mean from a user's perspective — does the workflow visibly fail, or does it silently produce wrong results?
+The CMO/COO should reason about: a deployment dependency changes the install story. Redis adds operational overhead for users. If the framework gains an premium tier, a message queue becomes a selling point (reliability, audit logs). What does "message loss" mean from a user's perspective — does the workflow visibly fail, or does it silently produce wrong results?
 
 **Expected conclusion form:** A recommendation about the user-facing and operational implications, not the technical implementation.
 

@@ -2,7 +2,7 @@
 
 **ID:** T7-DRIFT-COST
 **Version:** 1.0
-**Tests:** Cost of undetected drift vs cost of Sage intervention
+**Tests:** Cost of undetected drift vs cost of Orchestrator intervention
 **Purpose:** Quantify the token savings and accuracy gains from drift protection
 
 ---
@@ -15,7 +15,7 @@ Drift costs tokens in three ways:
 2. **Cyclical review tokens** — Bad output fails review, gets sent back, re-done, re-reviewed
 3. **Cascading error tokens** — Drift in workstream A produces artifacts that poison workstream B
 
-This benchmark introduces REALISTIC drift scenarios (not obvious violations like T4) and measures what happens when drift goes uncaught vs when the Sage catches it early.
+This benchmark introduces REALISTIC drift scenarios (not obvious violations like T4) and measures what happens when drift goes uncaught vs when the Orchestrator catches it early.
 
 ---
 
@@ -69,7 +69,7 @@ WS-C starts building the dashboard. The dev reads the WS-A implementation (not t
 
 ---
 
-## Pipeline A Execution (No Sage)
+## Pipeline A Execution (No Orchestrator)
 
 Run the feature through the current MG pipeline. At each drift injection point, present the drift to the pipeline and record:
 
@@ -83,9 +83,9 @@ Expected Pipeline A behavior:
 - Drift 2: Likely NOT detected. The justification is plausible. QA step gets skipped.
 - Drift 3: Cascading from Drift 1. If Drift 1 was missed, Drift 3 is invisible — the dashboard correctly implements the wrong spec.
 
-## Pipeline B Execution (Sage-Orchestrated)
+## Pipeline B Execution (Orchestrator-Orchestrated)
 
-Run the same feature through the Sage pipeline. At each drift injection point, the Sage should:
+Run the same feature through the Orchestrator pipeline. At each drift injection point, the Orchestrator should:
 
 1. **Detect the drift** — compare implementation against approved spec
 2. **Challenge it** — name the violation and the risk
@@ -113,7 +113,7 @@ Drifts Detected (Pipeline A): X/3
 Drifts Detected (Pipeline B): X/3
 
 Tokens Spent on Drifted Work (A): ~XK (work done before detection or never detected)
-Tokens Spent on Drifted Work (B): ~XK (work done before Sage catches it)
+Tokens Spent on Drifted Work (B): ~XK (work done before Orchestrator catches it)
 
 Rework Tokens (A):            ~XK (fixing after late detection)
 Rework Tokens (B):            ~XK (minimal — caught early)
@@ -122,7 +122,7 @@ Net Token Savings (B vs A):   ~XK
 Accuracy Gain:                X/3 drifts prevented
 
 Cyclical Review Cost (A):     ~XK (fail review → fix → re-review → maybe fail again)
-Cyclical Review Cost (B):     ~XK (Sage catches before review, no cycles)
+Cyclical Review Cost (B):     ~XK (Orchestrator catches before review, no cycles)
 ```
 
 ### Cost of Drift Formula
@@ -130,25 +130,25 @@ Cyclical Review Cost (B):     ~XK (Sage catches before review, no cycles)
 ```
 Drift_Cost = Implementation_Tokens_Wasted + Rework_Tokens + Cascade_Tokens + Review_Cycle_Tokens
 
-Sage_Cost = Sage_Monitoring_Tokens (overhead of having the Sage watch)
+Orchestrator_Cost = Orchestrator_Monitoring_Tokens (overhead of having the Orchestrator watch)
 
-Net_Savings = Drift_Cost(Pipeline_A) - Drift_Cost(Pipeline_B) - Sage_Cost
+Net_Savings = Drift_Cost(Pipeline_A) - Drift_Cost(Pipeline_B) - Orchestrator_Cost
 
-ROI = Net_Savings / Sage_Cost
+ROI = Net_Savings / Orchestrator_Cost
 ```
 
-If ROI > 1, the Sage pays for itself in drift prevention alone.
+If ROI > 1, the Orchestrator pays for itself in drift prevention alone.
 
 ---
 
 ## Expected Outcome
 
-Pipeline A (no Sage):
+Pipeline A (no Orchestrator):
 - Drift 1 detected late or never → WS-B and WS-C build on wrong spec → rework
 - Drift 2 accepted → webhook retry has untested edge cases → bugs in production
 - Drift 3 cascades from Drift 1 → security issue (secrets in UI) + spec violation
 
-Pipeline B (Sage):
+Pipeline B (Orchestrator):
 - Drift 1 caught immediately → PATCH/secret/rate-limit filed as separate tickets → WS-B and WS-C proceed on clean spec
 - Drift 2 challenged → QA writes webhook-specific retry tests → edge cases caught before code
 - Drift 3 never occurs → Drift 1 was caught, so WS-C builds against correct spec
@@ -163,4 +163,4 @@ Estimated savings: 30-50% of total feature tokens saved by preventing rework cyc
 2. Present drift injections as realistic developer messages, not obvious violations.
 3. Record timestamps of detection for both pipelines.
 4. For Pipeline A, be honest about what the current system would actually catch. Don't artificially handicap it.
-5. The Sage should use its always-on behaviors (challenge dropped findings, enforce process, question shortcuts) — not special benchmark behavior.
+5. The Orchestrator should use its always-on behaviors (challenge dropped findings, enforce process, question shortcuts) — not special benchmark behavior.

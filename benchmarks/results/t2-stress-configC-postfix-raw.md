@@ -4,7 +4,7 @@
 **Benchmark:** T2-Stress — Config C, Post-Fix run
 **Config:** C — C-Suite agents forced to run on claude-sonnet-4-6 (instead of opus)
 **Fix applied:** "Reversal condition" output field added to CEO and CFO constitutions
-**Prompt:** Open-Source Sustainability vs Enterprise Pivot (3-option strategic decision with conflicting constraints)
+**Prompt:** Open-Source Sustainability vs Premium Pivot (3-option strategic decision with conflicting constraints)
 **Evaluator:** Staff Engineer (staff-engineer agent)
 **Model:** claude-sonnet-4-6
 **Pre-fix file:** t2-stress-configC-raw.md
@@ -74,7 +74,7 @@ is an anchor, not a model. No pricing signed before CFO input arrives.
 [CEO] Delegated:
 - CTO: Confirm SSO/SAML timeline (WorkOS path) and daemon stability assessment within 5 days;
   confirm community/premium code split feasibility before week 3
-- CMO: Enterprise tier framing and community edition announcement strategy; ensure community
+- CMO: Premium tier framing and community edition announcement strategy; ensure community
   edition remains genuinely useful, not a crippled demo
 - CFO: Cost-to-serve model for premium contracts; pricing floor recommendation before I
   approve any package
@@ -109,7 +109,7 @@ split.
 - Option A (MG Cloud): Multi-tenant isolation, billing stack, SOC2 logging pipeline — at solo +
   1 part-time pace, the realistic timeline is 5-6 months, not 3-4. Hard pass on runway grounds.
 
-- Option B (Enterprise edition): SSO path analysis:
+- Option B (Premium edition): SSO path analysis:
   (a) Build SAML natively: 4-5 weeks, fragile, requires ongoing maintenance as IdP landscape shifts
   (b) WorkOS abstraction layer: 1-2 weeks, $149/mo, covers Okta/Azure AD/Google Workspace natively
   WorkOS is unambiguously on the BUY side of the build/buy threshold: saves 3+ weeks of engineering,
@@ -125,7 +125,7 @@ split.
 [CTO] Rationale:
 Two risks I am naming that the CEO and CFO cannot see:
 
-Risk 1 — Daemon stability for premium SLA commitment: Daemon is in beta. Enterprise clients at
+Risk 1 — Daemon stability for premium SLA commitment: Daemon is in beta. Premium clients at
 $25-30K/yr will require contractual uptime SLAs. Signing a contract with an SLA before we have 30
 days of production stability data is a specific churn risk: the first P0 incident in a paid customer
 environment, on a contract we signed, is significantly more damaging than a pre-contract incident.
@@ -186,7 +186,7 @@ alternative" within 90 days.
 
 The specific compounding risk in this scenario: the premium clients we are trying to close in
 the next 6 weeks are also members of the developer community. If they observe a bait-and-switch
-before they sign, their trust calculation changes. Enterprise procurement teams ask "will this
+before they sign, their trust calculation changes. Premium procurement teams ask "will this
 vendor be around in 2 years?" and "are they trustworthy partners?" A public backlash narrative
 running in parallel with a sales conversation is not neutral noise — it is an active negative
 signal in that conversation.
@@ -240,7 +240,7 @@ not be visible to the founder's public network.
   and approved
 
 [CMO] Delegated:
-- Copywriter: Enterprise one-pager and pricing sheet — 3 days
+- Copywriter: Premium one-pager and pricing sheet — 3 days
 - CTO: Daemon stability assessment and SSO confirmation — 5-day deadline
 - Founder: Source startup attorney this week; close both pilot clients personally in weeks
   4-6; run Option C outreach quietly under NDA
@@ -252,7 +252,7 @@ not be visible to the founder's public network.
 - Community edition limit set from actual usage data, not internal assumption
 - Zero HN/Reddit "MG sold out" posts with >100 upvotes within 30 days of premium tier
   announcement
-- Enterprise messaging validated with at least one pilot client before public announcement
+- Premium messaging validated with at least one pilot client before public announcement
 ```
 
 ---

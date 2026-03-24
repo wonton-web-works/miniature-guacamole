@@ -34,7 +34,7 @@ This document defines the scoring rubrics, normalization method, aggregate calcu
 
 **What distinguishes quality levels:**
 
-A score of 3/3 indicates the Sage has calibrated scope discrimination — it recognizes pure engineering vs. brand-adjacent vs. full-initiative work and routes accordingly.
+A score of 3/3 indicates the Orchestrator has calibrated scope discrimination — it recognizes pure engineering vs. brand-adjacent vs. full-initiative work and routes accordingly.
 
 A score of 1/3 or 2/3 typically indicates one of two failure modes: (a) defaulting to full C-Suite for all prompts (no filtering), or (b) never spawning more than CTO (no escalation recognition).
 
@@ -117,7 +117,7 @@ T2_Score = (CEO_Score + CTO_Score + CMO_Score + CFO_Score) / 4
 When two runs both pass 3/4 gates, use this ordering to determine which is higher quality:
 
 1. G1 pass is the foundation — failing G1 while passing others indicates luck, not protocol compliance
-2. G3 pass is the most diagnostic — specialist spawning is the most distinctive behavior the Sage has
+2. G3 pass is the most diagnostic — specialist spawning is the most distinctive behavior the Orchestrator has
 3. G2 and G4 are roughly equal in diagnostic value
 
 A run that passes G1+G2+G3 but fails G4 is higher quality than a run that passes G2+G3+G4 but fails G1.
@@ -154,7 +154,7 @@ T4_Normalized = T4_Raw / 7 → range [0, 1]
 
 **Minimum passing threshold on normalized score:** 0.71 (5/7)
 
-If Detection = 0 (the Sage did not challenge the process skip), Challenge Quality defaults to 1 (the failure to detect is itself a poor challenge), regardless of what the Sage said after the fact.
+If Detection = 0 (the Orchestrator did not challenge the process skip), Challenge Quality defaults to 1 (the failure to detect is itself a poor challenge), regardless of what the Orchestrator said after the fact.
 
 ---
 
@@ -220,9 +220,9 @@ Tasks are not equally weighted. Tasks that exercise core value-creating behavior
 
 | Task | Weight | Rationale |
 |------|--------|-----------|
-| T1 Sage Routing | 0.15 | Intake correctness — foundational but binary |
+| T1 Orchestrator Routing | 0.15 | Intake correctness — foundational but binary |
 | T2 C-Suite Quality | 0.30 | Highest impact: C-Suite generates the most user-visible output |
-| T3 Research Depth | 0.25 | Research evaluation protocol is Sage's most distinctive capability |
+| T3 Research Depth | 0.25 | Research evaluation protocol is Orchestrator's most distinctive capability |
 | T4 Drift Detection | 0.20 | Process enforcement is a primary quality guarantee |
 | T5 Session Management | 0.10 | Important for long initiatives; less frequently exercised |
 
@@ -243,7 +243,7 @@ Framework_Score = (T1_norm × 0.15) + (T2_norm × 0.30) + (T3_norm × 0.25) + (T
 | 0.85 – 1.00 | Production-quality. Agents behave as designed. |
 | 0.70 – 0.84 | Acceptable. Minor gaps in one or two task types. |
 | 0.55 – 0.69 | Marginal. Systematic issues in at least one critical task. |
-| 0.40 – 0.54 | Below threshold. C-Suite or Sage has significant behavioral gaps. |
+| 0.40 – 0.54 | Below threshold. C-Suite or Orchestrator has significant behavioral gaps. |
 | 0.00 – 0.39 | Failing. Framework not functioning as designed. |
 
 ---

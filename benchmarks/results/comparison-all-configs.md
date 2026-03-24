@@ -16,7 +16,7 @@
 | T5 Session | 0.10 | 1.000 | 1.000 | 1.000* | 1.000* |
 | **Framework** | **1.00** | **0.957** | **1.000** | **1.000** | **0.957** |
 
-*T3 and T5 carried forward from Config B (Sage spec unchanged).
+*T3 and T5 carried forward from Config B (Orchestrator spec unchanged).
 
 ---
 
@@ -49,11 +49,11 @@ CTO scored 5.00 across ALL configurations — even Config D. Its constitution ha
 
 ### 4. CEO and CMO are model-sensitive without scope boundaries
 
-CEO and CMO drop from 5.00 to 4.00 on Config D (sonnet Sage + sonnet C-Suite). The failure mode is role-bleed — CEO picks technologies, CMO loses magnitude estimates. The mitigation is structural: add "Scope boundary" output fields to constrain them the way CTO's numbered thresholds do.
+CEO and CMO drop from 5.00 to 4.00 on Config D (sonnet Orchestrator + sonnet C-Suite). The failure mode is role-bleed — CEO picks technologies, CMO loses magnitude estimates. The mitigation is structural: add "Scope boundary" output fields to constrain them the way CTO's numbered thresholds do.
 
-### 5. Sage routing and drift detection are model-resilient
+### 5. Orchestrator routing and drift detection are model-resilient
 
-T1 (routing) and T4 (drift detection) scored perfectly across ALL configs, including Config D where the Sage runs on sonnet. The Sage's protocol is explicit enough that even sonnet follows it correctly.
+T1 (routing) and T4 (drift detection) scored perfectly across ALL configs, including Config D where the Orchestrator runs on sonnet. The Orchestrator's protocol is explicit enough that even sonnet follows it correctly.
 
 ---
 
@@ -62,11 +62,11 @@ T1 (routing) and T4 (drift detection) scored perfectly across ALL configs, inclu
 ### Production Configuration: Config C
 
 ```
-Sage:       opus    (judgment, research evaluation, session management)
-C-Suite:    sonnet  (strong constitutions compensate for model tier)
-Directors:  sonnet
-ICs:        sonnet
-Supervisor: haiku
+Orchestrator: opus    (judgment, research evaluation, session management)
+C-Suite:      sonnet  (strong constitutions compensate for model tier)
+Directors:    sonnet
+ICs:          sonnet
+Supervisor:   haiku
 ```
 
 **Rationale:** Config C achieves 1.000 framework score at ~40% lower token cost than Config B. The constitutions are strong enough that sonnet C-Suite is indistinguishable from opus C-Suite in benchmark output.

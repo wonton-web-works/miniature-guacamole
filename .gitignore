@@ -83,7 +83,7 @@ miniature-guacamole/
 .mg-daemon.json
 .mg-daemon/
 
-# Private business documents (live in enterprise repo)
+# Private business documents (live in premium repo)
 docs/pitch/
 docs/prd-*.md
 docs/technical-design-*.md

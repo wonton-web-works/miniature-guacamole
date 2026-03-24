@@ -9,17 +9,17 @@
 | **Run ID** | RUN-001 |
 | **Date** | 2026-03-22 |
 | **Evaluator** | Leadership Team |
-| **Config** | B (Tiered: Sage opus, C-Suite opus, Directors sonnet, ICs sonnet, Supervisor haiku) |
+| **Config** | B (Tiered: Orchestrator opus, C-Suite opus, Directors sonnet, ICs sonnet, Supervisor haiku) |
 | **Git SHA** | f85e1a5 |
 | **Prompt version** | Pre-audit (baseline — before P0/P1 fixes) |
 | **Purpose** | Baseline before prompt improvements |
 | **Models used** | |
-| — Sage | claude-opus-4-6 (proxied via general-purpose — sage not yet registered as agent type) |
+| — Orchestrator | claude-opus-4-6 (proxied via general-purpose — orchestrator not yet registered as agent type) |
 | — C-Suite | claude-opus-4-6 (CEO, CTO spawned by staff-engineer; CMO, CFO via new agent defs) |
 | — Directors | N/A (not exercised in this run) |
 | — ICs | N/A (not exercised in this run) |
 | — Supervisor | N/A (not exercised in this run) |
-| **Notes** | Sage ran as general-purpose agent with Sage AGENT.md instructions injected. CMO and CFO used new strong agent definitions. CEO and CTO used old weak definitions. This creates a split baseline: new agents vs old agents. |
+| **Notes** | Orchestrator ran as general-purpose agent with Orchestrator AGENT.md instructions injected. CMO and CFO used new strong agent definitions. CEO and CTO used old weak definitions. This creates a split baseline: new agents vs old agents. |
 
 ---
 
@@ -40,7 +40,7 @@
 
 ## Per-Task Scoring Detail
 
-### T1 — Sage Intake Routing
+### T1 — Orchestrator Intake Routing
 
 | Prompt | Expected Routing | Actual Routing | Score |
 |--------|-----------------|----------------|-------|
@@ -147,8 +147,8 @@
 
 ## Key Observations
 
-- The Sage spec, even when proxied through a general-purpose agent, produces near-perfect protocol compliance. The AGENT.md instructions are strong enough to drive behavior without a dedicated agent type.
+- The Orchestrator spec, even when proxied through a general-purpose agent, produces near-perfect protocol compliance. The AGENT.md instructions are strong enough to drive behavior without a dedicated agent type.
 - T2 is the weakest score (0.855) and the only area with clear improvement potential. CEO and CMO both scored 4/4/4 — adequate but not excellent. The audit's recommendation to add decision heuristics to CEO/CTO definitions should lift this.
 - The new CMO and CFO agent definitions (built with strong constitutions) scored at or above the old CEO/CTO definitions despite being brand new. Validates the audit's thesis that constitution quality drives output quality.
 - T3's 10 sub-domains exceeded the minimum of 4 by a wide margin. The research protocol is well-specified and produces thorough execution.
-- T4's challenge was the strongest result — the Sage named all 3 violations, rejected the authority claim, and offered a constructive alternative. This is the behavior that makes the Sage valuable as a process guardian.
+- T4's challenge was the strongest result — the Orchestrator named all 3 violations, rejected the authority claim, and offered a constructive alternative. This is the behavior that makes the Orchestrator valuable as a process guardian.

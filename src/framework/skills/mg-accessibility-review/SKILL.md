@@ -9,8 +9,6 @@ metadata:
   spawn_cap: "6"
 ---
 
-> Inherits: [skill-base](../_base/skill-base.md)
-
 # Accessibility Review
 
 Comprehensive accessibility audit workflow for WCAG 2.1 compliance and inclusive design.
@@ -21,6 +19,7 @@ Comprehensive accessibility audit workflow for WCAG 2.1 compliance and inclusive
 2. **Test with real assistive tech** - Screen readers, keyboard-only, voice control
 3. **Inclusive by default** - Design for permanent, temporary, and situational disabilities
 4. **Document violations** - Reference specific WCAG criteria (e.g., 1.4.3, 2.1.1, 4.1.2)
+5. **Follow output format** — See `references/output-format.md` for standard visual patterns
 
 ## Review Process
 

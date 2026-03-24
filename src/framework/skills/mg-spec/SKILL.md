@@ -9,8 +9,6 @@ metadata:
   spawn_cap: "6"
 ---
 
-> Inherits: [skill-base](../_base/skill-base.md)
-
 # Product Team
 
 Coordinates product-owner, product-manager, and design for product definition.

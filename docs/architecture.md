@@ -9,7 +9,7 @@ miniature-guacamole simulates a complete product development organization within
 ```
     ┌─────────────────────────────────────────────────────┐
     │  Sage (Enterprise only — see                        │
-    │  private-enterprise.wontonwebworks.com/enterprise)           │
+    │  enterprise edition only)                            │
     └─────────────────────────────────────────────────────┘
 
     ┌──────────────┬──────────────┬──────────┬───────────┐
@@ -35,7 +35,7 @@ miniature-guacamole simulates a complete product development organization within
 
 The hierarchy is organized into five levels:
 
-1. **Sage** - Enterprise orchestrator (PrivateEnterprise Enterprise)
+1. **Sage** - Enterprise orchestrator (enterprise edition only)
 2. **Executive Level** - Strategic vision and high-level decisions (opus/sonnet models)
 3. **Leadership Level** - Tactical planning and team coordination (sonnet model)
 4. **Individual Contributor Level** - Hands-on implementation (sonnet/haiku models)

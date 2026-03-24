@@ -9,8 +9,6 @@ metadata:
   spawn_cap: "6"
 ---
 
-> Inherits: [skill-base](../_base/skill-base.md)
-
 # mg-build
 
 Classifies workstreams at intake, then coordinates the appropriate track: MECHANICAL (single Dev spawn + bash gate) or ARCHITECTURAL (QA, Dev, Staff Engineer, leadership review).

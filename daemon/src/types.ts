@@ -28,6 +28,7 @@ export interface GitHubConfig {
   repo: string;
   baseBranch: string;
   issueFilter?: string;
+  account?: string; // gh auth username for multi-org (GH-14)
 }
 
 export interface PollingConfig {

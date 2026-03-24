@@ -8,8 +8,6 @@ metadata:
   version: "1.0"
 ---
 
-> Inherits: [skill-base](../_base/skill-base.md)
-
 # /mg
 
 Lightweight front door to the miniature-guacamole skill system. Use it when you're not sure which skill to run, or when you want a quick reference of what's available.

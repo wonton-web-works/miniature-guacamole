@@ -1,4 +1,4 @@
-# PrivateEnterprise — AI Generation Tool Matrix
+# miniature-guacamole — AI Generation Tool Matrix
 ### Design Decision Document | Art Director | March 2026
 
 ---

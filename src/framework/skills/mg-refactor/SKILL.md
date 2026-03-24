@@ -9,8 +9,6 @@ metadata:
   spawn_cap: "6"
 ---
 
-> Inherits: [skill-base](../_base/skill-base.md)
-
 # mg-refactor
 
 Coordinates qa and dev through structured refactoring workflow with comprehensive test coverage to ensure no functional changes or regressions.

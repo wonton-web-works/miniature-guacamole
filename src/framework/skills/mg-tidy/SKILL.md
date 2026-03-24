@@ -8,8 +8,6 @@ metadata:
   version: "1.0.0"
 ---
 
-> Inherits: [skill-base](../_base/skill-base.md)
-
 # mg-tidy
 
 Housekeeping skill that reconciles project state across GitHub issues, `.claude/memory/`, and workstream files. Detects drift between what GitHub tracks and what memory knows — closes duplicates, creates missing memory, removes orphaned state, and produces a canonical state report.

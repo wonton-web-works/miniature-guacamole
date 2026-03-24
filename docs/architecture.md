@@ -2,7 +2,7 @@
 
 ## Overview
 
-miniature-guacamole simulates a complete product development organization within Claude Code. It provides 24 specialized agents organized in a realistic corporate hierarchy, enabling structured delegation, disciplined development workflows, and project-isolated memory.
+miniature-guacamole simulates a complete product development organization within Claude Code. It provides 22 specialized agents organized in a realistic corporate hierarchy, enabling structured delegation, disciplined development workflows, and project-isolated memory.
 
 The framework is installed from a single tarball. Every component lives under `.claude/` in your project — or globally under `~/.claude/` when using the global installer. No data crosses project boundaries.
 
@@ -13,7 +13,7 @@ miniature-guacamole/
 ├── src/
 │   ├── framework/               # Everything Claude Code uses at runtime
 │   │   ├── agents/              # Agent role definitions (AGENT.md per role)
-│   │   ├── skills/              # 18 team collaboration skills (SKILL.md per skill)
+│   │   ├── skills/              # 19 team collaboration skills (SKILL.md per skill)
 │   │   ├── shared/              # Protocol documents (6 .md files)
 │   │   ├── scripts/             # mg-* CLI utilities
 │   │   ├── hooks/               # Claude Code lifecycle hooks

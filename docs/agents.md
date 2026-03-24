@@ -1,6 +1,6 @@
 # Agent Reference
 
-This page provides detailed specifications for all 24 agents in the system, organized by organizational level.
+This page provides detailed specifications for all 22 agents in the system, organized by organizational level.
 
 ## Executive Level
 
@@ -11,7 +11,7 @@ Executive agents set strategic vision and make high-level decisions. They use th
 | **CEO** | `/ceo` | opus | Sets business vision and strategic direction | CTO, Engineering Director, Product Owner, Art Director |
 | **CTO** | `/cto` | opus | Sets technical vision, evaluates architectures | Engineering Director, Staff Engineer |
 | **CMO/COO** | `/cmo` | opus | Sets marketing direction and operational standards | Art Director, Product Owner, Copywriter, Design |
-| **CFO** | `/cfo` | sonnet | Cost analysis, resource allocation, ROI assessment | (analysis only — no direct reports) |
+| **CFO** | `/cfo` | opus | Cost analysis, resource allocation, ROI assessment | (analysis only — no direct reports) |
 | **Engineering Director** | `/engineering-director` | opus | Oversees engineering operations and delivery | Engineering Manager, Staff Engineer |
 
 ### CEO (Chief Executive Officer)
@@ -45,7 +45,7 @@ Executive agents set strategic vision and make high-level decisions. They use th
 - Can delegate to: Engineering Director, Staff Engineer
 - Can use Task tool to spawn: dev
 
-**Tool Access:** Read, Glob, Grep, Edit, Write
+**Tool Access:** Task, Read, Glob, Grep
 
 **Example Usage:**
 ```
@@ -480,7 +480,7 @@ System agents provide monitoring and coordination functions.
 | Agent | Read | Glob | Grep | Edit | Write |
 |-------|------|------|------|------|-------|
 | CEO | - | - | - | - | - |
-| CTO | ✅ | ✅ | ✅ | ✅ | ✅ |
+| CTO | ✅ | ✅ | ✅ | - | - |
 | CMO/COO | ✅ | ✅ | ✅ | - | - |
 | CFO | ✅ | ✅ | ✅ | - | - |
 | Engineering Director | - | - | - | - | - |

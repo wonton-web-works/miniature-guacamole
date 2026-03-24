@@ -1,11 +1,8 @@
 {
   "name": "miniature-guacamole",
-  "version": "6.0.0",
+  "version": "6.1.1",
   "description": "Shared Memory Layer for Product Development Team Agents",
   "main": "src/index.ts",
-  "bin": {
-    "mg-studio": "dist/studio/cli.js"
-  },
   "scripts": {
     "test": "vitest run",
     "test:unit": "vitest run tests/unit",

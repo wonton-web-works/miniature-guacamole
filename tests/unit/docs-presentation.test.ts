@@ -135,10 +135,10 @@ describe('WS-DOCS-4 README.md — golden path (required content must appear)', (
     expect(lineCount).toBeLessThan(300);
   });
 
-  it('contains version badge "5.0"', () => {
+  it('contains version badge "6.1.1"', () => {
     // AC-2
     const readme = read('README.md');
-    expect(readme).toMatch(/5\.0/);
+    expect(readme).toMatch(/6\.1\.1/);
   });
 
   it('contains a Quick Start section', () => {
@@ -207,10 +207,10 @@ describe('WS-DOCS-4 README.md — golden path (required content must appear)', (
     expect(readme).toMatch(/19 [Ss]kills?/);
   });
 
-  it('contains a "What you get" or summary section mentioning 24 agents', () => {
+  it('contains a "What you get" or summary section mentioning 22 agents', () => {
     // AC-11: summary section with counts
     const readme = read('README.md');
-    expect(readme).toMatch(/24 (?:Specialized )?[Aa]gents?/);
+    expect(readme).toMatch(/22 (?:Specialized )?[Aa]gents?/);
   });
 });
 

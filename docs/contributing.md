@@ -221,29 +221,23 @@ Closes #123
 
 ### Adding a New Agent
 
-1. **Create skill definition:**
-   ```bash
-   mkdir -p src/framework/skills/<agent-name>
-   # Create src/framework/skills/<agent-name>/SKILL.md
-   ```
-
-2. **Create subagent definition (if IC):**
+1. **Create agent definition:**
    ```bash
    mkdir -p src/framework/agents/<agent-name>
    # Create src/framework/agents/<agent-name>/agent.md
    ```
 
-3. **Update delegation hierarchy:**
+2. **Update delegation hierarchy:**
    - Edit `src/framework/shared/handoff-protocol.md`
    - Update delegation authority matrix
 
-4. **Add tests:**
+3. **Add tests:**
    ```bash
    # Create tests/unit/agents/<agent-name>.test.ts
    # Verify delegation patterns work
    ```
 
-5. **Update documentation:**
+4. **Update documentation:**
    - Add agent to README.md agent roster
    - Add to `src/framework/CLAUDE.md`
    - Update architecture diagrams

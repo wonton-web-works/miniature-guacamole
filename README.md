@@ -2,17 +2,17 @@
 
 > A complete AI-powered product development organization for Claude Code.
 
-**Version:** 5.0 · **License:** MIT · [Documentation](https://wonton-web-works.github.io/miniature-guacamole/) · [Issues](https://github.com/wonton-web-works/miniature-guacamole/issues)
+**Version:** 6.1.1 · **License:** MIT · [Documentation](https://wonton-web-works.github.io/miniature-guacamole/) · [Issues](https://github.com/wonton-web-works/miniature-guacamole/issues)
 
 ---
 
-## What's New in v5.0
+## What's New in v6.1.1
 
 **Security domains, state reconciliation, and base template inheritance** (March 2026):
 - **Security Domain Expansion** — security-engineer agent now loads domain-specific checklists (web, systems, cloud, crypto) automatically
 - **`/mg-tidy`** — reconciles project state across GitHub issues and memory files. Closed 38 duplicate issues in its first run
-- **Base Template Inheritance** — all 24 agents and 19 skills inherit from shared base protocols, eliminating duplication
-- 19 skills, 24 agents
+- **Base Template Inheritance** — all 22 agents and 19 skills inherit from shared base protocols, eliminating duplication
+- 19 skills, 22 agents
 
 ---
 
@@ -27,7 +27,7 @@ Type a slash command. Get a team.
 - `/mg-ticket` files GitHub Issues directly from Claude Code, with workstream context attached
 - `/mg-tidy` reconciles project state — deduplicates issues, syncs memory, flags stale work
 
-**19 Skills**. **24 Specialized Agents**. One framework.
+**19 Skills**. **22 Specialized Agents**. One framework.
 
 ---
 
@@ -43,7 +43,13 @@ curl -fsSL https://raw.githubusercontent.com/wonton-web-works/miniature-guacamol
 
 ```bash
 cd your-project
-mg-init
+claude
+```
+
+Then run the slash command:
+
+```
+/mg-init
 ```
 
 ### 3. Start Claude Code
@@ -100,12 +106,12 @@ Every feature follows Constraint-Driven Agentic Development:
 | Component | Count | Description |
 |-----------|-------|-------------|
 | **Skills** | 19 | Slash-command workflows — `/mg` dispatcher, build, ticket, tidy, debug, and more |
-| **Agents** | 24 | Specialized roles from CEO to QA, each with clear delegation authority |
+| **Agents** | 22 | Specialized roles from CEO to QA, each with clear delegation authority |
 | **Scripts** | 17 | `mg-*` CLI utilities for memory, workstreams, Postgres, and git |
 | **Protocols** | 6 | Shared standards — CAD workflow, TDD, memory, handoff, engineering principles |
 
 [All 19 skills →](https://wonton-web-works.github.io/miniature-guacamole/workflows)
-[All 24 agents →](https://wonton-web-works.github.io/miniature-guacamole/agents)
+[All 22 agents →](https://wonton-web-works.github.io/miniature-guacamole/agents)
 
 ---
 
@@ -121,7 +127,13 @@ curl -fsSL https://raw.githubusercontent.com/wonton-web-works/miniature-guacamol
 
 # Init any project (no network required)
 cd your-project
-mg-init
+claude
+```
+
+Then run the slash command:
+
+```
+/mg-init
 ```
 
 ### Tarball
@@ -146,7 +158,7 @@ dist/miniature-guacamole/install.sh /path/to/your-project
 
 - [Getting Started](https://wonton-web-works.github.io/miniature-guacamole/getting-started) — Install, initialize, first workflow
 - [Architecture](https://wonton-web-works.github.io/miniature-guacamole/architecture) — Agent hierarchy, delegation model, memory layer
-- [Agents](https://wonton-web-works.github.io/miniature-guacamole/agents) — All 24 agents and their roles
+- [Agents](https://wonton-web-works.github.io/miniature-guacamole/agents) — All 22 agents and their roles
 - [Workflows](https://wonton-web-works.github.io/miniature-guacamole/workflows) — All 19 skills and the CAD cycle
 - [Contributing](https://wonton-web-works.github.io/miniature-guacamole/contributing) — How to extend the framework
 
@@ -154,9 +166,9 @@ dist/miniature-guacamole/install.sh /path/to/your-project
 
 ## Changelog
 
-**Version 5.0** (March 2026)
+**Version 6.1.1** (March 2026)
 - CMO/COO and CFO agents added; all existing agents upgraded
-- Agent count: 20 → 24
+- Agent count: 20 → 22
 
 **Version 4.1.0** (March 2026)
 - Runtime output matches marketing site terminal animation

@@ -110,10 +110,10 @@ describe('README.md — golden path (correct values must appear)', () => {
     expect(readme).toMatch(/\*\*\d+ Skills?\*\*/);
   });
 
-  it('feature bullet list says "24 Specialized Agents"', () => {
+  it('feature bullet list says "22 Specialized Agents"', () => {
     // AC-4
     const readme = read('README.md');
-    expect(readme).toMatch(/\*\*24 Specialized Agents\*\*/);
+    expect(readme).toMatch(/\*\*22 Specialized Agents\*\*/);
   });
 
   it('/mg-ticket is mentioned somewhere in the README', () => {
@@ -217,10 +217,10 @@ describe('docs/architecture.md — misuse cases (stale values must not appear)',
 });
 
 describe('docs/architecture.md — golden path (correct values must appear)', () => {
-  it('directory structure comment says "18 team collaboration skills"', () => {
+  it('directory structure comment says "19 team collaboration skills"', () => {
     // AC-13
     const arch = read('docs/architecture.md');
-    expect(arch).toMatch(/18 team collaboration skills/);
+    expect(arch).toMatch(/19 team collaboration skills/);
   });
 });
 
@@ -244,16 +244,16 @@ describe('agent-count-docs — misuse cases (stale or wrong values must not appe
 });
 
 describe('agent-count-docs — happy path (correct content must be present)', () => {
-  it('docs/agents.md total agent count is 24', () => {
-    // AC-EDITION-1: all 24 agents must be documented
+  it('docs/agents.md total agent count is 22', () => {
+    // AC-EDITION-1: all 22 agents must be documented
     const agents = read('docs/agents.md');
-    expect(agents).toMatch(/\ball 24 agents\b|\b24 agents\b|\b24 specialized\b/i);
+    expect(agents).toMatch(/\ball 22 agents\b|\b22 agents\b|\b22 specialized\b/i);
   });
 
-  it('docs/architecture.md states total agent count as 24', () => {
-    // AC-EDITION-3: agent count in architecture must be 24
+  it('docs/architecture.md states total agent count as 22', () => {
+    // AC-EDITION-3: agent count in architecture must be 22
     const arch = read('docs/architecture.md');
-    expect(arch).toMatch(/24 specialized agent/i);
+    expect(arch).toMatch(/22 specialized agent/i);
   });
 
   it('LICENSE file exists at repo root', () => {

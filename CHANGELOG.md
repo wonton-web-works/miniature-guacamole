@@ -75,15 +75,15 @@ Versioning follows [Semantic Versioning](https://semver.org/): MAJOR.MINOR.PATCH
 ## [5.0.0] — 2026-03-22
 
 ### Added
-- **The Orchestrator** — premium-only orchestrator agent with selective C-Suite spawning
+- **The Orchestrator** — premium-only orchestrator agent (details in private repo)
 - **CMO/COO agent** — operations, marketing, go-to-market, brand consistency
 - **CFO agent** — cost analysis, token budget management, ROI assessment
 - **Config C** — validated production config (opus Orchestrator, sonnet C-Suite, 40% cost savings)
-- **Premium auth pipeline** — mg login/logout/upgrade/status CLI commands
+- **Premium auth pipeline** — mg login/logout/upgrade/status CLI commands (details in private repo)
 - **Benchmark harness** — 7 task types, 4 model configs, drift cost analysis
-- **Premium boundary tests** — 52 integration tests for zero premium→community leakage
-- **Session management** — dependency-based session breaks, context snapshots, cold-start primers
-- **Research specialist persistence** — domain experts saved and reused across sessions
+- **Premium boundary tests** — community/premium isolation verified
+- **Session management** — session management protocol (details in private repo)
+- **Research specialist persistence** — research specialist persistence (details in private repo)
 
 ### Changed
 - Agent count: 20 → 24 (added Orchestrator, CMO, CFO; all existing agents upgraded)
@@ -98,7 +98,7 @@ Versioning follows [Semantic Versioning](https://semver.org/): MAJOR.MINOR.PATCH
 ### Security
 - LICENSE.ext for proprietary Orchestrator distribution
 - build.sh excludes Orchestrator from community distribution
-- Premium session validation with machineId fingerprinting
+- Premium session validation
 - Security headers (_headers), robots.txt, pilot gate hardened
 
 ## [4.2.0] — 2026-03-20

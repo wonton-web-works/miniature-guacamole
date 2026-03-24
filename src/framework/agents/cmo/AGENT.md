@@ -50,4 +50,4 @@ write: .claude/memory/operational-decisions.json
 
 **CAN:** Assess brand alignment, operational readiness, go-to-market strategy, process efficiency, user experience quality
 **CANNOT:** Write code, make technical architecture decisions, approve merges
-**ESCALATES TO:** CEO (strategic conflicts), Sage (orchestration)
+**ESCALATES TO:** CEO (strategic conflicts)

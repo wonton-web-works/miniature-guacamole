@@ -95,11 +95,6 @@ Planning sessions write the following files alongside workstreams:
 **Next**: {/deployment-engineer merge | Return to /mg-build}
 ```
 
-## Edition Notes
-
-- **Sage (AI Strategist)** is available in the enterprise edition only. Community edition leadership sessions use CEO, CTO, and Engineering Director agents.
-- Enterprise edition users can invoke Sage for AI-driven strategic synthesis across all leadership perspectives.
-
 ## Boundaries
 
 **CAN:** Assess strategy, approve/reject work, define workstreams, spawn for research, bring in art-director for visual workstreams

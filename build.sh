@@ -61,32 +61,22 @@ mkdir -p "$DIST_CLAUDE"/{agents,skills,shared,hooks,scripts,memory}
 
 echo -e "${GREEN}Copying framework...${NC}"
 
-# Agents — enterprise agents (Sage) live in the private enterprise repo (private-enterprise-enterprise)
 AGENT_COUNT=0
 for agent_dir in "$FRAMEWORK_DIR/agents"/*; do
     if [[ -d "$agent_dir" ]]; then
-        agent_name=$(basename "$agent_dir")
-        if [[ "$agent_name" == "sage" ]]; then
-            # skip — sage is enterprise-only; ships in private-enterprise-enterprise, not community
-            continue
-        fi
         cp -r "$agent_dir" "$DIST_CLAUDE/agents/"
         AGENT_COUNT=$((AGENT_COUNT + 1))
     fi
 done
 echo "  agents: $AGENT_COUNT"
 
-# Skills (skip _shared internal dir and teo* enterprise skills)
+# Skills (skip _shared internal dir)
 SKILL_COUNT=0
 for skill_dir in "$FRAMEWORK_DIR/skills"/*; do
     if [[ -d "$skill_dir" ]]; then
         skill_name=$(basename "$skill_dir")
         if [[ "$skill_name" == _* ]]; then
             # skip — internal shared resource dir
-            continue
-        fi
-        if [[ "$skill_name" == teo* ]]; then
-            # skip — teo-* skills are enterprise-only; ships in private-enterprise-enterprise, not community
             continue
         fi
         cp -r "$skill_dir" "$DIST_CLAUDE/skills/"
@@ -135,13 +125,6 @@ cp "$FRAMEWORK_DIR/CLAUDE.md" "$DIST_CLAUDE/"
 cp "$FRAMEWORK_DIR/team-config.yaml" "$DIST_CLAUDE/"
 cp "$FRAMEWORK_DIR/team-config.json" "$DIST_CLAUDE/"
 
-# Enterprise signing public key (for session verification)
-if [[ -d "$FRAMEWORK_DIR/keys" ]]; then
-  mkdir -p "$DIST_CLAUDE/keys"
-  cp "$FRAMEWORK_DIR/keys/enterprise-signing.pub" "$DIST_CLAUDE/keys/" 2>/dev/null || true
-  echo "  keys: enterprise-signing.pub"
-fi
-
 echo "  config: settings.json, CLAUDE.md, team-config.*"
 
 # Memory .gitignore
@@ -156,11 +139,6 @@ EOF
 # ----------------------------------------------------------------------------
 
 echo -e "${GREEN}Copying installer...${NC}"
-
-# NOTE: Enterprise-only installer scripts are excluded from the community distribution.
-# Enterprise scripts (excluded from community build):
-#   - mg-dev-key  (enterprise edition — developer key provisioning, never ships in community)
-ENTERPRISE_SCRIPTS=("mg-dev-key")
 
 cp "$INSTALLER_DIR/install.sh" "$DIST_DIR/"
 cp "$INSTALLER_DIR/uninstall.sh" "$DIST_DIR/"

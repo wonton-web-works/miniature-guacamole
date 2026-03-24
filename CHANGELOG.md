@@ -9,6 +9,20 @@ Versioning follows [Semantic Versioning](https://semver.org/): MAJOR.MINOR.PATCH
 
 ---
 
+## [6.1.2] — 2026-03-24
+
+### Fixed
+- Version references updated across README, package.json (was stuck at v5.0/6.0.0)
+- Agent count corrected: 24 → 22 across all docs (README, architecture, agents, index)
+- CFO model corrected: sonnet → opus in docs/agents.md
+- CTO tool access corrected: removed Edit/Write (not in source)
+- "Adding a New Agent" contribution guide fixed (was creating skill dir, not agent dir)
+- Genericized premium feature descriptions in v5.0.0 changelog per IP policy
+- Collapsed .claude/CLAUDE.md from 4 stacked duplicates to 1 authoritative copy
+- Removed `bin.mg-studio` from package.json (daemon moved to private repo)
+
+---
+
 ## [6.1.1] — 2026-03-24
 
 ### Fixed

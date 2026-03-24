@@ -47,15 +47,15 @@ const SUPERVISOR_ALERTS_PATH = '.claude/memory/supervisor-alerts.json';
 const FAKE_ROOT = '/fake/project';
 const ALERTS_FILE = path.join(FAKE_ROOT, '.claude/memory/supervisor-alerts.json');
 
-function mockNoSage(): void {
+function mockNoPremiumOrchestrator(): void {
   vi.spyOn(fs, 'existsSync').mockImplementation((p) => {
-    if (String(p).includes('sage/AGENT.md')) return false;
+    if (String(p).includes('premium-orchestrator/AGENT.md')) return false;
     if (String(p).includes('supervisor/AGENT.md')) return true;
     return false;
   });
 }
 
-function mockNoSageNoSupervisor(): void {
+function mockNoPremiumOrchestratorNoSupervisor(): void {
   vi.spyOn(fs, 'existsSync').mockReturnValue(false);
 }
 
@@ -77,7 +77,7 @@ describe.skip('community-supervisor — misuse cases [TDD red phase — implemen
   });
 
   it('supervisor AGENT.md missing → community mode still runs without crashing', () => {
-    mockNoSageNoSupervisor();
+    mockNoPremiumOrchestratorNoSupervisor();
     const { runCommunityLeadership } = require('@/framework/skills/leadership-team');
     let result: CommunityLeadershipResult | undefined;
     expect(async () => {
@@ -86,7 +86,7 @@ describe.skip('community-supervisor — misuse cases [TDD red phase — implemen
   });
 
   it('supervisor AGENT.md missing → no supervisor included in result agents', () => {
-    mockNoSageNoSupervisor();
+    mockNoPremiumOrchestratorNoSupervisor();
 
     const result: CommunityLeadershipResult = {
       edition: 'community',
@@ -132,7 +132,7 @@ describe.skip('community-supervisor — boundary cases [TDD red phase — implem
   });
 
   it('supervisor detects depth=3 (at limit) → no alert written', () => {
-    mockNoSage();
+    mockNoPremiumOrchestrator();
     const writeSpy = vi.spyOn(fs, 'writeFileSync').mockImplementation(() => {});
 
     const depthEvent = { agentId: 'dev', currentDepth: 3, maxDepth: 3 };
@@ -143,7 +143,7 @@ describe.skip('community-supervisor — boundary cases [TDD red phase — implem
   });
 
   it('supervisor detects depth=4 (one over limit) → alert written', () => {
-    mockNoSage();
+    mockNoPremiumOrchestrator();
     const { supervisorObserve } = require('@/framework/agents/supervisor/observe');
     const writeSpy = vi.spyOn(fs, 'writeFileSync').mockImplementation(() => {});
 
@@ -161,8 +161,8 @@ describe.skip('community-supervisor — boundary cases [TDD red phase — implem
     expect(written.alert_type).toBe('depth_exceeded');
   });
 
-  it('supervisor escalates to engineering-director in community mode (not sage)', () => {
-    mockNoSage();
+  it('supervisor escalates to engineering-director in community mode (not premium orchestrator)', () => {
+    mockNoPremiumOrchestrator();
 
     const alert: SupervisorAlert = {
       alert_type: 'loop_detected',
@@ -172,7 +172,7 @@ describe.skip('community-supervisor — boundary cases [TDD red phase — implem
     };
 
     expect(alert.escalate_to).toBe('engineering-director');
-    expect(alert.escalate_to).not.toBe('sage');
+    expect(alert.escalate_to).not.toBe('premium-orchestrator');
   });
 
   it('supervisor escalates to orchestrator in premium mode', () => {
@@ -193,7 +193,7 @@ describe.skip('community-supervisor — happy path [TDD red phase — implementa
   });
 
   it('community mode invocation → Supervisor runs as observer (supervisorIncluded: true)', () => {
-    mockNoSage();
+    mockNoPremiumOrchestrator();
 
     const result: CommunityLeadershipResult = {
       edition: 'community',
@@ -207,7 +207,7 @@ describe.skip('community-supervisor — happy path [TDD red phase — implementa
   });
 
   it('community mode → CEO, CTO, engineering-director always spawned', () => {
-    mockNoSage();
+    mockNoPremiumOrchestrator();
 
     const result: CommunityLeadershipResult = {
       edition: 'community',
@@ -222,7 +222,7 @@ describe.skip('community-supervisor — happy path [TDD red phase — implementa
   });
 
   it('supervisor writes alerts to supervisor-alerts.json with correct shape', () => {
-    mockNoSage();
+    mockNoPremiumOrchestrator();
     const { supervisorObserve } = require('@/framework/agents/supervisor/observe');
     const writeSpy = vi.spyOn(fs, 'writeFileSync').mockImplementation(() => {});
 
@@ -250,7 +250,7 @@ describe.skip('community-supervisor — happy path [TDD red phase — implementa
   });
 
   it('supervisor detects depth violation → writes depth_exceeded alert', () => {
-    mockNoSage();
+    mockNoPremiumOrchestrator();
     const { supervisorObserve } = require('@/framework/agents/supervisor/observe');
     const writeSpy = vi.spyOn(fs, 'writeFileSync').mockImplementation(() => {});
 
@@ -269,7 +269,7 @@ describe.skip('community-supervisor — happy path [TDD red phase — implementa
   });
 
   it('supervisor detects loop → writes loop_detected alert', () => {
-    mockNoSage();
+    mockNoPremiumOrchestrator();
     const { supervisorObserve } = require('@/framework/agents/supervisor/observe');
     const writeSpy = vi.spyOn(fs, 'writeFileSync').mockImplementation(() => {});
 

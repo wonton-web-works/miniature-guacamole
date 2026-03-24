@@ -26,8 +26,8 @@ Date: 2026-03-23
 
 Most pixel art images in `index.astro` do not carry `width`/`height` attributes. Without explicit dimensions, the browser cannot reserve layout space before images load, which causes Cumulative Layout Shift (CLS). The only images with dimensions are a handful of small ones:
 
-- `sage-pixel-bird-teal-for-web.png` — has `width="32" height="32"` (good)
-- `sage-pixel-meditating-no-bg.png` (56x56 in spawning section) — has dimensions (good)
+- `capy-pixel-bird-teal-for-web.png` — has `width="32" height="32"` (good)
+- `capy-pixel-meditating-no-bg.png` (56x56 in spawning section) — has dimensions (good)
 - Decorative hero image at bottom — has `width="40" height="40"` (good)
 - All other images in the hierarchy, teacher, and bridge sections — missing `width`/`height`
 

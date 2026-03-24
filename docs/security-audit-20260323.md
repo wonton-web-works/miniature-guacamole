@@ -387,4 +387,4 @@ If a user is made a Wonton platform admin for any reason, they automatically gai
 
 **Dependencies:** `site/` is clean. `dashboard/` has HIGH-severity CVEs in `next` and `undici` that require attention, particularly the HTTP request smuggling vulnerabilities.
 
-**OWASP categories touched:** A01 (Broken Access Control — no rate limiting, role conflation), A03 (Injection — JSON injection in shell), A05 (Security Misconfiguration — deprecated header, unsafe-inline CSP, exposed dev tool), A06 (Vulnerable Components — dashboard deps), A07 (Authentication Failures — no brute-force protection), A08 (Software Integrity — SAGE_AGENT_PATH path traversal)
+**OWASP categories touched:** A01 (Broken Access Control — no rate limiting, role conflation), A03 (Injection — JSON injection in shell), A05 (Security Misconfiguration — deprecated header, unsafe-inline CSP, exposed dev tool), A06 (Vulnerable Components — dashboard deps), A07 (Authentication Failures — no brute-force protection), A08 (Software Integrity — AGENT_PATH path traversal)

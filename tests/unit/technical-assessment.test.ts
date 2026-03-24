@@ -45,14 +45,13 @@ describe('Technical Assessment - WS-9', () => {
       expect(content).toMatch(/^##\s+Constitution\s*$/m);
     });
 
-    it('should have 4 constitution principles (Memory-first, Visual standards, and output format inherited from base)', () => {
+    it('should have 5 constitution principles', () => {
       const content = fs.readFileSync(skillPath, 'utf-8');
       const constitutionSection = content.split(/^##\s+Constitution\s*$/m)[1]?.split(/^##\s+/m)[0];
       expect(constitutionSection).toBeTruthy();
 
-      // Count numbered principles (Memory-first, Visual standards, and output format are now in base template)
       const principles = constitutionSection?.match(/^\d+\.\s+\*\*/gm) || [];
-      expect(principles.length).toBe(4);
+      expect(principles.length).toBe(5);
     });
 
     it('should contain ## Memory Protocol section', () => {

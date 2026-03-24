@@ -20,8 +20,8 @@ import * as path from 'path';
 const SKILLS_DIR = path.resolve(__dirname, '../../src/framework/skills');
 const SKILL_PATH = path.join(SKILLS_DIR, 'mg', 'SKILL.md');
 
-// The full list of routable skills that must still be present after the upgrade.
-const ALL_17_SKILLS = [
+// The full list of routable mg-* skills (mg-leadership-team merged into /mg).
+const ALL_16_SKILLS = [
   'mg-accessibility-review',
   'mg-add-context',
   'mg-assess',
@@ -33,7 +33,6 @@ const ALL_17_SKILLS = [
   'mg-design-review',
   'mg-document',
   'mg-init',
-  'mg-leadership-team',
   'mg-refactor',
   'mg-security-review',
   'mg-spec',
@@ -42,20 +41,20 @@ const ALL_17_SKILLS = [
 ] as const;
 
 // Skills that /mg plan must describe routing to (AC 3)
+// mg-leadership-team merged into /mg — strategic planning stays in /mg leadership mode
 const PLAN_ROUTING_TARGETS = [
   'mg-assess',
   'mg-assess-tech',
   'mg-spec',
-  'mg-leadership-team',
 ] as const;
 
 // Skills that /mg review must describe routing to (AC 4)
+// mg-leadership-team merged into /mg — workstream approval stays in /mg leadership mode
 const REVIEW_ROUTING_TARGETS = [
   'mg-code-review',
   'mg-security-review',
   'mg-design-review',
   'mg-accessibility-review',
-  'mg-leadership-team',
 ] as const;
 
 // Required group names in the grouped display (AC 2)
@@ -100,8 +99,9 @@ describe('mg dispatcher v2 — misuse cases', () => {
     });
 
     it('SKILL.md Boundaries CANNOT field must still forbid spawning subagents', () => {
-      // Regression guard: upgrade must not quietly remove the spawn restriction
-      const cannotMatch = content().match(/\*\*CANNOT:\*\*\s+([\s\S]*?)(?=\*\*[A-Z]|\n##\s+|$)/);
+      // Regression guard: upgrade must not quietly remove the spawn restriction.
+      // Post-GH-244: dispatch mode CANNOT is labelled "Dispatch mode CANNOT" — match both forms.
+      const cannotMatch = content().match(/\*\*(?:Dispatch mode )?CANNOT:\*\*\s+([\s\S]*?)(?=\*\*[A-Z]|\n##\s+|$)/);
       expect(cannotMatch, 'CANNOT field must exist in Boundaries').toBeTruthy();
       if (cannotMatch) {
         expect(cannotMatch[1]).toMatch(/spawn|subagent/i);
@@ -132,7 +132,7 @@ describe('mg dispatcher v2 — misuse cases', () => {
   });
 
   describe('no skills dropped from the file', () => {
-    for (const skill of ALL_17_SKILLS) {
+    for (const skill of ALL_16_SKILLS) {
       it(`${skill} must still appear somewhere in SKILL.md after the upgrade`, () => {
         // Given: the upgrade restructures the no-args display
         // Then: every original skill must still be referenced — none dropped
@@ -191,25 +191,25 @@ describe('mg dispatcher v2 — misuse cases', () => {
 
 describe('mg dispatcher v2 — boundary cases', () => {
   describe('grouped display: skill count still adds up', () => {
-    it('total skills across all group entries must equal 17', () => {
-      // After grouping, the same 17 skills should appear — no more, no less.
-      // We scan the full file for mg-* skill references and deduplicate.
+    it('total skills across all group entries must equal 16', () => {
+      // After grouping, the 16 routable mg-* skills should appear (leadership merged into /mg).
       const allMgSkills = content().match(/mg-[\w-]+/g) ?? [];
       const uniqueSkills = new Set(
-        allMgSkills.filter(s => ALL_17_SKILLS.includes(s as typeof ALL_17_SKILLS[number]))
+        allMgSkills.filter(s => ALL_16_SKILLS.includes(s as typeof ALL_16_SKILLS[number]))
       );
       expect(
         uniqueSkills.size,
-        `Expected exactly 17 skill references, found: ${[...uniqueSkills].join(', ')}`
-      ).toBe(17);
+        `Expected exactly 16 skill references, found: ${[...uniqueSkills].join(', ')}`
+      ).toBe(16);
     });
 
     it('grouped display sections must not list the same skill in two different groups', () => {
       // Each skill belongs to exactly one group — duplication is a spec violation
+      // Post-GH-244: no-args section is ### No-Args Menu, and Routing Table is ### Routing Table
       // Strategy: find all mg-* occurrences in the no-args / grouped display block
       // (the section up to the Routing Table header), check for duplicates there.
       const noArgsSection = extractSection(
-        /##\s+No.?Args\s*([\s\S]*?)(?=\n##\s+Routing|$)/i
+        /#{2,3}\s+No.?Args[^\n]*\s*([\s\S]*?)(?=\n#{2,3}\s+Routing|$)/i
       );
       if (noArgsSection) {
         const listed = noArgsSection.match(/mg-[\w-]+/g) ?? [];
@@ -269,7 +269,7 @@ describe('mg dispatcher v2 — boundary cases', () => {
       expect(reviewSection, '/mg review section must exist').toBeTruthy();
       if (reviewSection) {
         // Section must present multiple options (more than one mg-*-review skill mentioned)
-        const reviewSkills = reviewSection.match(/mg-[\w-]+-review|mg-leadership-team/g) ?? [];
+        const reviewSkills = reviewSection.match(/mg-[\w-]+-review/g) ?? [];
         const unique = new Set(reviewSkills);
         expect(
           unique.size,
@@ -390,14 +390,15 @@ describe('mg dispatcher v2 — golden path', () => {
       }
     });
 
-    it('/mg plan section specifies strategic review → mg-leadership-team routing', () => {
+    it('/mg plan section specifies strategic review → /mg leadership mode routing', () => {
       const planSection = extractSection(
         /##\s+\/mg plan\s*([\s\S]*?)(?=\n##\s+|$)/i
       );
       expect(planSection, '/mg plan section must exist').toBeTruthy();
       if (planSection) {
         expect(planSection).toMatch(/strategic|leadership|executive|roadmap/i);
-        expect(planSection).toMatch(/mg-leadership-team/);
+        // mg-leadership-team was merged into /mg — check for leadership mode reference
+        expect(planSection).toMatch(/leadership\s+mode|\/mg.*leadership/i);
       }
     });
   });
@@ -467,20 +468,21 @@ describe('mg dispatcher v2 — golden path', () => {
       }
     });
 
-    it('/mg review section specifies workstream approval → mg-leadership-team routing', () => {
+    it('/mg review section specifies workstream approval → /mg leadership mode routing', () => {
       const reviewSection = extractSection(
         /##\s+\/mg review\s*([\s\S]*?)(?=\n##\s+|$)/i
       );
       expect(reviewSection, '/mg review section must exist').toBeTruthy();
       if (reviewSection) {
         expect(reviewSection).toMatch(/workstream|approval|leadership|executive/i);
-        expect(reviewSection).toMatch(/mg-leadership-team/);
+        // mg-leadership-team was merged into /mg — check for leadership mode reference
+        expect(reviewSection).toMatch(/leadership\s+mode|\/mg.*leadership/i);
       }
     });
   });
 
   describe('AC 5: all 17 original skills still referenced', () => {
-    for (const skill of ALL_17_SKILLS) {
+    for (const skill of ALL_16_SKILLS) {
       it(`${skill} is still referenced in SKILL.md`, () => {
         expect(content()).toContain(skill);
       });
@@ -495,8 +497,9 @@ describe('mg dispatcher v2 — golden path', () => {
     });
 
     it('Boundaries section still has CANNOT referencing dispatch/spawn restriction', () => {
-      expect(content()).toMatch(/\*\*CANNOT:\*\*/);
-      const cannotMatch = content().match(/\*\*CANNOT:\*\*\s+([\s\S]*?)(?=\*\*[A-Z]|\n##\s+|$)/);
+      // Post-GH-244: dispatch mode CANNOT is labelled "Dispatch mode CANNOT" — match both forms.
+      expect(content()).toMatch(/\*\*(?:Dispatch mode )?CANNOT:\*\*/);
+      const cannotMatch = content().match(/\*\*(?:Dispatch mode )?CANNOT:\*\*\s+([\s\S]*?)(?=\*\*[A-Z]|\n##\s+|$)/);
       if (cannotMatch) {
         expect(cannotMatch[1]).toMatch(/spawn|subagent|dispatch/i);
       }

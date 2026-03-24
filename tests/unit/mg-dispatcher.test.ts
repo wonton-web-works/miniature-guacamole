@@ -3,7 +3,7 @@
  *
  * Contract/documentation tests verifying SKILL.md behavior spec.
  * Tests are ordered misuse-first per TDD workflow.
- * WS-DISPATCH-1: /mg — front door dispatcher to all 17 mg-* skills
+ * WS-DISPATCH-1: /mg — front door dispatcher to all mg-* skills
  *
  * NOTE: These tests FAIL before SKILL.md is written. That is intentional.
  */
@@ -15,7 +15,8 @@ import * as path from 'path';
 const SKILLS_DIR = path.resolve(__dirname, '../../src/framework/skills');
 const SKILL_PATH = path.join(SKILLS_DIR, 'mg', 'SKILL.md');
 
-// The full list of routable skills (17 total). mg itself is not routable.
+// The full list of routable skills (17 total — mg and mg-leadership-team are not routable).
+// mg-leadership-team was merged into /mg in GH-244 and is no longer a standalone skill.
 const ROUTABLE_SKILLS = [
   'mg-accessibility-review',
   'mg-add-context',
@@ -28,11 +29,11 @@ const ROUTABLE_SKILLS = [
   'mg-design-review',
   'mg-document',
   'mg-init',
-  'mg-leadership-team',
   'mg-refactor',
   'mg-security-review',
   'mg-spec',
   'mg-ticket',
+  'mg-tidy',
   'mg-write',
 ] as const;
 
@@ -102,11 +103,10 @@ describe('mg dispatcher — misuse cases (tested first)', () => {
       expect(body).not.toMatch(/subagent_type/);
     });
 
-    it('SKILL.md must NOT claim to spawn or execute agents', () => {
-      // A dispatcher's job is routing. Claiming to spawn agents is a misuse of the role.
-      const bodyStart = content().indexOf('---', 3) + 3;
-      const body = content().slice(bodyStart);
-      expect(body).not.toMatch(/spawns agents|spawn agents|executes agents|Task\(subagent/i);
+    it('SKILL.md dispatch mode must explicitly state it does NOT spawn agents', () => {
+      // Dispatch mode (Path 1) is routing-only. Leadership mode (Path 2) may spawn agents —
+      // that is intentional and correct. The dispatch mode boundaries must explicitly say CANNOT spawn.
+      expect(content()).toMatch(/Dispatch mode CANNOT.*spawn|only routes?|does not spawn|does not execute/i);
     });
 
     it('SKILL.md must explicitly state it only routes — not executes', () => {
@@ -137,12 +137,13 @@ describe('mg dispatcher — misuse cases (tested first)', () => {
     it('SKILL.md must document what happens when invoked with no arguments', () => {
       // Given: user types /mg with nothing after it
       // Then: skill must have a documented no-args mode (show all commands)
-      expect(content()).toMatch(/no.arg|no arg|without arg|zero arg|invoked.*no|no.*argument|## No-?Args|no-args mode/i);
+      expect(content()).toMatch(/no.arg|no arg|without arg|zero arg|invoked.*no|no.*argument|No.?Args|no-args mode/i);
     });
 
     it('no-args mode must show all commands — not silently do nothing', () => {
-      // Silently doing nothing is a bad UX. The spec requires listing all 17 skills.
-      expect(content()).toMatch(/show.*commands?|list.*commands?|all.*commands?|shows.*skills?|list.*skills?/i);
+      // Silently doing nothing is a bad UX. The spec requires listing all skills.
+      // Post-GH-244: the grouped display shows skills in Planning/Building/Reviewing/Shipping groups.
+      expect(content()).toMatch(/show.*commands?|list.*commands?|all.*commands?|shows.*skills?|list.*skills?|Planning.*Building|grouped/i);
     });
   });
 
@@ -166,12 +167,12 @@ describe('mg dispatcher — misuse cases (tested first)', () => {
 
 describe('mg dispatcher — boundary cases', () => {
   describe('skill count precision', () => {
-    it('no-args section must list exactly 18 skills (not 17, not 19)', () => {
-      // Acceptance criteria 9: the skill count is 18 (17 original + mg-tidy)
-      // We count distinct mg-* skill names listed in the no-args section.
-      // Strategy: find the no-args section and count mg-* occurrences there.
+    it('no-args section must list exactly 17 skills (not 16, not 18)', () => {
+      // Acceptance criteria 9: 17 routable skills (mg-leadership-team merged into /mg in GH-244)
+      // Post-GH-244: No-Args is a subsection (### No-Args Menu) under ## Path 1 — Dispatch Mode.
+      // Strategy: find the no-args section (## or ### level) and count mg-* occurrences there.
       const noArgsMatch = content().match(
-        /##\s+No.?Args\s*([\s\S]*?)(?=\n##\s+|\n---\s+|$)/i
+        /#{2,3}\s+No.?Args[^\n]*\s*([\s\S]*?)(?=\n#{2,3}\s+|\n---\s+|$)/i
       );
       expect(noArgsMatch, 'no-args section must exist').toBeTruthy();
 
@@ -181,14 +182,15 @@ describe('mg dispatcher — boundary cases', () => {
         const uniqueSkills = new Set(listedSkills);
         expect(
           uniqueSkills.size,
-          `Expected 18 unique skills in no-args section, found: ${[...uniqueSkills].join(', ')}`
-        ).toBe(18);
+          `Expected 17 unique skills in no-args section, found: ${[...uniqueSkills].join(', ')}`
+        ).toBe(17);
       }
     });
 
     it('no-args section skill list must not contain duplicate entries', () => {
+      // Post-GH-244: No-Args Menu is ### level under ## Path 1 — Dispatch Mode
       const noArgsMatch = content().match(
-        /##\s+No.?Args\s*([\s\S]*?)(?=\n##\s+|\n---\s+|$)/i
+        /#{2,3}\s+No.?Args[^\n]*\s*([\s\S]*?)(?=\n#{2,3}\s+|\n---\s+|$)/i
       );
       if (noArgsMatch) {
         const section = noArgsMatch[1];
@@ -201,7 +203,8 @@ describe('mg dispatcher — boundary cases', () => {
 
   describe('routing table keyword completeness', () => {
     it('routing table section must exist', () => {
-      expect(content()).toMatch(/##\s+Routing Table|## Routing|##.*routing/i);
+      // Post-GH-244: Routing Table is a ### subsection
+      expect(content()).toMatch(/#{2,3}\s+Routing\s*Table?|##\s+Routing|##.*routing/i);
     });
 
     it('routing table must cover ambiguous keyword "review" (maps to multiple skills)', () => {
@@ -209,14 +212,14 @@ describe('mg dispatcher — boundary cases', () => {
       // The dispatcher must handle this and clarify — not just pick one silently.
       expect(content()).toMatch(/review/i);
       // The routing table must show review keywords map to specific skills
-      const routingMatch = content().match(/##\s+Routing\s*Table?\s*([\s\S]*?)(?=\n##\s+|$)/i);
+      const routingMatch = content().match(/#{2,3}\s+Routing\s*Table?\s*([\s\S]*?)(?=\n#{2,3}\s+|$)/i);
       if (routingMatch) {
         expect(routingMatch[1]).toMatch(/review/i);
       }
     });
 
     it('routing table must cover "tech" keyword (maps to mg-assess-tech)', () => {
-      const routingMatch = content().match(/##\s+Routing\s*Table?\s*([\s\S]*?)(?=\n##\s+|$)/i);
+      const routingMatch = content().match(/#{2,3}\s+Routing\s*Table?\s*([\s\S]*?)(?=\n#{2,3}\s+|$)/i);
       expect(routingMatch).toBeTruthy();
       if (routingMatch) {
         expect(routingMatch[1]).toMatch(/tech|architecture/i);
@@ -231,8 +234,9 @@ describe('mg dispatcher — boundary cases', () => {
 
   describe('boundaries section completeness', () => {
     it('Boundaries section must have CAN, CANNOT, and ESCALATES TO — all on non-empty lines', () => {
-      const canMatch = content().match(/\*\*CAN:\*\*\s+(.+)/);
-      const cannotMatch = content().match(/\*\*CANNOT:\*\*\s+(.+)/);
+      // Post-GH-244: boundaries are split by mode. Accept mode-prefixed labels.
+      const canMatch = content().match(/\*\*(?:Dispatch mode )?CAN:\*\*\s+(.+)/);
+      const cannotMatch = content().match(/\*\*(?:Dispatch mode )?CANNOT:\*\*\s+(.+)/);
       const escalatesMatch = content().match(/\*\*ESCALATES TO:\*\*\s+(.+)/);
 
       expect(canMatch?.[1].trim().length).toBeGreaterThan(0);
@@ -241,8 +245,8 @@ describe('mg dispatcher — boundary cases', () => {
     });
 
     it('Boundaries CANNOT field must explicitly mention spawning agents', () => {
-      // The boundaries section must make clear the restriction on agent spawning
-      const cannotMatch = content().match(/\*\*CANNOT:\*\*\s+([\s\S]*?)(?=\*\*[A-Z]|\n##\s+|$)/);
+      // Post-GH-244: dispatch mode CANNOT must explicitly forbid spawning agents
+      const cannotMatch = content().match(/\*\*(?:Dispatch mode )?CANNOT:\*\*\s+([\s\S]*?)(?=\*\*[A-Z]|\n##\s+|$)/);
       if (cannotMatch) {
         expect(cannotMatch[1]).toMatch(/spawn|execute.*work|perform.*work|run.*work/i);
       }
@@ -258,8 +262,9 @@ describe('mg dispatcher — golden path', () => {
   describe('all 17 routable skills are listed in no-args output', () => {
     for (const skill of ROUTABLE_SKILLS) {
       it(`no-args section lists ${skill}`, () => {
+        // Post-GH-244: no-args section is ### No-Args Menu under ## Path 1 — Dispatch Mode
         const noArgsMatch = content().match(
-          /##\s+No.?Args\s*([\s\S]*?)(?=\n##\s+|\n---\s+|$)/i
+          /#{2,3}\s+No.?Args[^\n]*\s*([\s\S]*?)(?=\n#{2,3}\s+|\n---\s+|$)/i
         );
         expect(noArgsMatch, 'no-args section must exist').toBeTruthy();
         if (noArgsMatch) {
@@ -272,7 +277,7 @@ describe('mg dispatcher — golden path', () => {
   describe('routing table covers all required keywords', () => {
     for (const keyword of REQUIRED_ROUTING_KEYWORDS) {
       it(`routing table covers keyword: ${keyword}`, () => {
-        const routingMatch = content().match(/##\s+Routing\s*Table?\s*([\s\S]*?)(?=\n##\s+|$)/i);
+        const routingMatch = content().match(/#{2,3}\s+Routing\s*Table?\s*([\s\S]*?)(?=\n#{2,3}\s+|$)/i);
         expect(routingMatch, 'routing table section must exist').toBeTruthy();
         if (routingMatch) {
           expect(routingMatch[1]).toMatch(new RegExp(keyword, 'i'));
@@ -283,12 +288,13 @@ describe('mg dispatcher — golden path', () => {
 
   describe('natural language fallback section', () => {
     it('has a Fallback or Natural Language section', () => {
-      expect(content()).toMatch(/##\s+(Fallback|Natural Language|Unrecognized Input)/i);
+      // Post-GH-244: Natural Language Fallback is ### level
+      expect(content()).toMatch(/#{2,3}\s+(?:Fallback|Natural Language|Unrecognized Input)/i);
     });
 
     it('fallback section says it suggests a skill rather than failing', () => {
       const fallbackMatch = content().match(
-        /##\s+(?:Fallback|Natural Language|Unrecognized Input)\s*([\s\S]*?)(?=\n##\s+|$)/i
+        /#{2,3}\s+(?:Fallback|Natural Language|Unrecognized Input)\s*([\s\S]*?)(?=\n#{2,3}\s+|$)/i
       );
       expect(fallbackMatch).toBeTruthy();
       if (fallbackMatch) {
@@ -298,12 +304,14 @@ describe('mg dispatcher — golden path', () => {
   });
 
   describe('structure contract', () => {
-    it('has ## No-Args section', () => {
-      expect(content()).toMatch(/^##\s+No.?Args/im);
+    it('has No-Args section (## or ### level)', () => {
+      // Post-GH-244: section is ### No-Args Menu under ## Path 1 — Dispatch Mode
+      expect(content()).toMatch(/^#{2,3}\s+No.?Args/im);
     });
 
-    it('has ## Routing Table section', () => {
-      expect(content()).toMatch(/^##\s+Routing\s*Table?/im);
+    it('has Routing Table section (## or ### level)', () => {
+      // Post-GH-244: section is ### Routing Table under ## Path 1 — Dispatch Mode
+      expect(content()).toMatch(/^#{2,3}\s+Routing\s*Table?/im);
     });
 
     it('has ## Boundaries section', () => {
@@ -315,8 +323,9 @@ describe('mg dispatcher — golden path', () => {
     });
 
     it('Boundaries fields are in correct order: CAN before CANNOT before ESCALATES TO', () => {
-      const canIndex = content().search(/\*\*CAN:\*\*/);
-      const cannotIndex = content().search(/\*\*CANNOT:\*\*/);
+      // Post-GH-244: boundaries are split by mode. Accept mode-prefixed labels.
+      const canIndex = content().search(/\*\*(?:Dispatch mode )?CAN:\*\*/);
+      const cannotIndex = content().search(/\*\*(?:Dispatch mode )?CANNOT:\*\*/);
       const escalatesIndex = content().search(/\*\*ESCALATES TO:\*\*/);
 
       expect(canIndex).toBeGreaterThan(-1);
@@ -343,8 +352,9 @@ describe('mg dispatcher — frontmatter contract', () => {
     expect(content()).toMatch(/description:\s*"[^"]+"/);
   });
 
-  it('has model: sonnet', () => {
-    expect(content()).toMatch(/model:\s+sonnet/);
+  it('has model: opus (leadership mode requires opus for agent spawning)', () => {
+    // Post-GH-244: /mg merged leadership mode (which spawns agents) — requires opus model
+    expect(content()).toMatch(/model:\s+opus/);
   });
 
   it('has allowed-tools field', () => {

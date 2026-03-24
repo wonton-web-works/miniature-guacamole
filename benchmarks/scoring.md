@@ -20,7 +20,7 @@ This document defines the scoring rubrics, normalization method, aggregate calcu
 
 ## Per-Task Scoring Rubrics
 
-### T1 — Sage Intake Routing
+### T1 — Orchestrator Intake Routing
 
 **Scoring type:** Binary per prompt, aggregate out of 3
 

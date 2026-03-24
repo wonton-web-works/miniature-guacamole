@@ -17,7 +17,7 @@ Before the matrix, here is how agents are classified into layers:
 
 | Layer | Agents | Role |
 |-------|--------|------|
-| **Sage** | sage | Top-level orchestrator. Intake, research eval, session management, drift detection. |
+| **Orchestrator** | orchestrator | Top-level orchestrator. Intake, research eval, session management, drift detection. |
 | **C-Suite** | ceo, cto, cmo, cfo | Strategic and architectural decisions. |
 | **Directors** | engineering-director, product-manager, art-director | Operational leadership and workstream planning. |
 | **ICs** | dev, qa, staff-engineer, data-engineer, api-designer, devops-engineer, technical-writer, copywriter, ai-artist, design, security-engineer, deployment-engineer | Execution layer. |
@@ -45,7 +45,7 @@ The quality ceiling. Every agent runs at maximum capability. Use this to establi
 
 | Layer | Model | Agents |
 |-------|-------|--------|
-| Sage | opus | sage |
+| Orchestrator | opus | orchestrator |
 | C-Suite | opus | ceo, cto, cmo, cfo |
 | Directors | opus | engineering-director, product-manager, art-director |
 | ICs | opus | dev, qa, staff-engineer, data-engineer, api-designer, devops-engineer, technical-writer, copywriter, ai-artist, design, security-engineer, deployment-engineer |
@@ -59,17 +59,17 @@ The quality ceiling. Every agent runs at maximum capability. Use this to establi
 
 ### Config B — Tiered (Recommended Production Starting Point)
 
-Keeps Sage and C-Suite at opus. Reduces Directors and ICs to sonnet. Supervisor runs haiku (monitor-only, no judgment required).
+Keeps Orchestrator and C-Suite at opus. Reduces Directors and ICs to sonnet. Supervisor runs haiku (monitor-only, no judgment required).
 
 | Layer | Model | Agents |
 |-------|-------|--------|
-| Sage | opus | sage |
+| Orchestrator | opus | orchestrator |
 | C-Suite | opus | ceo, cto, cmo, cfo |
 | Directors | sonnet | engineering-director, product-manager, art-director |
 | ICs | sonnet | dev, qa, staff-engineer, data-engineer, api-designer, devops-engineer, technical-writer, copywriter, ai-artist, design, security-engineer, deployment-engineer |
 | Supervisor | haiku | supervisor |
 
-**Hypothesis:** The most quality-sensitive behaviors (intake routing, C-Suite differentiation, research depth evaluation, drift detection) live in the Sage and C-Suite. Directors and ICs operate against explicit criteria — sonnet can follow well-written instructions reliably. Supervisor has no judgment calls — haiku is appropriate.
+**Hypothesis:** The most quality-sensitive behaviors (intake routing, C-Suite differentiation, research depth evaluation, drift detection) live in the Orchestrator and C-Suite. Directors and ICs operate against explicit criteria — sonnet can follow well-written instructions reliably. Supervisor has no judgment calls — haiku is appropriate.
 
 **Expected behavior:** T1, T2, T3, T4 scores near Config A. Marginal degradation in T5 (session management) if complex dependency reasoning is required. Meaningful token cost reduction (~40% vs Config A on typical workflows).
 
@@ -83,7 +83,7 @@ Drops C-Suite to sonnet. Drops ICs to haiku. Tests whether the framework's struc
 
 | Layer | Model | Agents |
 |-------|-------|--------|
-| Sage | opus | sage |
+| Orchestrator | opus | orchestrator |
 | C-Suite | sonnet | ceo, cto, cmo, cfo |
 | Directors | sonnet | engineering-director, product-manager, art-director |
 | ICs | haiku | dev, qa, staff-engineer, data-engineer, api-designer, devops-engineer, technical-writer, copywriter, ai-artist, design, security-engineer, deployment-engineer |
@@ -91,7 +91,7 @@ Drops C-Suite to sonnet. Drops ICs to haiku. Tests whether the framework's struc
 
 **Hypothesis:** C-Suite agents in the current framework are behaviorally weak (per prompt audit — thin constitutions, generic assessments). If they're producing generic output regardless of model, downgrading to sonnet may not cost much. ICs are given highly structured task prompts with explicit acceptance criteria — haiku may be sufficient for MECHANICAL track work.
 
-**Key risk:** T2 (C-Suite Decision Quality) is the canary. If C-Suite differentiation collapses further at sonnet, this config is not viable. T4 (Drift Detection) is also at risk if the Sage's challenge quality depends on opus-level reasoning.
+**Key risk:** T2 (C-Suite Decision Quality) is the canary. If C-Suite differentiation collapses further at sonnet, this config is not viable. T4 (Drift Detection) is also at risk if the Orchestrator's challenge quality depends on opus-level reasoning.
 
 **When to use:** Cost optimization testing. Not recommended for production until T2 and T4 scores are validated.
 
@@ -99,19 +99,19 @@ Drops C-Suite to sonnet. Drops ICs to haiku. Tests whether the framework's struc
 
 ### Config D — Budget
 
-All agents at sonnet or haiku. Sage drops to sonnet. Tests framework viability under strict cost constraints.
+All agents at sonnet or haiku. Orchestrator drops to sonnet. Tests framework viability under strict cost constraints.
 
 | Layer | Model | Agents |
 |-------|-------|--------|
-| Sage | sonnet | sage |
+| Orchestrator | sonnet | orchestrator |
 | C-Suite | sonnet | ceo, cto, cmo, cfo |
 | Directors | haiku | engineering-director, product-manager, art-director |
 | ICs | haiku | dev, qa, staff-engineer, data-engineer, api-designer, devops-engineer, technical-writer, copywriter, ai-artist, design, security-engineer, deployment-engineer |
 | Supervisor | haiku | supervisor |
 
-**Hypothesis:** Many framework behaviors are rule-following, not judgment. If the protocols are tight enough, sonnet Sage + structured lower-tier agents may be sufficient for well-defined workstreams.
+**Hypothesis:** Many framework behaviors are rule-following, not judgment. If the protocols are tight enough, a sonnet Orchestrator + structured lower-tier agents may be sufficient for well-defined workstreams.
 
-**Key risk:** T3 (Research Depth Evaluation) and T5 (Session Management) are the most likely failure points. Both require the Sage to reason about gaps, dependencies, and uncertainty — judgment calls that may not survive a sonnet downgrade. T4 (Drift Detection) is also at risk.
+**Key risk:** T3 (Research Depth Evaluation) and T5 (Session Management) are the most likely failure points. Both require the Orchestrator to reason about gaps, dependencies, and uncertainty — judgment calls that may not survive a sonnet downgrade. T4 (Drift Detection) is also at risk.
 
 **When to use:** Academic/testing purposes. Establish floor quality to understand the protocol's independence from model quality.
 
@@ -120,11 +120,11 @@ All agents at sonnet or haiku. Sage drops to sonnet. Tests framework viability u
 ## Configuration Comparison at a Glance
 
 ```
-                   Sage     C-Suite   Directors   ICs      Supervisor
-Config A (all-opus)  opus     opus      opus        opus     opus
-Config B (tiered)    opus     opus      sonnet      sonnet   haiku
-Config C (aggressive) opus    sonnet    sonnet      haiku    haiku
-Config D (budget)    sonnet   sonnet    haiku       haiku    haiku
+                   Orchestrator  C-Suite   Directors   ICs      Supervisor
+Config A (all-opus)     opus      opus      opus        opus     opus
+Config B (tiered)       opus      opus      sonnet      sonnet   haiku
+Config C (aggressive)   opus      sonnet    sonnet      haiku    haiku
+Config D (budget)       sonnet    sonnet    haiku       haiku    haiku
 ```
 
 ---

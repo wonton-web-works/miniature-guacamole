@@ -2,8 +2,8 @@
  * Adapter Factory
  *
  * Returns a StorageAdapter instance based on the MG_STORAGE_ADAPTER environment variable.
- * OSS edition supports FileAdapter only. Enterprise postgres support is available
- * in the mg-enterprise package.
+ * OSS edition supports FileAdapter only. Postgres support is available
+ * in the mg-premium package.
  *
  * AC-ENT-2.11: Backwards compatible — no env var = FileAdapter
  *
@@ -39,7 +39,7 @@ export async function getAdapter(): Promise<StorageAdapter> {
       }
       throw new Error(
         `Unknown adapter type: "${adapterType}". Valid values: ${listAdapters().join(', ')}. ` +
-        'For postgres support, use the mg-enterprise package.'
+        'For postgres support, use the mg-premium package.'
       );
     }
   }

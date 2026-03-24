@@ -1,4 +1,0 @@
-User-agent: *
-Allow: /
-
-Sitemap: https://private-enterprise.wontonwebworks.com/sitemap.xml

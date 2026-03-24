@@ -7,11 +7,6 @@ miniature-guacamole simulates a complete product development organization within
 ## Agent Hierarchy
 
 ```
-    ┌─────────────────────────────────────────────────────┐
-    │  Sage (Enterprise only — see                        │
-    │  enterprise edition only)                            │
-    └─────────────────────────────────────────────────────┘
-
     ┌──────────────┬──────────────┬──────────┬───────────┐
     │              │              │          │           │
 ┌───▼──┐     ┌────▼───┐     ┌───▼──┐  ┌────▼───┐
@@ -35,11 +30,10 @@ miniature-guacamole simulates a complete product development organization within
 
 The hierarchy is organized into five levels:
 
-1. **Sage** - Enterprise orchestrator (enterprise edition only)
-2. **Executive Level** - Strategic vision and high-level decisions (opus/sonnet models)
-3. **Leadership Level** - Tactical planning and team coordination (sonnet model)
-4. **Individual Contributor Level** - Hands-on implementation (sonnet/haiku models)
-5. **Operations Level** - Deployment and infrastructure (sonnet model)
+1. **Executive Level** - Strategic vision and high-level decisions (opus/sonnet models)
+2. **Leadership Level** - Tactical planning and team coordination (sonnet model)
+3. **Individual Contributor Level** - Hands-on implementation (sonnet/haiku models)
+4. **Operations Level** - Deployment and infrastructure (sonnet model)
 
 ## Delegation Model
 
@@ -47,7 +41,6 @@ The hierarchy is organized into five levels:
 
 | Agent | Can Delegate To (Leadership) | Can Delegate To (IC via Task) |
 |-------|------------------------------|-------------------------------|
-| Sage | Enterprise only | Enterprise only |
 | CEO | CTO, Engineering Director, Product Owner, Art Director | - |
 | CTO | Engineering Director, Staff Engineer | dev |
 | CMO | Art Director, Product Owner, Copywriter, Design | - |

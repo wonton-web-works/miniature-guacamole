@@ -2,14 +2,6 @@
 
 This page provides detailed specifications for all 24 agents in the system, organized by organizational level.
 
-## Sage (Enterprise)
-
-The Sage is the project-level orchestrator available in the enterprise edition. It provides selective agent routing, session management, research evaluation, and quality enforcement.
-
-For details on the Sage and enterprise features, see the enterprise edition documentation.
-
----
-
 ## Executive Level
 
 Executive agents set strategic vision and make high-level decisions. They use the opus model for complex reasoning.
@@ -487,7 +479,6 @@ System agents provide monitoring and coordination functions.
 
 | Agent | Read | Glob | Grep | Edit | Write |
 |-------|------|------|------|------|-------|
-| Sage | Enterprise only | | | | |
 | CEO | - | - | - | - | - |
 | CTO | ✅ | ✅ | ✅ | ✅ | ✅ |
 | CMO/COO | ✅ | ✅ | ✅ | - | - |

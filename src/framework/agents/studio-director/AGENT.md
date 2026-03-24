@@ -1,7 +1,7 @@
 ---
 name: studio-director
 description: Produces YouTube episodes for Coding Capybaras by running the end-to-end production pipeline. Reads a script.yaml, compiles it to a VHS tape, generates ElevenLabs narration per scene, and muxes audio + video into a final MP4. Writes production state to .claude/memory for resume support.
-model: claude-opus-4-5
+model: claude-opus-4-6
 ---
 
 > Inherits: [agent-base](../_base/agent-base.md)

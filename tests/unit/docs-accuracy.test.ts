@@ -225,8 +225,8 @@ describe('docs/architecture.md — golden path (correct values must appear)', ()
 });
 
 // ─────────────────────────────────────────────────────────────
-// Edition + Sage documentation accuracy
-// Tests ordered misuse-first: wrong counts / absent content before
+// Edition documentation accuracy (post GH-251: Sage removed from community docs)
+// Tests ordered misuse-first: wrong counts / stale content before
 // correct counts / present content.
 // ─────────────────────────────────────────────────────────────
 
@@ -238,20 +238,21 @@ describe('edition-docs — misuse cases (stale or wrong values must not appear)'
     expect(agents).not.toMatch(/\b20 specialized agents\b/i);
   });
 
-  it('docs/agents.md does not say "23 agents" — sage must not be excluded from docs', () => {
-    // Community edition excludes sage from the *dist bundle*, but the
-    // reference docs must document all 24 agents including sage.
+  it('docs/agents.md does not reference Sage — enterprise references removed (GH-251)', () => {
+    // Post v5.4.0 enterprise code separation, Sage references were removed
+    // from community docs.
     const agents = read('docs/agents.md');
-    expect(agents).not.toMatch(/\ball 23 agents\b/i);
-    expect(agents).not.toMatch(/\b23 specialized agents\b/i);
+    expect(agents).not.toMatch(/##\s*Sage/);
+    expect(agents).not.toMatch(/\bSage\b/);
   });
 
-  it('docs/architecture.md mentions Sage and shows CEO at top of community hierarchy', () => {
-    // Sage is enterprise-only. Community hierarchy starts with CEO.
-    // Both should be present in the architecture docs.
+  it('docs/architecture.md does not reference Sage — enterprise references removed (GH-251)', () => {
+    // Post v5.4.0, Sage was removed from the community architecture docs.
+    // CEO is the top of the community hierarchy.
     const arch = read('docs/architecture.md');
-    expect(arch).toMatch(/Sage/); // Sage mentioned as enterprise
-    expect(arch).toMatch(/CEO/);  // CEO in active hierarchy
+    expect(arch).not.toMatch(/\bSage\b/);
+    expect(arch).not.toMatch(/enterprise.only/i);
+    expect(arch).toMatch(/CEO/);  // CEO at top of community hierarchy
   });
 
   it('README.md does not say "23 Specialized Agents" — sage must count in total', () => {
@@ -265,32 +266,6 @@ describe('edition-docs — happy path (correct content must be present)', () => 
     // AC-EDITION-1: all 24 agents must be documented
     const agents = read('docs/agents.md');
     expect(agents).toMatch(/\ball 24 agents\b|\b24 agents\b|\b24 specialized\b/i);
-  });
-
-  it('docs/agents.md documents the Sage agent', () => {
-    // AC-EDITION-2: Sage must appear in the agents reference page
-    const agents = read('docs/agents.md');
-    expect(agents).toMatch(/##\s*Sage/);
-  });
-
-  it('docs/agents.md describes Sage as project orchestrator or entry point', () => {
-    // AC-EDITION-2: Sage description must convey its orchestrator role
-    const agents = read('docs/agents.md');
-    expect(agents).toMatch(/orchestrat|entry point/i);
-  });
-
-  it('docs/architecture.md mentions Sage as enterprise-only', () => {
-    // AC-EDITION-3: architecture must reference Sage (enterprise callout, not in active hierarchy)
-    const arch = read('docs/architecture.md');
-    expect(arch).toMatch(/Sage/);
-    // Sage is marked enterprise-only in the docs (not in the active hierarchy box)
-    expect(arch).toMatch(/[Ee]nterprise/);
-  });
-
-  it('docs/architecture.md identifies Sage as the project orchestrator or entry point', () => {
-    // AC-EDITION-3: architecture must label Sage's role in the hierarchy
-    const arch = read('docs/architecture.md');
-    expect(arch).toMatch(/Sage.*orchestrat|orchestrat.*Sage|entry point/i);
   });
 
   it('docs/architecture.md states total agent count as 24', () => {

@@ -132,7 +132,7 @@ Does the agent say something that only its role would say — a perspective not 
 
 ### Dimension 3: Actionability
 
-Does the agent's assessment give the Sage / leadership team something concrete to act on?
+Does the agent's assessment give the orchestrator / leadership team something concrete to act on?
 
 | Score | Descriptor |
 |-------|-----------|

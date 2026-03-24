@@ -1,6 +1,6 @@
 # Benchmark T2: C-Suite Decision Quality — Config D Run
 **Date:** 2026-03-22
-**Config:** D — BUDGET mode. All agents on claude-sonnet-4-6 (Sage=sonnet, C-Suite=sonnet)
+**Config:** D — BUDGET mode. All agents on claude-sonnet-4-6 (Orchestrator=sonnet, C-Suite=sonnet)
 **Decision prompt:** Agent Message Bus Implementation (Option A: File-Based Handoffs vs Option B: Centralized Message Queue)
 **Compared against:** t2-postfix-raw.md (Config B baseline — all agents on opus, all scored 5.00)
 **Methodology:** Each agent spawned independently via CLI with identical prompt and role-specific constitution injected as system context. No memory files read (isolated run). Responses generated in-character per agent definitions.

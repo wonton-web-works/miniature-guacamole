@@ -47,7 +47,18 @@ Creates the memory directory where agents store project-local state:
 !.gitignore
 ```
 
-### 2. Install Shared Protocols to .claude/shared/
+### 2. Create Brand File Templates in .claude/memory/
+
+Creates empty template files for brand and design system data:
+
+- **`.claude/memory/brand-guidelines.json`** — verbal identity and high-level visual brand decisions. Read by art-director before every visual review.
+- **`.claude/memory/design-system.json`** — machine-readable design tokens (colors, typography, spacing, components). Read by design agent and art-director.
+
+Both files are created with the minimal valid schema structure (all required top-level fields present, values left empty for the team to fill in via `/mg-design`).
+
+**Idempotency**: If either file already exists in `.claude/memory/`, it is NOT overwritten. Existing brand decisions are always preserved.
+
+### 3. Install Shared Protocols to .claude/shared/
 
 Installs the 6 shared protocols to `.claude/shared/`:
 
@@ -62,7 +73,7 @@ Installs the 6 shared protocols to `.claude/shared/`:
 
 **Preservation**: If a protocol file already exists in `.claude/shared/`, it is NOT overwritten. User customizations are preserved.
 
-### 3. Detect Tech Stack
+### 4. Detect Tech Stack
 
 Performs lightweight detection by checking for common project markers:
 
@@ -76,7 +87,7 @@ Performs lightweight detection by checking for common project markers:
 
 Detection is **lightweight** (per DEC-INIT-005): Only checks for file existence, doesn't parse contents or prescribe tools.
 
-### 4. Generate .claude/rules/*.md with Project Context
+### 5. Generate .claude/rules/*.md with Project Context
 
 Creates modular rules files (per DEC-INIT-003):
 

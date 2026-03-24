@@ -217,6 +217,64 @@ Define how the spacing scale maps to component internal padding, card padding, a
 
 ---
 
+## JSON Output Files
+
+When brand kit work is complete, generate two machine-readable JSON files alongside the human-readable `docs/brand-kit.md`. These files are stored in `.claude/memory/` and read by the art-director agent on every visual review.
+
+**`brand-guidelines.json`** — verbal identity and high-level visual brand decisions:
+
+```json
+{
+  "brand_name": "<your brand name>",
+  "voice": {
+    "tone": "<contextual register, e.g. 'direct and approachable'>",
+    "register": "<formal | professional | conversational | casual>",
+    "personality_traits": ["<adjective 1>", "<adjective 2>", "<adjective 3>"]
+  },
+  "terminology": {
+    "preferred": ["<word to use>", "..."],
+    "avoided": ["<word to avoid>", "..."]
+  },
+  "visual_identity": {
+    "primary_colors": ["<hex>"],
+    "typography": "<heading font / body font summary>",
+    "logo_usage": "docs/assets/logo-usage.md"
+  }
+}
+```
+
+**`design-system.json`** — machine-readable design tokens, drawn from the color and typography decisions above:
+
+```json
+{
+  "colors": {
+    "primary": "<--color-primary hex>",
+    "secondary": "<--color-secondary hex>",
+    "accent": "<--color-accent hex>",
+    "semantic": {
+      "success": "<--color-feedback-success hex>",
+      "warning": "<--color-feedback-warning hex>",
+      "error": "<--color-feedback-error hex>",
+      "info": "<--color-feedback-info hex>"
+    }
+  },
+  "typography": {
+    "headings": "<heading font family>",
+    "body": "<body font family>",
+    "mono": "<mono font family>"
+  },
+  "spacing": {
+    "unit": "4px",
+    "scale": [4, 8, 12, 16, 24, 32, 48, 64, 96]
+  },
+  "components": {}
+}
+```
+
+Write both files to `.claude/memory/` only if they do not already exist. If they exist, update in place rather than overwriting. These files are git-ignored by `.claude/memory/.gitignore`.
+
+---
+
 ## Wireframe Token Usage
 
 When writing wireframe screen descriptions, reference tokens by their CSS custom property name — never use raw hex values or font names. This keeps wireframes consistent with the brand kit and immediately actionable by engineering.

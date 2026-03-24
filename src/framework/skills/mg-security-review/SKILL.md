@@ -9,8 +9,6 @@ metadata:
   spawn_cap: "6"
 ---
 
-> Inherits: [skill-base](../_base/skill-base.md)
-
 # Security Review
 
 Coordinates security-engineer to perform comprehensive security audits and vulnerability assessments.
@@ -21,6 +19,7 @@ Coordinates security-engineer to perform comprehensive security audits and vulne
 2. **Severity-driven** - Prioritize findings by CRITICAL > HIGH > MEDIUM > LOW for remediation
 3. **Actionable remediation** - Every vulnerability includes specific remediation steps
 4. **Defense in depth** - Check code, dependencies, secrets, and API security layers
+5. **Follow output format** — See `references/output-format.md` for standard visual patterns
 
 ## Security Audit Areas
 

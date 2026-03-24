@@ -10,6 +10,13 @@ vi.mock('child_process', () => ({
   spawnSync: vi.fn(),
 }));
 
+// Mock github-auth (GH-14)
+vi.mock('../../src/github-auth', () => ({
+  resolveGhToken: vi.fn(),
+}));
+
+import { resolveGhToken } from '../../src/github-auth';
+
 describe('GitHub Client Module', () => {
   let mockSpawn: ReturnType<typeof vi.fn>;
   let mockConfig: DaemonConfig;
@@ -315,18 +322,37 @@ describe('GitHub Client Module', () => {
         );
       });
 
-      it('GIVEN createPR uses GITHUB_TOKEN WHEN executed THEN sets token in environment', () => {
+      it('GIVEN account configured WHEN createPR called THEN sets GH_TOKEN in environment (GH-14)', () => {
         mockSpawn.mockReturnValue({ status: 0, stdout: 'https://github.com/owner/repo/pull/42', stderr: '' });
+        vi.mocked(resolveGhToken).mockReturnValue('ghp_resolved_token');
+        mockConfig.github.account = 'bot-account';
+
+        createPR(mockTicketData, 'feature/PROJ-123-add-login-endpoint', mockConfig);
+
+        expect(resolveGhToken).toHaveBeenCalledWith('bot-account');
+        expect(mockSpawn).toHaveBeenCalledWith(
+          expect.any(String),
+          expect.any(Array),
+          expect.objectContaining({
+            env: expect.objectContaining({
+              GH_TOKEN: 'ghp_resolved_token',
+            }),
+          })
+        );
+      });
+
+      it('GIVEN no account configured WHEN createPR called THEN does not inject GH_TOKEN', () => {
+        mockSpawn.mockReturnValue({ status: 0, stdout: 'https://github.com/owner/repo/pull/42', stderr: '' });
+        vi.mocked(resolveGhToken).mockReturnValue(undefined);
+        delete (mockConfig.github as any).account;
 
         createPR(mockTicketData, 'feature/PROJ-123-add-login-endpoint', mockConfig);
 
         expect(mockSpawn).toHaveBeenCalledWith(
           expect.any(String),
           expect.any(Array),
-          expect.objectContaining({
-            env: expect.objectContaining({
-              GITHUB_TOKEN: 'ghp_test',
-            }),
+          expect.not.objectContaining({
+            env: expect.objectContaining({ GH_TOKEN: expect.any(String) }),
           })
         );
       });

@@ -9,8 +9,6 @@ metadata:
   spawn_cap: "6"
 ---
 
-> Inherits: [skill-base](../_base/skill-base.md)
-
 # Documentation Team
 
 Coordinates technical-writer for comprehensive documentation generation.

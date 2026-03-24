@@ -4,9 +4,9 @@ This page provides detailed specifications for all 24 agents in the system, orga
 
 ## Sage (Enterprise)
 
-The Sage is the project-level orchestrator available in [TheEngOrg Enterprise](https://theengorg.wontonwebworks.com/enterprise). It provides selective agent routing, session management, research evaluation, and quality enforcement.
+The Sage is the project-level orchestrator available in the enterprise edition. It provides selective agent routing, session management, research evaluation, and quality enforcement.
 
-For details on the Sage and enterprise features, visit [theengorg.wontonwebworks.com/enterprise](https://theengorg.wontonwebworks.com/enterprise).
+For details on the Sage and enterprise features, see the enterprise edition documentation.
 
 ---
 

@@ -1,9 +1,10 @@
 // GitHubProvider: uses gh CLI for zero new dependencies
 // WS-DAEMON-10: Ticket Provider Abstraction Layer
 
-import { spawnSync } from 'child_process';
+import { spawnSync, type SpawnSyncOptions } from 'child_process';
 import type { GitHubConfig } from '../types';
 import type { TicketProvider, NormalizedTicket, TicketStatus, SubtaskInput } from './types';
+import { resolveGhToken } from '../github-auth';
 
 interface GitHubIssue {
   number: number;
@@ -57,9 +58,15 @@ function extractIssueNumberFromUrl(url: string): number {
 
 export class GitHubProvider implements TicketProvider {
   private readonly config: GitHubConfig;
+  private readonly spawnOpts: SpawnSyncOptions;
 
   constructor(config: GitHubConfig) {
     this.config = config;
+    const token = resolveGhToken(config.account);
+    this.spawnOpts = {
+      encoding: 'utf-8' as const,
+      ...(token ? { env: { ...process.env, GH_TOKEN: token } } : {}),
+    };
   }
 
   async poll(_since?: Date): Promise<NormalizedTicket[]> {
@@ -75,7 +82,7 @@ export class GitHubProvider implements TicketProvider {
         args.push('--search', this.config.issueFilter);
       }
 
-      const result = spawnSync('gh', args, { encoding: 'utf-8' });
+      const result = spawnSync('gh', args, this.spawnOpts);
       if (result.status !== 0) {
         return [];
       }
@@ -114,7 +121,7 @@ export class GitHubProvider implements TicketProvider {
       args.push('--label', task.labels.join(','));
     }
 
-    const result = spawnSync('gh', args, { encoding: 'utf-8' });
+    const result = spawnSync('gh', args, this.spawnOpts);
 
     if (result.status !== 0) {
       throw new Error(result.stderr?.trim() || 'gh issue create failed');
@@ -148,7 +155,7 @@ export class GitHubProvider implements TicketProvider {
       args.push('--remove-label', removeLabels);
     }
 
-    const result = spawnSync('gh', args, { encoding: 'utf-8' });
+    const result = spawnSync('gh', args, this.spawnOpts);
     if (result.status !== 0) {
       throw new Error(result.stderr?.trim() || 'gh issue edit failed');
     }
@@ -162,7 +169,7 @@ export class GitHubProvider implements TicketProvider {
       'issue', 'comment', String(issueNumber),
       '--repo', this.config.repo,
       '--body', body,
-    ], { encoding: 'utf-8' });
+    ], this.spawnOpts);
 
     if (result.status !== 0) {
       throw new Error(result.stderr?.trim() || 'gh issue comment failed');
@@ -176,7 +183,7 @@ export class GitHubProvider implements TicketProvider {
       'issue', 'edit', String(issueNumber),
       '--repo', this.config.repo,
       '--add-label', label,
-    ], { encoding: 'utf-8' });
+    ], this.spawnOpts);
 
     if (result.status !== 0) {
       throw new Error(result.stderr?.trim() || 'gh issue edit failed');

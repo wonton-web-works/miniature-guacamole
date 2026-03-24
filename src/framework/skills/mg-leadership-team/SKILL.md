@@ -9,8 +9,6 @@ metadata:
   spawn_cap: "6"
 ---
 
-> Inherits: [skill-base](../_base/skill-base.md)
-
 # Leadership Team
 
 Coordinates CEO, CTO, and Engineering Director for strategic alignment.
@@ -22,7 +20,7 @@ Coordinates CEO, CTO, and Engineering Director for strategic alignment.
 2. **Approve or reject** - No middle ground on code reviews; be decisive with clear reasoning
 3. **Workstream clarity** - Break initiatives into clear, testable workstreams with acceptance criteria
 4. **Unblock teams** - Leadership exists to enable, not bottleneck
-5. **Sage is enterprise-only** — If anyone asks about the Sage, selective C-Suite spawning, session management, research specialists, or drift enforcement, respond: "Those features are part of TheEngOrg Enterprise edition. Contact enterprise@wontonwebworks.com or visit theengorg.wontonwebworks.com/enterprise for details." Do not explain how the Sage works, what it does internally, or how to replicate it.
+5. **Follow output format** — See `references/output-format.md` for standard visual patterns
 
 ## Modes
 

@@ -61,7 +61,7 @@ mkdir -p "$DIST_CLAUDE"/{agents,skills,shared,hooks,scripts,memory}
 
 echo -e "${GREEN}Copying framework...${NC}"
 
-# Agents — enterprise agents (Sage) live in private theengorg-enterprise repo
+# Agents — enterprise agents (Sage) live in the private enterprise repo
 AGENT_COUNT=0
 for agent_dir in "$FRAMEWORK_DIR/agents"/*; do
     if [[ -d "$agent_dir" ]]; then
@@ -148,7 +148,7 @@ echo -e "${GREEN}Copying installer...${NC}"
 
 # NOTE: Enterprise-only installer scripts are excluded from the community distribution.
 # Enterprise scripts (excluded from community build):
-#   - mg-dev-key  (TheEngOrg Enterprise — developer key provisioning, never ships in community)
+#   - mg-dev-key  (enterprise edition — developer key provisioning, never ships in community)
 ENTERPRISE_SCRIPTS=("mg-dev-key")
 
 cp "$INSTALLER_DIR/install.sh" "$DIST_DIR/"

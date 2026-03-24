@@ -9,8 +9,6 @@ metadata:
   spawn_cap: "6"
 ---
 
-> Inherits: [skill-base](../_base/skill-base.md)
-
 # mg-debug
 
 Coordinates qa, dev, and optionally security-engineer through structured debugging workflow to investigate, reproduce, and resolve bugs.

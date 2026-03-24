@@ -53,10 +53,21 @@ docs/.vitepress/dist/
 
 # Claude local-only files (symlinks are tracked, these are not)
 .claude/settings.local.json
+.claude/settings.json.backup.*
 .claude/agent-memory/
 .claude/agent-memory-local/
 .claude/README.md
 .claude/vitest.config.ts
+.claude/TEO_INSTALL.json
+.claude/TEO_PROJECT
+.claude/upstream-manifest.json
+.claude/worktrees/
+
+# Enterprise-only artifacts (installed by TEO, not part of community)
+src/framework/agents/sage/
+src/framework/skills/teo*/
+src/framework/scripts/teo-*
+.claire/
 
 # Local build/test artifacts
 bin/
@@ -78,4 +89,14 @@ miniature-guacamole/
 # mg-daemon config (contains API tokens — never commit)
 .mg-daemon.json
 .mg-daemon/
+
+# Private business documents (live in enterprise repo)
+docs/pitch/
+docs/prd-*.md
+docs/technical-design-*.md
+data/
+scripts/generate-pitch-deck.py
+site/src/data/funds/
+site/public/assets/pitch/
+site/src/pages/_old-community-index.astro
 

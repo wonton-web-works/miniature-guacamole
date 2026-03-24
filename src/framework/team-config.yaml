@@ -101,7 +101,8 @@ organization:
 
 # Role hierarchy for escalation paths
 hierarchy:
-  executive:   [ceo, cto, engineering-director]
+  sage:        [sage]
+  executive:   [ceo, cto, cmo, cfo, engineering-director]
   leadership:  [product-owner, product-manager, engineering-manager, staff-engineer, art-director]
   ic:          [dev, qa, design]
   operations:  [deployment-engineer]
@@ -117,7 +118,49 @@ hierarchy:
 #   - memory_patterns: what to read/write in shared memory
 
 agents:
+  # === SAGE (enterprise orchestrator) ===
+
+  sage:
+    title: The Sage
+    tier: reasoning
+    description: >
+      Project-level orchestrator. Intake, session management, research evaluation,
+      quality enforcement, drift prevention. Entry point for all MG work.
+      Enterprise-only — requires valid enterprise session.
+    tools: [Read, Glob, Grep, Task, WebSearch]
+    can_spawn: [supervisor, ceo, cto, cmo, cfo]
+    escalates_to: null  # Top of chain — escalates to user
+    memory_patterns:
+      reads:  [project-context, specialists, workstream-status, supervisor-alerts, leadership-decisions]
+      writes: [project-context, specialists, sage-session-log]
+
   # === EXECUTIVE TIER (reasoning model) ===
+
+  cmo:
+    title: Chief Marketing Officer / Chief Operating Officer
+    tier: reasoning
+    description: >
+      Operations, marketing, go-to-market strategy, and operational efficiency.
+      Evaluates brand alignment, operational readiness, and market fit.
+    tools: [Read, Glob, Grep, Task]
+    can_spawn: [art-director, product-owner, copywriter, design]
+    escalates_to: ceo
+    memory_patterns:
+      reads:  [brand-decisions, operational-decisions, workstream-status]
+      writes: [operational-decisions, brand-assessments]
+
+  cfo:
+    title: Chief Financial Officer
+    tier: reasoning
+    description: >
+      Cost analysis, resource allocation, token budget management, and ROI assessment.
+      Ensures decisions are economically sound.
+    tools: [Read, Glob, Grep]
+    can_spawn: []
+    escalates_to: ceo
+    memory_patterns:
+      reads:  [cost-decisions, resource-allocation, workstream-status]
+      writes: [cost-decisions, resource-assessments]
 
   ceo:
     title: Chief Executive Officer
@@ -309,7 +352,8 @@ agents:
 teams:
   leadership-team:
     description: Strategic decisions, executive reviews, code review approvals
-    members: [ceo, cto, engineering-director]
+    members: [ceo, cto, cmo, cfo, engineering-director]
+    orchestrator: sage  # Enterprise mode — Sage selectively spawns C-Suite
     default_tier: reasoning  # Team-level operations use reasoning model
 
   product-team:

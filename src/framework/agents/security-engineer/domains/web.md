@@ -9,8 +9,6 @@ Domain reference for web application security reviews. Load this file when the r
 3. **Authorization and Access Control** — Verify role-based access control (RBAC) enforcement on every endpoint, check for insecure direct object references (IDOR), review API authorization scopes and resource ownership, confirm admin function protection, and validate CORS configuration.
 4. **Transport and Data Protection** — Confirm TLS enforcement with HSTS headers, review Content Security Policy (CSP) headers, check cookie attributes (Secure, HttpOnly, SameSite), verify sensitive data is not leaked in error messages, and review API key management.
 5. **CSRF and Request Integrity** — Verify Cross-Site Request Forgery (CSRF) tokens on state-changing endpoints, check anti-CSRF mechanisms for SPA architectures, and review CORS preflight configuration for cross-origin requests.
-6. **API Abuse and Protocol-Level Attacks** — Check rate-limit bypass techniques and enforce rate limiting on all public endpoints, verify GraphQL depth limits and introspection controls to prevent batching attacks, review WebSocket authentication and message validation, check for HTTP request smuggling via mismatched Content-Length/Transfer-Encoding headers, and validate cache poisoning mitigations (Vary headers, cache-control directives).
-7. **Mass Assignment** — Verify that API endpoints do not bind all request fields to model objects without allowlisting; review ORM configurations for mass assignment vulnerabilities.
 
 ## Threat Model
 
@@ -20,7 +18,6 @@ Domain reference for web application security reviews. Load this file when the r
 4. **CSRF and request forgery** — Attacker tricks authenticated users into performing unintended actions. Mitigate with anti-CSRF tokens and SameSite cookie attributes.
 5. **Server-Side Request Forgery (SSRF)** — Attacker manipulates server to make requests to internal resources. Mitigate with URL allowlists and blocking internal network ranges.
 6. **Insecure deserialization** — Attacker sends crafted serialized objects to achieve remote code execution or privilege escalation. Mitigate by avoiding native deserialization of untrusted data.
-7. **API abuse and protocol-level attacks** — Attacker exploits weak rate limiting for credential stuffing or data harvesting; GraphQL batching and introspection expose schema; HTTP request smuggling splits requests at proxy boundaries enabling cache poisoning and request hijacking; WebSocket connections lack authentication after upgrade; mass assignment allows hidden field injection. Mitigate with strict rate limiting, GraphQL depth limits, disabled introspection in production, request normalization at load balancer, WebSocket token validation, and explicit field allowlists.
 
 ## Checklist
 

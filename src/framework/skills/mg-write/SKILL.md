@@ -9,8 +9,6 @@ metadata:
   spawn_cap: "6"
 ---
 
-> Inherits: [skill-base](../_base/skill-base.md)
-
 # Content Team
 
 Coordinates art direction and copywriting for authentic, on-brand content.

@@ -9,8 +9,6 @@ metadata:
   spawn_cap: "6"
 ---
 
-> Inherits: [skill-base](../_base/skill-base.md)
-
 # Add Project Context
 
 Registers external projects as read-only context references for miniature-guacamole agents.

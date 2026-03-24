@@ -61,25 +61,36 @@ mkdir -p "$DIST_CLAUDE"/{agents,skills,shared,hooks,scripts,memory}
 
 echo -e "${GREEN}Copying framework...${NC}"
 
-# Agents — enterprise agents (Sage) live in the private enterprise repo
+# Agents — enterprise agents (Sage) live in the private enterprise repo (theengorg-enterprise)
 AGENT_COUNT=0
 for agent_dir in "$FRAMEWORK_DIR/agents"/*; do
     if [[ -d "$agent_dir" ]]; then
+        agent_name=$(basename "$agent_dir")
+        if [[ "$agent_name" == "sage" ]]; then
+            # skip — sage is enterprise-only; ships in theengorg-enterprise, not community
+            continue
+        fi
         cp -r "$agent_dir" "$DIST_CLAUDE/agents/"
         AGENT_COUNT=$((AGENT_COUNT + 1))
     fi
 done
 echo "  agents: $AGENT_COUNT"
 
-# Skills (skip _shared internal dir)
+# Skills (skip _shared internal dir and teo* enterprise skills)
 SKILL_COUNT=0
 for skill_dir in "$FRAMEWORK_DIR/skills"/*; do
     if [[ -d "$skill_dir" ]]; then
         skill_name=$(basename "$skill_dir")
-        if [[ "$skill_name" != _* ]]; then
-            cp -r "$skill_dir" "$DIST_CLAUDE/skills/"
-            SKILL_COUNT=$((SKILL_COUNT + 1))
+        if [[ "$skill_name" == _* ]]; then
+            # skip — internal shared resource dir
+            continue
         fi
+        if [[ "$skill_name" == teo* ]]; then
+            # skip — teo-* skills are enterprise-only; ships in theengorg-enterprise, not community
+            continue
+        fi
+        cp -r "$skill_dir" "$DIST_CLAUDE/skills/"
+        SKILL_COUNT=$((SKILL_COUNT + 1))
     fi
 done
 echo "  skills: $SKILL_COUNT"

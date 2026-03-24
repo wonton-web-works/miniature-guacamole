@@ -30,6 +30,7 @@ CLAUDE_SOURCE_DIR="$SCRIPT_DIR/.claude"
 PROJECT_DIR="$PWD"
 FORCE=false
 INSTALL_CONFIG_CACHE=false
+STANDALONE=false
 
 # ============================================================================
 # Helper functions
@@ -44,6 +45,7 @@ Usage: $0 [OPTIONS] [PROJECT_DIR]
 Options:
   --force            Force re-installation (overwrites existing files)
   --config-cache     Also install config cache to ~/.claude/.mg-configs/
+  --standalone       Copy all framework files even when a global install exists at ~/.claude/
   --help             Show this help message
 
 Arguments:
@@ -54,10 +56,16 @@ Description:
   Creates project-local settings.json, CLAUDE.md, and memory structure.
   NEVER modifies ~/.claude/settings.json.
 
+  When a global install is detected at ~/.claude/ (agents/, skills/, shared/ all
+  present), the installer skips copying framework files to the project, since they
+  are already available globally. Use --standalone to override this behavior and
+  copy everything project-locally.
+
 Examples:
   $0                           # Install to current directory
   $0 /path/to/project          # Install to specific project
   $0 --force                   # Force re-install
+  $0 --standalone              # Force project-local copy even with global install
   $0 --config-cache            # Also install to ~/.claude/.mg-configs/
 
 EOF
@@ -102,6 +110,10 @@ while [[ $# -gt 0 ]]; do
             INSTALL_CONFIG_CACHE=true
             shift
             ;;
+        --standalone)
+            STANDALONE=true
+            shift
+            ;;
         --help)
             usage
             exit 0
@@ -128,6 +140,15 @@ PROJECT_DIR="$(cd "$PROJECT_DIR" && pwd)"
 CLAUDE_TARGET_DIR="$PROJECT_DIR/.claude"
 MG_INSTALL_JSON="$CLAUDE_TARGET_DIR/MG_INSTALL.json"
 MG_PROJECT_MARKER="$CLAUDE_TARGET_DIR/MG_PROJECT"
+
+# ============================================================================
+# Detect global install
+# ============================================================================
+
+GLOBAL_INSTALL=false
+if [ -d "$HOME/.claude/agents" ] && [ -d "$HOME/.claude/skills" ] && [ -d "$HOME/.claude/shared" ]; then
+    GLOBAL_INSTALL=true
+fi
 
 # ============================================================================
 # Banner
@@ -177,8 +198,16 @@ if [[ "$FORCE" == "true" ]] || [[ ! -f "$MG_INSTALL_JSON" ]]; then
         # Enable dotglob to include hidden files in glob expansion
         shopt -s dotglob
 
+        # When global install is detected and --standalone is not set, skip cleaning
+        # agents/skills/shared since they won't be re-copied.
+        if [[ "$GLOBAL_INSTALL" == "true" ]] && [[ "$STANDALONE" != "true" ]]; then
+            DIRS_TO_CLEAN="scripts hooks schemas"
+        else
+            DIRS_TO_CLEAN="agents skills shared scripts hooks schemas"
+        fi
+
         # Remove MG-managed directories (selective removal - preserve user-created hidden content)
-        for dir in agents skills shared scripts hooks schemas; do
+        for dir in $DIRS_TO_CLEAN; do
             if [[ -d "$CLAUDE_TARGET_DIR/$dir" ]]; then
                 # Build set of known framework items from source (bash 3.2 compatible)
                 known_items=""
@@ -277,35 +306,42 @@ SKILL_COUNT=0
 SCRIPT_COUNT=0
 SHARED_COUNT=0
 
-# Copy agents
-if [[ -d "$CLAUDE_SOURCE_DIR/agents" ]]; then
-    for agent_dir in "$CLAUDE_SOURCE_DIR/agents"/*; do
-        if [[ -d "$agent_dir" ]]; then
-            agent_name=$(basename "$agent_dir")
-            cp -r "$agent_dir" "$CLAUDE_TARGET_DIR/agents/"
-            AGENT_COUNT=$((AGENT_COUNT + 1))
-        fi
-    done
-    log_success "Copied $AGENT_COUNT agents"
-fi
+# When a global install exists at ~/.claude/ and --standalone is not set,
+# skip copying agents, skills, and shared protocols to the project.
+# They are already available globally.
+if [[ "$GLOBAL_INSTALL" == "true" ]] && [[ "$STANDALONE" != "true" ]]; then
+    log_warning "Global install detected at ~/.claude/ — skipping framework copy. Use --standalone to override."
+else
+    # Copy agents
+    if [[ -d "$CLAUDE_SOURCE_DIR/agents" ]]; then
+        for agent_dir in "$CLAUDE_SOURCE_DIR/agents"/*; do
+            if [[ -d "$agent_dir" ]]; then
+                agent_name=$(basename "$agent_dir")
+                cp -r "$agent_dir" "$CLAUDE_TARGET_DIR/agents/"
+                AGENT_COUNT=$((AGENT_COUNT + 1))
+            fi
+        done
+        log_success "Copied $AGENT_COUNT agents"
+    fi
 
-# Copy skills
-if [[ -d "$CLAUDE_SOURCE_DIR/skills" ]]; then
-    for skill_dir in "$CLAUDE_SOURCE_DIR/skills"/*; do
-        if [[ -d "$skill_dir" ]]; then
-            skill_name=$(basename "$skill_dir")
-            cp -r "$skill_dir" "$CLAUDE_TARGET_DIR/skills/"
-            SKILL_COUNT=$((SKILL_COUNT + 1))
-        fi
-    done
-    log_success "Copied $SKILL_COUNT skills"
-fi
+    # Copy skills
+    if [[ -d "$CLAUDE_SOURCE_DIR/skills" ]]; then
+        for skill_dir in "$CLAUDE_SOURCE_DIR/skills"/*; do
+            if [[ -d "$skill_dir" ]]; then
+                skill_name=$(basename "$skill_dir")
+                cp -r "$skill_dir" "$CLAUDE_TARGET_DIR/skills/"
+                SKILL_COUNT=$((SKILL_COUNT + 1))
+            fi
+        done
+        log_success "Copied $SKILL_COUNT skills"
+    fi
 
-# Copy shared protocols
-if [[ -d "$CLAUDE_SOURCE_DIR/shared" ]]; then
-    cp -r "$CLAUDE_SOURCE_DIR/shared"/* "$CLAUDE_TARGET_DIR/shared/"
-    SHARED_COUNT=$(find "$CLAUDE_SOURCE_DIR/shared" -maxdepth 1 -type f -name "*.md" | wc -l | tr -d ' ')
-    log_success "Copied $SHARED_COUNT shared protocols"
+    # Copy shared protocols
+    if [[ -d "$CLAUDE_SOURCE_DIR/shared" ]]; then
+        cp -r "$CLAUDE_SOURCE_DIR/shared"/* "$CLAUDE_TARGET_DIR/shared/"
+        SHARED_COUNT=$(find "$CLAUDE_SOURCE_DIR/shared" -maxdepth 1 -type f -name "*.md" | wc -l | tr -d ' ')
+        log_success "Copied $SHARED_COUNT shared protocols"
+    fi
 fi
 
 # Copy scripts
@@ -611,7 +647,7 @@ echo "    - 1 hook"
 echo ""
 
 log_info "What was installed:"
-echo "  ✓ .claude/agents/        - 20 specialized agent roles"
+echo "  ✓ .claude/agents/        - 24 specialized agent roles"
 echo "  ✓ .claude/skills/        - Team collaboration skills"
 echo "  ✓ .claude/shared/        - Development protocols"
 echo "  ✓ .claude/scripts/       - mg-* utility commands"

@@ -516,7 +516,7 @@ Teams provide coordinated multi-agent collaboration.
 
 | Team | Slash Command | Model | Members | Purpose |
 |------|---------------|-------|---------|---------|
-| **Leadership Team** | `/mg-leadership-team` | opus | CEO, CTO, Engineering Director | Strategic decisions, executive reviews, code review approvals |
+| **Leadership Team** | `/mg plan` / `/mg review` | opus | CEO, CTO, Engineering Director | Strategic decisions, executive reviews, code review approvals |
 | **Product Team** | `/mg-spec` | sonnet | Product Owner, Product Manager, Designer | Product definition, requirements, UX specifications |
 | **Build Team** | `/mg-build` | sonnet | Engineering Manager, Staff Engineer, Dev, QA | CAD development cycle with 99% coverage |
 | **Design Team** | `/mg-design` | sonnet | Art Director, Designer | UI/UX design with visual regression |

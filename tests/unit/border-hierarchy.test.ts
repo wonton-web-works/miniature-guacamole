@@ -118,15 +118,17 @@ describe('visual-formatting.md — thin borders used for agent/routine display',
     expect(gateBox).toContain('└');
   });
 
-  it('Live Activity Feed uses thin borders (┌ and └)', () => {
+  it('Columnar Activity Feed uses no box borders (replaced Style 1)', () => {
     const content = readVisualFormatting();
-    const activitySection = content.slice(content.indexOf('### Style 1: Live Activity Feed'));
-    const nextSection = activitySection.indexOf('\n### ', 1);
-    const section = activitySection.slice(0, nextSection > 0 ? nextSection : undefined);
-    const codeBlockStart = section.indexOf('```\n') + 4;
-    const codeBlockEnd = section.indexOf('\n```', codeBlockStart);
-    const activityBox = section.slice(codeBlockStart, codeBlockEnd);
-    expect(activityBox).toContain('┌');
-    expect(activityBox).toContain('└');
+    const columnarIdx = content.indexOf('### Columnar Activity Feed');
+    expect(columnarIdx).toBeGreaterThan(-1);
+    const section = content.slice(columnarIdx);
+    const nextSection = section.indexOf('\n### ', 1);
+    const feed = section.slice(0, nextSection > 0 ? nextSection : undefined);
+    // Columnar feed should use >> << .. !! prefixes, not box borders
+    expect(feed).toContain('>>');
+    expect(feed).toContain('<<');
+    expect(feed).not.toContain('┌');
+    expect(feed).not.toContain('└');
   });
 });

@@ -20,15 +20,6 @@ Visual architecture and process flow diagrams for the framework. All diagrams ar
 | [CAD Workflow](https://github.com/wonton-web-works/miniature-guacamole/blob/main/docs/diagrams/cad-workflow.mmd) | INTAKE to SHIP gates with MECHANICAL/ARCHITECTURAL fork |
 | [TDD Workflow](https://github.com/wonton-web-works/miniature-guacamole/blob/main/docs/diagrams/tdd-workflow.mmd) | Misuse-first test ordering for both tracks |
 
-## Daemon Pipeline
-
-| Diagram | Description |
-|---------|-------------|
-| [Daemon Architecture](https://github.com/wonton-web-works/miniature-guacamole/blob/main/docs/diagrams/daemon-architecture.mmd) | Full daemon pipeline with safety layers |
-| [GitHub Issues Flow](https://github.com/wonton-web-works/miniature-guacamole/blob/main/docs/diagrams/flow-github.mmd) | Poll, triage, plan, execute, deliver via GitHub |
-| [Jira Flow](https://github.com/wonton-web-works/miniature-guacamole/blob/main/docs/diagrams/flow-jira.mmd) | Jira REST API integration flow |
-| [Linear Flow](https://github.com/wonton-web-works/miniature-guacamole/blob/main/docs/diagrams/flow-linear.mmd) | Linear GraphQL API integration flow |
-
 ---
 
 To render these diagrams locally, use the [Mermaid CLI](https://github.com/mermaid-js/mermaid-cli):

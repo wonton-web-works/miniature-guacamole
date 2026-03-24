@@ -37,7 +37,7 @@ The pre-fix stress test (t2-stress-configC-raw.md) identified the specific gap:
 ### CEO Raw Output
 
 ```
-[CEO] Decision: Execute Option B enterprise pivot as the primary track — convert both pilot clients
+[CEO] Decision: Execute Option B premium pivot as the primary track — convert both pilot clients
 to signed contracts at $25K+/yr within 6 weeks — while running Option C acqui-hire outreach in
 parallel as a 10% time hedge.
 
@@ -59,7 +59,7 @@ later. Option B's architecture is forward-compatible with MG Cloud — the CTO h
 additive, not destructive.
 
 Option C in parallel has favorable asymmetry: roughly 10 hours of personal time over 30 days, $0
-cash, and the pitch deck it produces is the same document as the enterprise sales collateral. Running
+cash, and the pitch deck it produces is the same document as the premium sales collateral. Running
 it does not displace Option B. I am approving it at 10% allocation.
 
 I cannot approve final pricing until the CFO delivers a cost-to-serve model. The pilots' $30K signal
@@ -69,14 +69,14 @@ is an anchor, not a model. No pricing signed before CFO input arrives.
 - Option A (MG Cloud SaaS) — not this quarter; 3-4 months is past runway
 - Open-source growth as primary metric — GitHub stars are no longer the KPI; ARR is
 - Any new feature work not on the direct path to SSO/contracts/license enforcement
-- All part-time contractor capacity redirected to enterprise pivot requirements
+- All part-time contractor capacity redirected to premium pivot requirements
 
 [CEO] Delegated:
 - CTO: Confirm SSO/SAML timeline (WorkOS path) and daemon stability assessment within 5 days;
-  confirm community/enterprise code split feasibility before week 3
+  confirm community/premium code split feasibility before week 3
 - CMO: Enterprise tier framing and community edition announcement strategy; ensure community
   edition remains genuinely useful, not a crippled demo
-- CFO: Cost-to-serve model for enterprise contracts; pricing floor recommendation before I
+- CFO: Cost-to-serve model for premium contracts; pricing floor recommendation before I
   approve any package
 - Founder personally: Begin Option C outreach to Anthropic, Vercel, GitLab this week — 3
   personal emails under NDA, leading with benchmark data vs cursor-teams
@@ -88,7 +88,7 @@ is an anchor, not a model. No pricing signed before CFO input arrives.
 - Mean ARR per contract: minimum $25K; target $30K
 
 [CEO] Reversal condition: The B recommendation changes to C-primary if: (a) CTO's codebase
-assessment in the next 5 days determines the community/enterprise split requires >10 weeks of
+assessment in the next 5 days determines the community/premium split requires >10 weeks of
 work, pushing first contract past runway; OR (b) either pilot client signals they will not sign
 before runway expires regardless of SSO delivery. If either condition hits, Option C becomes the
 primary track and Option B becomes supporting material for the acquisition pitch — the pivot
@@ -100,9 +100,9 @@ becomes pitch preparation, not standalone revenue strategy.
 ### CTO Raw Output
 
 ```
-[CTO] Decision: Option B enterprise pivot is technically feasible within the runway window using
+[CTO] Decision: Option B premium pivot is technically feasible within the runway window using
 WorkOS for SSO; Option A is not. Two specific risks require resolution before the CEO can sign
-enterprise contracts: daemon stability baseline and codebase modularity for the community/enterprise
+premium contracts: daemon stability baseline and codebase modularity for the community/premium
 split.
 
 [CTO] Alternatives considered:
@@ -115,7 +115,7 @@ split.
   WorkOS is unambiguously on the BUY side of the build/buy threshold: saves 3+ weeks of engineering,
   operational burden is low ($149/mo SaaS cost, no infrastructure to operate), team capability to
   integrate is adequate (standard OAuth2 flow, good docs).
-  License enforcement: 1 week. Community/enterprise feature gating: 1-2 weeks IF the codebase is
+  License enforcement: 1 week. Community/premium feature gating: 1-2 weeks IF the codebase is
   modular at the agent/daemon boundary. This is the unknown I cannot confirm without a 2-day
   assessment.
 
@@ -125,7 +125,7 @@ split.
 [CTO] Rationale:
 Two risks I am naming that the CEO and CFO cannot see:
 
-Risk 1 — Daemon stability for enterprise SLA commitment: Daemon is in beta. Enterprise clients at
+Risk 1 — Daemon stability for premium SLA commitment: Daemon is in beta. Enterprise clients at
 $25-30K/yr will require contractual uptime SLAs. Signing a contract with an SLA before we have 30
 days of production stability data is a specific churn risk: the first P0 incident in a paid customer
 environment, on a contract we signed, is significantly more damaging than a pre-contract incident.
@@ -133,26 +133,26 @@ This does not block starting Option B, but it must determine what SLA language w
 contract. I recommend: no uptime percentage commitments in the first contract — instead, "best
 efforts" with defined incident response times. This is a negotiable softening, not a blocker.
 
-Risk 2 — Codebase modularity for community/enterprise split: The 6-8 week timeline assumes the
-community/enterprise feature boundary can be implemented at the agent configuration or daemon
+Risk 2 — Codebase modularity for community/premium split: The 6-8 week timeline assumes the
+community/premium feature boundary can be implemented at the agent configuration or daemon
 invocation level without deep refactoring. If the codebase has cross-cutting concerns that require
 restructuring, the timeline extends to 10-12 weeks. I need 2 days of codebase assessment before
 confirming the timeline to CEO.
 
 Observability gap — independent of both risks: No telemetry, no usage analytics, no crash
-reporting. Before any enterprise contract is signed, basic error logging and crash reporting must
+reporting. Before any premium contract is signed, basic error logging and crash reporting must
 exist. Not for compliance — for our own ability to diagnose the first production incident without
 being blind. This is a 1-week investment; it should be week 1 of the pivot, parallel to SSO work.
 
 [CTO] Migration path:
 Option B → Option A is additive, not destructive. The WorkOS SSO integration and license
-enforcement layer become the enterprise tier of a future SaaS product. The community edition
+enforcement layer become the premium tier of a future SaaS product. The community edition
 becomes the freemium tier. Migration cost to add MG Cloud later: 4-6 weeks of SaaS-specific work
 (billing stack, multi-tenant data isolation per customer). Not a full rebuild. Choosing Option B
 today does not close Option A permanently.
 
 [CTO] Break-even:
-Option B technical investment (4-5 weeks) returns at 1 enterprise contract at $25K+ ARR —
+Option B technical investment (4-5 weeks) returns at 1 premium contract at $25K+ ARR —
 approximately month 2 post-launch. Option A break-even is month 7-8 at optimistic assumptions
 given the SaaS MVP build time. The daemon stability question is the break-even condition for SLA
 terms specifically: no uptime percentage SLA until we have 30 days of stability data; this
@@ -169,8 +169,8 @@ well-documented API. No SAML expertise required. Do not attempt native SAML on t
 ### CMO Raw Output
 
 ```
-[CMO] Decision: Approve Option B enterprise pivot with conditions. The framing of the announcement
-is not "we're closing the core" — it is "we're adding an enterprise tier on top of the open-source
+[CMO] Decision: Approve Option B premium pivot with conditions. The framing of the announcement
+is not "we're closing the core" — it is "we're adding an premium tier on top of the open-source
 foundation that already exists." That framing is not spin; it is accurate, and the distinction
 determines whether the 1,200-star community becomes our competitive moat or our most vocal critics.
 
@@ -179,12 +179,12 @@ The GTM risk I am most focused on — and the one CEO and CFO cannot fully see �
 collapse that follows when an open-source community feels they were bait-and-switched. The
 HashiCorp/Terraform/BSL precedent applies directly: that license change triggered community
 backlash, a contributor exodus, and the creation of OpenTofu as a competing fork. That fork now
-exists, is maintained by the Linux Foundation, and is the official successor in many enterprise
+exists, is maintained by the Linux Foundation, and is the official successor in many premium
 procurement lists. We have 1,200 stars and 80/week growth. If we handle the community edition
 poorly, any contributor — or cursor-teams with their $12M — can position as "the truly open
 alternative" within 90 days.
 
-The specific compounding risk in this scenario: the enterprise clients we are trying to close in
+The specific compounding risk in this scenario: the premium clients we are trying to close in
 the next 6 weeks are also members of the developer community. If they observe a bait-and-switch
 before they sign, their trust calculation changes. Enterprise procurement teams ask "will this
 vendor be around in 2 years?" and "are they trustworthy partners?" A public backlash narrative
@@ -199,7 +199,7 @@ exercise — worth doing before announcement, not after.
 
 On Option C in parallel: I support it with a specific operational condition. Word reaching pilot
 clients that we are seeking acquisition before their contracts are signed will undermine the deal.
-The pitch deck and the enterprise sales collateral are the same document — using benchmark data vs
+The pitch deck and the premium sales collateral are the same document — using benchmark data vs
 cursor-teams as the lead asset. Option C outreach must be personal, quiet, under NDA, and should
 not be visible to the founder's public network.
 
@@ -209,13 +209,13 @@ not be visible to the founder's public network.
 - No contract templates: converting handshake agreements to $30K/yr contracts requires an MSA
   template and attorney review. Estimated cost: $2-3K startup attorney. This is not optional —
   it is the legal instrument that converts the revenue signal into actual revenue.
-- No SSO: the enterprise contract cannot close without this technical gate. Cannot proceed to
+- No SSO: the premium contract cannot close without this technical gate. Cannot proceed to
   signature without CTO confirmation of WorkOS timeline.
 - Community edition agent limit not validated: the 8-agent threshold is an assumption, not a
   data-backed boundary. Risk of artificial restriction perception if usage data contradicts it.
-- No enterprise sales collateral: no security questionnaire response, no one-pager, no pricing
+- No premium sales collateral: no security questionnaire response, no one-pager, no pricing
   sheet. Pilot clients will request these before signing a $30K/yr contract — this is standard
-  enterprise procurement behavior.
+  premium procurement behavior.
 - No defined support process: if we put an SLA in a contract and the daemon goes down, what
   exactly does the founder do? Response time, escalation path, remediation SLA — none of this
   exists in writing. It must be written before it is in a contract.
@@ -229,14 +229,14 @@ not be visible to the founder's public network.
    — 2-week sample before setting community edition limit
 4. Collateral: One-pager and pricing sheet — route to copywriter, 3-day turnaround, founder
    reviews before distribution
-5. Support policy: Define enterprise support operationally (response time, escalation, what
+5. Support policy: Define premium support operationally (response time, escalation, what
    "best efforts" actually means) — founder drafts, I review, must be in MSA language before
    signing
 
 [CMO] Blockers:
-- Will not approve enterprise contract signing without legal review of MSA template
+- Will not approve premium contract signing without legal review of MSA template
 - Will not approve the community edition 8-agent limit without usage data
-- Will not approve public announcement of enterprise tier without brand narrative reviewed
+- Will not approve public announcement of premium tier without brand narrative reviewed
   and approved
 
 [CMO] Delegated:
@@ -250,7 +250,7 @@ not be visible to the founder's public network.
 [CMO] Success metric:
 - Both pilot clients converted to signed annual contracts at $25K+/yr by week 6
 - Community edition limit set from actual usage data, not internal assumption
-- Zero HN/Reddit "MG sold out" posts with >100 upvotes within 30 days of enterprise tier
+- Zero HN/Reddit "MG sold out" posts with >100 upvotes within 30 days of premium tier
   announcement
 - Enterprise messaging validated with at least one pilot client before public announcement
 ```
@@ -273,7 +273,7 @@ Option A:
 - Verdict: Does not fit runway. Blocked regardless of strategic merit.
 
 Option B:
-- Engineering: WorkOS SSO (2 weeks), license enforcement (1 week), community/enterprise split
+- Engineering: WorkOS SSO (2 weeks), license enforcement (1 week), community/premium split
   (1-2 weeks, pending modularity assessment), observability baseline (1 week): 5-6 weeks total
   founder pace.
 - Cash outlay: WorkOS $149/mo + startup attorney MSA review $2-3K. Total cash spend: ~$3K.
@@ -304,7 +304,7 @@ in week 4 instead of week 1, the contract can slip outside the runway window ent
 not a tail risk — it is a common startup failure mode.
 
 Pricing floor concern: The $12K-$60K stated range is too wide to approve without margin math.
-- At $12K/yr ($1K/mo): if enterprise support requires 5 founder hours/mo at $200/hr opportunity
+- At $12K/yr ($1K/mo): if premium support requires 5 founder hours/mo at $200/hr opportunity
   cost, margin is $0/mo. Not viable at any client count.
 - At $20K/yr ($1,667/mo): margin at 5 hours/mo support is approximately $667/mo. Survivable at
   3+ clients.
@@ -400,9 +400,9 @@ strategy.
 | Dimension | Score | Notes |
 |-----------|-------|-------|
 | Specificity | 5 | HashiCorp/Terraform/OpenTofu precedent named explicitly with current state ("maintained by Linux Foundation"); ">100 upvotes on HN/Reddit" as backlash threshold; "<5% affected = defensible; >30% = will be called out"; $2-3K legal cost; "within 90 days" competitive fork window |
-| Differentiation | 5 | Community trust collapse as GTM threat is CMO-only framing; enterprise clients are community members — trust audit risk that compounds; "pitch deck and enterprise sales material are the same document" insight; operational readiness checklist applied uniquely |
+| Differentiation | 5 | Community trust collapse as GTM threat is CMO-only framing; premium clients are community members — trust audit risk that compounds; "pitch deck and premium sales material are the same document" insight; operational readiness checklist applied uniquely |
 | Actionability | 5 | Five concrete gaps named; five specific required actions before proceed with owners and timelines; three named blockers with conditions; success metric includes community backlash threshold |
-| Nuance | 5 | Conditions the 8-agent limit on usage data with specific test thresholds; names Option C confidentiality risk without dismissing C; will not approve enterprise signing without legal review — these are genuine conditions, not procedural hedging; no regression |
+| Nuance | 5 | Conditions the 8-agent limit on usage data with specific test thresholds; names Option C confidentiality risk without dismissing C; will not approve premium signing without legal review — these are genuine conditions, not procedural hedging; no regression |
 
 **CMO Total: 5/5/5/5 → 5.00** (no change from pre-fix; was already 5.00)
 
@@ -427,7 +427,7 @@ strategy.
 
 | Agent | Could CEO write it? | Could CTO write it? | Could CMO write it? | Could CFO write it? |
 |-------|---------------------|---------------------|---------------------|---------------------|
-| CEO | — | No (no daemon stability risk, no codebase modularity risk, no observability gap) | No (no HashiCorp/OpenTofu precedent, no community-as-enterprise-prospect insight) | No (no margin math on pricing tiers, no WorkOS ROI calculation, no legal timeline failure mode) |
+| CEO | — | No (no daemon stability risk, no codebase modularity risk, no observability gap) | No (no HashiCorp/OpenTofu precedent, no community-as-premium-prospect insight) | No (no margin math on pricing tiers, no WorkOS ROI calculation, no legal timeline failure mode) |
 | CTO | No (no optionality test, no "proof of concept on borrowed time" framing, no personal constraint weighting) | — | No (no community trust chain, no backlash threshold metric, no usage-data condition) | No (no risk-adjusted vs EV framing, no bridge loan option, no prepayment structure) |
 | CMO | No (no optionality test, no market timing argument, no displacement list) | No (no SAML/SSO technical path analysis, no daemon SLA language recommendation) | — | No (no margin math, no runway math, no WorkOS ROI, no legal timing risk as failure mode) |
 | CFO | No (no optionality test, no "10% allocation" framing, no CTO/CMO delegation with deadlines) | No (no WorkOS build vs buy analysis, no observability gap as week-1 investment) | No (no HashiCorp precedent, no usage data condition for community edition, no support policy gap) | — |
@@ -439,8 +439,8 @@ strategy.
 All four agents recommend Option B as primary and Option C as parallel hedge. This convergence under hard constraints is structurally correct — the runway math eliminates Option A regardless of role-specific preference.
 
 The most important structural finding remains the non-overlapping concerns:
-- CTO: Daemon in beta cannot support enterprise SLA uptime percentages; codebase modularity unknown
-- CMO: Community members are enterprise prospects — trust collapse compounds across both tracks
+- CTO: Daemon in beta cannot support premium SLA uptime percentages; codebase modularity unknown
+- CMO: Community members are premium prospects — trust collapse compounds across both tracks
 - CFO: Legal engagement in week 1 vs week 4 is a binary gate on whether contracts close before runway
 
 Each agent named a risk the others could not see. The framework is doing its job.
@@ -483,7 +483,7 @@ The reversal conditions across agents now tell a coherent story:
 Pre-fix gap: "Does not name what would change the B recommendation to C" — the parallel hedge was approved but the switching trigger was absent.
 
 Post-fix: The reversal condition explicitly names two concrete, testable signals:
-1. CTO codebase assessment returns >10 weeks for community/enterprise split
+1. CTO codebase assessment returns >10 weeks for community/premium split
 2. Either pilot client signals they will not sign before runway expires
 
 Both signals are observable, time-bounded, and role-appropriate (the CEO is waiting on CTO's technical assessment and the sales signal from pilots — these are the right triggers for a CEO to name). The recommendation is not hedged; it is explicitly conditional on observable facts. This is Nuance 5 behavior.

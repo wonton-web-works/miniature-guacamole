@@ -9,8 +9,7 @@ mg-tidy supports the standard `output_mode` parameter:
 | Mode | Behavior | When to use |
 |------|----------|-------------|
 | `compact` | Single-line per event, no ASCII art (default) | Normal tidy runs |
-| `full` | Full banners, ASCII art, status boxes | Verbose/debug sessions, explicit request |
-| `silent` | Errors only, all other output suppressed | Automated pipelines, CI |
+| `verbose` | Full banners, ASCII art, status boxes | Verbose/debug sessions, explicit request |
 
 ## Tidy Report Structure
 
@@ -100,9 +99,9 @@ CLEAN — no changes required.
 | WS-61 | #61   | open   | workstream-WS-61-state.json |
 ```
 
-## Full Mode ASCII Dashboard
+## Verbose Mode ASCII Dashboard
 
-In full mode, use the workstream dashboard from the shared output format:
+In verbose mode, use the workstream dashboard from the shared output format:
 
 ```
 ╔═══════════════════════════════════════════════════════════════════╗

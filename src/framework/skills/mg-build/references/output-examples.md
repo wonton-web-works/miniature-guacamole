@@ -15,7 +15,7 @@ progress: Step 3/4 active
 gate:tests_pass PASS tests:[47/47] coverage:[99%]
 ```
 
-**Full mode** (pass `output_mode: full` or "verbose"): shows CAD pipeline diagram and status box:
+**Verbose mode** (pass `output_mode: verbose` or "verbose"): shows CAD pipeline diagram and status box:
 
 ```
 ┌─────────┐    ┌─────────┐    ┌─────────┐    ┌─────────┐

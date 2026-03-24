@@ -1,16 +1,16 @@
-# Art Director Review — Enterprise Page Wireframe
+# Art Director Review — Premium Page Wireframe
 
 **Date:** 2026-03-22
 **Reviewer:** Art Director
 **Status:** Changes Requested
-**Spec version reviewed:** enterprise-page-visual-spec.md v1.0
+**Spec version reviewed:** premium-page-visual-spec.md v1.0
 **File reviewed:** site/src/pages/wireframe.astro
 
 ---
 
 ## Summary Verdict
 
-The wireframe is structurally correct. The dev read the spec, followed the token system, hit every section, and built something that isn't broken. That's the floor, not the ceiling. The problem is that it reads like a careful transcription of the spec rather than an interpretation of its intent. The Sage narrative — warm, patient, alive — is in the copy but not in the design decisions. The amber is there but it isn't working. The hierarchy looks like an org chart. The drift section is flat. The teacher asset in Section 3 is floating in the wrong position. Most critically: the pixel art images are set to `image-rendering: pixelated` on a `data-capy` attribute selector but that selector never resolves to a CSS rule — the spec's most important rendering instruction is silently broken.
+The wireframe is structurally correct. The dev read the spec, followed the token system, hit every section, and built something that isn't broken. That's the floor, not the ceiling. The problem is that it reads like a careful transcription of the spec rather than an interpretation of its intent. The Orchestrator narrative — warm, patient, alive — is in the copy but not in the design decisions. The amber is there but it isn't working. The hierarchy looks like an org chart. The drift section is flat. The teacher asset in Section 3 is floating in the wrong position. Most critically: the pixel art images are set to `image-rendering: pixelated` on a `data-capy` attribute selector but that selector never resolves to a CSS rule — the spec's most important rendering instruction is silently broken.
 
 The #1 fix: the hero headline is undersized and the subheadline spacing is collapsed, making the first impression read as competent but not bold. Fix the hero type treatment and half the "feels wrong" problem disappears immediately.
 
@@ -28,9 +28,9 @@ The #1 fix: the hero headline is undersized and the subheadline spacing is colla
 
 SPEC SAYS: `clamp(2.4rem, 5vw, 3.8rem)` with weight 700.
 
-WIREFRAME DOES: Implements exactly `clamp(2.4rem, 5vw, 3.8rem)` weight 700 — which matches the spec. The problem is the spec itself set a conservative ceiling. The homepage `index.astro` hero headline runs `clamp(52px, 7vw, 96px)` (that's `clamp(3.25rem, 7vw, 6rem)`) at weight 800. The enterprise page headline maxes at 3.8rem. At desktop widths, the enterprise hero is less than half the visual weight of the homepage hero.
+WIREFRAME DOES: Implements exactly `clamp(2.4rem, 5vw, 3.8rem)` weight 700 — which matches the spec. The problem is the spec itself set a conservative ceiling. The homepage `index.astro` hero headline runs `clamp(52px, 7vw, 96px)` (that's `clamp(3.25rem, 7vw, 6rem)`) at weight 800. The premium page headline maxes at 3.8rem. At desktop widths, the premium hero is less than half the visual weight of the homepage hero.
 
-FIX NEEDED: Escalate the ceiling. Change `clamp(2.4rem, 5vw, 3.8rem)` to `clamp(2.6rem, 5vw, 4.6rem)`. The enterprise page is selling a flagship product — it should hit harder than the community homepage, not softer. Weight stays at 700 (the homepage uses 800 only for its two-word bold fragment; a full sentence reads better at 700).
+FIX NEEDED: Escalate the ceiling. Change `clamp(2.4rem, 5vw, 3.8rem)` to `clamp(2.6rem, 5vw, 4.6rem)`. The premium page is selling a flagship product — it should hit harder than the community homepage, not softer. Weight stays at 700 (the homepage uses 800 only for its two-word bold fragment; a full sentence reads better at 700).
 
 ---
 
@@ -58,7 +58,7 @@ FIX NEEDED: In the particle line drawing code (lines ~1666–1687), the `rect` v
 
 SPEC SAYS: Hero entrance animation (fade in, 700ms, delay 200ms). Float animation (`animation: float 6s ease-in-out infinite`) is the idle/looping state.
 
-WIREFRAME DOES: `.hero-img { animation: float 6s ease-in-out infinite; }` — the float starts at time zero on the element. The `heroRight` keyframe fades the `.hero-right` container in, but the image within it is already floating before the fade completes. The Sage bounces in while transparent.
+WIREFRAME DOES: `.hero-img { animation: float 6s ease-in-out infinite; }` — the float starts at time zero on the element. The `heroRight` keyframe fades the `.hero-right` container in, but the image within it is already floating before the fade completes. The Orchestrator bounces in while transparent.
 
 FIX NEEDED: Add `animation-delay: 0.9s` to `.hero-img` so the float begins after the entrance fade concludes. Alternatively, use `animation: heroFloat 0.7s ease-out 0.2s forwards, float 6s ease-in-out 1s infinite` as a compound animation list. The entrance should resolve cleanly before the breathing begins.
 
@@ -92,25 +92,25 @@ FIX NEEDED: Test this in-browser. If the amber radial behind the image causes th
 
 SPEC SAYS: "Do NOT use straight horizontal/vertical lines. Use SVG paths with gentle curves — quadratic bezier curves with a slight bow. The lines should feel like roots or mycelium, not a database diagram."
 
-WIREFRAME DOES: The JS draws quadratic bezier paths: `M ${sageX} ${sageY} Q ${sageX + bow} ${midY} ${nx} ${ny}` — this is technically a curve. The bow is set to `(nx - sageX) * 0.3`. For nodes directly below the Sage, `nx - sageX` is near-zero, so the bow is near-zero, rendering a nearly straight vertical line. For outer nodes, the bow is present but it bows the wrong direction — `sageX + bow` means the control point moves horizontally from the Sage, not outward from the path. The result is curves that pinch inward near the center rather than flowing outward like roots.
+WIREFRAME DOES: The JS draws quadratic bezier paths: `M ${orchestratorX} ${orchestratorY} Q ${orchestratorX + bow} ${midY} ${nx} ${ny}` — this is technically a curve. The bow is set to `(nx - orchestratorX) * 0.3`. For nodes directly below the Orchestrator, `nx - orchestratorX` is near-zero, so the bow is near-zero, rendering a nearly straight vertical line. For outer nodes, the bow is present but it bows the wrong direction — `orchestratorX + bow` means the control point moves horizontally from the Orchestrator, not outward from the path. The result is curves that pinch inward near the center rather than flowing outward like roots.
 
-Additionally, the connection lines from C-Suite to Director tier are never drawn. The JS only draws Sage → C-Suite lines. The Director and IC tiers are visually floating, connected to nothing.
+Additionally, the connection lines from C-Suite to Director tier are never drawn. The JS only draws Orchestrator → C-Suite lines. The Director and IC tiers are visually floating, connected to nothing.
 
 FIX NEEDED: Two fixes required.
 
-Fix A — Correct the bezier bow direction. The control point should be offset outward from the midpoint of the path, not from the Sage's x position. Change the `Q` control point to bow outward: `M ${sageX} ${sageY} Q ${(sageX + nx) / 2 + bow} ${midY} ${nx} ${ny}` where `bow` is a perpendicular offset (e.g., `(nx > sageX ? 1 : -1) * 20` for a consistent rightward/leftward bow). Experiment with bow values between 10–30px.
+Fix A — Correct the bezier bow direction. The control point should be offset outward from the midpoint of the path, not from the Orchestrator's x position. Change the `Q` control point to bow outward: `M ${orchestratorX} ${orchestratorY} Q ${(orchestratorX + nx) / 2 + bow} ${midY} ${nx} ${ny}` where `bow` is a perpendicular offset (e.g., `(nx > orchestratorX ? 1 : -1) * 20` for a consistent rightward/leftward bow). Experiment with bow values between 10–30px.
 
 Fix B — Draw C-Suite → Director and Director → IC tier lines. The current JS only handles one level of connection. Extend the drawing function to connect each C-Suite node to the full Director row (as a fan), and Director nodes to IC pills (as a fade, 0.5px, 15% opacity as spec requires). The IC lines should be barely visible — their purpose is suggestion, not information.
 
 ---
 
-**ISSUE 2.2 — Sage circle uses a radial-gradient fill that obscures the illustration**
+**ISSUE 2.2 — Orchestrator circle uses a radial-gradient fill that obscures the illustration**
 
-SPEC SAYS: "Radial gradient from `--sage-amber` at center to `rgba(212, 168, 75, 0.4)` at edge." AND "The `zen-meditating.png` cropped to the face area... displayed as circular `object-fit: cover`."
+SPEC SAYS: "Radial gradient from `--orchestrator-amber` at center to `rgba(212, 168, 75, 0.4)` at edge." AND "The `zen-meditating.png` cropped to the face area... displayed as circular `object-fit: cover`."
 
-WIREFRAME DOES: `.sage-circle { background: radial-gradient(circle, var(--sage-amber), rgba(212,168,75,0.4) 100%); }` — the gradient fills the circle with solid amber at center. The `<img>` inside has `mix-blend-mode: screen`. On a solid amber background, `screen` blend will blow out the image entirely — the image will be invisible, replaced by a bright amber disc.
+WIREFRAME DOES: `.orchestrator-circle { background: radial-gradient(circle, var(--orchestrator-amber), rgba(212,168,75,0.4) 100%); }` — the gradient fills the circle with solid amber at center. The `<img>` inside has `mix-blend-mode: screen`. On a solid amber background, `screen` blend will blow out the image entirely — the image will be invisible, replaced by a bright amber disc.
 
-FIX NEEDED: The gradient should be the *behind* layer, not the dominant fill. Set the gradient to a much lower opacity: `background: radial-gradient(circle, rgba(212,168,75,0.3), rgba(212,168,75,0.1))`. This lets the illustration show through while the amber tints the node. Remove `mix-blend-mode: screen` from the image inside the sage-circle — use `normal` blend mode here; the context is different from the hero where the full dark bg allows screen to work.
+FIX NEEDED: The gradient should be the *behind* layer, not the dominant fill. Set the gradient to a much lower opacity: `background: radial-gradient(circle, rgba(212,168,75,0.3), rgba(212,168,75,0.1))`. This lets the illustration show through while the amber tints the node. Remove `mix-blend-mode: screen` from the image inside the orchestrator-circle — use `normal` blend mode here; the context is different from the hero where the full dark bg allows screen to work.
 
 ---
 
@@ -120,13 +120,13 @@ SPEC SAYS: Director tier ends with "a `+N more` ghost node with dashed border."
 
 WIREFRAME DOES: `<span class="role-abbr">+N more</span>` — the literal characters `+N more` are rendered.
 
-FIX NEEDED: The actual count should be shown. There are 24 total agents: Sage (1) + CEO/CTO/CMO/CFO (4) + EM/TL/PO/QAL (4) = 9 named. Remaining: 15. The Director-tier `+N` should read `+15 more`. In the IC tier, the spec says `+17 more` which is already correct in the IC pills row. Fix the Director-tier ghost node to show `+15 more`. Consider whether this number needs to be a prop or constant so it stays synchronized if the agent count changes.
+FIX NEEDED: The actual count should be shown. There are 24 total agents: Orchestrator (1) + CEO/CTO/CMO/CFO (4) + EM/TL/PO/QAL (4) = 9 named. Remaining: 15. The Director-tier `+N` should read `+15 more`. In the IC tier, the spec says `+17 more` which is already correct in the IC pills row. Fix the Director-tier ghost node to show `+15 more`. Consider whether this number needs to be a prop or constant so it stays synchronized if the agent count changes.
 
 ---
 
 **ISSUE 2.4 — The bird is centered below the IC tier row, breaking the spatial narrative**
 
-SPEC SAYS: "The bird appears at the IC tier level, positioned to the LEFT of the row. It faces right (toward the nodes). This is the 'user's project' represented as the little bird, about to receive the Sage's org."
+SPEC SAYS: "The bird appears at the IC tier level, positioned to the LEFT of the row. It faces right (toward the nodes). This is the 'user's project' represented as the little bird, about to receive the Orchestrator's org."
 
 WIREFRAME DOES: `.bird-ic { display: flex; flex-direction: column; align-items: center; gap: 4px; margin-top: 16px; }` — the bird is centered below all IC pills, below the IC row, not to the left of it. The bird is not at the same vertical level as the pills. The spatial relationship ("about to receive the org") is completely lost. It reads as a footnote, not a character in the scene.
 
@@ -165,42 +165,42 @@ FIX NEEDED: Change the teacher positioning to be relative to the section, not th
 
 **ISSUE 3.2 — Spawn visualization SVG connection lines are never drawn**
 
-SPEC SAYS: "Connection lines from Sage to active nodes: `--mg-cilantro` 50% opacity, 1.5px. Lines to dormant nodes: `rgba(138, 155, 176, 0.1)` 0.5px. Lines draw using `stroke-dashoffset` on scenario change."
+SPEC SAYS: "Connection lines from Orchestrator to active nodes: `--mg-cilantro` 50% opacity, 1.5px. Lines to dormant nodes: `rgba(138, 155, 176, 0.1)` 0.5px. Lines draw using `stroke-dashoffset` on scenario change."
 
 WIREFRAME DOES: The `#spawn-svg` SVG element is in the DOM and positioned absolutely. The `applyScenario()` JS function updates node active/dormant classes and the task text — but never draws any paths into the spawn SVG. The SVG contains only the `<title>` element. There are no lines drawn, no connection logic, no `stroke-dashoffset` animation.
 
-FIX NEEDED: Add a `drawSpawnLines(activeRoles)` function that, after the scenario settles (i.e., after the 400ms pulse delay), reads the Sage node and C-Suite node positions relative to the spawn SVG and draws `<path>` elements with quadratic curves. Active lines: `stroke: rgba(46,139,139,0.5)`, `stroke-width: 1.5`. Dormant lines: `stroke: rgba(138,155,176,0.1)`, `stroke-width: 0.5`. Animate with `stroke-dashoffset` from full-length to zero over 300ms. This is the single most functionally incomplete part of the interactive section. Without lines, the Sage-to-agent relationship is implied but not visualized — the core mechanic is not shown.
+FIX NEEDED: Add a `drawSpawnLines(activeRoles)` function that, after the scenario settles (i.e., after the 400ms pulse delay), reads the Orchestrator node and C-Suite node positions relative to the spawn SVG and draws `<path>` elements with quadratic curves. Active lines: `stroke: rgba(46,139,139,0.5)`, `stroke-width: 1.5`. Dormant lines: `stroke: rgba(138,155,176,0.1)`, `stroke-width: 0.5`. Animate with `stroke-dashoffset` from full-length to zero over 300ms. This is the single most functionally incomplete part of the interactive section. Without lines, the Orchestrator-to-agent relationship is implied but not visualized — the core mechanic is not shown.
 
 ---
 
 **ISSUE 3.3 — Spawn transition timing is off: pulse removes itself at 400ms, but nodes start activating at 200ms**
 
-SPEC SAYS: "Step 2: Sage pulses amber (400ms). Step 3: After the pulse peak (200ms into pulse), active nodes transition one at a time staggered 100ms per node."
+SPEC SAYS: "Step 2: Orchestrator pulses amber (400ms). Step 3: After the pulse peak (200ms into pulse), active nodes transition one at a time staggered 100ms per node."
 
 WIREFRAME DOES:
 ```js
-sageNode.classList.add('pulsing');
+orchestratorNode.classList.add('pulsing');
 setTimeout(() => {
-  sageNode.classList.remove('pulsing');  // at 400ms
+  orchestratorNode.classList.remove('pulsing');  // at 400ms
   activeRoles.forEach((role, i) => {
     setTimeout(() => { /* activate */ }, i * 100);  // 0ms, 100ms, 200ms...
   });
 }, 400);
 ```
 
-The pulse is removed and nodes activate at the same moment (400ms). The spec says nodes should start at 200ms (mid-pulse), and the pulse should complete at 400ms. The nodes should begin appearing while the Sage is still glowing — it feels like the Sage is sending energy to them.
+The pulse is removed and nodes activate at the same moment (400ms). The spec says nodes should start at 200ms (mid-pulse), and the pulse should complete at 400ms. The nodes should begin appearing while the Orchestrator is still glowing — it feels like the Orchestrator is sending energy to them.
 
 FIX NEEDED: Split the timing: start activating nodes at 200ms (mid-pulse), while the pulse itself runs to 400ms. The `pulsing` class removal should stay at 400ms. Node activation should start in a separate `setTimeout` at 200ms, then stagger 100ms per node after that:
 
 ```js
-sageNode.classList.add('pulsing');
+orchestratorNode.classList.add('pulsing');
 setTimeout(() => {
   activeRoles.forEach((role, i) => {
     setTimeout(() => { /* activate node */ }, i * 100);
   });
 }, 200); // start during the pulse, not after
 setTimeout(() => {
-  sageNode.classList.remove('pulsing');
+  orchestratorNode.classList.remove('pulsing');
 }, 400);
 ```
 
@@ -250,15 +250,15 @@ VERDICT: No issue. Mark as verified.
 
 ---
 
-**ISSUE 4.4 — Sage mini panel in the right drift panel lacks visual separation and feels like an afterthought**
+**ISSUE 4.4 — Orchestrator mini panel in the right drift panel lacks visual separation and feels like an afterthought**
 
-SPEC SAYS: "Below the pipeline in the right panel, center-aligned: `/assets/capy/zen-meditating.png` at 56px width, with a soft amber glow. This anchors 'Sage = the reason it worked.'"
+SPEC SAYS: "Below the pipeline in the right panel, center-aligned: `/assets/capy/zen-meditating.png` at 56px width, with a soft amber glow. This anchors 'Orchestrator = the reason it worked.'"
 
-WIREFRAME DOES: `.sage-mini-panel { text-align: center; margin-top: 20px; padding-top: 16px; border-top: 1px solid rgba(138,155,176,0.1); }` — the border-top and margin create separation. The image is 56px. The amber glow filter is applied. This is correct.
+WIREFRAME DOES: `.orchestrator-mini-panel { text-align: center; margin-top: 20px; padding-top: 16px; border-top: 1px solid rgba(138,155,176,0.1); }` — the border-top and margin create separation. The image is 56px. The amber glow filter is applied. This is correct.
 
-However: the right panel's bird (`bird-guided`) and the Sage mini-panel both appear below the pipeline-wrap, stacked vertically, making the right panel significantly taller than the left panel. The grid uses `1fr 1fr` equal columns but the right panel now has more content.
+However: the right panel's bird (`bird-guided`) and the Orchestrator mini-panel both appear below the pipeline-wrap, stacked vertically, making the right panel significantly taller than the left panel. The grid uses `1fr 1fr` equal columns but the right panel now has more content.
 
-FIX NEEDED: Add `align-items: start` to `.drift-panels` grid to prevent the left panel from stretching to match the right. Alternatively, move the Sage mini-panel outside the drift-panels grid entirely and center it below both panels as a shared element — this also better serves the spec's intent ("Sage = the reason it worked") since the Sage transcends the binary comparison.
+FIX NEEDED: Add `align-items: start` to `.drift-panels` grid to prevent the left panel from stretching to match the right. Alternatively, move the Orchestrator mini-panel outside the drift-panels grid entirely and center it below both panels as a shared element — this also better serves the spec's intent ("Orchestrator = the reason it worked") since the Orchestrator transcends the binary comparison.
 
 ---
 
@@ -334,21 +334,21 @@ FIX NEEDED: Remove `role="contentinfo"` from the `<section>`. Per spec: "otherwi
 
 SPEC SAYS: "Match the existing pattern in `index.astro` for section headings." The global note says to use `clamp()` for responsive heading sizes and to match existing site patterns.
 
-WIREFRAME DOES: `section { position: relative; padding: 80px 24px; }` — flat 80px top/bottom, 24px sides. The homepage sections use `padding: clamp(80px, 12vw, 160px)` for the hero and section-specific clamped values. On large desktop monitors (1440px+), the enterprise page sections feel cramped vertically against the wide canvas. On mobile (320px), 80px of vertical padding is excessive — the spec correctly notes 60px mobile override, and that's present, but the `clamp()` pattern is absent for the intermediate range.
+WIREFRAME DOES: `section { position: relative; padding: 80px 24px; }` — flat 80px top/bottom, 24px sides. The homepage sections use `padding: clamp(80px, 12vw, 160px)` for the hero and section-specific clamped values. On large desktop monitors (1440px+), the premium page sections feel cramped vertically against the wide canvas. On mobile (320px), 80px of vertical padding is excessive — the spec correctly notes 60px mobile override, and that's present, but the `clamp()` pattern is absent for the intermediate range.
 
 FIX NEEDED: Replace `padding: 80px 24px` with `padding: clamp(64px, 10vw, 120px) clamp(16px, 5vw, 80px)`. This mirrors the homepage's proportional breathing and prevents the page from feeling like a different site.
 
 ---
 
-**ISSUE X.2 — The Sage narrative is carried by copy alone, not reinforced by layout**
+**ISSUE X.2 — The Orchestrator narrative is carried by copy alone, not reinforced by layout**
 
 This is not a CSS bug — it is a design interpretation gap.
 
-SPEC SAYS: "Every section continues that narrative [of the Sage guiding the bird through complexity]." The spec positions the bird as a recurring character — arriving uncertain, being guided, resting, arriving confident.
+SPEC SAYS: "Every section continues that narrative [of the Orchestrator guiding the bird through complexity]." The spec positions the bird as a recurring character — arriving uncertain, being guided, resting, arriving confident.
 
-WIREFRAME DOES: The bird appears in the correct sections. But the bird's placement, sizing, and relationship to the Sage are mechanical — the bird is always below things, always labeled, always the same size. There is no progression. In Section 2 it looks exactly like Section 4. In the bridges of Section 5, the bird is 20px and indistinguishable from a bullet point.
+WIREFRAME DOES: The bird appears in the correct sections. But the bird's placement, sizing, and relationship to the Orchestrator are mechanical — the bird is always below things, always labeled, always the same size. There is no progression. In Section 2 it looks exactly like Section 4. In the bridges of Section 5, the bird is 20px and indistinguishable from a bullet point.
 
-FIX NEEDED: This is a design direction note for the **design** agent to address in the next revision. Specific callouts: in Section 4 (guided panel), make the bird slightly larger (32px vs 28px) than its counterpart in the bad panel. In Section 2, the bird should be positioned more deliberately — not below the pills but alongside them at the same baseline, facing the Sage node above. In Section 5, increase bridge bird size to 24px and add the pending `bird-resting.png` request — the open-eyed bird "resting" is unconvincing. These are narrative design decisions the wireframe punted on by using the same asset at the same size throughout.
+FIX NEEDED: This is a design direction note for the **design** agent to address in the next revision. Specific callouts: in Section 4 (guided panel), make the bird slightly larger (32px vs 28px) than its counterpart in the bad panel. In Section 2, the bird should be positioned more deliberately — not below the pills but alongside them at the same baseline, facing the Orchestrator node above. In Section 5, increase bridge bird size to 24px and add the pending `bird-resting.png` request — the open-eyed bird "resting" is unconvincing. These are narrative design decisions the wireframe punted on by using the same asset at the same size throughout.
 
 ---
 
@@ -359,7 +359,7 @@ These are listed by impact — fix in this order:
 1. **[CRITICAL] Issue 2.1** — Draw C-Suite → Director connection lines and fix bezier bow direction. The hierarchy looks like a table, not roots.
 2. **[CRITICAL] Issue 3.2** — Draw spawn SVG connection lines. The interaction's core mechanic is missing.
 3. **[HIGH] Issue 1.1** — Hero headline size. First impression is undersized relative to the homepage.
-4. **[HIGH] Issue 2.2** — Sage circle gradient is blowing out the illustration. The Sage is invisible in his own org chart.
+4. **[HIGH] Issue 2.2** — Orchestrator circle gradient is blowing out the illustration. The Orchestrator is invisible in his own org chart.
 5. **[HIGH] Issue 2.4** — Bird position in hierarchy. The spatial narrative is broken.
 6. **[HIGH] Issue 3.3** — Spawn transition timing. Nodes activate after the pulse, not during it.
 7. **[MEDIUM] Issue 1.3** — Particle line JS bug. Constellation lines may be rendering incorrectly.
@@ -370,7 +370,7 @@ These are listed by impact — fix in this order:
 12. **[MEDIUM] Issue 5.3** — Bridge content order (sublabels below bird is wrong).
 13. **[LOW] Issue 3.1** — Teacher asset clipping risk on narrow desktop viewports.
 14. **[LOW] Issue 3.4** — Task description text updates immediately vs. after transition.
-15. **[LOW] Issue 4.4** — Right drift panel taller than left; Sage mini-panel placement.
+15. **[LOW] Issue 4.4** — Right drift panel taller than left; Orchestrator mini-panel placement.
 16. **[LOW] Issue 5.2** — Inline styles should be replaced with defined classes.
 17. **[LOW] Issue 6.2** — Remove `role="contentinfo"` from non-footer section.
 18. **[LOW] Issue X.1** — Replace flat section padding with `clamp()` to match site rhythm.
@@ -384,7 +384,7 @@ Per the spec's Asset Generation Requests section:
 
 - **`/assets/capy/bird-resting.png`** — not yet generated. Required for Session 5 bridge areas. The existing `bird.png` with open eyes used in a "resting" context is unconvincing. This needs to be generated and approved before the wireframe can be called visually complete. Delegating generation request to **ai-artist**.
 
-- **Sage interception icon (inline SVG)** — the shield/eye SVG in Section 4 was implemented as an inline SVG in the wireframe (the shield with a centered circle and brow arc). It reads correctly as an icon at 16px. Approved as implemented.
+- **Orchestrator interception icon (inline SVG)** — the shield/eye SVG in Section 4 was implemented as an inline SVG in the wireframe (the shield with a centered circle and brow arc). It reads correctly as an icon at 16px. Approved as implemented.
 
 ---
 
@@ -392,11 +392,11 @@ Per the spec's Asset Generation Requests section:
 
 Addressing the spec's five open questions for the record:
 
-1. **`--sage-amber: #D4A84B`** — Approved for this page. Consistent with existing changelog badge usage on index.astro. Do not add to `tokens.css` until the full enterprise page ships to production.
+1. **`--orchestrator-amber: #D4A84B`** — Approved for this page. Consistent with existing changelog badge usage on index.astro. Do not add to `tokens.css` until the full premium page ships to production.
 
 2. **Bird resting variant** — Generate new. The open-eyed bird labeled "resting" is not convincing. The Session 5 bridge moment needs genuine visual rest. See asset request above.
 
-3. **Hero headline copy** — "The Sage knows your entire org." is approved as the enterprise value prop. Copy is locked for this wireframe review pass.
+3. **Hero headline copy** — "The Orchestrator knows your entire org." is approved as the premium value prop. Copy is locked for this wireframe review pass.
 
 4. **Section 3 interactivity scope** — The interactive spawning demo IS in scope for v1. The interaction skeleton is built; it needs the SVG lines (Issue 3.2) to be production-ready.
 

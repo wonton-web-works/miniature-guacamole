@@ -28,8 +28,8 @@ Versioning follows [Semantic Versioning](https://semver.org/): MAJOR.MINOR.PATCH
 - `visual-formatting.md`: 336 → 195 lines (42% token reduction)
 - Agent/skill counts corrected across all docs: 24 agents, 19 skills
 - Documentation updated to teach `/mg plan` and `/mg review` as primary commands
-- CI pipeline: removed stale `dashboard` job (moved to enterprise)
-- Enterprise content (Sage, TEO skills) excluded from community distribution
+- CI pipeline: removed stale `dashboard` job (moved to premium)
+- Premium content (Orchestrator, MG skills) excluded from community distribution
 
 ### Migration Guide
 - Replace `output_mode: silent` → remove (no longer supported)
@@ -43,30 +43,30 @@ Versioning follows [Semantic Versioning](https://semver.org/): MAJOR.MINOR.PATCH
 ## [5.0.0] — 2026-03-22
 
 ### Added
-- **The Sage** — enterprise-only orchestrator agent with selective C-Suite spawning
+- **The Orchestrator** — premium-only orchestrator agent with selective C-Suite spawning
 - **CMO/COO agent** — operations, marketing, go-to-market, brand consistency
 - **CFO agent** — cost analysis, token budget management, ROI assessment
-- **Config C** — validated production config (opus Sage, sonnet C-Suite, 40% cost savings)
-- **Enterprise auth pipeline** — mg login/logout/upgrade/status CLI commands
+- **Config C** — validated production config (opus Orchestrator, sonnet C-Suite, 40% cost savings)
+- **Premium auth pipeline** — mg login/logout/upgrade/status CLI commands
 - **Benchmark harness** — 7 task types, 4 model configs, drift cost analysis
-- **Enterprise boundary tests** — 52 integration tests for zero enterprise→community leakage
+- **Premium boundary tests** — 52 integration tests for zero premium→community leakage
 - **Session management** — dependency-based session breaks, context snapshots, cold-start primers
 - **Research specialist persistence** — domain experts saved and reused across sessions
 
 ### Changed
-- Agent count: 20 → 24 (added Sage, CMO, CFO; all existing agents upgraded)
+- Agent count: 20 → 24 (added Orchestrator, CMO, CFO; all existing agents upgraded)
 - CEO, CTO, ED constitutions strengthened with 5-6 concrete decision heuristics each
-- /mg-leadership-team v2.0 — dual enterprise/community mode with edition detection
-- Supervisor: upgraded as community quality watchdog, escalates to Sage in enterprise
+- /mg-leadership-team v2.0 — dual premium/community mode with edition detection
+- Supervisor: upgraded as community quality watchdog, escalates to Orchestrator in premium
 - 19 skill constitutions: "Follow output format" consolidated to skill-base.md
 - ~169 lines of tutorial content removed from technical agents (devops, data, api, security, technical-writer)
 - Design agent: "your code ships" → "specs first"
 - Visual formatting: 4 new color codes ([ART], [DOC], [SEC], [COPY])
 
 ### Security
-- LICENSE.ext for proprietary Sage distribution
-- build.sh excludes Sage from community distribution
-- Enterprise session validation with machineId fingerprinting
+- LICENSE.ext for proprietary Orchestrator distribution
+- build.sh excludes Orchestrator from community distribution
+- Premium session validation with machineId fingerprinting
 - Security headers (_headers), robots.txt, pilot gate hardened
 
 ## [4.2.0] — 2026-03-20
@@ -211,13 +211,13 @@ compliance. The framework now exposes a machine-readable API alongside stdio.
 
 ---
 
-## [1.1.0] - 2026-02-10 — Enterprise Adapter Boundary
+## [1.1.0] - 2026-02-10 — Premium Adapter Boundary
 
-Enterprise and OSS builds split at a clean plugin boundary. CI hardened to
-run cleanly without enterprise dependencies.
+Premium and OSS builds split at a clean plugin boundary. CI hardened to
+run cleanly without premium dependencies.
 
 ### Added
-- **Enterprise adapter API** (`WS-SPLIT-4`) — `registerAdapter()` plugin boundary; enterprise extensions attach without touching OSS core
+- **Premium adapter API** (`WS-SPLIT-4`) — `registerAdapter()` plugin boundary; premium extensions attach without touching OSS core
 
 ### Changed
 - **CI hardening** (`WS-SPLIT-3`) — removed `pg` and `aws-sdk` from OSS `package.json`; resolved 3 CI-environment test failures

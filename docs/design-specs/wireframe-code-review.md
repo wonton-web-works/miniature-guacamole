@@ -1,8 +1,8 @@
-# Wireframe Code Review — Enterprise Page
+# Wireframe Code Review — Premium Page
 **Reviewer:** Staff Engineer
 **Date:** 2026-03-22
 **File reviewed:** `site/src/pages/wireframe.astro`
-**Spec reviewed:** `docs/design-specs/enterprise-page-visual-spec.md`
+**Spec reviewed:** `docs/design-specs/premium-page-visual-spec.md`
 
 ---
 
@@ -82,7 +82,7 @@ The `!important` is also unnecessary — `.spawn-node.dormant` has equal specifi
 | `#4A7C59` | `var(--mg-guac)` | Line 1167 (`.footer-mg-name`) |
 | `#2E8B8B` | `var(--mg-cilantro)` | Line 1174 (`.footer-gh-link`) |
 
-The `--sage-amber` family is correctly defined as page-scoped tokens at lines 21–23 and used via `var()`. The brand tokens should follow the same pattern. When a brand color changes, a codebase-wide hex replace is error-prone; token references update automatically.
+The `--orchestrator-amber` family is correctly defined as page-scoped tokens at lines 21–23 and used via `var()`. The brand tokens should follow the same pattern. When a brand color changes, a codebase-wide hex replace is error-prone; token references update automatically.
 
 **Fix:** Replace all hardcoded brand hex values with their token equivalents. The `.accent-chili`, `.accent-guac`, `.accent-cilantro` helper classes (lines 90–92) are already half-right — they reference the hex directly instead of `var(--mg-chili)` etc. Fix those too.
 
@@ -169,7 +169,7 @@ window.addEventListener('resize', () => {
 }
 ```
 
-**Issue:** The design spec (Global Notes, "CSS Animation Performance") explicitly states: "Do not animate `box-shadow` directly — use a pseudo-element with `opacity` transition instead for glows. The exception is the Sage node pulse in Section 3." The bridge dot is not the Sage node pulse — it's a continuously looping animation on a non-interactive element. `box-shadow` is not GPU-composited and will paint on every frame for the entire page lifetime.
+**Issue:** The design spec (Global Notes, "CSS Animation Performance") explicitly states: "Do not animate `box-shadow` directly — use a pseudo-element with `opacity` transition instead for glows. The exception is the Orchestrator node pulse in Section 3." The bridge dot is not the Orchestrator node pulse — it's a continuously looping animation on a non-interactive element. `box-shadow` is not GPU-composited and will paint on every frame for the entire page lifetime.
 
 **Fix:** Replace with a `::after` pseudo-element approach for the glow, and animate only `opacity` on the pseudo-element. The bridge dot already has `position: relative` and `z-index: 1`.
 
@@ -313,9 +313,9 @@ For a wireframe this is acceptable, but if these particles are carried into prod
 <img data-capy src="/assets/capy/zen-meditating.png" alt="" />  <!-- no width/height -->
 ```
 
-**Issue:** Missing `width` and `height` attributes cause Cumulative Layout Shift (CLS) as images load and the browser doesn't know their intrinsic dimensions. The hero image (line 1238) correctly has `width="340"`. The bird images in the drift panels and the sage mini-panel do not. CLS is a Core Web Vital and a production concern even for an enterprise page. For a wireframe it's tolerable, but these should be fixed before the pattern is carried to production.
+**Issue:** Missing `width` and `height` attributes cause Cumulative Layout Shift (CLS) as images load and the browser doesn't know their intrinsic dimensions. The hero image (line 1238) correctly has `width="340"`. The bird images in the drift panels and the orchestrator mini-panel do not. CLS is a Core Web Vital and a production concern even for a premium page. For a wireframe it's tolerable, but these should be fixed before the pattern is carried to production.
 
-**Fix:** Add explicit `width` and `height` attributes matching the CSS-specified sizes. For `.bird-lost img` (28px), add `width="28" height="28"`. For `.sage-mini-panel img` (56px), add `width="56" height="56"`.
+**Fix:** Add explicit `width` and `height` attributes matching the CSS-specified sizes. For `.bird-lost img` (28px), add `width="28" height="28"`. For `.orchestrator-mini-panel img` (56px), add `width="56" height="56"`.
 
 ---
 
@@ -372,4 +372,4 @@ Before carrying any of this CSS forward to production components:
 7. **P1-5** — Replace `box-shadow` animation in `bridgePulse` with pseudo-element opacity (15 min)
 8. **P1-8** — Document CTO token divergence or resolve it in `tokens.css` (decision needed)
 9. **P2-2** — Fix `role-title` font-size from `0.7rem` to `0.75rem` (2 min)
-10. **P2-5** — Add `width`/`height` to bird and sage mini-panel images (5 min)
+10. **P2-5** — Add `width`/`height` to bird and orchestrator mini-panel images (5 min)

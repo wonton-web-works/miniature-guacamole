@@ -17,7 +17,7 @@ The framework is architecturally sound and shows clear design intent. The shared
 
 2. **CEO and engineering-director agents are behaviorally inert** — Their constitutions are three-bullet lists of self-evident truisms ("Decide quickly", "Delivery focus"). No activation criteria, no decision heuristics, no escalation triggers. They will produce generic executive-speak.
 
-3. **The Sage duplicates the supervisor's job description without clear division** — Both monitor quality and enforce process. The distinction (Sage acts, supervisor observes) is buried 200 lines into Sage's AGENT.md and not mentioned anywhere in supervisor's file.
+3. **The Orchestrator duplicates the supervisor's job description without clear division** — Both monitor quality and enforce process. The distinction (Orchestrator acts, supervisor observes) is buried 200 lines into Orchestrator's AGENT.md and not mentioned anywhere in supervisor's file.
 
 4. **Technical-writer's escalation target is a skill, not an agent** — `ESCALATES TO: mg-document` is structurally wrong. Skills don't receive escalations; agents do. Same issue with copywriter escalating to `mg-write`.
 
@@ -31,7 +31,7 @@ Scoring: 1 = poor, 5 = excellent
 
 | Agent | Behavioral Alignment | Initiative | Quality | Token Efficiency | Key Issues |
 |-------|---------------------|------------|---------|-----------------|------------|
-| sage | 5 | 5 | 5 | 3 | Long but justified. Research evaluation protocol is excellent. Specialist persistence pattern is novel and valuable. Token cost is high but this is the top-level orchestrator. |
+| orchestrator | 5 | 5 | 5 | 3 | Long but justified. Research evaluation protocol is excellent. Specialist persistence pattern is novel and valuable. Token cost is high but this is the top-level orchestrator. |
 | ceo | 2 | 2 | 3 | 5 | Three-bullet constitution says nothing actionable. No criteria for when CEO activates vs stays quiet. Will produce platitudes. Extremely token-efficient but behaviorally weak. |
 | cto | 2 | 2 | 3 | 5 | Same problem as CEO. "Technical excellence — Maintain high standards" is not a behavioral instruction. No guidance on how to evaluate tradeoffs, what architecture patterns to prefer, or how to structure a recommendation. |
 | engineering-director | 2 | 2 | 3 | 5 | "Delivery focus — Keep workstreams moving" gives Claude nothing to act on. No heuristics for prioritization, no blocker escalation thresholds, no capacity planning guidance. |
@@ -115,13 +115,13 @@ This means that when these agents are spawned, Claude will produce polished-soun
 
 **Recommendation:** Add 3-5 lines to each C-Suite agent specifying what that role uniquely contributes to a decision. For CEO: business model impact, market timing, resource trade-offs. For CTO: build-vs-buy, technical debt horizon, team capability alignment. For engineering-director: delivery risk, capacity, dependency sequencing.
 
-### 5. Sage/Supervisor Role Boundary Ambiguity (MEDIUM)
+### 5. Orchestrator/Supervisor Role Boundary Ambiguity (MEDIUM)
 
 The Sage constitution says it "challenges shallow work, enforces process, monitors context usage." The supervisor constitution says it "monitors the agent system, enforces limits, detects issues." Both are watching the system. The Sage additionally acts on what it sees; the supervisor only alerts.
 
-The problem: the boundary is defined in Sage's AGENT.md ("supervisor observes, Sage acts") but the supervisor's own AGENT.md makes no mention of this relationship. If supervisor is spawned directly (not via Sage), it has no awareness that its alerts go to the Sage.
+The problem: the boundary is defined in Orchestrator's AGENT.md ("supervisor observes, Orchestrator acts") but the supervisor's own AGENT.md makes no mention of this relationship. If supervisor is spawned directly (not via Orchestrator), it has no awareness that its alerts go to the Orchestrator.
 
-**Recommendation:** Add one line to supervisor's constitution: "Report alerts to sage — supervisor observes and alerts; sage decides and acts." This creates a bidirectional reference.
+**Recommendation:** Add one line to supervisor's constitution: "Report alerts to orchestrator — supervisor observes and alerts; orchestrator decides and acts." This creates a bidirectional reference.
 
 ### 6. Model Version Hardcoding (LOW)
 
@@ -153,7 +153,7 @@ The design agent's constitution says "Production-ready — Your code ships, not 
 
 | Agent | Current Tokens | Estimated Reducible | Notes |
 |-------|---------------|--------------------|----|
-| sage | ~2,200 | ~400 | Research protocol is dense but justified; specialist persistence format could be shorter |
+| orchestrator | ~2,200 | ~400 | Research protocol is dense but justified; specialist persistence format could be shorter |
 | ceo | ~250 | ~0 | Already lean; problem is undercontent, not overcontent |
 | cto | ~250 | ~0 | Same as CEO |
 | engineering-director | ~250 | ~0 | Same |
@@ -247,8 +247,8 @@ The QA constitution doesn't mention misuse-first. It's only in tdd-workflow.md. 
 **7. Fix studio-director AGENT.md structure**
 Change `model: claude-opus-4-6` → `model: opus`. Add missing frontmatter fields (tools, memory, maxTurns). Add Boundaries section. Move constitution section to correct position.
 
-**8. Add supervisor → sage reference**
-One line in supervisor's constitution: "Alert sage — supervisor observes and writes alerts; sage interprets and acts."
+**8. Add supervisor → orchestrator reference**
+One line in supervisor's constitution: "Alert orchestrator — supervisor observes and writes alerts; orchestrator interprets and acts."
 
 ### P2 — Quality Improvement
 

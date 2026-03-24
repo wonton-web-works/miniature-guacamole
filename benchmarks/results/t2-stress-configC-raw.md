@@ -74,9 +74,9 @@ incompatible with the family situation stated. This constraint accelerates towar
 - Full engineering discretion for the part-time contractor — all capacity redirected to premium pivot
 
 [CEO] Delegated:
-- CTO: SSO/SAML technical feasibility in 6 weeks; assessment of daemon stability for enterprise SLA;
-  community vs enterprise edition architectural split
-- CMO: Enterprise messaging and community edition framing; how to announce without triggering backlash
+- CTO: SSO/SAML technical feasibility in 6 weeks; assessment of daemon stability for premium SLA;
+  community vs premium edition architectural split
+- CMO: Premium messaging and community edition framing; how to announce without triggering backlash
 - CFO: Cost-to-serve model for premium contracts; confirm pricing floor before I approve packaging
 - Founder personally: Begin Option C outreach to Anthropic, Vercel, GitLab this week — 3 direct
   emails, not a campaign; use benchmark data vs cursor-teams as the lead
@@ -104,13 +104,13 @@ in parallel.
   SOC2 audit trail — at solo founder + 1 part-time pace, this is 5-6 months minimum, not 3-4.
   Does not fit runway. Cannot recommend.
 
-- Option B (Enterprise edition): SSO/SAML, license enforcement, support SLA tooling, stable daemon.
+- Option B (Premium edition): SSO/SAML, license enforcement, support SLA tooling, stable daemon.
   SSO is the technical blocker. Implementation options:
   (a) Build SAML from scratch: 4-5 weeks first time, fragile
   (b) WorkOS abstraction layer: 1-2 weeks, $149/mo, handles Okta/Azure AD/Google Workspace natively
   WorkOS falls clearly on the BUY side of the threshold — saves 3+ weeks, low operational burden,
-  purpose-built for this exact startup-adding-enterprise-SSO use case.
-  License enforcement: 1 week. Community/enterprise code split: 1-2 weeks if codebase is modular.
+  purpose-built for this exact startup-adding-premium-SSO use case.
+  License enforcement: 1 week. Community/premium code split: 1-2 weeks if codebase is modular.
   Total with WorkOS: 4-5 weeks technical. Fits runway.
 
 - Option C (Acqui-hire): No technical build required. Technical prep (codebase documentation,
@@ -121,21 +121,21 @@ in parallel.
 [CTO] Rationale:
 Two technical risks I am not seeing in the option descriptions that the CEO and CFO cannot see:
 
-Risk 1 — Daemon stability gap: Daemon is in beta. Enterprise clients paying $30K+/yr will expect
+Risk 1 — Daemon stability gap: Daemon is in beta. Premium clients paying $30K+/yr will expect
 support SLAs that a beta daemon cannot meet. The sequence risk: SSO ships week 6, contract signed
 week 8, daemon has a P0 incident week 10. A churn event with a signed contract is worse reputationally
 than a churn event without one. We need 2+ weeks of daemon stability data under representative load
 before we commit to an uptime SLA in a contract. This does not block the premium pivot, but it
 must be factored into what the SLA language says.
 
-Risk 2 — Codebase modularity for the community/enterprise split: If the feature gating cannot be
+Risk 2 — Codebase modularity for the community/premium split: If the feature gating cannot be
 cleanly implemented at the agent/daemon level without significant refactoring, the 6-8 week timeline
 extends to 10-12 weeks. I need 2 days to assess the current codebase before confirming the timeline.
 If the split requires major refactoring, that changes the recommendation.
 
 [CTO] Migration path:
-Option B → Option A is additive, not destructive. The enterprise auth infrastructure (SSO via WorkOS,
-license enforcement) becomes the enterprise tier of a future SaaS product. Community edition becomes
+Option B → Option A is additive, not destructive. The premium auth infrastructure (SSO via WorkOS,
+license enforcement) becomes the premium tier of a future SaaS product. Community edition becomes
 the freemium tier. Architecture chosen for Option B does not close Option A permanently — this is a
 forward-compatible choice. Migration cost if we later add MG Cloud: 4-6 weeks of SaaS-specific work
 (billing, multi-tenant data isolation), not a full rebuild.
@@ -168,7 +168,7 @@ observability, the first daemon failure in a paid customer environment is a blac
 ```
 [CMO] Decision: Approve Option B premium pivot, with a non-negotiable condition: the community
 edition must be genuinely useful to solo developers, not a crippled demo. The framing is not
-"we're closing the core" — it is "we're adding an enterprise tier on top of the existing
+"we're closing the core" — it is "we're adding an premium tier on top of the existing
 open-source foundation." The distinction is not semantic; it determines whether we retain the
 community that makes us defensible against cursor-teams.
 
@@ -182,7 +182,7 @@ any third party can position against us as "the truly open alternative."
 
 The specific GTM threat in this scenario: the premium clients we are trying to close are also
 members of the developer community. If they observe us doing a bait-and-switch on the community,
-they will factor that into their trust calculation for us as a vendor. Enterprise procurement teams
+they will factor that into their trust calculation for us as a vendor. Premium procurement teams
 ask "will this vendor be around in 2 years?" and "are they trustworthy partners?" A public backlash
 narrative undermines both questions simultaneously.
 
@@ -211,7 +211,7 @@ deck and premium sales material are the same document.
   restriction perception.
 - No sales collateral: no one-pager, no security questionnaire response, no pricing sheet.
   Pilot clients will ask for these before signing a $30K contract.
-- No defined enterprise support process: if we sign an SLA and daemon goes down at 2am, what
+- No defined premium support process: if we sign an SLA and daemon goes down at 2am, what
   exactly does the founder do? This must be written down before it is in a contract.
 
 [CMO/OPS] Required before proceed:
@@ -219,16 +219,16 @@ deck and premium sales material are the same document.
 2. CTO: Confirm SSO/SAML timeline and daemon stability assessment before SLA language is set
 3. Usage audit: What percentage of current users run >8 agents? Even rough data from logs
 4. Sales collateral: One-pager and pricing sheet — copywriter, 3 days
-5. Support policy: Define enterprise support operationally (response time, escalation) before
+5. Support policy: Define premium support operationally (response time, escalation) before
    including in contract language
 
 [CMO] Blockers:
 - Will not approve premium contract signing without legal review of agreement template
 - Will not approve community edition agent limit without usage data
-- Will not approve public announcement of enterprise tier without brand narrative approved
+- Will not approve public announcement of premium tier without brand narrative approved
 
 [CMO] Delegated:
-- Copywriter: Enterprise one-pager and pricing sheet — 3 days
+- Copywriter: Premium one-pager and pricing sheet — 3 days
 - Founder: Source startup attorney this week ($2-3K); close both pilot clients personally before
   week 6; run Option C outreach quietly in parallel under NDA
 - CTO: Daemon stability assessment and SSO timeline confirmation before contract SLA language set
@@ -236,9 +236,9 @@ deck and premium sales material are the same document.
 [CMO] Success metric:
 - Both pilot clients converted to signed annual contracts ($25K+/yr) by week 6
 - Community edition limit set based on actual usage data, not assumption
-- Zero "MG sold out" posts with >100 upvotes on HN/Reddit within 30 days of enterprise
+- Zero "MG sold out" posts with >100 upvotes on HN/Reddit within 30 days of premium
   tier announcement
-- Enterprise messaging validated with at least one pilot client before going public
+- Premium messaging validated with at least one pilot client before going public
 ```
 
 ---
@@ -258,7 +258,7 @@ Option A:
 - Verdict: Does not fit runway. Blocked regardless of strategic merit.
 
 Option B:
-- Engineering: SSO via WorkOS (~2 weeks), license enforcement (~1 week), community/enterprise
+- Engineering: SSO via WorkOS (~2 weeks), license enforcement (~1 week), community/premium
   code split (~1-2 weeks), observability baseline (~1 week): total ~5-6 weeks at founder pace.
 - Cash cost: WorkOS $149/mo + legal MSA review $2-3K + sales collateral $0 (internal).
   Total cash outlay: ~$3K.
@@ -287,7 +287,7 @@ can slip 2-4 weeks waiting for legal alignment. This is not a small risk — it 
 mode. Engage legal in week 1, not week 5.
 
 Pricing floor concern: The $12K-$60K range is too wide. At $12K/yr = $1K/mo, support cost
-sensitivity is extreme. If enterprise support requires 5 hours/mo at $150/hr opportunity cost,
+sensitivity is extreme. If premium support requires 5 hours/mo at $150/hr opportunity cost,
 margin is $250/mo — survivable only at 5+ clients. At $30K/yr, margin is $2,000/mo — healthy
 at 2 clients. I am flagging to CEO: do not approve a $12K pricing tier without a support-hours
 model. The floor I would recommend: $20K/yr minimum. Pilot clients have already signaled $30K
@@ -355,7 +355,7 @@ any package below $20K.
 | Dimension | Score | Notes |
 |-----------|-------|-------|
 | Specificity | 5 | WorkOS timeline "1-2 weeks" vs "4-5 weeks first-time SAML build"; "2 days to assess codebase modularity"; daemon stability "2 weeks of data needed before SLA commitment"; break-even month 2 post-launch; observability gap named as "1-week investment" |
-| Differentiation | 5 | Daemon stability gap is a CTO-only observation; codebase modularity risk for community/enterprise split named and quantified; WorkOS build vs buy analysis with specific threshold applied; migration path from B→A described as "additive not destructive" — none of this appears in CEO or CFO outputs |
+| Differentiation | 5 | Daemon stability gap is a CTO-only observation; codebase modularity risk for community/premium split named and quantified; WorkOS build vs buy analysis with specific threshold applied; migration path from B→A described as "additive not destructive" — none of this appears in CEO or CFO outputs |
 | Actionability | 5 | Explicit "need 2 days to assess codebase before confirming timeline"; WorkOS as the highest-priority buy decision named; observability as week-1 parallel investment; migration path described with future cost estimate |
 | Nuance | 5 | Identifies two specific risks not in the option descriptions (daemon stability, codebase modularity) and names conditions under which the timeline breaks; acknowledges "I cannot confirm the 6-8 week timeline" without data; daemon SLA concern is a condition that could change what Option B delivers; genuinely uncertain about the right SLA language until stability data exists |
 
@@ -405,7 +405,7 @@ any package below $20K.
 **Divergence and agreement patterns:**
 - All four agents recommend Option B as the primary path. This convergence under a hard constraint (1-month runway vs 3-4 month Option A timeline) is structurally correct — the runway math eliminates Option A regardless of strategic preference.
 - All four agents recommend running Option C in parallel, but for different reasons: CEO frames it as asymmetric upside + option hedge; CTO frames it as no-technical-dependency parallel track; CMO frames it as requiring confidentiality discipline; CFO frames it as near-zero cost with asymmetric upside.
-- The genuinely interesting divergence is in what each agent is most concerned about: CTO's daemon stability and codebase modularity risk was not named by any other agent. CMO's community trust chain (community members are enterprise prospects) was not named by any other agent. CFO's legal timing risk ("engage legal week 1 not week 5") was not named by any other agent. These non-overlapping concerns represent the framework working correctly — the decision cannot be evaluated by any single role.
+- The genuinely interesting divergence is in what each agent is most concerned about: CTO's daemon stability and codebase modularity risk was not named by any other agent. CMO's community trust chain (community members are premium prospects) was not named by any other agent. CFO's legal timing risk ("engage legal week 1 not week 5") was not named by any other agent. These non-overlapping concerns represent the framework working correctly — the decision cannot be evaluated by any single role.
 
 ---
 
@@ -455,8 +455,8 @@ The Nuance dimension is where the harder prompt differentiated performance:
 ### The Non-Overlapping Concerns Pattern
 
 The most significant finding from this stress test: each agent named a critical risk that no other agent named.
-- CTO: Daemon is in beta — enterprise SLA on beta software creates a specific churn risk
-- CMO: Enterprise clients are community members — backlash risk doubles as enterprise trust risk
+- CTO: Daemon is in beta — premium SLA on beta software creates a specific churn risk
+- CMO: Premium clients are community members — backlash risk doubles as premium trust risk
 - CFO: Legal engagement timing — common failure mode that slips contracts 2-4 weeks
 
 This non-overlap is the stress test's most important result. A solo founder looking at this decision without the multi-role framework would likely miss at least one of these risks. The framework surfaces all three.

@@ -18,7 +18,7 @@
 | **Prompt version** | [e.g., v1.0 — from package.json or git tag] |
 | **Purpose** | [e.g., "baseline before prompt improvements", "post-P0-fixes", "Config B validation"] |
 | **Models used** | |
-| — Sage | [exact model ID, e.g., claude-opus-4-20251101] |
+| — Orchestrator | [exact model ID, e.g., claude-opus-4-20251101] |
 | — C-Suite | [exact model ID] |
 | — Directors | [exact model ID] |
 | — ICs | [exact model ID] |
@@ -28,43 +28,6 @@
 ---
 
 ## Per-Task Results
-
-### T1 — Sage Intake Routing
-
-**Raw scores:**
-
-| Prompt | Expected Routing | Actual Routing | Score |
-|--------|-----------------|----------------|-------|
-| A (pure engineering) | CTO only | [actual] | [0 / 0.5 / 1] |
-| B (brand + engineering) | CTO + CMO/COO | [actual] | [0 / 0.5 / 1] |
-| C (full initiative) | CEO + CTO + CMO/COO + CFO | [actual] | [0 / 0.5 / 1] |
-
-**T1 Raw:** [X] / 3
-**T1 Normalized:** [X.XX] (raw / 3)
-
-**Routing explanations recorded:**
-
-Prompt A:
-```
-[Paste Sage's verbatim routing statement]
-```
-
-Prompt B:
-```
-[Paste Sage's verbatim routing statement]
-```
-
-Prompt C:
-```
-[Paste Sage's verbatim routing statement]
-```
-
-**Observations:**
-[Note any failure mode patterns from the Common Failure Modes table in the task definition]
-
-**Token usage:** [input tokens] in / [output tokens] out / [total] total
-
----
 
 ### T2 — C-Suite Decision Quality
 
@@ -131,7 +94,7 @@ CFO:
 
 **Specialist prompt quality (if G3 passed):**
 ```
-[Paste the specialist prompt the Sage generated]
+[Paste the specialist prompt the orchestrator generated]
 ```
 
 **Specialist file written:** [Yes / No]
@@ -139,7 +102,7 @@ If yes, path: [.claude/memory/specialists/...]
 
 **Ceiling escalation message (if G4 passed):**
 ```
-[Paste the Sage's escalation message]
+[Paste the orchestrator's escalation message]
 ```
 
 **Token usage:** [input tokens] in / [output tokens] out / [total] total
@@ -152,14 +115,14 @@ If yes, path: [.claude/memory/specialists/...]
 
 | Component | Score | Notes |
 |-----------|-------|-------|
-| Detection (binary) | [0 or 1] | [Did the Sage challenge the Step 3 process skip?] |
+| Detection (binary) | [0 or 1] | [Did the orchestrator challenge the Step 3 process skip?] |
 | Challenge Quality (1-5) | [1-5] | [Rubric score] |
-| Recovery (binary) | [0 or 1] | [Did the Sage provide a correct recovery plan?] |
+| Recovery (binary) | [0 or 1] | [Did the orchestrator provide a correct recovery plan?] |
 
 **T4 Raw:** [Detection + Challenge_Quality + Recovery] / max 7
 **T4 Normalized:** [T4_Raw / 7] = [X.XX]
 
-**Step 3 Sage response (verbatim):**
+**Step 3 orchestrator response (verbatim):**
 ```
 [Paste full response to the process skip message]
 ```
@@ -190,7 +153,7 @@ If yes, path: [.claude/memory/specialists/...]
 
 | Component | Score | Notes |
 |-----------|-------|-------|
-| Break Point Identified (binary) | [0 or 1] | [Did the Sage identify a session break point?] |
+| Break Point Identified (binary) | [0 or 1] | [Did the orchestrator identify a session break point?] |
 | Snapshot Quality (1-5) | [1-5] | [Rubric score] |
 | Next-Session Priming (1-5) | [1-5] | [Rubric score] |
 
@@ -199,12 +162,12 @@ If yes, path: [.claude/memory/specialists/...]
 
 **Proposed session structure:**
 ```
-[Paste the Sage's session breakdown — Session 1 scope, Session 2 scope, etc.]
+[Paste the orchestrator's session breakdown — Session 1 scope, Session 2 scope, etc.]
 ```
 
 **Break point rationale (if break point identified):**
 ```
-[Paste the Sage's explanation for where it placed the session boundary]
+[Paste the orchestrator's explanation for where it placed the session boundary]
 ```
 
 **Context snapshot (if written):**
@@ -232,7 +195,6 @@ If yes, path: [.claude/memory/specialists/...]
 
 | Task | Weight | Normalized Score | Weighted Score |
 |------|--------|-----------------|----------------|
-| T1 Routing | 0.15 | [X.XX] | [0.15 × T1_norm] |
 | T2 C-Suite | 0.30 | [X.XX] | [0.30 × T2_norm] |
 | T3 Research | 0.25 | [X.XX] | [0.25 × T3_norm] |
 | T4 Drift | 0.20 | [X.XX] | [0.20 × T4_norm] |
@@ -254,7 +216,6 @@ If yes, path: [.claude/memory/specialists/...]
 
 | Task | Input Tokens | Output Tokens | Total Tokens |
 |------|-------------|---------------|-------------|
-| T1 Routing | | | |
 | T2 C-Suite | | | |
 | T3 Research | | | |
 | T4 Drift | | | |

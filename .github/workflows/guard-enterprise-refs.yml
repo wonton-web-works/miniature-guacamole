@@ -1,0 +1,66 @@
+name: Guard Enterprise References
+
+on:
+  pull_request:
+    branches: [main]
+
+jobs:
+  check-enterprise-refs:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check for gated product references
+        run: |
+          # This check prevents accidental inclusion of enterprise product
+          # names in the community repo. The patterns are base64-encoded
+          # so this file itself does not contain the terms it guards against.
+          #
+          # To update patterns: echo -n 'term' | base64
+          # Decode to verify: echo 'dGVybQ==' | base64 -d
+
+          # Allowed files: these legitimately contain an outbound enterprise URL
+          ALLOWED_FILES="docs/.vitepress/config.ts|docs/index.md"
+
+          # Patterns that must NOT appear in community source.
+          # Format: base64-encoded term, then a colon, then scope.
+          # Scope: "strict" = no exceptions; "soft" = allowed in ALLOWED_FILES
+          PATTERNS=(
+            "VGhlRW5nT3Jn:strict"             # product name (proper case)
+            "VEVPX1BST0pFQ1Q=:strict"         # project marker
+            "VEVPSW5zdGFsbA==:strict"         # install marker
+            "VEVPU2FnZUdseXBo:strict"         # glyph asset
+            "YnVpbGQtZW50ZXJwcmlzZS5zaA==:strict" # build script
+            "TElDRU5TRS5lbnRlcnByaXNl:strict"     # license file
+            "dGhlZW5nb3JnLmNvbQ==:soft"       # product domain (allowed in nav/footer links)
+          )
+
+          FAILED=0
+          for entry in "${PATTERNS[@]}"; do
+            B64="${entry%%:*}"
+            SCOPE="${entry##*:}"
+            TERM=$(echo "$B64" | base64 -d)
+
+            EXCLUDE_FILTER="grep -v '.github/workflows/guard-enterprise-refs.yml' | grep -v 'node_modules'"
+            if [ "$SCOPE" = "soft" ]; then
+              EXCLUDE_FILTER="$EXCLUDE_FILTER | grep -vE '$ALLOWED_FILES'"
+            fi
+
+            HITS=$(grep -ri "$TERM" --include='*.ts' --include='*.md' --include='*.yaml' --include='*.yml' --include='*.json' --include='*.sh' \
+              -l . 2>/dev/null | eval "$EXCLUDE_FILTER" | head -20)
+            if [ -n "$HITS" ]; then
+              echo "::error::Found gated product reference in:"
+              echo "$HITS"
+              FAILED=1
+            fi
+          done
+
+          if [ "$FAILED" -eq 1 ]; then
+            echo ""
+            echo "::error::Enterprise product references found in community repo."
+            echo "These terms belong in the private enterprise repo, not here."
+            echo "If this is an intentional outbound link (e.g., nav/footer), add the file to the exclusion list above."
+            exit 1
+          fi
+
+          echo "✓ No gated product references found."

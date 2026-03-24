@@ -9,6 +9,13 @@ Versioning follows [Semantic Versioning](https://semver.org/): MAJOR.MINOR.PATCH
 
 ---
 
+## [6.1.1] — 2026-03-24
+
+### Fixed
+- Removed product feature names from supervisor tests and audit docs (red team hygiene pass)
+
+---
+
 ## [6.1.0] — 2026-03-24
 
 ### Added

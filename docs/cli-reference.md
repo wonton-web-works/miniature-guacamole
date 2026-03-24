@@ -363,13 +363,13 @@ Product definition, user stories, and design specs. Define requirements before e
 /mg-spec define user-onboarding
 ```
 
-#### /mg-leadership-team
+#### /mg plan and /mg review
 
-Strategic decisions, executive reviews, and code review approvals. Use for planning new initiatives or reviewing completed work.
+Strategic decisions, executive reviews, and code review approvals. Use `/mg plan` to kick off a new initiative and `/mg review` to approve completed work. The legacy `/mg-leadership-team` invocation remains available as an alias.
 
 ```
-/mg-leadership-team review WS-42
-/mg-leadership-team plan new-auth-system
+/mg plan new-auth-system
+/mg review WS-42
 ```
 
 ### Building & Implementation

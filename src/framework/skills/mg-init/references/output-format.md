@@ -18,10 +18,9 @@ All skills support an `output_mode` parameter controlling terminal verbosity:
 | Mode | Behavior | When to use |
 |------|----------|-------------|
 | `compact` | Single-line per event, no ASCII art (default) | Normal runs, bypass mode, long jobs |
-| `full` | Full banners, ASCII art, status boxes | Verbose/debug sessions, explicit request |
-| `silent` | Errors only, all other output suppressed | Automated pipelines, CI |
+| `verbose` | Full banners, ASCII art, status boxes | Verbose/debug sessions, explicit request |
 
-To request full mode, include "verbose" or `output_mode: full` in your invocation. Unknown values default to compact. Full mode definitions are in `../shared/visual-formatting.md`.
+To request verbose mode, include "verbose" or `output_mode: verbose` in your invocation. Unknown values default to compact. Verbose mode definitions are in `../shared/visual-formatting.md`.
 
 ## Standard Sections
 
@@ -365,9 +364,9 @@ Progress: [████████░░░░░░░░] 50% (Step 2/4)
 └─────────────────────────────────────┘
 ```
 
-### When to Use ASCII Visuals (full mode)
+### When to Use ASCII Visuals (verbose mode)
 
-In full mode:
+In verbose mode:
 - **Always**: Show CAD cycle progress during `/mg-build` execution
 - **Always**: Show dashboard when multiple workstreams active
 - **Optional**: Show delegation flow when spawning multiple agents
@@ -383,9 +382,9 @@ In compact mode, use the single-line variants defined in the Output Mode Flag se
 - Cross-reference to `../shared/visual-formatting.md` for full replacement rule
 
 **Version 1.2** (2026-03-04)
-- Added `output_mode` flag (full/compact/silent) to all skills
+- Added `output_mode` flag (compact/verbose) to all skills
 - compact is the default mode — reduces per-build output from ~60 lines to ≤10 lines
-- silent mode suppresses non-error output; errors always shown
+- errors are always shown regardless of mode
 - mg-build Implementation Skills section updated to document output_mode
 
 **Version 1.1** (2026-02-04)

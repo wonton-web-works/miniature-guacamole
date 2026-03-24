@@ -7,14 +7,13 @@ All agents should use these visual elements for consistent terminal feedback.
 All visual output supports an `output_mode` flag:
 
 ```
-output_mode: full | compact | silent
+output_mode: compact | verbose
 ```
 
-- `full` — current behavior: all banners, ASCII art, status boxes, progress bars. Use for verbose/debug sessions or when explicitly requested.
 - `compact` — single-line per event, no banners, no ASCII art (exception: errors always use the full box regardless of mode). Default. Reduces per-build output from ~60 lines to ≤10 lines. Unknown or undefined `output_mode` values default to compact.
-- `silent` — errors only. All non-error output is suppressed. Errors are always shown regardless of mode — silent mode never suppresses error output.
+- `verbose` — all banners, ASCII art, status boxes, progress bars. Use for verbose/debug sessions or when explicitly requested.
 
-To request full mode: include "verbose" or `output_mode: full` in your invocation. Unknown values default to compact.
+To request verbose mode: include "verbose" or `output_mode: verbose` in your invocation. Unknown values default to compact.
 
 ## Status Replacement
 
@@ -26,9 +25,7 @@ Agents replace their previous status output instead of appending. Each status up
 
 **Compact mode:** Each agent's single-line status output replaces its previous line.
 
-**Full mode:** Replacement is still the default. Full mode may optionally retain history for verbose debugging when explicitly requested, but replacement is the baseline behavior — not the exception.
-
-**Silent mode:** Status replacement is N/A in silent mode. Silent mode produces no status output, only errors, which always accumulate. There is no prior status line to replace.
+**Verbose mode:** Replacement is still the default. Verbose mode may optionally retain history for verbose debugging when explicitly requested, but replacement is the baseline behavior — not the exception.
 
 **First render:** When there is no prior status to replace, render normally. No prior output is not an error condition.
 
@@ -37,11 +34,11 @@ Agents replace their previous status output instead of appending. Each status up
 When an agent starts, display:
 
 ```
-┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
-┃  🎯 AGENT: [Agent Name]                                       ┃
-┃  📋 TASK: [Brief task description]                            ┃
-┃  ⏱️  STATUS: [Starting | In Progress | Complete]              ┃
-┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+┌──────────────────────────────────────────────────────────────────┐
+│  🎯 AGENT: [Agent Name]                                          │
+│  📋 TASK: [Brief task description]                               │
+│  ⏱️  STATUS: [Starting | In Progress | Complete]                 │
+└──────────────────────────────────────────────────────────────────┘
 ```
 
 **Compact variant** (exactly 1 line):
@@ -151,26 +148,26 @@ Three styles available based on context:
 Use this for team skills (mg-build, mg-leadership-team, mg-design):
 
 ```
-┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
-┃  LIVE AGENT ACTIVITY                                        ┃
-┣━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┫
-┃                                                              ┃
-┃  13:45:01  >> SPAWN   qa (sonnet)                           ┃
-┃            |  Task: Write test specifications                ┃
-┃            |  Parent: mg-build                       ┃
-┃            |  Depth: 2/3                                     ┃
-┃                                                              ┃
-┃  13:45:32  << RETURN  qa -> mg-build                ┃
-┃            |  Status: completed                              ┃
-┃            |  Result: 28 tests created                       ┃
-┃            |  Duration: 31s                                  ┃
-┃                                                              ┃
-┃  13:45:33  >> SPAWN   dev (sonnet)                          ┃
-┃            |  Task: Implement to pass tests                  ┃
-┃            |  Parent: mg-build                       ┃
-┃            |  Depth: 2/3                                     ┃
-┃                                                              ┃
-┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+┌────────────────────────────────────────────────────────────┐
+│  LIVE AGENT ACTIVITY                                        │
+├────────────────────────────────────────────────────────────┤
+│                                                              │
+│  13:45:01  >> SPAWN   qa (sonnet)                           │
+│            |  Task: Write test specifications                │
+│            |  Parent: mg-build                       │
+│            |  Depth: 2/3                                     │
+│                                                              │
+│  13:45:32  << RETURN  qa -> mg-build                │
+│            |  Status: completed                              │
+│            |  Result: 28 tests created                       │
+│            |  Duration: 31s                                  │
+│                                                              │
+│  13:45:33  >> SPAWN   dev (sonnet)                          │
+│            |  Task: Implement to pass tests                  │
+│            |  Parent: mg-build                       │
+│            |  Depth: 2/3                                     │
+│                                                              │
+└────────────────────────────────────────────────────────────┘
 ```
 
 ### Style 2: Minimal Inline (for ICs)
@@ -234,16 +231,16 @@ Simple return notice:
 ## Gate Check Display
 
 ```
-┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
-┃  🚦 QUALITY GATE: [Gate Name]                               ┃
-┣━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┫
-┃  ✅ Tests passing: 47/47                                    ┃
-┃  ✅ Coverage: 99.2% (target: 99%)                           ┃
-┃  ✅ No linting errors                                       ┃
-┃  ⚠️  Visual changes detected (pending design review)        ┃
-┣━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┫
-┃  RESULT: ⚠️ CONDITIONAL PASS (awaiting design approval)     ┃
-┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+┌────────────────────────────────────────────────────────────┐
+│  🚦 QUALITY GATE: [Gate Name]                               │
+├────────────────────────────────────────────────────────────┤
+│  ✅ Tests passing: 47/47                                    │
+│  ✅ Coverage: 99.2% (target: 99%)                           │
+│  ✅ No linting errors                                       │
+│  ⚠️  Visual changes detected (pending design review)        │
+├────────────────────────────────────────────────────────────┤
+│  RESULT: ⚠️ CONDITIONAL PASS (awaiting design approval)     │
+└────────────────────────────────────────────────────────────┘
 ```
 
 **Compact variant** (exactly 1 line):
@@ -276,16 +273,16 @@ gate:[Gate Name] [PASS|FAIL] tests:[n/n] coverage:[n%]
 ## Error Display
 
 ```
-┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
-┃  ❌ ERROR: [Error Type]                                     ┃
-┣━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┫
-┃  Message: [Error message]                                   ┃
-┃  Location: [file:line or agent]                             ┃
-┃  Action: [What to do next]                                  ┃
-┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+╔════════════════════════════════════════════════════════════╗
+║  ❌ ERROR: [Error Type]                                     ║
+╠════════════════════════════════════════════════════════════╣
+║  Message: [Error message]                                   ║
+║  Location: [file:line or agent]                             ║
+║  Action: [What to do next]                                  ║
+╚════════════════════════════════════════════════════════════╝
 ```
 
-**Note:** Error display uses the full box in all modes, including silent. Errors are always shown — silent mode suppresses non-error output only.
+**Note:** Error display uses the full box in all modes. Errors are always shown regardless of mode.
 
 ## Escalation Notice
 

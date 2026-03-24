@@ -9,6 +9,38 @@ Versioning follows [Semantic Versioning](https://semver.org/): MAJOR.MINOR.PATCH
 
 ---
 
+## [6.0.0] — 2026-03-23
+
+### Breaking Changes
+- **`/mg` is the new front door** — `/mg-leadership-team` merged into `/mg` as its leadership mode. Use `/mg plan` for planning and `/mg review` for code review. The old `/mg-leadership-team` remains as a legacy alias.
+- **Visual Output Protocol v2** — `silent` mode removed (no diagnostic trail), `full` renamed to `verbose`. Two modes only: `compact` (default) and `verbose` (opt-in via `--verbose`).
+- **Badge Identity System** — All 24 agents assigned to 5 colored badge categories (LEAD/ENG/QA/CREATE/COORD). Compact output now includes badge prefixes.
+- **Columnar Activity Feed** — Boxed Style 1 and inline Style 2 replaced with columnar format using `>>` `<<` `..` `!!` prefixes.
+- **Border Hierarchy** — Medium-weight borders (┏━) retired. Two weights: double (╔═) for team/error, thin (┌─) for agent/gate.
+- **Installer behavior** — `install.sh` now detects global `~/.claude/` and skips framework copy. Use `--standalone` to override.
+
+### Added
+- Columnar activity feed with directional prefixes and badge identity
+- `--standalone` flag for `install.sh` to force project-local copy
+- 32 new tests (mode-simplification, border-hierarchy, badge-system, build-exclusions, install-global-detect)
+- TEO/sage exclusion from community build in `build.sh`
+
+### Changed
+- `visual-formatting.md`: 336 → 195 lines (42% token reduction)
+- Agent/skill counts corrected across all docs: 24 agents, 19 skills
+- Documentation updated to teach `/mg plan` and `/mg review` as primary commands
+- CI pipeline: removed stale `dashboard` job (moved to enterprise)
+- Enterprise content (Sage, TEO skills) excluded from community distribution
+
+### Migration Guide
+- Replace `output_mode: silent` → remove (no longer supported)
+- Replace `output_mode: full` → `output_mode: verbose`
+- Replace `/mg-leadership-team plan` → `/mg plan`
+- Replace `/mg-leadership-team review` → `/mg review`
+- If using `install.sh` with a global `~/.claude/`, framework files are no longer copied project-locally. Use `--standalone` if you need project-local copies.
+
+---
+
 ## [5.0.0] — 2026-03-22
 
 ### Added

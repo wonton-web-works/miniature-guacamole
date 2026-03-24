@@ -50,19 +50,6 @@ Evaluate the invocation arguments before proceeding. Pick the mode and do not re
 
 ---
 
-## Edition Detection
-
-Before running leadership mode, check which edition is installed:
-
-```
-Check: .claude/agents/sage/AGENT.md (or ~/.claude/agents/sage/AGENT.md)
-  EXISTS  → Enterprise edition. Inform user that /teo provides Sage-orchestrated leadership with selective C-Suite spawning.
-  MISSING → Community edition. Proceed with standard community leadership flow.
-```
-
-Community edition uses: CEO, CTO, Engineering Director (and optionally Art Director for visual workstreams).
-Enterprise edition adds: Sage. But Sage is never spawned from /mg — that is /teo's domain.
-
 ---
 
 ## Path 1 — Dispatch Mode

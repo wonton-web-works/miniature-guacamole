@@ -75,7 +75,7 @@ Skips Postgres setup. Runs entirely on local JSON files.
 ### Per-Project (`.claude/`)
 ```
 .claude/
-├── agents/           # 20 specialized roles
+├── agents/           # 24 specialized roles
 ├── skills/           # Team collaboration
 ├── shared/           # Protocols & standards
 ├── scripts/          # mg-* utilities
@@ -90,7 +90,8 @@ Skips Postgres setup. Runs entirely on local JSON files.
 
 ### Skills (Use in Chat)
 ```
-/mg-leadership-team review WS-42
+/mg plan new-auth-system
+/mg review WS-42
 /mg-build implement feature X
 /mg-code-review check PR-123
 ```

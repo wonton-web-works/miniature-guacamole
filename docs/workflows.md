@@ -8,8 +8,8 @@ The system follows a Constraint-Driven Agentic Development (CAD) workflow that e
 
 ```
 ┌─────────────────┐
-│ /mg-leadership- │  ← Executive Review + Workstream Plan
-│     team        │
+│   /mg plan      │  ← Executive Review + Workstream Plan
+│                 │
 └────────┬────────┘
          │
          ▼
@@ -20,8 +20,8 @@ The system follows a Constraint-Driven Agentic Development (CAD) workflow that e
          │
          ▼
 ┌─────────────────┐
-│ /mg-leadership- │  ← Code Review: APPROVE or REQUEST CHANGES
-│     team        │
+│   /mg review    │  ← Code Review: APPROVE or REQUEST CHANGES
+│                 │
 └────────┬────────┘
          │
     ┌────┴────┐
@@ -184,7 +184,7 @@ A workstream is a discrete unit of work that can be completed independently:
 Use the leadership team to break down initiatives into workstreams:
 
 ```
-/mg-leadership-team Build user authentication system
+/mg plan Build user authentication system
 
 # Output: Executive Review + Workstream Plan
 # - WS-1: Login endpoint
@@ -256,7 +256,7 @@ Each workstream must pass through multiple quality gates:
 
 ## Workflow Skills
 
-The system provides 16 workflow skills for common development tasks.
+The system provides 19 workflow skills for common development tasks.
 
 ### 1. Feature Assessment
 
@@ -428,7 +428,7 @@ The system provides 16 workflow skills for common development tasks.
 
 ### 8. Leadership Team
 
-**Command:** `/mg-leadership-team`
+**Command:** `/mg plan` / `/mg review` (alias: `/mg-leadership-team`)
 **Purpose:** Strategic decisions, executive reviews, code review approvals
 
 ### 9. Product Team
@@ -524,7 +524,7 @@ Feature Assessment Agent:
 ### 2. Plan the Work
 
 ```
-User: /mg-leadership-team Build user authentication
+User: /mg plan Build user authentication
 
 Leadership Team:
 Executive Review:
@@ -573,7 +573,7 @@ Ready for leadership review!
 ### 4. Leadership Review
 
 ```
-User: /mg-leadership-team Review WS-1 on branch feature/ws-1-login
+User: /mg review WS-1 on branch feature/ws-1-login
 
 Leadership Team:
 CEO Review:
@@ -614,8 +614,8 @@ Continue with WS-2, WS-3, and WS-4 using the same process.
 
 ## Role Responsibilities in Workflow
 
-### /mg-leadership-team
-**When:** Start of initiative, Code review before merge
+### /mg plan and /mg review (alias: /mg-leadership-team)
+**When:** Start of initiative (`/mg plan`), Code review before merge (`/mg review`)
 **Does:**
 - Creates Executive Review (CEO, CTO, Eng Dir perspectives)
 - Breaks initiative into Git Workstreams

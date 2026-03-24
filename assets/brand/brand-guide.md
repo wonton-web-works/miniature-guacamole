@@ -116,7 +116,7 @@ For narration that doesn't fit a specific character: default to EM.
 ```
 The AI-powered dev team for Claude Code.
 
-20 agents. 16 skills. One command to run the whole thing.
+24 agents. 19 skills. One command to run the whole thing.
 
 miniature-guacamole turns Claude Code into a complete product development team — Engineering Manager, CTO, QA, Staff Engineer, and more. Every agent has a defined role. Memory is project-local. No hallway meetings.
 
@@ -134,13 +134,13 @@ Character count: ~480. Well within YouTube's 1000-char limit.
 
 **GitHub org bio (160 chars max):**
 ```
-AI-powered dev team for Claude Code. 20 agents, 16 skills, project-local memory. miniature-guacamole.
+AI-powered dev team for Claude Code. 24 agents, 19 skills, project-local memory. miniature-guacamole.
 ```
 (101 chars)
 
 **Twitter/X bio (160 chars max):**
 ```
-AI dev team for Claude Code. 20 agents, 16 skills. Deadpan. NDA-safe. Open source.
+AI dev team for Claude Code. 24 agents, 19 skills. Deadpan. NDA-safe. Open source.
 ```
 (83 chars)
 

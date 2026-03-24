@@ -6,8 +6,8 @@ You have the **miniature-guacamole** framework installed - a product development
 
 miniature-guacamole transforms Claude Code into a complete product development team with specialized agents and collaborative skills:
 
-- **20 Specialized Agents** - Engineering Manager, Product Manager, QA, Design, DevOps, and more
-- **16 Skills** - /mg-leadership-team, /mg-build, /mg-code-review, and others
+- **24 Specialized Agents** - Engineering Manager, Product Manager, QA, Design, DevOps, and more
+- **19 Skills** - /mg-leadership-team, /mg-build, /mg-code-review, and others
 - **Shared Protocols** - CAD development workflow, memory protocol, handoff protocol for coordination
 - **NDA-Safe Architecture** - Project memory stays local, agents/skills are shared role definitions
 
@@ -133,8 +133,8 @@ You have the **miniature-guacamole** framework installed - a product development
 
 miniature-guacamole transforms Claude Code into a complete product development team with specialized agents and collaborative skills:
 
-- **20 Specialized Agents** - Engineering Manager, Product Manager, QA, Design, DevOps, and more
-- **16 Skills** - /mg-leadership-team, /mg-build, /mg-code-review, and others
+- **24 Specialized Agents** - Engineering Manager, Product Manager, QA, Design, DevOps, and more
+- **19 Skills** - /mg-leadership-team, /mg-build, /mg-code-review, and others
 - **Shared Protocols** - CAD development workflow, memory protocol, handoff protocol for coordination
 - **NDA-Safe Architecture** - Project memory stays local, agents/skills are shared role definitions
 
@@ -142,8 +142,8 @@ miniature-guacamole transforms Claude Code into a complete product development t
 
 ### Installed Per-Project (.claude/)
 
-- **agents/** - 20 specialized roles (dev, qa, product-manager, etc.)
-- **skills/** - 16 collaborative workflows (mg-leadership-team, mg-build, etc.)
+- **agents/** - 24 specialized roles (dev, qa, product-manager, etc.)
+- **skills/** - 19 collaborative workflows (mg-leadership-team, mg-build, etc.)
 - **shared/** - 6 protocol documents (CAD development workflow, memory, handoff, visual formatting, etc.)
 - **team-config.yaml** - Framework configuration
 - **settings.json** - Permissions and hooks
@@ -258,7 +258,7 @@ You have the **miniature-guacamole** framework installed - a product development
 miniature-guacamole transforms Claude Code into a complete product development team with specialized agents and collaborative skills:
 
 - **24 Specialized Agents** - Sage, CEO, CTO, CMO/COO, CFO, Engineering Manager, Product Manager, QA, Design, DevOps, and more
-- **16 Skills** - /mg-leadership-team, /mg-build, /mg-code-review, and others
+- **19 Skills** - /mg-leadership-team, /mg-build, /mg-code-review, and others
 - **Shared Protocols** - CAD development workflow, memory protocol, handoff protocol for coordination
 - **NDA-Safe Architecture** - Project memory stays local, agents/skills are shared role definitions
 
@@ -382,7 +382,7 @@ You have the **miniature-guacamole** framework installed - a product development
 miniature-guacamole transforms Claude Code into a complete product development team with specialized agents and collaborative skills:
 
 - **24 Specialized Agents** - Sage, CEO, CTO, CMO/COO, CFO, Engineering Manager, Product Manager, QA, Design, DevOps, and more
-- **16 Skills** - /mg-leadership-team, /mg-build, /mg-code-review, and others
+- **19 Skills** - /mg-leadership-team, /mg-build, /mg-code-review, and others
 - **Shared Protocols** - CAD development workflow, memory protocol, handoff protocol for coordination
 - **NDA-Safe Architecture** - Project memory stays local, agents/skills are shared role definitions
 
@@ -391,7 +391,7 @@ miniature-guacamole transforms Claude Code into a complete product development t
 ### Installed Globally (~/.claude/)
 
 - **agents/** - 24 specialized roles (dev, qa, product-manager, etc.)
-- **skills/** - 16 skills (mg-leadership-team, mg-build, etc.)
+- **skills/** - 19 skills (mg-leadership-team, mg-build, etc.)
 - **shared/** - 6 protocol documents (CAD development workflow, memory, handoff, visual formatting, etc.)
 - **team-config.yaml** - Framework configuration
 - **settings.json** - Permissions and hooks

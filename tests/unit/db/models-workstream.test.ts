@@ -70,7 +70,7 @@ describe.skipIf(!existsSync(MODELS_PATH))(
 
     it('B-10: Workstream is in models.ts, not a separate file', () => {
       expect(src).toContain('Workstream');
-      const separateFilePath = join(process.cwd(), 'enterprise', 'src', 'schema', 'workstream.ts');
+      const separateFilePath = join(process.cwd(), 'src', 'schema', 'workstream.ts');
       expect(existsSync(separateFilePath)).toBe(false);
     });
 

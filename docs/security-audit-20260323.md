@@ -300,17 +300,6 @@ If a user is made a Wonton platform admin for any reason, they automatically gai
 
 ---
 
-### INFO — `daemon/tests/` contains `ghp_` format tokens — confirmed fake
-
-**SEVERITY:** INFO
-**LOCATION:** `daemon/tests/unit/config/validate-config.test.ts`, `load-config.test.ts`
-
-**Finding:** Test files contain strings matching the GitHub PAT format (`ghp_AbCdEfGhIjKlMnOpQrStUvWxYz1234567890`). These are test fixture values used to validate config parsing — they are not real credentials. The pattern is clearly synthetic (alphabetical sequence, correct format for test).
-
-**Status:** No action required. The test for validation logic appropriately uses realistic-format but fake tokens.
-
----
-
 ### INFO — `enterprise-session.json` permissions are correct (0600)
 
 **SEVERITY:** INFO

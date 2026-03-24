@@ -8,11 +8,9 @@
 
 ## What's New in v5.0
 
-**Autonomous daemon, security domains, and state reconciliation** (March 2026):
-- **Autonomous Daemon Pipeline** (v3.0.0) — turns a Mac Mini into a 24/7 ticket-to-PR machine. Supports Jira, Linear, and GitHub Issues
+**Security domains, state reconciliation, and base template inheritance** (March 2026):
 - **Security Domain Expansion** — security-engineer agent now loads domain-specific checklists (web, systems, cloud, crypto) automatically
 - **`/mg-tidy`** — reconciles project state across GitHub issues and memory files. Closed 38 duplicate issues in its first run
-- **Ticket Triage Gate** — daemon now runs `/mg-assess` before planning, filtering low-value tickets
 - **Base Template Inheritance** — all 24 agents and 19 skills inherit from shared base protocols, eliminating duplication
 - 19 skills, 24 agents
 

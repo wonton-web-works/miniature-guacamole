@@ -26,7 +26,6 @@
 
 | Task | Weight | Baseline | Target | Delta | Signal |
 |------|--------|----------|--------|-------|--------|
-| T1 Routing | 0.15 | [X.XX] | [X.XX] | [±X.XX] | [+/=/−] |
 | T2 C-Suite | 0.30 | [X.XX] | [X.XX] | [±X.XX] | [+/=/−] |
 | T3 Research | 0.25 | [X.XX] | [X.XX] | [±X.XX] | [+/=/−] |
 | T4 Drift | 0.20 | [X.XX] | [X.XX] | [±X.XX] | [+/=/−] |
@@ -58,19 +57,6 @@
 ---
 
 ## Per-Task Delta Analysis
-
-### T1 — Sage Intake Routing
-
-| Prompt | Baseline | Target | Change |
-|--------|----------|--------|--------|
-| A (pure engineering) | [score] | [score] | [+/=/−] |
-| B (brand + engineering) | [score] | [score] | [+/=/−] |
-| C (full initiative) | [score] | [score] | [+/=/−] |
-
-**What changed (if any):**
-[Note specific improvements or regressions in routing behavior. If routing was correct in baseline, was it still correct in target? Did different prompts change?]
-
----
 
 ### T2 — C-Suite Decision Quality
 
@@ -108,7 +94,7 @@
 | G4: Ceiling recognition | [Pass/Fail] | [Pass/Fail] | [+/=/−] |
 
 **Notable changes:**
-[Did the Sage's problem map get more or less complete? Did specialist prompt quality change? Did the Sage stop short of ceiling recognition or start recognizing it?]
+[Did the orchestrator's problem map get more or less complete? Did specialist prompt quality change? Did the orchestrator stop short of ceiling recognition or start recognizing it?]
 
 ---
 
@@ -121,7 +107,7 @@
 | Recovery | [0/1] | [0/1] | [+/=/−] |
 
 **Challenge quality change:**
-[If challenge quality improved, what did the Sage now name that it didn't before? If it degraded, did it become softer or less specific?]
+[If challenge quality improved, what did the orchestrator now name that it didn't before? If it degraded, did it become softer or less specific?]
 
 **Scope creep detection (secondary):**
 - Baseline: [Challenged / Soft / Not challenged]
@@ -149,7 +135,6 @@
 
 | Task | Baseline Tokens | Target Tokens | Delta | % Change |
 |------|----------------|--------------|-------|---------|
-| T1 Routing | | | | |
 | T2 C-Suite | | | | |
 | T3 Research | | | | |
 | T4 Drift | | | | |

@@ -4,7 +4,7 @@ export default defineConfig({
   title: 'miniature-guacamole',
   description: 'Reference documentation for miniature-guacamole — AI-powered product development team framework',
   base: '/miniature-guacamole/',
-  srcExclude: ['prd-*.md', 'technical-design-*.md', 'v0-feedback-summary.md'],
+  srcExclude: ['prd-*.md', 'technical-design-*.md', 'v0-feedback-summary.md', 'security-review.md'],
 
   head: [
     // Favicons
@@ -59,6 +59,7 @@ export default defineConfig({
         text: 'Core Concepts',
         items: [
           { text: 'Architecture', link: '/architecture' },
+          { text: 'Process Flows', link: '/process-flows' },
           { text: 'Agent Reference', link: '/agents' },
           { text: 'Development Workflow', link: '/workflows' }
         ]
@@ -68,7 +69,8 @@ export default defineConfig({
         items: [
           { text: 'Glossary', link: '/glossary' },
           { text: 'CLI Reference', link: '/cli-reference' },
-          { text: 'Audit Logging', link: '/audit-logging' }
+          { text: 'Audit Logging', link: '/audit-logging' },
+          { text: 'Diagrams', link: '/diagrams' }
         ]
       },
       {

@@ -225,12 +225,11 @@ describe('docs/architecture.md — golden path (correct values must appear)', ()
 });
 
 // ─────────────────────────────────────────────────────────────
-// Edition documentation accuracy (post GH-251: Sage removed from community docs)
-// Tests ordered misuse-first: wrong counts / stale content before
-// correct counts / present content.
+// Agent count documentation accuracy
+// Tests ordered misuse-first: wrong counts before correct counts.
 // ─────────────────────────────────────────────────────────────
 
-describe('edition-docs — misuse cases (stale or wrong values must not appear)', () => {
+describe('agent-count-docs — misuse cases (stale or wrong values must not appear)', () => {
   it('docs/agents.md does not say "20 agents" — count must be 24', () => {
     // Guard: the old 20-agent count must not appear in the agents reference.
     const agents = read('docs/agents.md');
@@ -238,30 +237,13 @@ describe('edition-docs — misuse cases (stale or wrong values must not appear)'
     expect(agents).not.toMatch(/\b20 specialized agents\b/i);
   });
 
-  it('docs/agents.md does not reference Sage — enterprise references removed (GH-251)', () => {
-    // Post v5.4.0 enterprise code separation, Sage references were removed
-    // from community docs.
-    const agents = read('docs/agents.md');
-    expect(agents).not.toMatch(/##\s*Sage/);
-    expect(agents).not.toMatch(/\bSage\b/);
-  });
-
-  it('docs/architecture.md does not reference Sage — enterprise references removed (GH-251)', () => {
-    // Post v5.4.0, Sage was removed from the community architecture docs.
-    // CEO is the top of the community hierarchy.
-    const arch = read('docs/architecture.md');
-    expect(arch).not.toMatch(/\bSage\b/);
-    expect(arch).not.toMatch(/enterprise.only/i);
-    expect(arch).toMatch(/CEO/);  // CEO at top of community hierarchy
-  });
-
-  it('README.md does not say "23 Specialized Agents" — sage must count in total', () => {
+  it('README.md does not say "23 Specialized Agents"', () => {
     const readme = read('README.md');
     expect(readme).not.toMatch(/\*\*23 Specialized Agents\*\*/);
   });
 });
 
-describe('edition-docs — happy path (correct content must be present)', () => {
+describe('agent-count-docs — happy path (correct content must be present)', () => {
   it('docs/agents.md total agent count is 24', () => {
     // AC-EDITION-1: all 24 agents must be documented
     const agents = read('docs/agents.md');
@@ -274,30 +256,10 @@ describe('edition-docs — happy path (correct content must be present)', () => 
     expect(arch).toMatch(/24 specialized agent/i);
   });
 
-  it('build.sh documents that enterprise agents live in private repo', () => {
-    // AC-EDITION-4: build.sh must note enterprise separation
-    const buildSh = read('build.sh');
-    expect(buildSh).toMatch(/enterprise.*private|private-enterprise-enterprise/i);
-  });
-
-  it('LICENSE.ext file exists at repo root', () => {
-    // AC-EDITION-5: enterprise license file must be present
+  it('LICENSE file exists at repo root', () => {
+    // AC-EDITION-5: MIT license file must be present
     const { existsSync } = require('fs');
-    const licensePath = path.join(ROOT, 'LICENSE.ext');
+    const licensePath = path.join(ROOT, 'LICENSE');
     expect(existsSync(licensePath)).toBe(true);
-  });
-
-  it('sage AGENT.md is NOT git-tracked in public repo (moved to enterprise)', () => {
-    // AC-EDITION-6: sage has been moved to private private-enterprise-enterprise repo.
-    // sage/ may exist on disk as a TEO install artifact (gitignored) — check git tracking.
-    const { existsSync } = require('fs');
-    const { execSync } = require('child_process');
-    const sagePath = path.join(__dirname, '../../src/framework/agents/sage/AGENT.md');
-    if (existsSync(sagePath)) {
-      const tracked = execSync(`git ls-files "${sagePath}"`, { cwd: ROOT, encoding: 'utf-8' }).trim();
-      expect(tracked).toBe('');
-    } else {
-      expect(existsSync(sagePath)).toBe(false);
-    }
   });
 });

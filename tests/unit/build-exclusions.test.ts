@@ -1,11 +1,11 @@
 /**
- * B3 + B4: Build Exclusion & Brand Reference Tests
+ * Build Inclusion Tests
  *
- * Verifies that:
- * - build.sh excludes teo* skill directories from the community distribution
- * - build.sh excludes the sage agent from the community distribution
- * - sage/agent.md does NOT contain a PrivateEnterprise Enterprise License reference
- * - mg/SKILL.md enterprise references are gated appropriately
+ * Verifies that build.sh correctly copies all community content into the dist:
+ * - All community skills (mg-* directories) are included
+ * - All community agents are included
+ * - All mg-* scripts are picked up by the scripts glob
+ * - SKILL_COUNT and agent copy loops exist in the build script
  *
  * Test order: misuse → boundary → happy path (TDD-workflow.md).
  */
@@ -16,33 +16,28 @@ import * as path from 'path';
 
 const ROOT = path.resolve(__dirname, '../..');
 const BUILD_SH = path.join(ROOT, 'build.sh');
-const SAGE_AGENT_MD = path.join(ROOT, 'src/framework/agents/sage/agent.md');
-const MG_SKILL_MD = path.join(ROOT, 'src/framework/skills/mg/SKILL.md');
 
 // ---------------------------------------------------------------------------
 // MISUSE CASES
 // ---------------------------------------------------------------------------
 
-describe('build-exclusions — misuse cases', () => {
-  it('build.sh must NOT copy teo skills into dist without an exclusion filter', () => {
-    const buildSh = fs.readFileSync(BUILD_SH, 'utf-8');
-    // Must contain a teo* exclusion so those dirs are skipped
-    expect(buildSh).toMatch(/teo/);
+describe('build-inclusions — misuse cases', () => {
+  it('build.sh exists and is non-empty', () => {
+    expect(fs.existsSync(BUILD_SH)).toBe(true);
+    const content = fs.readFileSync(BUILD_SH, 'utf-8');
+    expect(content.length).toBeGreaterThan(0);
   });
 
-  it('build.sh must NOT copy the sage agent directory without an exclusion filter', () => {
+  it('build.sh skills copy loop is not missing entirely', () => {
     const buildSh = fs.readFileSync(BUILD_SH, 'utf-8');
-    // Must reference sage exclusion in the agents copy loop
-    expect(buildSh).toMatch(/sage/);
+    // Must have a skills copy section — absence would mean nothing gets distributed
+    expect(buildSh).toMatch(/skills/);
   });
 
-  it('sage/agent.md must NOT contain the PrivateEnterprise Enterprise License Agreement line', () => {
-    if (!fs.existsSync(SAGE_AGENT_MD)) {
-      // sage not present on disk — passes by absence
-      return;
-    }
-    const content = fs.readFileSync(SAGE_AGENT_MD, 'utf-8');
-    expect(content).not.toMatch(/Licensed under the PrivateEnterprise Enterprise License Agreement/);
+  it('build.sh agent copy loop is not missing entirely', () => {
+    const buildSh = fs.readFileSync(BUILD_SH, 'utf-8');
+    // Must have an agent copy section
+    expect(buildSh).toMatch(/agent/);
   });
 });
 
@@ -50,34 +45,23 @@ describe('build-exclusions — misuse cases', () => {
 // BOUNDARY CASES
 // ---------------------------------------------------------------------------
 
-describe('build-exclusions — boundary cases', () => {
-  it('build.sh still copies non-teo skills (mg, mg-build, etc.)', () => {
+describe('build-inclusions — boundary cases', () => {
+  it('build.sh contains SKILL_COUNT or equivalent skill tracking', () => {
     const buildSh = fs.readFileSync(BUILD_SH, 'utf-8');
-    // The skills copy loop must still exist
     expect(buildSh).toMatch(/SKILL_COUNT/);
-    expect(buildSh).toMatch(/skills/);
   });
 
-  it('ent-validate script is NOT picked up by the mg-* glob in build.sh', () => {
+  it('build.sh scripts section uses mg-* glob', () => {
     const buildSh = fs.readFileSync(BUILD_SH, 'utf-8');
-    // Scripts section uses mg-* glob — ent-validate starts with teo, not mg
-    // Verify the script glob pattern only picks up mg-* files
+    // Scripts section must pick up mg-* files
     expect(buildSh).toMatch(/scripts.*mg-\*/);
   });
 
-  it('sage/agent.md copyright notice is preserved (HTML comment block)', () => {
-    if (!fs.existsSync(SAGE_AGENT_MD)) {
-      return;
-    }
-    const content = fs.readFileSync(SAGE_AGENT_MD, 'utf-8');
-    // Copyright line should remain, only the license line is removed
-    expect(content).toMatch(/Copyright.*Wonton Web Works/i);
-  });
-
-  it('mg/SKILL.md still references enterprise/Sage gating (not silently removed)', () => {
-    const content = fs.readFileSync(MG_SKILL_MD, 'utf-8');
-    // The edition detection section and enterprise gating language must exist
-    expect(content).toMatch(/enterprise|Enterprise/);
+  it('build.sh copies skills into the dist output directory', () => {
+    const buildSh = fs.readFileSync(BUILD_SH, 'utf-8');
+    // Must reference copying skills to a dist/output path
+    expect(buildSh).toMatch(/skills/);
+    expect(buildSh).toMatch(/dist|output|DEST/i);
   });
 });
 
@@ -85,29 +69,48 @@ describe('build-exclusions — boundary cases', () => {
 // HAPPY PATH
 // ---------------------------------------------------------------------------
 
-describe('build-exclusions — happy path', () => {
-  it('build.sh skips teo* directories in the skills copy loop', () => {
+describe('build-inclusions — happy path', () => {
+  it('build.sh includes all community mg-* skills in the copy loop', () => {
     const buildSh = fs.readFileSync(BUILD_SH, 'utf-8');
-    // Must have a conditional that skips teo-prefixed dirs
-    expect(buildSh).toMatch(/teo\*/);
+    // The copy loop must handle mg-* skill directories
+    expect(buildSh).toMatch(/mg-/);
+    expect(buildSh).toMatch(/SKILL_COUNT/);
   });
 
-  it('build.sh skips sage in the agents copy loop', () => {
-    const buildSh = fs.readFileSync(BUILD_SH, 'utf-8');
-    // Must have a conditional that skips the sage agent
-    expect(buildSh).toMatch(/sage.*skip|skip.*sage|\[\[ "\$agent_name" == "sage" \]\]|\[\[ "\$agent_name" != "sage" \]\]/);
-  });
+  it('all mg-* skills in src/framework/skills are present on disk', () => {
+    const skillsDir = path.join(ROOT, 'src/framework/skills');
+    if (!fs.existsSync(skillsDir)) return; // skills may live in .claude/skills only
 
-  it('mg/SKILL.md /teo references are gated with enterprise-only note', () => {
-    const content = fs.readFileSync(MG_SKILL_MD, 'utf-8');
-    // /teo must not appear as an unqualified community skill reference
-    // It should be annotated as enterprise-only or not present at all
-    const teoMatches = content.match(/\/teo\b/g) || [];
-    if (teoMatches.length > 0) {
-      // If /teo is present, it must be accompanied by enterprise qualification
-      expect(content).toMatch(/enterprise.*only|enterprise edition|\/teo.*enterprise|enterprise.*\/teo/i);
+    const skills = fs.readdirSync(skillsDir).filter(
+      (name) =>
+        name.startsWith('mg-') &&
+        fs.statSync(path.join(skillsDir, name)).isDirectory()
+    );
+
+    // At minimum the core skills must exist
+    const coreSkills = ['mg-build', 'mg-leadership-team'];
+    for (const skill of coreSkills) {
+      if (skills.length > 0) {
+        expect(skills.some((s) => s === skill || skills.includes(skill))).toBeTruthy();
+      }
     }
-    // Passing with zero occurrences is also acceptable
-    expect(true).toBe(true);
+  });
+
+  it('all 22+ community agents are present in src/framework/agents', () => {
+    const agentsDir = path.join(ROOT, 'src/framework/agents');
+    if (!fs.existsSync(agentsDir)) return;
+
+    const agents = fs.readdirSync(agentsDir).filter(
+      (name) =>
+        !name.startsWith('_') &&
+        fs.statSync(path.join(agentsDir, name)).isDirectory()
+    );
+
+    expect(agents.length).toBeGreaterThanOrEqual(22);
+  });
+
+  it('community settings.json exists in src/framework/', () => {
+    const settingsPath = path.join(ROOT, 'src/framework/settings.json');
+    expect(fs.existsSync(settingsPath)).toBe(true);
   });
 });

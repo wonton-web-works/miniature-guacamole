@@ -1,0 +1,73 @@
+---
+title: TDD Workflow — Misuse-First Ordering (CAD-Enhanced)
+---
+flowchart TD
+    START(["Workstream classified at intake<br/><i>MECHANICAL or ARCHITECTURAL</i>"])
+
+    TRACK{"Track?"}
+
+    subgraph MECH_TRACK["MECHANICAL Track — Dev Solo"]
+        style MECH_TRACK fill:#dcfce7,stroke:#16a34a,stroke-width:2px
+
+        subgraph M_ORDER["Test Ordering (CAD: Misuse-First)"]
+            style M_ORDER fill:#fee2e2,stroke:#dc2626
+            M_MISUSE["1. Misuse Cases<br/><i>SQL injection, auth bypass,<br/>XSS, CSRF attacks</i>"]
+            M_BOUNDARY["2. Boundary Cases<br/><i>null inputs, empty strings,<br/>max/min values, edge conditions</i>"]
+            M_GOLDEN["3. Golden Path<br/><i>normal happy-path scenarios</i>"]
+        end
+
+        M_RED["RED — Tests fail<br/><i>Gate: tests exist and fail</i>"]
+        M_GREEN["GREEN — Implement minimum code<br/><i>one test at a time</i>"]
+        M_REFACTOR["REFACTOR — Clean up<br/><i>DRY, config-over-composition</i>"]
+
+        subgraph M_GATE["Bash Gate (automated)"]
+            style M_GATE fill:#dcfce7,stroke:#16a34a
+            M_CHECKS["tests pass ✓<br/>coverage ≥ 99% ✓<br/>changes &lt; 200 lines ✓<br/>modifications only ✓"]
+        end
+    end
+
+    subgraph ARCH_TRACK["ARCHITECTURAL Track — QA then Dev"]
+        style ARCH_TRACK fill:#dbeafe,stroke:#2563eb,stroke-width:2px
+
+        subgraph A_ORDER["Test Ordering (CAD: Misuse-First)"]
+            style A_ORDER fill:#fee2e2,stroke:#dc2626
+            A_MISUSE["1. Misuse Cases<br/><i>Security exploits, injection,<br/>auth bypasses — written by QA</i>"]
+            A_BOUNDARY["2. Boundary Cases<br/><i>Empty inputs, nulls,<br/>edge conditions — written by QA</i>"]
+            A_GOLDEN["3. Golden Path<br/><i>BDD: Given/When/Then<br/>— written by QA with PM input</i>"]
+        end
+
+        A_RED["RED — QA commits failing tests<br/><i>Gate: tests_written</i>"]
+        A_BUNDLE["Dev receives artifact bundle<br/><i>~12K tokens curated context<br/>(84% reduction from ~75K)</i>"]
+        A_GREEN["GREEN — Dev implements minimum code<br/><i>runs tests, one-by-one</i>"]
+        A_REFACTOR["REFACTOR — Dev cleans up<br/><i>coverage ≥ 99%</i>"]
+        A_VERIFY["QA verifies<br/><i>full suite + coverage + E2E<br/>Gate: qa_approved</i>"]
+        A_SE_REV["Staff Engineer review<br/><i>DRY, security, architecture<br/>Gate: code_review_passed</i>"]
+    end
+
+    RATIONALE["<b>Why Misuse-First?</b><br/><i>Security tests catch abuse patterns<br/>before validating normal behavior.<br/>Prevents regression on security fixes.</i>"]
+
+    DONE(["Ready for leadership review"])
+
+    %% Main flow
+    START --> TRACK
+    TRACK -->|"All M-rules match"| M_MISUSE
+    TRACK -->|"Any R-rule match"| A_MISUSE
+
+    M_MISUSE --> M_BOUNDARY --> M_GOLDEN --> M_RED
+    M_RED --> M_GREEN --> M_REFACTOR --> M_CHECKS --> DONE
+
+    A_MISUSE --> A_BOUNDARY --> A_GOLDEN --> A_RED
+    A_RED --> A_BUNDLE --> A_GREEN --> A_REFACTOR --> A_VERIFY --> A_SE_REV --> DONE
+
+    RATIONALE -.-> M_MISUSE
+    RATIONALE -.-> A_MISUSE
+
+    style START fill:#0d6efd,color:#fff
+    style DONE fill:#28a745,color:#fff
+    style M_MISUSE fill:#dc2626,color:#fff
+    style A_MISUSE fill:#dc2626,color:#fff
+    style M_BOUNDARY fill:#ffc107,color:#000
+    style A_BOUNDARY fill:#ffc107,color:#000
+    style M_GOLDEN fill:#28a745,color:#fff
+    style A_GOLDEN fill:#28a745,color:#fff
+    style RATIONALE fill:#f3e8ff,stroke:#7c3aed

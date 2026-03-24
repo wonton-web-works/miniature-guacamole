@@ -2,506 +2,492 @@
 
 ## Overview
 
-miniature-guacamole simulates a complete product development organization within Claude Code. It provides 24 specialized agents organized in a realistic corporate hierarchy, enabling structured delegation and disciplined development workflows.
+miniature-guacamole simulates a complete product development organization within Claude Code. It provides 24 specialized agents organized in a realistic corporate hierarchy, enabling structured delegation, disciplined development workflows, and project-isolated memory.
 
-## Agent Hierarchy
+The framework is installed from a single tarball. Every component lives under `.claude/` in your project — or globally under `~/.claude/` when using the global installer. No data crosses project boundaries.
 
-```
-    ┌──────────────┬──────────────┬──────────┬───────────┐
-    │              │              │          │           │
-┌───▼──┐     ┌────▼───┐     ┌───▼──┐  ┌────▼───┐
-│  CEO │     │  CTO   │     │ CMO  │  │  CFO   │
-└───┬──┘     └────┬───┘     └───┬──┘  └────────┘
-    │              │              │
-┌───▼───┐    ┌────▼──┐    ┌──────▼───┐
-│Eng Dir│    │Stf Eng│    │Art Dir/PO│
-└───┬───┘    └────┬──┘    └──────────┘
-    │              │
-┌───▼───┐    ┌────▼─┐
-│Eng Mgr│    │ Dev  │
-└───┬───┘    └──────┘
-    │
-┌───┴────┐
-│Dev  │QA│
-└─────┴──┘
-```
-
-### Organizational Levels
-
-The hierarchy is organized into five levels:
-
-1. **Executive Level** - Strategic vision and high-level decisions (opus/sonnet models)
-2. **Leadership Level** - Tactical planning and team coordination (sonnet model)
-3. **Individual Contributor Level** - Hands-on implementation (sonnet/haiku models)
-4. **Operations Level** - Deployment and infrastructure (sonnet model)
-
-## Delegation Model
-
-### Delegation Authority Matrix
-
-| Agent | Can Delegate To (Leadership) | Can Delegate To (IC via Task) |
-|-------|------------------------------|-------------------------------|
-| CEO | CTO, Engineering Director, Product Owner, Art Director | - |
-| CTO | Engineering Director, Staff Engineer | dev |
-| CMO | Art Director, Product Owner, Copywriter, Design | - |
-| CFO | (analysis only — no implementation delegation) | - |
-| Engineering Director | Engineering Manager, Staff Engineer | dev, qa |
-| Product Owner | Product Manager | - |
-| Product Manager | - | dev, qa, design |
-| Engineering Manager | - | dev, qa |
-| Staff Engineer | - | dev |
-| Art Director | - | design |
-| Dev (IC) | - | qa*, design* |
-| QA (IC) | - | dev* |
-| Design (IC) | - | dev*, qa* |
-
-*Peer consultation only (does not count toward delegation depth)
-
-### Delegation vs Consultation
-
-| Aspect | Delegation | Consultation |
-|--------|------------|--------------|
-| **Purpose** | Transfer task ownership | Request information/opinion |
-| **Depth Impact** | Increments depth counter | Does NOT increment depth |
-| **Re-delegation** | Delegate may re-delegate | Consultant CANNOT re-delegate |
-| **Ownership** | Transfers to delegate | Remains with requester |
-
-### Depth Limits
-
-- **Maximum depth: 3 levels**
-- Depth 1: Primary agent delegates to first delegate
-- Depth 2: First delegate re-delegates to second delegate
-- Depth 3: Second delegate re-delegates to third delegate (TERMINAL - cannot delegate further)
-
-The supervisor system monitors depth limits and prevents infinite delegation chains.
-
-### Loop Prevention
-
-The system prevents circular delegation:
-- Agents cannot delegate back to any agent already in the chain
-- Agents cannot delegate to themselves
-- Consultation bypasses loop checks (fire-and-forget model)
-
-## Component Architecture
-
-### Directory Structure
+## High-Level Component Map
 
 ```
 miniature-guacamole/
 ├── src/
-│   ├── framework/                  # Framework source
-│   │   ├── agents/                 # 24 specialized agent roles
-│   │   ├── skills/                 # 18 team collaboration skills
-│   │   ├── shared/                 # 6 protocol documents
-│   │   ├── scripts/                # 17 mg-* utility commands
-│   │   ├── hooks/                  # Safety and initialization hooks
-│   │   ├── settings.json           # Default project permissions
-│   │   ├── CLAUDE.md               # Framework documentation template
-│   │   ├── team-config.yaml        # Team configuration
-│   │   └── team-config.json        # Team configuration (JSON)
+│   ├── framework/               # Everything Claude Code uses at runtime
+│   │   ├── agents/              # Agent role definitions (AGENT.md per role)
+│   │   ├── skills/              # 18 team collaboration skills (SKILL.md per skill)
+│   │   ├── shared/              # Protocol documents (6 .md files)
+│   │   ├── scripts/             # mg-* CLI utilities
+│   │   ├── hooks/               # Claude Code lifecycle hooks
+│   │   ├── settings.json        # Tool permissions
+│   │   ├── team-config.yaml     # Agent definitions and model tiers
+│   │   └── CLAUDE.md            # Framework context injected each session
 │   │
-│   ├── installer/                  # Installation and migration scripts
-│   │   ├── install.sh              # Project-local installer
-│   │   ├── uninstall.sh            # Clean uninstaller
-│   │   ├── web-install.sh          # Global CLI installer (curl | bash)
-│   │   ├── mg-init                 # Per-project init (reads ~/.miniature-guacamole/)
-│   │   └── mg-migrate              # Version migration tool
-│   │
-│   ├── memory/                     # Shared memory TypeScript layer
-│   │   ├── config.ts
-│   │   ├── types.ts
-│   │   ├── write.ts
-│   │   ├── read.ts
-│   │   ├── query.ts
-│   │   ├── validate.ts
-│   │   ├── locking.ts
-│   │   ├── backup.ts
-│   │   └── errors.ts
-│   │
-│   ├── audit/                      # Audit logging TypeScript layer
-│   ├── returns/                    # Structured return envelopes
-│   └── supervisor/                 # Depth/loop monitoring
+│   └── installer/               # Distribution and setup scripts
+│       ├── install.sh           # Per-project installer
+│       ├── web-install.sh       # Global curl-pipe installer
+│       ├── mg-init              # Per-project init (reads global bundle)
+│       └── mg-migrate           # Version migration tool
 │
-├── .claude/                        # Dev environment (symlinks to src/framework/)
-│   ├── agents → ../src/framework/agents
-│   ├── skills → ../src/framework/skills
-│   ├── shared → ../src/framework/shared
-│   ├── scripts → ../src/framework/scripts
-│   ├── hooks → ../src/framework/hooks
-│   ├── settings.json → ../src/framework/settings.json
-│   ├── CLAUDE.md → ../src/framework/CLAUDE.md
-│   ├── memory/                     # Local agent state (gitignored)
-│   └── settings.local.json         # Local overrides (gitignored)
-│
-├── build.sh                        # Unified build: src/ → dist/
-├── install.sh                      # Root convenience wrapper
-├── tests/                          # Test suites
-├── dashboard/                      # Analytics dashboard (Next.js)
-├── daemon/                         # Background processes
-├── docs/                           # VitePress documentation site
-└── .github/workflows/
-    ├── ci.yml                      # PR checks + build verification
-    └── release.yml                 # v*.*.* tag → GitHub release
+├── build.sh                     # Assembles src/ → dist/
+├── dist/                        # Output of build.sh (tarball + extracted)
+├── docs/                        # This VitePress site
+└── .claude/                     # Dev environment (symlinks into src/framework/)
+    ├── agents -> ../src/framework/agents
+    ├── skills -> ../src/framework/skills
+    ├── shared -> ../src/framework/shared
+    ├── scripts -> ../src/framework/scripts
+    ├── hooks -> ../src/framework/hooks
+    ├── memory/                  # Local agent state (gitignored)
+    └── settings.json
 ```
 
-## Integration Layers
+## Agents
 
-miniature-guacamole exposes two interfaces for automation and agent use:
+### Hierarchy
 
-**Task tool + filesystem memory** — the primary agentic interface. Agents use Claude Code's Task tool to spawn subagents and read/write JSON files in `.claude/memory/`.
-
-**CLI scripts** — the primary human and scripting interface. 17 scripts in `.claude/scripts/` reachable via the `mg` CLI router. Use these from your shell, CI pipelines, or hooks.
-
-The `mg` router is the recommended entry point:
-- `mg workstream status WS-42` — check workstream state
-- `mg memory read <file>` — read memory files
-- `mg gate check` — run mechanical gate checks
-- All commands support `--json` for machine-readable output
-
-Direct script invocation (`mg-workstream-status WS-42`) continues to work.
-
-## Component Flow
+Agents are organized in five tiers. Higher tiers can spawn agents in lower tiers; lower tiers escalate blockers upward.
 
 ```
-┌─────────────────────────────────────────────────────────────┐
-│                     User Invocation                          │
-│                    (slash commands)                          │
-└─────────────────────────┬───────────────────────────────────┘
-                          │
-                          ▼
-┌─────────────────────────────────────────────────────────────┐
-│                   skills/<skill>/SKILL.md                    │
-│                                                              │
-│  - Loaded when user types /<skill-name>                     │
-│  - Defines persona, tools, and behavior                     │
-│  - Can spawn agents via Task tool                           │
-└─────────────────────────┬───────────────────────────────────┘
-                          │
-              (Task tool delegation)
-                          │
-                          ▼
-┌─────────────────────────────────────────────────────────────┐
-│                  agents/<agent>/agent.md                     │
-│                                                              │
-│  - Loaded when Task tool invokes subagent                   │
-│  - Handles delegated work                                   │
-│  - Can re-delegate (if depth < 3)                           │
-└─────────────────────────┬───────────────────────────────────┘
-                          │
-                          ▼
-┌─────────────────────────────────────────────────────────────┐
-│                   Shared Memory Layer                        │
-│                                                              │
-│  - TypeScript modules in src/memory/                        │
-│  - Atomic writes with backups                               │
-│  - Query by agent_id, workstream_id, timestamp              │
-└─────────────────────────────────────────────────────────────┘
+            ┌─────────────────┼──────────────────┐
+           CEO               CTO                CMO / CFO
+            │                 │                    │
+     Engineering Dir    Staff Engineer       Art Director
+            │                                      │
+     Engineering Mgr                           Design
+            │
+       ┌────┴────┐
+      Dev        QA
 ```
 
-## Model Selection Strategy
+| Tier | Agents | Model | Rationale |
+|------|--------|-------|-----------|
+| Executive | CEO, CTO, CMO, CFO | opus | Strategic decisions require highest capability |
+| Leadership | Engineering Director, Engineering Manager, Product Owner, Product Manager, Staff Engineer, Art Director | sonnet | Coordination and planning |
+| IC | Dev, QA, Design | sonnet | Implementation and verification |
+| Operations | Deployment Engineer | haiku | Automated, validation-focused |
+| Meta | Supervisor | haiku | Monitors depth limits and loops |
 
-| Tier | Model | Agents | Rationale |
-|------|-------|--------|-----------|
-| Executive | opus | CEO, CTO, Leadership Team | Complex strategic decisions require highest capability |
-| Leadership | sonnet | ED, PO, PM, EM, SE, AD | Balanced capability for coordination and planning |
-| IC | sonnet/haiku | Dev, QA, Design, etc. | Fast/efficient for task execution in delegation chains |
+### Model Tiers
 
-### Model Escalation Protocol
+Three model tiers map to agent complexity:
 
-The system uses an intelligent model escalation strategy:
-1. Start with Sonnet for most tasks
-2. If Sonnet cannot complete the task, escalate to Opus
-3. Supervisor monitors escalation patterns and optimizes model selection
+| Tier | Alias | Model | Use Case |
+|------|-------|-------|----------|
+| reasoning | opus | claude-opus-4-6 | Deep thinking, strategic decisions |
+| implementation | sonnet | claude-sonnet-4-20250514 | Coding, coordination, planning |
+| fast | haiku | claude-haiku-3-5-20241022 | Validation, monitoring, simple checks |
 
-This approach balances cost efficiency with quality, using Opus only when necessary.
+Configured in `team-config.yaml` under `providers.anthropic.tiers`.
+
+### Agent Definition Format
+
+Each agent lives at `src/framework/agents/{name}/agent.md`. Front matter controls Claude Code behavior:
+
+```yaml
+---
+name: dev
+description: "Brief description used by orchestrators to decide when to spawn this agent"
+model: sonnet
+tools: [Read, Glob, Grep, Edit, Write, Bash]
+memory: project
+maxTurns: 50
+---
+```
+
+All agents inherit from `agents/_base/agent-base.md`, which defines:
+- The memory-first protocol (read context before acting)
+- The message bus convention (`messages-{from}-{to}.json`)
+- The boundaries format (CAN / CANNOT / ESCALATES TO)
+- The Write-tool rule (never use bash heredocs for file creation)
+
+### Delegation Authority
+
+| Agent | Spawns (delegation) | Consults (fire-and-forget) |
+|-------|---------------------|---------------------------|
+| CEO | CTO, Engineering Director, Product Owner, Art Director | — |
+| CTO | Engineering Director, Staff Engineer | — |
+| CMO | Art Director, Product Owner, Copywriter, Design | — |
+| CFO | (analysis only) | — |
+| Engineering Director | Engineering Manager, Staff Engineer, Deployment Engineer | — |
+| Product Owner | Product Manager | — |
+| Product Manager | Dev, QA, Design | — |
+| Engineering Manager | Dev, QA, Staff Engineer | — |
+| Staff Engineer | Dev | — |
+| Art Director | Design | — |
+| Dev | — | QA, Design |
+| QA | — | Dev, Design |
+| Design | — | Dev, QA |
+| Supervisor | (monitors only — no spawns) | — |
+
+Peer consultation (Dev ↔ QA, Dev ↔ Design) does not count toward delegation depth.
+
+### Delegation Depth
+
+The handoff protocol enforces a hard maximum of **3 delegation levels**:
+
+```
+Depth 0: Human → skill or agent (not counted)
+Depth 1: Skill delegates to first agent
+Depth 2: First agent delegates to second agent
+Depth 3: Second agent delegates to third agent (TERMINAL — cannot re-delegate)
+```
+
+At depth 3, an agent must complete locally or return a `partial` result. The Supervisor monitors all delegation chains and writes alerts to `supervisor-alerts.json` if the limit is exceeded.
+
+### Loop Prevention
+
+Before any delegation, the agent checks whether the target already appears in `chain.path`. If so, the delegation is rejected. Self-delegation is also forbidden. Consultations bypass the loop check — they are fire-and-forget with no ownership transfer.
+
+## Skills
+
+Skills are slash-command workflows. When a user types `/mg-build`, Claude Code loads `skills/mg-build/SKILL.md` and executes the instructions there. Skills can spawn agents, coordinate multi-step workflows, and track progress via shared memory.
+
+### Available Skills
+
+| Skill | Command | Purpose |
+|-------|---------|---------|
+| mg | `/mg` | Router — delegates to sub-skills |
+| mg-leadership-team | `/mg-leadership-team` | Strategic planning and code review approvals |
+| mg-build | `/mg-build` | Full CAD cycle: classify, test, implement, review |
+| mg-code-review | `/mg-code-review` | Technical quality review |
+| mg-assess | `/mg-assess` | Feature evaluation (product + technical) |
+| mg-assess-tech | `/mg-assess-tech` | Architecture planning and feasibility |
+| mg-spec | `/mg-spec` | Product requirements and user stories |
+| mg-design | `/mg-design` | UI/UX design with visual regression |
+| mg-design-review | `/mg-design-review` | Design system compliance review |
+| mg-accessibility-review | `/mg-accessibility-review` | WCAG 2.1 AA compliance |
+| mg-security-review | `/mg-security-review` | OWASP Top 10 and auth review |
+| mg-document | `/mg-document` | Documentation generation |
+| mg-write | `/mg-write` | Brand-aligned content writing |
+| mg-debug | `/mg-debug` | Root cause analysis |
+| mg-refactor | `/mg-refactor` | Systematic code refactoring |
+| mg-ticket | `/mg-ticket` | Ticket creation and breakdown |
+| mg-tidy | `/mg-tidy` | Codebase cleanup |
+| mg-add-context | `/mg-add-context` | Add project context to CLAUDE.md |
+| mg-init | `/mg-init` | Initialize project memory structure |
+
+All 19 skills listed above are included in the community build.
+
+### Skill Definition Format
+
+```yaml
+---
+name: mg-build
+description: "Build it. Classify at intake, then execute..."
+model: sonnet
+allowed-tools: Read, Glob, Grep, Edit, Write, Task, Bash
+metadata:
+  version: "2.0"
+  spawn_cap: "6"
+---
+```
+
+Each skill directory also contains a `references/` folder with:
+- `output-format.md` — required visual output patterns
+- `model-escalation.md` — when to escalate to a higher-tier model
+- `output-examples.md` — concrete examples (where applicable)
+
+## Shared Protocols
+
+Six protocol documents live in `src/framework/shared/` and are copied to `.claude/shared/` on install. All agents and skills reference them.
+
+| File | Purpose |
+|------|---------|
+| `development-workflow.md` | CAD gate-based development process, classification rules (R1-R8, M1-M5), MECHANICAL vs ARCHITECTURAL tracks |
+| `tdd-workflow.md` | Test-first cycle, misuse-first test ordering, artifact bundle specs |
+| `memory-protocol.md` | File patterns, message bus format, rotation, hybrid storage lifecycle |
+| `handoff-protocol.md` | Delegation envelope format, depth tracking, loop prevention, escalation vs consultation |
+| `engineering-principles.md` | TDD, DRY, config-over-composition, 99% coverage, TypeScript strict mode |
+| `visual-formatting.md` | ASCII progress patterns, output modes (compact / full / silent) |
 
 ## Shared Memory System
 
-### Overview
+Agents communicate through JSON files in `.claude/memory/`. This is the only communication channel — agents do not share a runtime process or call each other directly.
 
-The shared memory layer provides unified state management for all agents with:
-- **99% test coverage**
-- **Atomic writes** with automatic backups
-- **File locking** for concurrent safety
-- **Query capabilities** by agent, workstream, or time
-- **Graceful error handling** - Never throws exceptions
-- **Optional Postgres backend** - `mg-postgres start` and `mg-migrate` sync local JSON files to a Docker-managed Postgres instance for richer querying. Use `--no-db` to stay file-only.
+### File Patterns
 
-### API Reference
+| Pattern | Purpose | Written By |
+|---------|---------|------------|
+| `workstream-{id}-state.json` | Phase, progress, blockers per workstream | mg-build |
+| `agent-{name}-decisions.json` | Agent outputs and decisions | Each agent |
+| `tasks-{agent_id}.json` | Task queue for an agent | Orchestrators |
+| `escalations.json` | Issues needing attention | Any agent |
+| `supervisor-alerts.json` | Depth and loop violations | Supervisor |
+| `messages-{from}-{to}.json` | Agent message bus | Any agent |
+
+### Message Bus
+
+Agents can send typed messages to each other:
+
+```json
+{
+  "messages": [{
+    "id": "msg-001",
+    "from": "qa",
+    "to": "dev",
+    "workstream_id": "WS-42",
+    "type": "handoff",
+    "subject": "Test specs committed",
+    "body": "Tests are at tests/auth.test.ts. All failing. Ready for implementation.",
+    "requires_response": false
+  }]
+}
+```
+
+Message types: `info`, `question`, `blocker`, `handoff`.
+
+### Memory Rotation
+
+Global decision files grow unbounded without rotation. When a file reaches **50 KB**, the writing agent:
+
+1. Reads all entries from the file
+2. Separates entries tied to in-progress workstreams (preserved unconditionally)
+3. Keeps up to 20 recent non-active entries (10 for feature-spec files)
+4. Archives older entries to `.claude/memory/.archive/{filename}.{YYYY-MM-DD}.json`
+5. Writes the retained entries back, then appends the new entry
+
+Archives are kept for 30 days.
+
+### Hybrid Storage Lifecycle
+
+Two storage tiers operate together:
+
+1. **During execution** — agents write to `.claude/memory/` JSON files (fast, no dependencies)
+2. **At completion** — `mg-db-sync <ws-id>` syncs the workstream to Postgres and archives the JSON files to `.archive/{ws-id}/`
+
+Postgres is optional. Run `mg-postgres start` and `mg-migrate` to enable it, or pass `--no-db` to `mg-init` to stay file-only.
+
+### TypeScript Memory API
 
 ```typescript
 import { writeMemory, readMemory, queryMemory } from './src/memory';
 
-// Write state
-const result = await writeMemory({
+// Write agent state
+await writeMemory({
   agent_id: 'dev',
-  workstream_id: 'ws-1-auth',
+  workstream_id: 'ws-1',
   data: {
-    feature: 'user-login',
-    status: 'in-progress',
-    coverage: 85
+    phase: 'implementation_complete',
+    files_modified: ['src/auth.ts'],
+    tests_passing: true,
+    coverage: 99.2
   }
-});
+}, 'memory/agent-dev-decisions.json');
 
 // Read state
-const memory = await readMemory();
-console.log(memory.data);
+const state = await readMemory('memory/workstream-ws-1-state.json');
 
-// Query state
-const entries = await queryMemory({
-  agent_id: 'dev',
-  workstream_id: 'ws-1-auth'
-});
+// Query by filter
+const entries = await queryMemory({ agent_id: 'dev', workstream_id: 'ws-1' });
 ```
 
-### File Structure
+Memory module features: atomic writes, automatic backups, file locking for concurrent safety, query by agent/workstream/time, graceful error handling (no thrown exceptions).
 
-```
-.claude/memory/
-├── workstream-{id}-state.json     # Workstream status tracking
-├── tasks-{role}.json              # Task queues per agent role
-├── agent-{name}-decisions.json    # Agent decision records
-├── handoffs-{from}-{to}.json      # Agent-to-agent handoffs
-└── decisions.json                 # Architecture decisions
-```
+## Hooks
 
-### Features
+Hooks are bash scripts wired into Claude Code lifecycle events via `settings.json`. They run automatically — no user action required.
 
-- Automatic timestamp generation
-- Circular reference detection
-- File locking for concurrent safety
-- Automatic backup before writes
-- Backup retention policy (7 days)
-- Path sanitization
-- UTF-8 encoding support
-- Large file handling (up to 10MB)
+### Hook Inventory
 
-## Handoff Protocol
+| Hook | Trigger | File | Purpose |
+|------|---------|------|---------|
+| `TaskCompleted` | Agent marks a task complete | `hooks/task-completed.sh` | Runs vitest on changed files; blocks completion if tests fail or untracked source files exist |
+| `TeammateIdle` | An agent goes idle | `hooks/teammate-idle.sh` | Checks TypeScript compilation; blocks idle if tsc errors or untracked test files exist |
+| `SessionStart` | Claude Code opens a project | `hooks/session-start.sh` | Outputs version banner and initialization status to Claude's context |
+| Project init check | SessionStart (via hook) | `hooks/project-init-check.sh` | Detects missing `.claude/memory/` and prompts user to run `/mg-init` |
+| Safety check | Before Bash execution | `hooks/safety-check.sh` | Blocks dangerous commands (recursive deletes, disk operations, credential destruction) |
 
-The handoff protocol defines how context is passed between agents during delegation. All agents follow a structured envelope format for delegation requests and responses.
+### Hook Configuration
 
-### Delegation Request Envelope
+Hooks are registered in `settings.json`:
 
-```yaml
-handoff:
-  id: "<uuid>"
-  type: "delegation" | "consultation"
-  chain:
-    depth: <1-3>
-    max_depth: 3
-    path: [<agents in chain>]
-  task:
-    objective: "<goal>"
-    success_criteria: [<criteria>]
-    deliverable: "<expected output>"
-  context:
-    essential: [<key facts>]
-    references: [<file paths, decisions>]
+```json
+{
+  "hooks": {
+    "TeammateIdle": [{"hooks": [{"type": "command", "command": ".claude/hooks/teammate-idle.sh"}]}],
+    "TaskCompleted": [{"hooks": [{"type": "command", "command": ".claude/hooks/task-completed.sh"}]}]
+  }
+}
 ```
 
-### Delegation Response Envelope
+Exit codes: `0` = allow, `1` = block, `2` = block with feedback via stderr.
 
-```yaml
-handoff_response:
-  request_id: "<uuid>"
-  status: "completed" | "partial" | "failed" | "escalated"
-  result:
-    summary: "<executive summary>"
-    deliverable: <output>
-    confidence: "high" | "medium" | "low"
+## Security and Isolation Model
+
+### Data Isolation (NDA-Safe)
+
+miniature-guacamole is designed so that client project data never leaves the project directory:
+
+- **Agent and skill definitions** — generic role templates containing no project data; safe to share globally
+- **Memory files** — stored in `.claude/memory/` (project-local); gitignored by default
+- **No cross-project access** — each project's memory is completely separate
+- **`~/.claude/` is not modified** by the per-project installer; the global installer writes to `~/.miniature-guacamole/`
+
+### Tool Permissions
+
+`settings.json` controls which tools agents can use. Sensitive operations are denied at the permission layer:
+
+```json
+{
+  "permissions": {
+    "allow": ["Read", "Glob", "Grep", "Edit", "Write", "Task", "Bash(npm:*)", "Bash(git:*)", "..."],
+    "deny": ["Bash(rm:*)", "Bash(bash:*)", "Bash(sh:*)", "Bash(find:*-delete)*", "..."]
+  }
+}
 ```
 
-See [Handoff Protocol Documentation](https://github.com/wonton-web-works/miniature-guacamole/blob/main/src/framework/shared/handoff-protocol.md) for complete specification.
+### Agent Tool Restrictions
 
-## Git Workstream Strategy
+Tool access varies by role. ICs have filesystem write access; executives do not:
 
-Each feature is implemented in its own branch with a structured naming convention:
+| Role | Read/Glob/Grep | Edit/Write | Task (spawn) | Bash |
+|------|:--------------:|:----------:|:------------:|:----:|
+| CEO, CTO | Yes | No | Yes | No |
+| CFO | Yes | No | No | No |
+| Engineering Manager | Yes | Yes | Yes | Yes |
+| Staff Engineer | Yes | Yes | Yes | Yes |
+| Dev, QA | Yes | Yes | No | Yes |
+| Design | Yes | Yes | No | No |
+| Deployment Engineer | Yes | No | No | Yes |
+| Supervisor | Yes | No | No | No |
+
+### Safety Hook
+
+`hooks/safety-check.sh` blocks commands matching dangerous patterns before execution:
+
+- Recursive deletes targeting system or home directories (`rm -rf /`, `rm -rf ~`, `rm -rf ~/.ssh`, etc.)
+- Disk operations (`dd if=`, `mkfs`, `> /dev/`)
+- Permission bombs (`chmod -R 777 /`)
+- Fork bombs
+- Git config destruction (`git clean -fdx /`)
+
+Allowed project-scoped removes (`rm -rf ./dist`, `rm -rf node_modules`) pass through.
+
+## Installation Architecture
+
+### Two-Phase Installation
+
+**Phase 1 — Global Install** (one time per machine)
+
+`web-install.sh` downloads the release tarball and installs a bundle to `~/.miniature-guacamole/`:
+
+1. Downloads `miniature-guacamole.tar.gz` from GitHub releases
+2. Extracts to `~/.miniature-guacamole/` (contains `.claude/`, `install.sh`, templates, `VERSION.json`)
+3. Symlinks all `mg-*` scripts to `~/.local/bin/`
+4. Adds `~/.local/bin` to PATH if not present
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/wonton-web-works/miniature-guacamole/main/src/installer/web-install.sh | bash
+```
+
+**Phase 2 — Per-Project Init** (once per project)
+
+`mg-init` reads the global bundle — no network required:
+
+1. Verifies `~/.miniature-guacamole/install.sh` exists
+2. Runs `install.sh` from the global bundle against the target project
+3. Creates `.claude/` with agents, skills, scripts, hooks, and protocols
+4. Creates `.claude/memory/` with `.gitignore`
+5. Auto-provisions Postgres via Docker if available (`mg-postgres start`, `mg-migrate`)
+
+```bash
+cd your-project && mg-init
+```
+
+### Install Script Logic
+
+`install.sh` detects whether a **global install** exists at `~/.claude/`:
 
 ```
-main (protected)
-├── feature/ws-1-delegation-logging
-├── feature/ws-2-shared-memory
-└── feature/ws-3-cost-tracking
+Global install detected (agents/ + skills/ + shared/ all present)?
+  YES → skip copying framework files to project (they're available globally)
+        use --standalone to override
+  NO  → copy all agents, skills, shared protocols to .claude/
 ```
 
-### Branch Naming
+This keeps per-project installs lean when agents and skills are already globally available.
 
-- Pattern: `feature/ws-{number}-{short-name}`
-- Example: `feature/ws-1-delegation-logging`
+### Build Pipeline
 
-### Quality Gates
+`build.sh` assembles the distribution from source:
 
-1. **Tests Exist** - Test files created and failing (misuse-first ordering)
-2. **Tests Pass** - All tests passing, no regressions
-3. **QA Sign-off** - Coverage adequate (99%+), edge cases handled
-3.5. **Classification** - Workstream classified as MECHANICAL or ARCHITECTURAL (R1-R8, M1-M5)
-4A. **Mechanical Gate** (MECHANICAL) - Automated bash verification: tests pass, 99% coverage, <200 lines
-4B. **Staff Engineer Review** (ARCHITECTURAL) - Code quality, standards, security, architecture
-5. **Leadership Approval** - Business requirements, technical quality, operational readiness
-6. **Merge Ready** - Leadership approved, no conflicts, branch up to date
+```
+src/framework/  →  dist/miniature-guacamole/.claude/
+  agents/       →    agents/
+  skills/       →    skills/
+  shared/       →    shared/
+  scripts/      →    scripts/
+  hooks/        →    hooks/
+  settings.json →    settings.json
+  CLAUDE.md     →    CLAUDE.md
+  team-config.* →    team-config.*
+
+src/installer/  →  dist/miniature-guacamole/
+  install.sh    →    install.sh
+  web-install.sh →   web-install.sh
+  mg-init       →    mg-init
+  mg-migrate    →    mg-migrate
+  QUICK-START.md →   QUICK-START.md
+
+VERSION.json generated from git tag + commit sha
+Archives: dist/miniature-guacamole.tar.gz, dist/miniature-guacamole.zip
+```
+
+### CI/CD Release Workflow
+
+On push of a `v*.*.*` tag:
+
+1. Checkout, `npm ci`
+2. TypeScript check (`tsc --noEmit`)
+3. Run tests (`npm test`)
+4. Build distribution (`./build.sh`)
+5. Create GitHub release with `miniature-guacamole.tar.gz` and `.zip` attached
+
+```bash
+git tag v1.0.1 && git push origin v1.0.1
+# CI builds and publishes automatically
+```
+
+## Extension Points
+
+### Adding an Agent
+
+1. Create `src/framework/agents/{name}/agent.md` following the existing format
+2. Add the agent's definition to `team-config.yaml` under `agents:`
+3. Add the role to the appropriate hierarchy level in `team-config.yaml`
+4. Update delegation authority in any parent agents that should be able to spawn it
+5. Build and install: `./build.sh && dist/miniature-guacamole/install.sh --force .`
+
+### Adding a Skill
+
+1. Create `src/framework/skills/{name}/SKILL.md` with front matter and workflow steps
+2. Add `references/output-format.md` and `references/model-escalation.md`
+3. No changes to `team-config.yaml` required — skills are discovered by filename
+
+### Modifying Protocols
+
+Protocol files in `src/framework/shared/` are referenced by agents and skills at runtime. Changes take effect immediately in the dev environment (symlinked). For installed projects, re-run `install.sh --force` to push updates.
 
 ## Testing Architecture
 
 ### Test Coverage
 
-- **Unit Tests** (105 files, 3,700+ tests) - Memory, audit, returns, supervisor, agents, skills
-- **Integration Tests** (17 files, 450+ tests) - Cross-agent communication, launch validation, repo sanitization
-- **Script Tests** (30 BATS files, 1,078 tests) - All 17 mg-* utility scripts
-- **Total Coverage** - 99%+ (5,200+ tests across all suites)
+- **Unit tests** — memory module, audit, returns, supervisor (Vitest)
+- **Integration tests** — cross-agent communication, launch validation, repo sanitization
+- **Script tests** — all `mg-*` CLI scripts (BATS)
+- **Target coverage** — 99% (lines, branches, functions, statements)
 
-### Test Execution
+### Running Tests
 
 ```bash
-npm test              # Run all tests
-npm run test:unit     # Unit tests only
+npm test                  # All tests
+npm run test:unit         # Unit tests only
 npm run test:integration  # Integration tests
-npm run test:watch    # Watch mode
-npm run test:coverage # Coverage report
+npm run test:coverage     # Coverage report
 ```
 
-## Security Considerations
+## Related Documentation
 
-### Agent Permissions
-
-Not all agents have file system access. Tool access is restricted by role:
-
-| Agent | Read | Glob | Grep | Edit | Write |
-|-------|------|------|------|------|-------|
-| CEO | - | - | - | - | - |
-| CTO | ✅ | ✅ | ✅ | ✅ | ✅ |
-| Engineering Director | - | - | - | - | - |
-| Product Owner | - | - | - | - | - |
-| Product Manager | ✅ | ✅ | ✅ | - | - |
-| Engineering Manager | ✅ | ✅ | ✅ | ✅ | ✅ |
-| Staff Engineer | ✅ | ✅ | ✅ | ✅ | ✅ |
-| Art Director | - | - | - | - | - |
-| Dev | ✅ | ✅ | ✅ | ✅ | ✅ |
-| QA | ✅ | ✅ | ✅ | ✅ | ✅ |
-| Design | ✅ | ✅ | ✅ | - | - |
-
-### Data Protection
-
-- Memory files stored in `.claude/memory/` (add to `.gitignore`)
-- Automatic backups prevent data loss
-- File locking prevents concurrent write conflicts
-- No sensitive data logged (audit logging is metadata-only)
-
-## Extension Points
-
-The system is designed to be extended:
-
-### Adding a New Agent
-
-1. Create `SKILL.md` in `src/framework/skills/<agent-name>/`
-2. If IC agent, also create `agent.md` in `src/framework/agents/<agent-name>/`
-3. Update hierarchy documentation
-4. Add tests for delegation patterns
-
-### Adding a New Workflow
-
-1. Create `src/framework/skills/<workflow-name>/SKILL.md`
-2. Define workflow steps and agent spawning logic
-3. Document memory protocol (read/write paths)
-4. Add examples to documentation
-
-### Modifying Hierarchy
-
-1. Update `src/framework/shared/handoff-protocol.md`
-2. Update relevant SKILL.md files
-3. Test delegation chains work correctly
-4. Update architecture diagrams
-
-See [Contributing Guide](/contributing) for detailed instructions.
-
-## Build and Release
-
-### Build Pipeline
-
-The unified build script consolidates all source:
-
-```bash
-./build.sh
-# Outputs:
-#   dist/miniature-guacamole/          - Extracted distribution
-#   dist/miniature-guacamole.tar.gz    - Tarball (for releases)
-#   dist/miniature-guacamole.zip       - Zip archive
-```
-
-**Build process**:
-1. Clean `dist/`
-2. Copy `src/framework/` → `dist/miniature-guacamole/.claude/`
-3. Copy `src/installer/` → `dist/miniature-guacamole/`
-4. Generate `VERSION.json` (version, git sha, build date)
-5. Create tar.gz and zip archives
-
-### CI/CD Release Workflow
-
-Automated releases on version tags:
-
-```yaml
-# .github/workflows/release.yml
-on:
-  push:
-    tags: ['v*.*.*']
-
-steps:
-  - Checkout code
-  - Install dependencies (npm ci)
-  - Type check (tsc --noEmit)
-  - Run tests (npm test)
-  - Build distribution (./build.sh)
-  - Create GitHub release
-  - Attach miniature-guacamole.tar.gz
-  - Attach miniature-guacamole.zip
-```
-
-**To create a release**:
-
-```bash
-git tag v1.0.1
-git push origin v1.0.1
-# CI automatically builds and publishes to GitHub releases
-```
-
-### Installation System
-
-Installation is two-phase: **global install** (one time) and **per-project init**.
-
-**Phase 1: Global Install** (`web-install.sh`)
-
-Downloads the release tarball and installs the framework bundle:
-
-1. Extracts to `~/.miniature-guacamole/` (framework bundle with `.claude/`, `install.sh`, templates)
-2. Symlinks all `mg-*` scripts to `~/.local/bin/`
-3. Adds `~/.local/bin` to PATH if needed
-
-```bash
-curl -fsSL https://raw.githubusercontent.com/.../web-install.sh | bash
-```
-
-**Phase 2: Per-Project Init** (`mg-init`)
-
-Reads from the global bundle — no network required:
-
-1. Runs `install.sh` from `~/.miniature-guacamole/` against the target project
-2. Creates `.claude/` with all agents, skills, scripts, and protocols
-3. Creates `.claude/memory/` — project-local agent state directory
-4. Auto-provisions Postgres via Docker (`mg-postgres start`, `mg-migrate`) if Docker is available
-
-```bash
-cd your-project
-mg-init
-```
-
-**Flags**:
-- `--no-db` - Skip Postgres setup, run file-only
-- `--force` - Force re-initialization
-
-**Direct install** (`install.sh <dir>`) still works for offline/CI use — bypasses the global bundle entirely.
-
-**From source** for contributors:
-
-```bash
-git clone ... && ./build.sh
-dist/miniature-guacamole/install.sh /path/to/project
-```
+- [Process Flows](/process-flows) — step-by-step breakdowns of every major workflow
+- [Workflows](/workflows) — CAD cycle guide with examples
+- [Agent Reference](/agents) — full agent role catalog
+- [Glossary](/glossary) — definitions for framework-specific terms

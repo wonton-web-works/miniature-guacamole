@@ -2,6 +2,87 @@
 
 Detailed reference for the shared memory system. Agents should use the compact YAML format in their definitions; this document provides full examples.
 
+## Brand Files Schema
+
+Projects may store brand and design system data in `.claude/memory/` as structured JSON files. The art-director agent reads these files before every visual review. mg-init creates empty templates for both files on project initialization.
+
+### `brand-guidelines.json`
+
+Stores verbal identity and high-level visual brand decisions. Written by mg-design / art-director; read by any agent producing copy or visual output.
+
+```json
+{
+  "brand_name": "Acme",
+  "voice": {
+    "tone": "direct and approachable",
+    "register": "professional",
+    "personality_traits": ["clear", "confident", "human"]
+  },
+  "terminology": {
+    "preferred": ["save", "remove", "you"],
+    "avoided": ["persist", "delete", "the user"]
+  },
+  "visual_identity": {
+    "primary_colors": ["#3b82f6"],
+    "typography": "Inter / system-ui",
+    "logo_usage": "docs/assets/logo-usage.md"
+  }
+}
+```
+
+**Required top-level fields:** `brand_name`, `voice`, `terminology`, `visual_identity`
+
+**`voice` sub-fields:** `tone` (contextual register), `register` (formal/informal spectrum), `personality_traits` (array of adjectives)
+
+**`terminology` sub-fields:** `preferred` (array — words to use), `avoided` (array — words to reject)
+
+**`visual_identity` sub-fields:** `primary_colors` (hex array), `typography` (font stack summary), `logo_usage` (path to usage guidelines)
+
+### `design-system.json`
+
+Stores machine-readable design tokens. Written by mg-design after brand kit completion; read by art-director, design, and any agent generating styled output.
+
+```json
+{
+  "colors": {
+    "primary": "#3b82f6",
+    "secondary": "#64748b",
+    "accent": "#f59e0b",
+    "semantic": {
+      "success": "#22c55e",
+      "warning": "#f59e0b",
+      "error": "#ef4444",
+      "info": "#3b82f6"
+    }
+  },
+  "typography": {
+    "headings": "Inter",
+    "body": "Inter",
+    "mono": "JetBrains Mono"
+  },
+  "spacing": {
+    "unit": "4px",
+    "scale": [4, 8, 12, 16, 24, 32, 48, 64, 96]
+  },
+  "components": {
+    "button_radius": "6px",
+    "input_radius": "4px"
+  }
+}
+```
+
+**Required top-level fields:** `colors`, `typography`, `spacing`, `components`
+
+**`colors` sub-fields:** `primary`, `secondary`, `accent`, `semantic` (object with `success`, `warning`, `error`, `info`)
+
+**`typography` sub-fields:** `headings`, `body`, `mono`
+
+**`spacing` sub-fields:** `unit` (base unit string), `scale` (array of pixel values)
+
+**`components`:** open-ended object for per-component token overrides (radius, height, etc.)
+
+---
+
 ## File Patterns
 
 | Pattern | Purpose | Written By |

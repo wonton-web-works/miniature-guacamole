@@ -1,0 +1,90 @@
+---
+title: Installation and Initialization Flow
+---
+flowchart TD
+    subgraph PHASE1["Phase 1: Global Install (one-time)"]
+        style PHASE1 fill:#dbeafe,stroke:#2563eb,stroke-width:2px
+        CURL["curl -fsSL .../web-install.sh | bash"]
+        DOWNLOAD["Download release tarball<br/><i>miniature-guacamole.tar.gz</i>"]
+        EXTRACT["Extract to ~/.miniature-guacamole/<br/><i>framework bundle</i>"]
+
+        subgraph GLOBAL_CONTENTS["~/.miniature-guacamole/"]
+            style GLOBAL_CONTENTS fill:#f0f7ff,stroke:#2563eb
+            G_AGENTS[".claude/agents/<br/><i>24 agent definitions</i>"]
+            G_SKILLS[".claude/skills/<br/><i>19 skill definitions</i>"]
+            G_SHARED[".claude/shared/<br/><i>6 protocol documents</i>"]
+            G_SCRIPTS[".claude/scripts/<br/><i>mg-* utility commands</i>"]
+            G_SETTINGS[".claude/settings.json<br/><i>default permissions</i>"]
+            G_INSTALL["install.sh<br/><i>per-project installer</i>"]
+        end
+
+        SYMLINK["Symlink mg-* scripts<br/>to ~/.local/bin/"]
+        PATH_CHECK{"~/.local/bin<br/>in PATH?"}
+        ADD_PATH["Add to PATH in shell profile"]
+    end
+
+    subgraph PHASE2["Phase 2: Per-Project Init (per project)"]
+        style PHASE2 fill:#dcfce7,stroke:#16a34a,stroke-width:2px
+        CD_PROJECT["cd your-project"]
+        MG_INIT["mg-init<br/><i>reads from ~/.miniature-guacamole/<br/>no network required</i>"]
+        RUN_INSTALL["Run install.sh against project directory"]
+
+        subgraph LOCAL_CONTENTS[".claude/ (project-local)"]
+            style LOCAL_CONTENTS fill:#f0fff4,stroke:#16a34a
+            L_AGENTS["agents/ → agent definitions"]
+            L_SKILLS["skills/ → skill definitions"]
+            L_SHARED["shared/ → protocols"]
+            L_SCRIPTS["scripts/ → mg-* commands"]
+            L_SETTINGS["settings.json → permissions"]
+            L_MEMORY["memory/ → PROJECT-LOCAL<br/><i>gitignored, agent state</i>"]
+            L_CLAUDE["CLAUDE.md → project context"]
+        end
+
+        subgraph FLAGS["Init Flags"]
+            style FLAGS fill:#fef9c3,stroke:#ca8a04
+            NO_DB["--no-db<br/><i>skip Postgres setup</i>"]
+            FORCE["--force<br/><i>force re-init</i>"]
+        end
+
+        DOCKER_CHECK{"Docker<br/>available?"}
+        PG_SETUP["mg-postgres start<br/>mg-migrate<br/><i>local Postgres via Docker</i>"]
+        FILE_ONLY["File-only mode<br/><i>JSON memory files</i>"]
+    end
+
+    subgraph ALT["Alternative Install Paths"]
+        style ALT fill:#f3e8ff,stroke:#7c3aed,stroke-width:2px
+        DIRECT["Direct: install.sh &lt;dir&gt;<br/><i>offline / CI use</i>"]
+        SOURCE["From source:<br/>git clone + ./build.sh<br/>dist/…/install.sh /path"]
+    end
+
+    READY(["Project ready<br/><i>mg-* commands available<br/>agents, skills, memory initialized</i>"])
+
+    %% Phase 1 flow
+    CURL --> DOWNLOAD --> EXTRACT
+    EXTRACT --> G_AGENTS & G_SKILLS & G_SHARED & G_SCRIPTS & G_SETTINGS & G_INSTALL
+    G_SCRIPTS --> SYMLINK
+    SYMLINK --> PATH_CHECK
+    PATH_CHECK -->|No| ADD_PATH --> MG_INIT
+    PATH_CHECK -->|Yes| MG_INIT
+
+    %% Phase 2 flow
+    CD_PROJECT --> MG_INIT
+    MG_INIT --> RUN_INSTALL
+    RUN_INSTALL --> L_AGENTS & L_SKILLS & L_SHARED & L_SCRIPTS & L_SETTINGS & L_MEMORY & L_CLAUDE
+
+    L_MEMORY --> DOCKER_CHECK
+    DOCKER_CHECK -->|Yes| PG_SETUP --> READY
+    DOCKER_CHECK -->|No| FILE_ONLY --> READY
+
+    %% Flags
+    NO_DB -.-> FILE_ONLY
+    FORCE -.-> RUN_INSTALL
+
+    %% Alternate paths
+    DIRECT -.-> READY
+    SOURCE -.-> READY
+
+    style CURL fill:#0d6efd,color:#fff
+    style READY fill:#28a745,color:#fff
+    style L_MEMORY fill:#ca8a04,color:#fff
+    style MG_INIT fill:#16a34a,color:#fff

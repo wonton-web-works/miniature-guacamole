@@ -1,0 +1,92 @@
+---
+title: Data Isolation Model — NDA-Safe Architecture
+---
+graph TB
+    subgraph SHARED["Shared Layer — Agent / Skill Definitions Only (no project data)"]
+        style SHARED fill:#dbeafe,stroke:#2563eb,stroke-width:3px
+
+        subgraph GLOBAL["~/.miniature-guacamole/ (global install)"]
+            style GLOBAL fill:#f0f7ff,stroke:#2563eb,stroke-width:2px
+            DEF_AGENTS["agents/<br/><i>24 role definitions<br/>AGENT.md files only</i>"]
+            DEF_SKILLS["skills/<br/><i>19 skill definitions<br/>SKILL.md files only</i>"]
+            DEF_SHARED["shared/<br/><i>6 protocol documents<br/>workflow, memory, handoff, tdd…</i>"]
+            DEF_SCRIPTS["scripts/<br/><i>mg-* utility commands</i>"]
+        end
+
+        SHARED_NOTE["These files contain ONLY role behavior rules.<br/>Zero project data. Zero client data.<br/>Safe to share across all projects &amp; clients."]
+    end
+
+    subgraph TRUST_WALL["ISOLATION BOUNDARY — No data crosses this line"]
+        style TRUST_WALL fill:#fee2e2,stroke:#dc2626,stroke-width:4px,color:#dc2626
+        WALL_NOTE["Project memory is NEVER shared between projects.<br/>Agent definitions are NEVER written to by agents.<br/>No cross-client, no cross-project, no network egress of memory."]
+    end
+
+    subgraph PROJECT_A["Project A — Client Acme Corp"]
+        style PROJECT_A fill:#dcfce7,stroke:#16a34a,stroke-width:2px
+
+        subgraph MEM_A[".claude/memory/ (project-local, gitignored)"]
+            style MEM_A fill:#f0fff4,stroke:#16a34a
+            WS_A["workstream-ws-1-state.json"]
+            DEC_A["agent-leadership-decisions.json"]
+            TASKS_A["tasks-dev.json"]
+            MSG_A["messages-qa-dev.json"]
+        end
+
+        subgraph AGENTS_A[".claude/agents/ (copied from global)"]
+            style AGENTS_A fill:#f0fff4,stroke:#16a34a
+            COPY_A["Role definitions only<br/><i>same content as global</i>"]
+        end
+
+        NOTE_A["All Acme Corp project data<br/>stays exclusively in Project A.<br/>Project A cannot read Project B."]
+    end
+
+    subgraph PROJECT_B["Project B — Client Beta Inc"]
+        style PROJECT_B fill:#fef9c3,stroke:#ca8a04,stroke-width:2px
+
+        subgraph MEM_B[".claude/memory/ (project-local, gitignored)"]
+            style MEM_B fill:#fefce8,stroke:#ca8a04
+            WS_B["workstream-ws-3-state.json"]
+            DEC_B["agent-leadership-decisions.json"]
+            TASKS_B["tasks-qa.json"]
+            MSG_B["messages-dev-qa.json"]
+        end
+
+        subgraph AGENTS_B[".claude/agents/ (copied from global)"]
+            style AGENTS_B fill:#fefce8,stroke:#ca8a04
+            COPY_B["Role definitions only<br/><i>same content as global</i>"]
+        end
+
+        NOTE_B["All Beta Inc project data<br/>stays exclusively in Project B.<br/>Project B cannot read Project A."]
+    end
+
+    subgraph GITIGNORE["Git Safety"]
+        style GITIGNORE fill:#f3e8ff,stroke:#7c3aed,stroke-width:2px
+        GI_NOTE[".claude/memory/ added to .gitignore<br/><i>project data never committed</i>"]
+        AUDIT_META["Audit logging is metadata-only<br/><i>no sensitive data captured</i>"]
+        FILE_LOCK["File locking prevents<br/>concurrent write conflicts"]
+        BACKUP["Auto-backup before every write<br/><i>7-day retention</i>"]
+    end
+
+    %% Shared definitions flow to both projects (read-only copy)
+    DEF_AGENTS -->|"mg-init copies (read-only)"| COPY_A
+    DEF_AGENTS -->|"mg-init copies (read-only)"| COPY_B
+    DEF_SKILLS -.->|"same definitions"| COPY_A
+    DEF_SKILLS -.->|"same definitions"| COPY_B
+
+    %% Isolation wall
+    TRUST_WALL ~~~ MEM_A
+    TRUST_WALL ~~~ MEM_B
+
+    %% Project A memory is isolated
+    MEM_A --> NOTE_A
+    MEM_B --> NOTE_B
+
+    %% Git safety
+    MEM_A --> GI_NOTE
+    MEM_B --> GI_NOTE
+
+    style WALL_NOTE fill:#dc2626,color:#fff
+    style SHARED_NOTE fill:#1d4ed8,color:#fff
+    style NOTE_A fill:#16a34a,color:#fff
+    style NOTE_B fill:#ca8a04,color:#fff
+    style GI_NOTE fill:#7c3aed,color:#fff

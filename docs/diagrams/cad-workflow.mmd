@@ -1,0 +1,94 @@
+---
+title: CAD Development Workflow — Gate-by-Gate
+---
+flowchart TD
+    START(["User: /mg plan &lt;initiative&gt;"])
+
+    subgraph INTAKE["INTAKE — /mg plan"]
+        style INTAKE fill:#dbeafe,stroke:#2563eb,stroke-width:2px
+        EXEC_REVIEW["Executive Review<br/><i>CEO: strategy alignment<br/>CTO: technical feasibility<br/>Eng Dir: team capacity</i>"]
+        WS_PLAN["Workstream Plan<br/><i>WS-1, WS-2 … WS-N<br/>feature/ws-{n}-{name} branches</i>"]
+    end
+
+    subgraph SPEC["SPEC — /mg-spec (optional)"]
+        style SPEC fill:#dbeafe,stroke:#2563eb,stroke-width:2px
+        PM_AC["Product Manager<br/><i>acceptance criteria<br/>Given/When/Then</i>"]
+    end
+
+    subgraph CLASSIFY0["STEP 0: Classification (automated)"]
+        style CLASSIFY0 fill:#fef9c3,stroke:#ca8a04,stroke-width:2px
+        C_RULES{"R1-R8 triggered?"}
+        C_MECH["MECHANICAL track<br/><i>Dev solo TDD</i>"]
+        C_ARCH["ARCHITECTURAL track<br/><i>QA + Dev + SE</i>"]
+    end
+
+    subgraph BUILD_MECH["BUILD (MECHANICAL) — /mg-build"]
+        style BUILD_MECH fill:#dcfce7,stroke:#16a34a,stroke-width:2px
+        M_RED["Dev: Write failing tests<br/><i>Misuse → Boundary → Golden path</i>"]
+        M_GREEN["Dev: Implement (GREEN)"]
+        M_REFACTOR["Dev: Refactor"]
+    end
+
+    subgraph BUILD_ARCH["BUILD (ARCHITECTURAL) — /mg-build"]
+        style BUILD_ARCH fill:#dcfce7,stroke:#16a34a,stroke-width:2px
+        A_QA["QA: Write failing tests<br/><i>Misuse → Boundary → Golden path</i>"]
+        A_DEV["Dev: Implement (GREEN + REFACTOR)<br/><i>artifact bundle ~12K tokens</i>"]
+        A_QA_VER["QA: Verify coverage &amp; edge cases"]
+        A_SE["Staff Engineer: Code review<br/><i>DRY, security, architecture</i>"]
+    end
+
+    subgraph GATE4A["GATE 4A — Mechanical (automated bash)"]
+        style GATE4A fill:#dcfce7,stroke:#16a34a,stroke-width:2px
+        G4A_CHECK{"All pass?<br/>tests ✓ coverage ≥99% ✓<br/>&lt;200 lines ✓ mods-only ✓"}
+    end
+
+    subgraph GATE4B["GATE 4B — Staff Eng Review (ARCHITECTURAL)"]
+        style GATE4B fill:#dcfce7,stroke:#16a34a,stroke-width:2px
+        G4B_CHECK{"Approved?<br/>quality ✓ security ✓<br/>architecture ✓"}
+    end
+
+    subgraph REVIEW["REVIEW — /mg review"]
+        style REVIEW fill:#dbeafe,stroke:#2563eb,stroke-width:2px
+        LEAD_REVIEW["Leadership Review<br/><i>CEO: business requirements<br/>CTO: technical quality<br/>Eng Dir: operational readiness</i>"]
+        LEAD_DEC{"Decision?"}
+        APPROVED["APPROVED"]
+        CHANGES["REQUEST CHANGES"]
+    end
+
+    subgraph SHIP["SHIP — /deployment-engineer"]
+        style SHIP fill:#dcfce7,stroke:#16a34a,stroke-width:2px
+        VERIFY_APPR["Verify leadership approval"]
+        UPDATE_BR["Update branch with main"]
+        MERGE["Merge to main"]
+        CLEANUP["Delete feature branch"]
+    end
+
+    DONE(["Workstream complete<br/><i>mg-db-sync to Postgres</i>"])
+
+    %% Main flow
+    START --> EXEC_REVIEW --> WS_PLAN --> PM_AC
+    PM_AC --> C_RULES
+
+    C_RULES -->|"Any R-rule match"| C_ARCH
+    C_RULES -->|"All M-rules match"| C_MECH
+
+    C_MECH --> M_RED --> M_GREEN --> M_REFACTOR --> G4A_CHECK
+    C_ARCH --> A_QA --> A_DEV --> A_QA_VER --> A_SE --> G4B_CHECK
+
+    G4A_CHECK -->|"Pass"| LEAD_REVIEW
+    G4A_CHECK -->|"Fail"| M_RED
+
+    G4B_CHECK -->|"Approved"| LEAD_REVIEW
+    G4B_CHECK -->|"Changes"| A_DEV
+
+    LEAD_REVIEW --> LEAD_DEC
+    LEAD_DEC --> APPROVED & CHANGES
+    CHANGES -->|"back to build"| A_DEV
+    APPROVED --> VERIFY_APPR --> UPDATE_BR --> MERGE --> CLEANUP --> DONE
+
+    style START fill:#0d6efd,color:#fff
+    style DONE fill:#28a745,color:#fff
+    style APPROVED fill:#28a745,color:#fff
+    style CHANGES fill:#ffc107,color:#000
+    style C_MECH fill:#16a34a,color:#fff
+    style C_ARCH fill:#ca8a04,color:#fff

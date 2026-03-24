@@ -1,0 +1,85 @@
+---
+title: Memory Protocol — Data Flow
+---
+flowchart LR
+    subgraph AGENTS["Agents"]
+        style AGENTS fill:#dbeafe,stroke:#2563eb,stroke-width:2px
+        ORCH["mg-build<br/><i>Orchestrator</i>"]
+        LEAD["Leadership Team<br/><i>CEO / CTO / Eng Dir</i>"]
+        PM_AG["Product Manager"]
+        QA_AG["QA Engineer"]
+        DEV_AG["Dev"]
+        SE_AG["Staff Engineer"]
+        SUPER_AG["Supervisor"]
+    end
+
+    subgraph MEMORY[".claude/memory/"]
+        style MEMORY fill:#fef9c3,stroke:#ca8a04,stroke-width:2px
+
+        subgraph WS_FILES["Workstream Files"]
+            style WS_FILES fill:#fef9c3,stroke:#ca8a04
+            WS_STATE["workstream-{id}-state.json<br/><i>phase, progress, blockers</i>"]
+            TASKS_Q["tasks-{agent_id}.json<br/><i>task queue per role</i>"]
+        end
+
+        subgraph DECISION_FILES["Decision &amp; Handoff Files"]
+            style DECISION_FILES fill:#fef9c3,stroke:#ca8a04
+            LEAD_DEC["agent-leadership-decisions.json<br/><i>approvals, direction</i>"]
+            AGENT_DEC["agent-{role}-decisions.json<br/><i>per-agent outputs</i>"]
+            ESCALATIONS["escalations.json<br/><i>blockers needing attention</i>"]
+            SUPER_ALERTS["supervisor-alerts.json<br/><i>depth / loop violations</i>"]
+        end
+
+        subgraph MSG_FILES["Message Bus Files"]
+            style MSG_FILES fill:#fef9c3,stroke:#ca8a04
+            MESSAGES["messages-{from}-{to}.json<br/><i>info | question | blocker | handoff</i>"]
+        end
+
+        subgraph ARCHIVE[".archive/"]
+            style ARCHIVE fill:#f3e8ff,stroke:#7c3aed
+            DATED["agent-leadership-decisions.YYYY-MM-DD.json<br/><i>rotated after 50KB</i>"]
+            WS_ARCH["{ws-id}/ workstream artifacts<br/><i>mg-db-sync after complete</i>"]
+        end
+    end
+
+    subgraph POSTGRES["Optional: Postgres Backend"]
+        style POSTGRES fill:#f3e8ff,stroke:#7c3aed,stroke-width:2px
+        PG["memory_entries table<br/>agent_events table<br/><i>mg-db-sync on completion</i>"]
+    end
+
+    %% Write paths
+    ORCH -->|"writes phase transitions"| WS_STATE
+    ORCH -->|"writes next agent queue"| TASKS_Q
+    LEAD -->|"writes approvals"| LEAD_DEC
+    PM_AG -->|"writes spec outputs"| AGENT_DEC
+    QA_AG -->|"writes test results"| AGENT_DEC
+    DEV_AG -->|"writes implementation status"| AGENT_DEC
+    SE_AG -->|"writes review decisions"| AGENT_DEC
+    DEV_AG -->|"writes blocker"| ESCALATIONS
+    SUPER_AG -->|"writes violations"| SUPER_ALERTS
+
+    %% Message bus
+    QA_AG -->|"sends"| MESSAGES
+    DEV_AG -->|"sends"| MESSAGES
+
+    %% Read paths
+    WS_STATE -->|"reads context"| DEV_AG
+    WS_STATE -->|"reads context"| QA_AG
+    TASKS_Q -->|"reads queue"| DEV_AG
+    TASKS_Q -->|"reads queue"| QA_AG
+    LEAD_DEC -->|"reads decisions"| ORCH
+    MESSAGES -->|"checks before work"| DEV_AG
+    MESSAGES -->|"checks before work"| QA_AG
+    SUPER_ALERTS -->|"monitors"| SUPER_AG
+
+    %% Rotation &amp; archive
+    LEAD_DEC -->|"rotates at 50KB"| DATED
+    AGENT_DEC -->|"archived on WS complete"| WS_ARCH
+
+    %% Postgres sync
+    WS_ARCH -->|"mg-db-sync"| PG
+
+    style ORCH fill:#1d4ed8,color:#fff
+    style LEAD fill:#1d4ed8,color:#fff
+    style SUPER_AG fill:#dc2626,color:#fff
+    style PG fill:#7c3aed,color:#fff

@@ -14,6 +14,8 @@ Reference documentation for miniature-guacamole — an AI-powered product develo
 - [Workflows](/workflows) — CAD development cycle, MECHANICAL and ARCHITECTURAL tracks
 - [CLI Reference](/cli-reference) — All CLI commands
 - [Glossary](/glossary) — Key terms and concepts
+- [Process Flows](/process-flows) — Skill invocation, memory protocol, CAD gates, TDD cycle
+- [Diagrams](/diagrams) — Visual architecture and process flow diagrams
 - [Daemon Guide](/daemon-guide) — Autonomous pipeline configuration and deployment
 
 ## What is miniature-guacamole?
@@ -21,7 +23,3 @@ Reference documentation for miniature-guacamole — an AI-powered product develo
 miniature-guacamole transforms Claude Code into a complete product development team. 24 specialized agents — from CEO to QA to DevOps — coordinate through a structured workflow with quality gates, test-first development, and automated code review.
 
 The framework is open source. The daemon pipeline is available as a commercial product.
-
----
-
-*Looking for pricing and product information? Visit [wontonwebworks.com](https://wontonwebworks.com)*

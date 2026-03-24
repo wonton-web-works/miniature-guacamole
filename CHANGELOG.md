@@ -23,7 +23,6 @@ Versioning follows [Semantic Versioning](https://semver.org/): MAJOR.MINOR.PATCH
 - Columnar activity feed with directional prefixes and badge identity
 - `--standalone` flag for `install.sh` to force project-local copy
 - 32 new tests (mode-simplification, border-hierarchy, badge-system, build-exclusions, install-global-detect)
-- TEO/sage exclusion from community build in `build.sh`
 
 ### Changed
 - `visual-formatting.md`: 336 → 195 lines (42% token reduction)

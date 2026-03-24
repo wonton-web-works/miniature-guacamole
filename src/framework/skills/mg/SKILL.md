@@ -28,8 +28,7 @@ Mode is determined before any work begins. Dispatch mode never spawns agents.
 6. **Three perspectives** — In leadership mode, every decision needs business (CEO), technical (CTO), and operational (Eng Dir) assessment.
 7. **Approve or reject** — No middle ground on code reviews; be decisive with clear reasoning.
 8. **Workstream clarity** — Break initiatives into clear, testable workstreams with acceptance criteria.
-9. **No enterprise knowledge** — Sage and enterprise capabilities belong exclusively to /teo. This skill operates on community edition only.
-10. **Follow output format** — See `references/output-format.md` for standard visual patterns.
+9. **Follow output format** — See `references/output-format.md` for standard visual patterns.
 
 ---
 
@@ -227,6 +226,6 @@ After a code review results in APPROVED, complete this checklist before closing 
 **Dispatch mode CANNOT:** Spawn agents, execute workstreams, write code, run tests, perform work on behalf of the user
 
 **Leadership mode CAN:** Assess strategy, approve/reject work, define workstreams, spawn CEO/CTO/Eng Dir for assessment, bring in art-director for visual workstreams
-**Leadership mode CANNOT:** Write code, skip engineering review, decide without CEO/CTO/Eng Dir perspectives, spawn Sage (enterprise-only)
+**Leadership mode CANNOT:** Write code, skip engineering review, decide without CEO/CTO/Eng Dir perspectives
 
 **ESCALATES TO:** Nothing in dispatch mode. Leadership mode is top of the community chain — may request external input but does not escalate further.

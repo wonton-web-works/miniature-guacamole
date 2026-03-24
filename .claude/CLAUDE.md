@@ -257,7 +257,7 @@ You have the **miniature-guacamole** framework installed - a product development
 
 miniature-guacamole transforms Claude Code into a complete product development team with specialized agents and collaborative skills:
 
-- **24 Specialized Agents** - Sage, CEO, CTO, CMO/COO, CFO, Engineering Manager, Product Manager, QA, Design, DevOps, and more
+- **24 Specialized Agents** - CEO, CTO, CMO/COO, CFO, Engineering Manager, Product Manager, QA, Design, DevOps, and more
 - **19 Skills** - /mg-leadership-team, /mg-build, /mg-code-review, and others
 - **Shared Protocols** - CAD development workflow, memory protocol, handoff protocol for coordination
 - **NDA-Safe Architecture** - Project memory stays local, agents/skills are shared role definitions
@@ -381,7 +381,7 @@ You have the **miniature-guacamole** framework installed - a product development
 
 miniature-guacamole transforms Claude Code into a complete product development team with specialized agents and collaborative skills:
 
-- **24 Specialized Agents** - Sage, CEO, CTO, CMO/COO, CFO, Engineering Manager, Product Manager, QA, Design, DevOps, and more
+- **24 Specialized Agents** - CEO, CTO, CMO/COO, CFO, Engineering Manager, Product Manager, QA, Design, DevOps, and more
 - **19 Skills** - /mg-leadership-team, /mg-build, /mg-code-review, and others
 - **Shared Protocols** - CAD development workflow, memory protocol, handoff protocol for coordination
 - **NDA-Safe Architecture** - Project memory stays local, agents/skills are shared role definitions

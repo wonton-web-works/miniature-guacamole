@@ -22,6 +22,8 @@ All skills support an `output_mode` parameter controlling terminal verbosity:
 
 To request verbose mode, include "verbose" or `output_mode: verbose` in your invocation. Unknown values default to compact. Verbose mode definitions are in `../shared/visual-formatting.md`.
 
+**Agent badge prefix:** In compact mode, each agent output line is prefixed with a colored badge: `{emoji} [{CATEGORY}] {agent-name}`. The canonical badge-to-agent mapping table is defined in `../shared/visual-formatting.md`.
+
 ## Standard Sections
 
 All skill outputs should include these core sections where applicable:

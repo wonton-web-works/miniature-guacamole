@@ -13,18 +13,6 @@ miniature-guacamole was built using its own framework. Every commit went through
 | Major releases | v1.0 → v4.1 |
 | Net lines in v2.1 | -6,900 (more features, less code) |
 
-## The Self-Improvement Loop
-
-miniature-guacamole runs a daemon on a Mac Mini that processes its own GitHub issues 24/7. The daemon:
-
-1. Polls for issues labeled `mg-daemon`
-2. Triages each ticket (scope, clarity, feasibility, safety)
-3. Plans workstreams via the leadership team
-4. Writes tests, implements, reviews — the full CAD cycle
-5. Creates draft PRs for human review
-
-The framework improves itself autonomously. Human review is the final gate.
-
 ## Real Example: Architecture Decision in 18 Minutes
 
 When the team needed to decide whether to keep the MCP server or switch to CLI-primary architecture:
@@ -37,14 +25,13 @@ When the team needed to decide whether to keep the MCP server or switch to CLI-p
 
 The resulting release removed 80+ dependencies and 6,900 lines of code while adding new features.
 
-## What Agents Wrote Today
+## What Agents Built
 
-The daemon processes tickets continuously. Recent autonomous work includes:
+Recent autonomous work includes:
 
 - Security domain reference files (web, systems, cloud, crypto)
-- Triage gate wiring and configuration
 - CLI command reference documentation
 - Framework glossary
 - Coverage hardening across test suites
 
-Every PR linked to a `[GH-*]` prefix in the commit history was created by the daemon.
+Every PR linked to a `[GH-*]` prefix in the commit history was created by agents running the full CAD cycle.

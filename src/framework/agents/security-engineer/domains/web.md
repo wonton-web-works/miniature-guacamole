@@ -9,6 +9,7 @@ Domain reference for web application security reviews. Load this file when the r
 3. **Authorization and Access Control** — Verify role-based access control (RBAC) enforcement on every endpoint, check for insecure direct object references (IDOR), review API authorization scopes and resource ownership, confirm admin function protection, and validate CORS configuration.
 4. **Transport and Data Protection** — Confirm TLS enforcement with HSTS headers, review Content Security Policy (CSP) headers, check cookie attributes (Secure, HttpOnly, SameSite), verify sensitive data is not leaked in error messages, and review API key management.
 5. **CSRF and Request Integrity** — Verify Cross-Site Request Forgery (CSRF) tokens on state-changing endpoints, check anti-CSRF mechanisms for SPA architectures, and review CORS preflight configuration for cross-origin requests.
+6. **API and Protocol Security** — Review WebSocket authentication and message validation, check GraphQL endpoints for injection, batching attacks, introspection exposure, and depth limits, verify rate-limit bypass mitigations, check for mass assignment vulnerabilities in request body parsing, review HTTP request smuggling exposure (chunked encoding, CL.TE), and assess cache poisoning risk (unkeyed headers, host header injection).
 
 ## Threat Model
 
@@ -18,6 +19,11 @@ Domain reference for web application security reviews. Load this file when the r
 4. **CSRF and request forgery** — Attacker tricks authenticated users into performing unintended actions. Mitigate with anti-CSRF tokens and SameSite cookie attributes.
 5. **Server-Side Request Forgery (SSRF)** — Attacker manipulates server to make requests to internal resources. Mitigate with URL allowlists and blocking internal network ranges.
 6. **Insecure deserialization** — Attacker sends crafted serialized objects to achieve remote code execution or privilege escalation. Mitigate by avoiding native deserialization of untrusted data.
+7. **API abuse** — Attacker bypasses rate limiting to brute-force credentials or scrape data; mass assignment vulnerabilities allow overwriting protected fields. Mitigate with per-user rate limits and explicit allowlists for writable fields.
+8. **HTTP request smuggling** — Attacker exploits disagreements between front-end proxy and back-end server on request boundaries to poison queues or bypass access controls. Mitigate by normalizing chunked encoding handling and using HTTP/2 end-to-end.
+9. **Cache poisoning** — Attacker injects malicious responses into shared caches via unkeyed inputs (Host header, X-Forwarded-Host). Mitigate by keying caches on all user-controllable headers and avoiding caching of responses that vary on unvalidated headers.
+10. **WebSocket hijacking** — Attacker performs cross-site WebSocket hijacking (CSWSH) by luring victim to open a malicious page that upgrades a WebSocket without CSRF protection. Mitigate with origin validation and session tokens in the WebSocket handshake.
+11. **GraphQL attacks** — Attacker uses introspection to enumerate schema, batches queries to amplify load, or crafts deeply nested queries to trigger DoS. Mitigate with disabled introspection in production, query depth and complexity limits, and batching restrictions.
 
 ## Checklist
 
@@ -35,6 +41,12 @@ Domain reference for web application security reviews. Load this file when the r
 - [ ] Error responses do not leak stack traces, SQL errors, or internal paths
 - [ ] No hardcoded API keys, tokens, or secrets in source code
 - [ ] OWASP Top 10 (2021) coverage verified for each applicable category
+- [ ] WebSocket endpoints validate Origin header and authenticate the handshake
+- [ ] GraphQL: introspection disabled in production, depth limit enforced, batching restricted
+- [ ] API endpoints protected against mass assignment (explicit field allowlists)
+- [ ] Rate-limit bypass vectors checked (IP rotation, header spoofing, parameter variation)
+- [ ] HTTP request smuggling risk assessed for all reverse-proxy/backend pairs
+- [ ] Cache poisoning risk assessed; unkeyed headers do not influence cached responses
 
 ## OWASP Top 10 (2021) Mapping
 

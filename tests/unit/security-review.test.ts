@@ -45,14 +45,14 @@ describe('Security Review - WS-10', () => {
       expect(content).toMatch(/^##\s+Constitution\s*$/m);
     });
 
-    it('should have 4 constitution principles (Memory-first, Visual standards, and output format inherited from base)', () => {
+    it('should have 5 constitution principles', () => {
       const content = fs.readFileSync(skillPath, 'utf-8');
       const constitutionMatch = content.match(/##\s+Constitution\s*$([\s\S]*?)##/m);
       expect(constitutionMatch).toBeTruthy();
       if (constitutionMatch) {
         const principles = constitutionMatch[1].match(/^\d+\.\s+\*\*/gm);
         expect(principles).toBeTruthy();
-        expect(principles?.length).toBe(4);
+        expect(principles?.length).toBe(5);
       }
     });
 

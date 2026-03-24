@@ -9,6 +9,31 @@ Versioning follows [Semantic Versioning](https://semver.org/): MAJOR.MINOR.PATCH
 
 ---
 
+## [6.1.0] — 2026-03-24
+
+### Added
+- **Brand file schemas** — `brand-guidelines.json` and `design-system.json` schemas defined in memory protocol. `mg-init` creates templates on project setup. `mg-design --brand` generates structured JSON that agents read programmatically. (#246, PR #264)
+- **Gitignore protection** — `mg-init` now appends `.gitignore` patterns for `.claude/` transient files (agent memory, session backups, install markers). Only adds patterns not already present. (#259, PR #263)
+- **Routing preference** — `mg-init` offers routing preference configuration during install (`/mg` vs manual skill invocation). (#260, PR #263)
+- **Custom agent documentation** — `/mg` SKILL.md documents the two-step pattern for spawning non-built-in agents via `subagent_type: "general-purpose"` with prompt-loaded identity. (#261, PR #262)
+
+### Fixed
+- **`/mg` dispatch now invokes directly** — `/mg` calls the Skill tool to run matched skills instead of just suggesting them. Users no longer need to re-type the command. (#258, PR #262)
+- **Core tables migration** — `001-core-tables.sql` updated with missing columns and indexes to match spec. (#247, PR #252)
+- **5 release blockers resolved** — doc accuracy, agent/skill counts, build exclusions, installer detection. (#243, PR #249)
+
+### Changed
+- **Community/premium separation complete** — All references to proprietary components removed from codebase, documentation, benchmarks, tests, and git history. Git history rewritten via `git-filter-repo` (WS-7). Proprietary components live exclusively in private repo.
+- **Site removed** — Marketing site source (`site/`) removed from community repo. Product site deployed separately.
+- **Daemon migrated** — Daemon source moved to private repo. Community repo retains framework agents and skills only.
+- **Visual Output Protocol v2** — Shipped in this release cycle (PR #248).
+
+### Infrastructure
+- GitHub Pages deploy workflow added for docs site
+- Premium-named branches and tags cleaned from repo history
+
+---
+
 ## [6.0.0] — 2026-03-23
 
 ### Breaking Changes

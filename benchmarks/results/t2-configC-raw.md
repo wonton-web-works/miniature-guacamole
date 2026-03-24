@@ -50,14 +50,14 @@ Option A (file-based) preserves more future options.
 Option B (centralized queue) closes doors permanently:
 - Every new user must now install and configure Redis or SQLite
 - "Install our framework" becomes "install our framework + set up a message broker"
-- We lose the "works out of the box" positioning that differentiates us from complex enterprise tools
+- We lose the "works out of the box" positioning that differentiates us from complex premium tools
 
 [CEO] Displaces:
 If we commit 4 weeks to this, we are NOT doing:
 - Client feature requests that could drive renewals
 - Daemon triage improvements (8 open issues in WS-DAEMON)
 - Marketing site completion (drives new pilot signups)
-- Security review (blocks enterprise procurement)
+- Security review (blocks premium procurement)
 
 [CEO] Approved Alternative:
 Spend 1 week, 1 engineer to add:
@@ -147,7 +147,7 @@ tool layer.
 [CMO/COO] Architecture Decision Assessment: Agent Message Bus
 
 [CMO] Decision:
-Block Option A for enterprise/daemon deployment. Approve Option B-SQLite as required for go-to-market.
+Block Option A for premium/daemon deployment. Approve Option B-SQLite as required for go-to-market.
 
 [CMO] Rationale:
 1. Brand integrity: Cannot sell "resilient" daemon with known data loss issues

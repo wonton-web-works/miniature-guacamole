@@ -3,7 +3,7 @@
 Agents communicate via structured JSON files in `.claude/memory/`. This document is the authoritative schema reference for the Phase 1 file-based message bus.
 
 **Source of truth:** `.claude/shared/memory-protocol.md` § Agent Message Bus
-**Phase 2 MCP design:** [docs/technical-design-agent-comms.md](technical-design-agent-comms.md)
+**Phase 2 MCP design:** `docs/technical-design-agent-comms.md` (planned)
 
 ---
 
@@ -166,4 +166,4 @@ Append to the `messages` array — do not overwrite existing messages.
 
 The file-based bus (Phase 1) will be wrapped by an MCP server in Phase 2, adding real-time queries and structured tools (`agent.send`, `agent.query`, `agent.handoff`). Phase 2 is backward compatible — agents without MCP can continue using file-based messages.
 
-See [docs/technical-design-agent-comms.md](technical-design-agent-comms.md) for the full design.
+See `docs/technical-design-agent-comms.md` for the full design (planned).

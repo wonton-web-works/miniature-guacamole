@@ -1,7 +1,7 @@
 /**
  * Adapter Registry — WS-SPLIT-4
  *
- * Module-level singleton that lets enterprise and third-party packages
+ * Module-level singleton that lets premium and third-party packages
  * register StorageAdapter implementations into the OSS factory without
  * touching OSS source code.
  *

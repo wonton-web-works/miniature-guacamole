@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# mg-logout — end enterprise session
+# mg-logout — end premium session
 # Usage: mg-logout
 set -euo pipefail
 

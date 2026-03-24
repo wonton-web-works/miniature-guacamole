@@ -567,7 +567,7 @@ communication protocols.
 
 | Version | Date       | Codename               | Key Milestone                              |
 |---------|------------|------------------------|--------------------------------------------|
-| **5.0.0** | **2026-03-22** | **Enterprise & Sage** | **Sage orchestrator, CMO/COO, CFO, Config C, 52 boundary tests, 24 agents** |
+| **5.0.0** | **2026-03-22** | **Orchestrator & C-Suite** | **Orchestrator agent, CMO/COO, CFO, Config C, 52 boundary tests, 24 agents** |
 | **4.2.0** | **2026-03-20** | **Value CTA** | **Marketing value section, daemon docs, site changelog** |
 | **4.1.0** | **2026-03-19** | **Output Parity** | **Compact output protocol, ANSI colors, timing, marketing site** |
 | **4.0.0** | **2026-03-19** | **Framework Hardening** | **Base template inheritance, 2-track dev cycle, agent message bus** |
@@ -576,7 +576,7 @@ communication protocols.
 | **2.2.0** | **2026-03-18** | **Two-Phase Install** | **Global CLI installer + per-project init** |
 | **2.1.0** | **2026-03-16** | **CLI-Primary** | **MCP server removed, mg router added, --json output** |
 | **1.2.0** | **2026-03-10** | **Platform Expansion** | **MCP server, token audit log, Docker Compose, skill spec compliance** |
-| **1.1.0** | **2026-02-10** | **Enterprise Adapter** | **registerAdapter() plugin boundary, CI hardening** |
+| **1.1.0** | **2026-02-10** | **Adapter Registry** | **registerAdapter() plugin boundary, CI hardening** |
 | **1.0.0** | **2026-02-10** | **Initial Release** | **16 mg-prefixed skills, 19 agents, project-local architecture** |
 
 ### Pre-Release Versions

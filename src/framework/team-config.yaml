@@ -101,7 +101,6 @@ organization:
 
 # Role hierarchy for escalation paths
 hierarchy:
-  sage:        [sage]
   executive:   [ceo, cto, cmo, cfo, engineering-director]
   leadership:  [product-owner, product-manager, engineering-manager, staff-engineer, art-director]
   ic:          [dev, qa, design]
@@ -118,22 +117,6 @@ hierarchy:
 #   - memory_patterns: what to read/write in shared memory
 
 agents:
-  # === SAGE (enterprise orchestrator) ===
-
-  sage:
-    title: The Sage
-    tier: reasoning
-    description: >
-      Project-level orchestrator. Intake, session management, research evaluation,
-      quality enforcement, drift prevention. Entry point for all MG work.
-      Enterprise-only — requires valid enterprise session.
-    tools: [Read, Glob, Grep, Task, WebSearch]
-    can_spawn: [supervisor, ceo, cto, cmo, cfo]
-    escalates_to: null  # Top of chain — escalates to user
-    memory_patterns:
-      reads:  [project-context, specialists, workstream-status, supervisor-alerts, leadership-decisions]
-      writes: [project-context, specialists, sage-session-log]
-
   # === EXECUTIVE TIER (reasoning model) ===
 
   cmo:
@@ -353,7 +336,6 @@ teams:
   leadership-team:
     description: Strategic decisions, executive reviews, code review approvals
     members: [ceo, cto, cmo, cfo, engineering-director]
-    orchestrator: sage  # Enterprise mode — Sage selectively spawns C-Suite
     default_tier: reasoning  # Team-level operations use reasoning model
 
   product-team:

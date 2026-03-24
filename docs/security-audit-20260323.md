@@ -1,25 +1,25 @@
-# Security Audit — miniature-guacamole / PrivateEnterprise Enterprise
+# Security Audit — miniature-guacamole / PrivatePremium Premium
 **Auditor:** Security Engineer (miniature-guacamole)
 **Date:** 2026-03-23
-**Scope:** Enterprise auth CLI scripts, Wonton API routes, enterprise marketing site, session/credential files, dependency vulnerabilities, secret scanning
+**Scope:** Premium auth CLI scripts, Wonton API routes, premium marketing site, session/credential files, dependency vulnerabilities, secret scanning
 **Domains assessed:** web, systems, cloud, crypto
-**Prior audit:** docs/design-specs/enterprise-security-review.md (2026-03-22)
+**Prior audit:** docs/design-specs/premium-security-review.md (2026-03-22)
 
 ---
 
 ## What Changed Since Last Audit
 
-- `enterprise.astro` was **removed from `site/src/pages/`** — the enterprise page is no longer served from the site. The file exists at `site/src/scripts/enterprise.ts` as extracted JS only.
+- `premium.astro` was **removed from `site/src/pages/`** — the premium page is no longer served from the site. The file exists at `site/src/scripts/premium.ts` as extracted JS only.
 - `site/public/_headers` now **exists** with security headers — the HIGH finding from the prior audit (no headers) has been remediated.
 - `site/public/robots.txt` now **exists** — but the `/pilot` path is NOT disallowed. The LOW finding from the prior audit (no robots.txt) is partially remediated.
-- Enterprise auth pipeline (`mg-login`, `mg-logout`, `mg-upgrade`, `mg-status`, `mg-dev-key`) is **new surface area** not covered by the prior audit.
-- Wonton API routes for `auth/`, `licenses/`, and `enterprise/` are **new surface area**.
+- Premium auth pipeline (`mg-login`, `mg-logout`, `mg-upgrade`, `mg-status`, `mg-dev-key`) is **new surface area** not covered by the prior audit.
+- Wonton API routes for `auth/`, `licenses/`, and `premium/` are **new surface area**.
 
 ---
 
 ## Summary
 
-No critical vulnerabilities were found in the API layer. The most impactful new findings are: (1) JSON injection via unsanitized user input in `mg-login` shell script; (2) the `/api/mg/auth/login` endpoint has no rate limiting despite being a password authentication endpoint; (3) the `mg-dev-key` script ships in the distribution and creates non-expiring enterprise sessions; (4) `robots.txt` was added but still does not disallow `/pilot`; and (5) two HIGH-severity CVEs in the dashboard's `next` and `undici` dependencies require upgrade.
+No critical vulnerabilities were found in the API layer. The most impactful new findings are: (1) JSON injection via unsanitized user input in `mg-login` shell script; (2) the `/api/mg/auth/login` endpoint has no rate limiting despite being a password authentication endpoint; (3) the `mg-dev-key` script ships in the distribution and creates non-expiring premium sessions; (4) `robots.txt` was added but still does not disallow `/pilot`; and (5) two HIGH-severity CVEs in the dashboard's `next` and `undici` dependencies require upgrade.
 
 ---
 
@@ -122,20 +122,20 @@ The `next` HTTP request smuggling vulnerability (if this is a production dashboa
 
 ---
 
-### MEDIUM — `mg-dev-key` creates non-expiring enterprise sessions; distributed in installer
+### MEDIUM — `mg-dev-key` creates non-expiring premium sessions; distributed in installer
 
 **SEVERITY:** MEDIUM
 **LOCATION:** `src/installer/mg-dev-key`
 
-**Finding:** `mg-dev-key` is a shell script in the installer that creates a local enterprise session file (`~/.claude/ext-session.json`) with:
-- `"tier": "enterprise"` — full enterprise features enabled
+**Finding:** `mg-dev-key` is a shell script in the installer that creates a local premium session file (`~/.claude/ext-session.json`) with:
+- `"tier": "premium"` — full premium features enabled
 - `"seats": 999`
 - `"expiresAt": "2099-12-31T23:59:59Z"` — effectively non-expiring
 - `"devMode": true`
 
 The token format `dev-local-{machineId}` is deterministic and based on publicly derivable machine info. The script writes the session file **without** setting 0600 permissions — the umask line used in `mg-login` is absent. The file is written with default umask (typically 0644 on most systems), making the token world-readable until `chmod 600` runs afterward (line 61).
 
-More significantly: this script is bundled in the installer (`src/installer/`) and ships to all users. If a client discovers the script, they can generate their own enterprise session locally that passes all CLI-side checks (since `mg-upgrade` reads the local session file and only checks the token's presence, not its origin). The server-side download route (`/api/mg/enterprise/download`) validates the token against the database, so the dev session would be blocked there — but CLI workflows that only read the local session file (like `mg-status`'s local display, or any CLI tool that inspects tier/features before making an API call) would show "enterprise" status to the user.
+More significantly: this script is bundled in the installer (`src/installer/`) and ships to all users. If a client discovers the script, they can generate their own premium session locally that passes all CLI-side checks (since `mg-upgrade` reads the local session file and only checks the token's presence, not its origin). The server-side download route (`/api/mg/premium/download`) validates the token against the database, so the dev session would be blocked there — but CLI workflows that only read the local session file (like `mg-status`'s local display, or any CLI tool that inspects tier/features before making an API call) would show "premium" status to the user.
 
 **Fix:**
 1. Move `mg-dev-key` out of the installer distribution. It should only exist in the framework development repository, not in client-installed packages.
@@ -151,35 +151,35 @@ More significantly: this script is bundled in the installer (`src/installer/`) a
 
 ---
 
-### MEDIUM — `SAGE_AGENT_PATH` env var in download route: server-side path traversal risk
+### MEDIUM — `ORCHESTRATOR_AGENT_PATH` env var in download route: server-side path traversal risk
 
 **SEVERITY:** MEDIUM
-**LOCATION:** `/tmp/wonton/app/api/mg/enterprise/download/route.ts:54-56`
+**LOCATION:** `/tmp/wonton/app/api/mg/premium/download/route.ts:54-56`
 
 ```ts
-const sageAgentPath =
-  process.env.SAGE_AGENT_PATH ??
-  join(process.cwd(), "agents", "sage", "AGENT.md");
+const orchestratorAgentPath =
+  process.env.ORCHESTRATOR_AGENT_PATH ??
+  join(process.cwd(), "agents", "orchestrator", "AGENT.md");
 ```
 
-**Finding:** The Sage download endpoint reads a file from a path controlled by the `SAGE_AGENT_PATH` environment variable. If an attacker can set this environment variable (via a misconfigured deployment pipeline, secrets injection, SSRF to a metadata endpoint, or CI/CD environment compromise), they can cause the endpoint to serve the contents of any file readable by the Next.js process — `/etc/passwd`, other agent files, `.env.local`, private keys, etc. — to any authenticated enterprise user.
+**Finding:** The Orchestrator download endpoint reads a file from a path controlled by the `ORCHESTRATOR_AGENT_PATH` environment variable. If an attacker can set this environment variable (via a misconfigured deployment pipeline, secrets injection, SSRF to a metadata endpoint, or CI/CD environment compromise), they can cause the endpoint to serve the contents of any file readable by the Next.js process — `/etc/passwd`, other agent files, `.env.local`, private keys, etc. — to any authenticated premium user.
 
-The variable is documented only in a test file comment (`process.env.SAGE_AGENT_PATH = "/fake/agents/sage/AGENT.md"`), not in `.env.example`, which suggests it was added for testing convenience without a full security review.
+The variable is documented only in a test file comment (`process.env.ORCHESTRATOR_AGENT_PATH = "/fake/agents/orchestrator/AGENT.md"`), not in `.env.example`, which suggests it was added for testing convenience without a full security review.
 
 **Fix:**
-1. Validate `SAGE_AGENT_PATH` against an allowlist of permitted prefixes at startup:
+1. Validate `ORCHESTRATOR_AGENT_PATH` against an allowlist of permitted prefixes at startup:
    ```ts
-   const rawPath = process.env.SAGE_AGENT_PATH;
+   const rawPath = process.env.ORCHESTRATOR_AGENT_PATH;
    if (rawPath) {
      const resolved = path.resolve(rawPath);
      const allowed = path.resolve(process.cwd(), "agents");
      if (!resolved.startsWith(allowed + path.sep)) {
-       throw new Error("SAGE_AGENT_PATH outside permitted directory");
+       throw new Error("ORCHESTRATOR_AGENT_PATH outside permitted directory");
      }
    }
    ```
-2. Or remove the env var override entirely and use only `join(process.cwd(), "agents", "sage", "AGENT.md")`.
-3. Add `SAGE_AGENT_PATH` to `.env.example` with a comment warning that arbitrary paths are dangerous.
+2. Or remove the env var override entirely and use only `join(process.cwd(), "agents", "orchestrator", "AGENT.md")`.
+3. Add `ORCHESTRATOR_AGENT_PATH` to `.env.example` with a comment warning that arbitrary paths are dangerous.
 
 ---
 
@@ -223,10 +223,10 @@ This is a design decision with a known trade-off, not an immediate vulnerability
 ```
 User-agent: *
 Allow: /
-Sitemap: https://private-enterprise.wontonwebworks.com/sitemap.xml
+Sitemap: https://private-premium.wontonwebworks.com/sitemap.xml
 ```
 
-The `/pilot` page remains crawlable. The enterprise.astro page that linked to `/pilot` has been removed, which reduces public discoverability significantly. However the sitemap (`/sitemap.xml`) — if auto-generated by Astro — may include `/pilot` in its entries.
+The `/pilot` page remains crawlable. The premium.astro page that linked to `/pilot` has been removed, which reduces public discoverability significantly. However the sitemap (`/sitemap.xml`) — if auto-generated by Astro — may include `/pilot` in its entries.
 
 **Fix:**
 ```
@@ -234,7 +234,7 @@ User-agent: *
 Disallow: /pilot
 Allow: /
 
-Sitemap: https://private-enterprise.wontonwebworks.com/sitemap.xml
+Sitemap: https://private-premium.wontonwebworks.com/sitemap.xml
 ```
 Also verify that `site/public/sitemap.xml` or Astro's sitemap plugin excludes `/pilot`.
 
@@ -251,18 +251,18 @@ Also verify that `site/public/sitemap.xml` or Astro's sitemap plugin excludes `/
 
 ---
 
-### LOW — CSP `script-src` still includes `'unsafe-inline'`; enterprise.ts extraction was partial
+### LOW — CSP `script-src` still includes `'unsafe-inline'`; premium.ts extraction was partial
 
 **SEVERITY:** LOW
-**LOCATION:** `site/public/_headers:8`, `site/src/scripts/enterprise.ts`
+**LOCATION:** `site/public/_headers:8`, `site/src/scripts/premium.ts`
 
-**Finding:** The prior audit recommended extracting inline scripts to enable a meaningful `script-src 'self'` CSP. The script has been extracted to `enterprise.ts`. However, `_headers` still sets `script-src 'self' 'unsafe-inline'`. The `'unsafe-inline'` directive was not removed after the extraction, so the CSP still provides no XSS protection for scripts.
+**Finding:** The prior audit recommended extracting inline scripts to enable a meaningful `script-src 'self'` CSP. The script has been extracted to `premium.ts`. However, `_headers` still sets `script-src 'self' 'unsafe-inline'`. The `'unsafe-inline'` directive was not removed after the extraction, so the CSP still provides no XSS protection for scripts.
 
-Additionally, the extracted script is loaded from the enterprise page — but since `site/src/pages/enterprise.astro` no longer exists in the pages directory, it is unclear whether `enterprise.ts` is actually being loaded anywhere or has become dead code.
+Additionally, the extracted script is loaded from the premium page — but since `site/src/pages/premium.astro` no longer exists in the pages directory, it is unclear whether `premium.ts` is actually being loaded anywhere or has become dead code.
 
 **Fix:**
 1. Remove `'unsafe-inline'` from `script-src` now that scripts are in external files. Update to `script-src 'self'`.
-2. Confirm whether `enterprise.ts` is referenced from any active page. If not, it is dead code and should be removed to reduce maintenance surface.
+2. Confirm whether `premium.ts` is referenced from any active page. If not, it is dead code and should be removed to reduce maintenance surface.
 
 ---
 
@@ -294,7 +294,7 @@ ENDJSON
 - `User.role` = platform-wide Wonton admin (super-admin for the entire Wonton platform)
 - `MgOrgMember.role` = org-scoped role within a specific MG organization
 
-If a user is made a Wonton platform admin for any reason, they automatically gain the ability to issue and revoke enterprise licenses for all MG organizations. This is likely the intended behavior (Wonton admins = PrivateEnterprise admins), but it should be an explicit design decision documented in the code, not an implicit coupling.
+If a user is made a Wonton platform admin for any reason, they automatically gain the ability to issue and revoke premium licenses for all MG organizations. This is likely the intended behavior (Wonton admins = PrivatePremium admins), but it should be an explicit design decision documented in the code, not an implicit coupling.
 
 **Fix:** Add a comment to both routes clarifying that `admin` here refers to the Wonton platform role. If org-scoped admin authorization is ever needed, a separate check against `MgOrgMember.role` must be added.
 
@@ -316,7 +316,7 @@ If a user is made a Wonton platform admin for any reason, they automatically gai
 **SEVERITY:** INFO
 **LOCATION:** `LICENSE.ext`
 
-**Finding:** The enterprise license file contains only public legal text (copyright, restrictions, contact email). No internal service URLs, tokens, pricing, or architecture details. The contact address `enterprise@wontonwebworks.com` is intentionally public.
+**Finding:** The premium license file contains only public legal text (copyright, restrictions, contact email). No internal service URLs, tokens, pricing, or architecture details. The contact address `premium@wontonwebworks.com` is intentionally public.
 
 **Status:** No action required.
 
@@ -352,7 +352,7 @@ If a user is made a Wonton platform admin for any reason, they automatically gai
 | 2 | HIGH | Fix JSON injection in `mg-login` `printf` body construction | Low |
 | 3 | HIGH | Upgrade `dashboard/` dependencies (`next`, `undici`, `rollup`, `minimatch`) | Medium |
 | 4 | MEDIUM | Remove `mg-dev-key` from client distribution; add to dev-only tooling | Low |
-| 5 | MEDIUM | Validate/restrict `SAGE_AGENT_PATH` env var in download route | Low |
+| 5 | MEDIUM | Validate/restrict `ORCHESTRATOR_AGENT_PATH` env var in download route | Low |
 | 6 | MEDIUM | Add rate limiting to `/api/mg/auth/register`; make admin-gated | Medium |
 | 7 | LOW | Fix `mg-dev-key` to use `umask 177` (TOCTOU window on session file) | Trivial |
 | 8 | LOW | Add `Disallow: /pilot` to `robots.txt` | Trivial |
@@ -371,19 +371,19 @@ If a user is made a Wonton platform admin for any reason, they automatically gai
 | Pilot gate is client-side only | CRITICAL | OPEN — page still exists, gate unchanged |
 | Google Fonts without SRI | HIGH | OPEN — unchanged |
 | robots.txt missing | LOW | PARTIALLY REMEDIATED — file added but `/pilot` not excluded |
-| Inline `<script>` blocks in enterprise.astro | MEDIUM | PARTIALLY REMEDIATED — script extracted to `enterprise.ts` but `unsafe-inline` not removed from CSP |
-| `svg.innerHTML = ''` pattern | LOW | REMEDIATED — `enterprise.ts` uses DOM removal loop (`while (svg.firstChild) svg.removeChild(svg.firstChild)`) |
-| Enterprise page not using Base layout | MEDIUM | N/A — enterprise.astro removed from pages |
+| Inline `<script>` blocks in premium.astro | MEDIUM | PARTIALLY REMEDIATED — script extracted to `premium.ts` but `unsafe-inline` not removed from CSP |
+| `svg.innerHTML = ''` pattern | LOW | REMEDIATED — `premium.ts` uses DOM removal loop (`while (svg.firstChild) svg.removeChild(svg.firstChild)`) |
+| Premium page not using Base layout | MEDIUM | N/A — premium.astro removed from pages |
 
 ---
 
 ## Verdict
 
-**Enterprise auth pipeline:** The CLI scripts have one concrete exploitable issue (JSON injection in `mg-login` — HIGH), one distribution concern (`mg-dev-key` in client packages — MEDIUM), and minor file permission and TOCTOU issues. The server-side API routes are well-structured, use Prisma parameterized queries throughout (no SQL injection surface), and implement proper bcrypt timing-safe authentication. The primary gap is the absence of rate limiting on auth endpoints.
+**Premium auth pipeline:** The CLI scripts have one concrete exploitable issue (JSON injection in `mg-login` — HIGH), one distribution concern (`mg-dev-key` in client packages — MEDIUM), and minor file permission and TOCTOU issues. The server-side API routes are well-structured, use Prisma parameterized queries throughout (no SQL injection surface), and implement proper bcrypt timing-safe authentication. The primary gap is the absence of rate limiting on auth endpoints.
 
-**Wonton API routes:** No injection vulnerabilities. Auth middleware correctly validates token, expiry, and revocation on every request. The admin role conflation (platform role vs. org role) is a design clarity issue. `SAGE_AGENT_PATH` env var override is a path traversal risk if the server environment is compromised.
+**Wonton API routes:** No injection vulnerabilities. Auth middleware correctly validates token, expiry, and revocation on every request. The admin role conflation (platform role vs. org role) is a design clarity issue. `ORCHESTRATOR_AGENT_PATH` env var override is a path traversal risk if the server environment is compromised.
 
-**Enterprise site:** Security headers have been added — this is a meaningful improvement. The prior CRITICAL finding (pilot gate bypass) and HIGH finding (Google Fonts SRI) remain open.
+**Premium site:** Security headers have been added — this is a meaningful improvement. The prior CRITICAL finding (pilot gate bypass) and HIGH finding (Google Fonts SRI) remain open.
 
 **Dependencies:** `site/` is clean. `dashboard/` has HIGH-severity CVEs in `next` and `undici` that require attention, particularly the HTTP request smuggling vulnerabilities.
 

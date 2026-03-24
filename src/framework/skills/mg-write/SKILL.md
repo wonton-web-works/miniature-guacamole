@@ -159,7 +159,7 @@ Varied lengths create natural flow. Mix:
 Concrete details beat abstract promises:
 - "Quick setup, zero fuss, done in minutes" > "seamless onboarding experience"
 - "See changes as they happen" > "real-time collaboration"
-- "Built for teams who move fast" > "enterprise-grade agility"
+- "Built for teams who move fast" > "premium-grade agility"
 
 ### Authentic Voice
 Avoid:

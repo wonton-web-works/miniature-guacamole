@@ -7,12 +7,12 @@
 #
 # Acceptance Criteria:
 #   AC-OSS-3.1: LICENSE file exists at repo root with MIT license text
-#   AC-OSS-3.2: enterprise/ directory is excluded from dist tarball
+#   AC-OSS-3.2: premium/ directory is excluded from dist tarball
 #   AC-OSS-3.3: Stale bench files (src/bench/greeting.html, tests/bench/) removed
 #   AC-OSS-3.4: .gitignore covers node_modules, dist/, .env, coverage, *.tar.gz
 #   AC-OSS-3.5: No files with real credential patterns in tracked files
 #   AC-OSS-3.6: package.json license field set to "MIT"
-#   AC-OSS-3.7: enterprise/ has its own README noting proprietary license
+#   AC-OSS-3.7: premium/ has its own README noting proprietary license
 # ============================================================================
 
 bats_require_minimum_version 1.5.0
@@ -53,21 +53,21 @@ setup() {
 
 # --- AC-OSS-3.2 misuse ---
 
-@test "AC-OSS-3.2 MISUSE: build.sh does not copy enterprise/ into dist staging dir" {
-    # build.sh must never cp enterprise/ into DIST_DIR
-    # It copies only src/framework/ and src/installer/ — verify no cp of enterprise/
-    run grep -n "cp.*enterprise" "$PROJECT_ROOT/build.sh"
+@test "AC-OSS-3.2 MISUSE: build.sh does not copy premium/ into dist staging dir" {
+    # build.sh must never cp premium/ into DIST_DIR
+    # It copies only src/framework/ and src/installer/ — verify no cp of premium/
+    run grep -n "cp.*premium" "$PROJECT_ROOT/build.sh"
     [ "$status" -ne 0 ]
 }
 
-@test "AC-OSS-3.2 MISUSE: build.sh does not reference enterprise/ as a source directory" {
-    # tar, rsync, or any archiving command must not include enterprise/
-    run grep -n "tar.*enterprise\|rsync.*enterprise\|zip.*enterprise" "$PROJECT_ROOT/build.sh"
+@test "AC-OSS-3.2 MISUSE: build.sh does not reference premium/ as a source directory" {
+    # tar, rsync, or any archiving command must not include premium/
+    run grep -n "tar.*premium\|rsync.*premium\|zip.*premium" "$PROJECT_ROOT/build.sh"
     [ "$status" -ne 0 ]
 }
 
-@test "AC-OSS-3.2 MISUSE: build.sh does not add enterprise/ to FRAMEWORK_DIR or INSTALLER_DIR" {
-    run grep -n "FRAMEWORK_DIR.*enterprise\|INSTALLER_DIR.*enterprise" "$PROJECT_ROOT/build.sh"
+@test "AC-OSS-3.2 MISUSE: build.sh does not add premium/ to FRAMEWORK_DIR or INSTALLER_DIR" {
+    run grep -n "FRAMEWORK_DIR.*premium\|INSTALLER_DIR.*premium" "$PROJECT_ROOT/build.sh"
     [ "$status" -ne 0 ]
 }
 
@@ -171,20 +171,20 @@ setup() {
 
 # --- AC-OSS-3.7 misuse ---
 
-@test "AC-OSS-3.7 MISUSE: enterprise/README.md exists" {
-    [ -f "$PROJECT_ROOT/enterprise/README.md" ]
+@test "AC-OSS-3.7 MISUSE: premium/README.md exists" {
+    [ -f "$PROJECT_ROOT/premium/README.md" ]
 }
 
-@test "AC-OSS-3.7 MISUSE: enterprise/README.md is not empty" {
-    [ -f "$PROJECT_ROOT/enterprise/README.md" ]
+@test "AC-OSS-3.7 MISUSE: premium/README.md is not empty" {
+    [ -f "$PROJECT_ROOT/premium/README.md" ]
     local size
-    size=$(wc -c < "$PROJECT_ROOT/enterprise/README.md" | tr -d ' ')
+    size=$(wc -c < "$PROJECT_ROOT/premium/README.md" | tr -d ' ')
     [ "$size" -gt 0 ]
 }
 
-@test "AC-OSS-3.7 MISUSE: enterprise/README.md does not say MIT license" {
-    [ -f "$PROJECT_ROOT/enterprise/README.md" ]
-    run grep -i "mit license\|mit licensed\|\"mit\"" "$PROJECT_ROOT/enterprise/README.md"
+@test "AC-OSS-3.7 MISUSE: premium/README.md does not say MIT license" {
+    [ -f "$PROJECT_ROOT/premium/README.md" ]
+    run grep -i "mit license\|mit licensed\|\"mit\"" "$PROJECT_ROOT/premium/README.md"
     [ "$status" -ne 0 ]
 }
 
@@ -215,11 +215,11 @@ setup() {
 
 @test "AC-OSS-3.2 BOUNDARY: build.sh tar command archives only the dist/miniature-guacamole/ subtree" {
     # The tar command should reference miniature-guacamole/ (relative inside dist/)
-    # not the repo root, ensuring enterprise/ can't leak in via a broad glob
+    # not the repo root, ensuring premium/ can't leak in via a broad glob
     run grep "tar.*-czf\|tar.*-cf" "$PROJECT_ROOT/build.sh"
     [ "$status" -eq 0 ]
     [[ "$output" =~ "miniature-guacamole" ]]
-    # Must NOT be tarballing from repo root (would capture enterprise/)
+    # Must NOT be tarballing from repo root (would capture premium/)
     [[ ! "$output" =~ "tar.*-czf.*miniature-guacamole.tar.gz \." ]]
 }
 
@@ -303,9 +303,9 @@ setup() {
 
 # --- AC-OSS-3.7 boundary ---
 
-@test "AC-OSS-3.7 BOUNDARY: enterprise/README.md has a License section heading" {
-    [ -f "$PROJECT_ROOT/enterprise/README.md" ]
-    run grep -i "^## License\|^# License\|^### License" "$PROJECT_ROOT/enterprise/README.md"
+@test "AC-OSS-3.7 BOUNDARY: premium/README.md has a License section heading" {
+    [ -f "$PROJECT_ROOT/premium/README.md" ]
+    run grep -i "^## License\|^# License\|^### License" "$PROJECT_ROOT/premium/README.md"
     [ "$status" -eq 0 ]
 }
 
@@ -327,7 +327,7 @@ setup() {
 
 # --- AC-OSS-3.2 golden ---
 
-@test "AC-OSS-3.2 GOLDEN: build.sh excludes enterprise/ — only src/framework and src/installer feed the tarball" {
+@test "AC-OSS-3.2 GOLDEN: build.sh excludes premium/ — only src/framework and src/installer feed the tarball" {
     # Verify the build pipeline sources
     run grep "FRAMEWORK_DIR=" "$PROJECT_ROOT/build.sh"
     [ "$status" -eq 0 ]
@@ -337,8 +337,8 @@ setup() {
     [ "$status" -eq 0 ]
     [[ "$output" =~ "src/installer" ]]
 
-    # Confirm enterprise/ is never mentioned as a copy source
-    run grep "cp.*enterprise\|enterprise.*cp" "$PROJECT_ROOT/build.sh"
+    # Confirm premium/ is never mentioned as a copy source
+    run grep "cp.*premium\|premium.*cp" "$PROJECT_ROOT/build.sh"
     [ "$status" -ne 0 ]
 }
 
@@ -414,14 +414,14 @@ if (p.license !== 'MIT') { console.error('license is: ' + p.license); process.ex
 
 # --- AC-OSS-3.7 golden ---
 
-@test "AC-OSS-3.7 GOLDEN: enterprise/README.md exists and mentions proprietary license" {
-    [ -f "$PROJECT_ROOT/enterprise/README.md" ]
-    run grep -i "proprietary\|not for distribution\|enterprise distribution only" "$PROJECT_ROOT/enterprise/README.md"
+@test "AC-OSS-3.7 GOLDEN: premium/README.md exists and mentions proprietary license" {
+    [ -f "$PROJECT_ROOT/premium/README.md" ]
+    run grep -i "proprietary\|not for distribution\|premium distribution only" "$PROJECT_ROOT/premium/README.md"
     [ "$status" -eq 0 ]
 }
 
-@test "AC-OSS-3.7 GOLDEN: enterprise/README.md License section explicitly states PROPRIETARY" {
-    [ -f "$PROJECT_ROOT/enterprise/README.md" ]
-    run grep "PROPRIETARY" "$PROJECT_ROOT/enterprise/README.md"
+@test "AC-OSS-3.7 GOLDEN: premium/README.md License section explicitly states PROPRIETARY" {
+    [ -f "$PROJECT_ROOT/premium/README.md" ]
+    run grep "PROPRIETARY" "$PROJECT_ROOT/premium/README.md"
     [ "$status" -eq 0 ]
 }

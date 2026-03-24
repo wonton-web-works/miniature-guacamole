@@ -72,14 +72,14 @@ teardown() {
     [[ "$output" =~ "src/installer" ]] || [[ "$output" =~ "not found" ]]
 }
 
-# AC-OSS-1.2 misuse: tarball does NOT contain enterprise/ directory
-@test "tarball: does not contain enterprise/ directory (OSS isolation)" {
-    # This verifies the misuse condition — shipping enterprise code in OSS build
+# AC-OSS-1.2 misuse: tarball does NOT contain premium/ directory
+@test "tarball: does not contain premium/ directory (OSS isolation)" {
+    # This verifies the misuse condition — shipping premium code in OSS build
     skip_if_no_tarball
 
     run tar -tzf "$TARBALL"
     [ "$status" -eq 0 ]
-    ! echo "$output" | grep -q "enterprise/"
+    ! echo "$output" | grep -q "premium/"
 }
 
 # AC-OSS-1.3 misuse: install.sh fails when .claude/ source directory is absent

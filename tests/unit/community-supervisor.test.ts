@@ -175,15 +175,15 @@ describe.skip('community-supervisor — boundary cases [TDD red phase — implem
     expect(alert.escalate_to).not.toBe('sage');
   });
 
-  it('supervisor escalates to sage in enterprise mode', () => {
+  it('supervisor escalates to orchestrator in premium mode', () => {
     const alert: SupervisorAlert = {
       alert_type: 'agent_failed',
       details: { agent_id: 'cto', workstream_id: 'WS-4', issue: 'agent returned failure status' },
       recommended_action: 'log, check if retry or escalate',
-      escalate_to: 'sage',
+      escalate_to: 'orchestrator',
     };
 
-    expect(alert.escalate_to).toBe('sage');
+    expect(alert.escalate_to).toBe('orchestrator');
   });
 });
 

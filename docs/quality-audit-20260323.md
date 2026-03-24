@@ -1,7 +1,7 @@
 # Quality Audit — 2026-03-23
 
 Auditor: QA Engineer
-Scope: MG/TEO site performance, SEO, documentation hygiene, test health, CI/CD
+Scope: MG/miniature-guacamole site performance, SEO, documentation hygiene, test health, CI/CD
 Date: 2026-03-23
 
 ---
@@ -59,13 +59,13 @@ Most pixel art images in `index.astro` do not carry `width`/`height` attributes.
 
 ### JavaScript Bundle
 
-`enterprise.ts` is 400 lines. It bundles four IIFEs:
+`premium.ts` is 400 lines. It bundles four IIFEs:
 1. Constellation particle injection
 2. IntersectionObserver reveal
 3. Scenario tab interactivity (spawning diagram)
 4. Hierarchy SVG line drawing
 
-This is a reasonable single-file structure for an enterprise page. The file is not excessively large. No splitting is needed. The `reduced-motion` guard at the top of the particle IIFE is correctly implemented.
+This is a reasonable single-file structure for a premium page. The file is not excessively large. No splitting is needed. The `reduced-motion` guard at the top of the particle IIFE is correctly implemented.
 
 **One concern**: The script uses `innerHTML` alternatives (safe — `document.createElementNS`, `svg.removeChild`), but still uses `setTimeout` for animation coordination. This is acceptable for the use case.
 
@@ -118,13 +118,13 @@ Both titles are under 60 characters and descriptive.
 
 | Page | Description | Length | Pass |
 |------|-------------|--------|------|
-| index.astro | "A complete AI engineering org for every project. 24 agents — CEO, CTO, QA, Dev, Security, Design — led by The Sage. Enterprise-grade quality enforcement, session management, and continuous oversight." | 199 chars | **FAIL — over 160 chars** |
+| index.astro | "A complete AI engineering org for every project. 24 agents — CEO, CTO, QA, Dev, Security, Design — led by The Orchestrator. Premium-grade quality enforcement, session management, and continuous oversight." | 199 chars | **FAIL — over 160 chars** |
 | Base.astro default | "PrivateEnterprise gives Claude Code a complete product development org. 24 agents, 19 skills, project-local memory." | 107 chars | Pass |
 
 The `index.astro` meta description is 199 characters — 39 chars over the 160-char Google display limit. The description will be truncated in search results. Shorten to under 160 chars.
 
 **Suggested replacement (157 chars):**
-"PrivateEnterprise gives every project a complete AI engineering org — 24 agents from CEO to QA, led by The Sage. Enterprise quality enforcement from intake to merge."
+"PrivateEnterprise gives every project a complete AI engineering org — 24 agents from CEO to QA, led by The Orchestrator. Premium quality enforcement from intake to merge."
 
 ### OpenGraph Tags
 
@@ -156,9 +156,9 @@ The `index.astro` meta description is 199 characters — 39 chars over the 160-c
 ### Image Alt Text
 
 Decorative images correctly use `alt=""` with `aria-hidden="true"`. Meaningful images have descriptive alt text:
-- "The Sage — a meditating capybara surrounded by gathering birds" — good
+- "The Orchestrator — a meditating capybara surrounded by gathering birds" — good
 - "A bird walking on a path that gradually becomes dark..." — good
-- "The Sage capybara guides the bird along a lit path with agent checkpoints" — good
+- "The Orchestrator capybara guides the bird along a lit path with agent checkpoints" — good
 
 Pass.
 
@@ -168,7 +168,7 @@ Pass.
 
 ### Sitemap
 
-**FAIL — `sitemap.xml` does not exist in `site/public/`**. `robots.txt` references `https://private-enterprise.wontonwebworks.com/sitemap.xml` but the file is not present. Either Astro's sitemap integration generates it at build time (verify in `astro.config.*`) or the file needs to be created.
+**FAIL — `sitemap.xml` does not exist in `site/public/`**. `robots.txt` references `https://private-premium.wontonwebworks.com/sitemap.xml` but the file is not present. Either Astro's sitemap integration generates it at build time (verify in `astro.config.*`) or the file needs to be created.
 
 **Action required**: Verify sitemap generation is configured in `astro.config.mjs` / `astro.config.ts`, or add a static sitemap file.
 
@@ -191,7 +191,7 @@ The actual framework has 24 agents. Document accuracy by file:
 
 **README.md is the most stale document.** Specific problems:
 
-1. **Version header**: "Version: 3.1.0" — site and framework are at v5.0 (Sage architecture). The README leads with v3.1.0 which is 6 releases behind.
+1. **Version header**: "Version: 3.1.0" — site and framework are at v5.0 (Orchestrator architecture). The README leads with v3.1.0 which is 6 releases behind.
 2. **Agent count in What's New block**: "19 skills, 20 agents" — stale from v3.1 era. Actual counts: 19+ skills, 24 agents.
 3. **What You Get table** (line 106): Lists "Agents | 20" — should be 24.
 4. **Line 104**: "Skills | 19 | Slash-command workflows" then links "[All 19 skills →]" — skill count needs verification against actual framework.
@@ -201,13 +201,13 @@ The actual framework has 24 agents. Document accuracy by file:
 
 1. Lines 26, 32: "18 skills and 24 agents" — skills count is 18, but CHANGELOG and README say 19. Needs reconciliation.
 
-### Sage Documentation
+### Orchestrator Documentation
 
-`docs/agents.md` correctly describes Sage as the project orchestrator at the top of the hierarchy. It does not explicitly flag Sage as enterprise-only. Given memory indicating Sage is enterprise-only while community gets an upgraded Supervisor, the agent docs may need an "Enterprise only" callout on the Sage section for community-facing documentation.
+`docs/agents.md` correctly describes Orchestrator as the project orchestrator at the top of the hierarchy. It does not explicitly flag Orchestrator as premium-only. Given memory indicating Orchestrator is premium-only while community gets an upgraded Supervisor, the agent docs may need a "Premium only" callout on the Orchestrator section for community-facing documentation.
 
-`docs/getting-started.md` and `docs/index.md` do not distinguish enterprise vs community edition anywhere. The index.md notes "The daemon pipeline is available as a commercial product" but Sage's exclusivity is not surfaced.
+`docs/getting-started.md` and `docs/index.md` do not distinguish premium vs community edition anywhere. The index.md notes "The daemon pipeline is available as a commercial product" but Orchestrator's exclusivity is not surfaced.
 
-**Action required**: Add an "Enterprise" badge or note to the Sage entry in `docs/agents.md` and a brief edition comparison to `docs/index.md`.
+**Action required**: Add a "Premium" badge or note to the Orchestrator entry in `docs/agents.md` and a brief edition comparison to `docs/index.md`.
 
 ### docs/architecture.md
 
@@ -217,13 +217,13 @@ Agent count is correct (24). Skill count says "18 skills" in directory structure
 
 - `docs/index.md` links to `[Getting Started](/getting-started)` etc. — these are VitePress relative paths; correctness depends on VitePress config.
 - `docs/architecture.md` line 400: "Create `SKILL.md` in `src/framework/skills/<agent-name>/`" — the extension type (`SKILL.md` vs `agent.md`) is inconsistent with the stated convention for agent files. Minor confusion risk.
-- `README.md` links to `wonton-web-works.github.io/miniature-guacamole/` — verify this domain is live; the rebrand to `private-enterprise.wontonwebworks.com` may mean these links 404.
+- `README.md` links to `wonton-web-works.github.io/miniature-guacamole/` — verify this domain is live; the rebrand to `private-premium.wontonwebworks.com` may mean these links 404.
 
 ### CHANGELOG.md
 
-CHANGELOG is current through v4.1.0. v5.0 (Sage architecture, per memory) is not documented in `CHANGELOG.md`. The file appears to stop at v4.1.0 despite the framework version being higher.
+CHANGELOG is current through v4.1.0. v5.0 (Orchestrator architecture, per memory) is not documented in `CHANGELOG.md`. The file appears to stop at v4.1.0 despite the framework version being higher.
 
-**Action required**: Document v4.2.0, v5.0 (Sage architecture) in CHANGELOG.
+**Action required**: Document v4.2.0, v5.0 (Orchestrator architecture) in CHANGELOG.
 
 ---
 
@@ -336,7 +336,7 @@ A branch protection rule is blocking the daemon's auto-update push to a feature 
 8. **Font self-hosting**: Implement the documented TODO — migrate from Google Fonts to `@fontsource/inter` and `@fontsource/jetbrains-mono`
 9. **Image lazy loading**: Add `loading="lazy"` to all `<img>` tags below the fold
 10. **Image dimensions**: Add `width`/`height` to images missing them (hierarchy, teacher, bridge sections)
-11. **Sage enterprise-only callout**: Add edition note to `docs/agents.md` Sage section
+11. **Orchestrator premium-only callout**: Add edition note to `docs/agents.md` Orchestrator section
 12. **CHANGELOG gap**: Document v4.2.0 and v5.0 in CHANGELOG.md
 
 ### P3 — Low Priority

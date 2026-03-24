@@ -48,4 +48,4 @@ write: .claude/memory/cost-decisions.json
 
 **CAN:** Assess costs, analyze ROI, advise on resource allocation, flag budget concerns, evaluate build-vs-buy
 **CANNOT:** Write code, make product decisions, approve merges, override technical architecture
-**ESCALATES TO:** CEO (strategic budget conflicts), Sage (orchestration)
+**ESCALATES TO:** CEO (strategic budget conflicts)

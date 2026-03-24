@@ -1,0 +1,89 @@
+---
+title: Agent Organizational Hierarchy
+---
+graph TB
+    subgraph EXECUTIVE["Executive Level — opus model"]
+        style EXECUTIVE fill:#dbeafe,stroke:#2563eb,stroke-width:2px
+        CEO["CEO<br/><i>Business vision &amp; strategy</i>"]
+        CTO["CTO<br/><i>Technical vision &amp; architecture</i>"]
+        CMO["CMO/COO<br/><i>Marketing &amp; operations</i>"]
+        CFO["CFO<br/><i>Cost analysis &amp; ROI</i>"]
+        ENGDIR["Engineering Director<br/><i>Engineering delivery &amp; ops</i>"]
+    end
+
+    subgraph LEADERSHIP["Leadership Level — sonnet model"]
+        style LEADERSHIP fill:#dcfce7,stroke:#16a34a,stroke-width:2px
+        PO["Product Owner<br/><i>Backlog &amp; product vision</i>"]
+        PM["Product Manager<br/><i>Stories &amp; acceptance criteria</i>"]
+        EM["Engineering Manager<br/><i>Team execution &amp; delivery</i>"]
+        SE["Staff Engineer<br/><i>Standards &amp; code review</i>"]
+        AD["Art Director<br/><i>Design vision &amp; brand</i>"]
+    end
+
+    subgraph IC["Individual Contributor Level — sonnet / haiku model"]
+        style IC fill:#fef9c3,stroke:#ca8a04,stroke-width:2px
+        DEV["Dev<br/><i>Test-first implementation</i>"]
+        QA["QA Engineer<br/><i>Misuse-first test specs</i>"]
+        DESIGN["UI/UX Designer<br/><i>Wireframes &amp; mockups</i>"]
+        SECENG["Security Engineer<br/><i>OWASP &amp; threat modeling</i>"]
+        DEVOPS["DevOps Engineer<br/><i>CI/CD &amp; infrastructure</i>"]
+        DATAENG["Data Engineer<br/><i>Pipelines &amp; analytics</i>"]
+        APIDESIGN["API Designer<br/><i>OpenAPI &amp; REST specs</i>"]
+        TECHWRITE["Technical Writer<br/><i>Docs &amp; guides</i>"]
+        COPY["Copywriter<br/><i>Marketing &amp; UX copy</i>"]
+    end
+
+    subgraph OPS["Operations Level — sonnet model"]
+        style OPS fill:#f3e8ff,stroke:#7c3aed,stroke-width:2px
+        DEPLOY["Deployment Engineer<br/><i>Merges &amp; releases</i>"]
+    end
+
+    subgraph SYS["System Level"]
+        style SYS fill:#fee2e2,stroke:#dc2626,stroke-width:2px
+        SUPER["Supervisor<br/><i>Depth limits &amp; loop prevention</i>"]
+    end
+
+    %% Executive → Leadership delegation
+    CEO -->|delegates| ENGDIR
+    CEO -->|delegates| PO
+    CEO -->|delegates| AD
+    CTO -->|delegates| ENGDIR
+    CTO -->|delegates| SE
+    CMO -->|delegates| AD
+    CMO -->|delegates| PO
+    CMO -->|delegates| COPY
+    ENGDIR -->|delegates| EM
+    ENGDIR -->|delegates| SE
+
+    %% Leadership → IC delegation
+    PO -->|delegates| PM
+    EM -->|spawns| DEV
+    EM -->|spawns| QA
+    SE -->|spawns| DEV
+    AD -->|spawns| DESIGN
+    PM -->|spawns| DEV
+    PM -->|spawns| QA
+    PM -->|spawns| DESIGN
+
+    %% Peer consultation (dashed)
+    DEV -.->|consults| QA
+    DEV -.->|consults| DESIGN
+    QA -.->|consults| DEV
+    DESIGN -.->|consults| DEV
+
+    %% Operations
+    ENGDIR -->|deploys via| DEPLOY
+    CEO -->|deploys via| DEPLOY
+
+    %% System monitor
+    SUPER -. monitors .-> EXECUTIVE
+    SUPER -. monitors .-> LEADERSHIP
+
+    %% Styling for key nodes
+    style CEO fill:#1d4ed8,color:#fff
+    style CTO fill:#1d4ed8,color:#fff
+    style CMO fill:#1d4ed8,color:#fff
+    style CFO fill:#1d4ed8,color:#fff
+    style ENGDIR fill:#1d4ed8,color:#fff
+    style SUPER fill:#dc2626,color:#fff
+    style DEPLOY fill:#7c3aed,color:#fff

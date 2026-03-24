@@ -1,0 +1,83 @@
+---
+title: Security Trust Boundaries
+---
+graph TB
+    USER_INPUT(["User Input<br/><i>slash commands, prompts</i>"])
+
+    subgraph TRUST_BOUNDARY_1["TRUST BOUNDARY 1 — User Input Perimeter"]
+        style TRUST_BOUNDARY_1 fill:#fee2e2,stroke:#dc2626,stroke-width:3px,color:#dc2626
+        TB1_NOTE["All input treated as untrusted.<br/>No direct file or shell access<br/>from raw user input."]
+    end
+
+    subgraph CLAUDE_CODE["Claude Code Sandbox"]
+        style CLAUDE_CODE fill:#dbeafe,stroke:#2563eb,stroke-width:2px
+
+        subgraph SKILL_LAYER["Skill / Agent Layer"]
+            style SKILL_LAYER fill:#f0f7ff,stroke:#2563eb
+            SKILL["SKILL.md loaded into context<br/><i>defines persona &amp; behavior</i>"]
+            AGENT["agent.md loaded into context<br/><i>role, tools, delegation rules</i>"]
+        end
+
+        subgraph TRUST_BOUNDARY_2["TRUST BOUNDARY 2 — Agent Spawn Boundary"]
+            style TRUST_BOUNDARY_2 fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#dc2626
+            TASK_TOOL["Task Tool<br/><i>spawns subagents</i>"]
+            DEPTH_CHECK["Depth check: max 3<br/>Loop prevention: chain.path<br/>Supervisor monitors"]
+        end
+
+        subgraph TOOL_ACCESS["Tool Access (Role-Restricted)"]
+            style TOOL_ACCESS fill:#fef9c3,stroke:#ca8a04,stroke-width:2px
+            RESTRICTED["CEO / Eng Dir / PO / AD<br/><i>NO file tools</i>"]
+            READ_ONLY["PM / CMO / CFO / Design<br/><i>Read + Glob + Grep only</i>"]
+            FULL_ACCESS["CTO / EM / SE / Dev / QA<br/>Security Eng / DevOps / etc.<br/><i>Read + Glob + Grep + Edit + Write</i>"]
+        end
+
+        subgraph TRUST_BOUNDARY_3["TRUST BOUNDARY 3 — Filesystem Access"]
+            style TRUST_BOUNDARY_3 fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#dc2626
+            FS_ACCESS["Project filesystem<br/><i>scoped to project directory</i>"]
+        end
+    end
+
+    subgraph MEMORY_LAYER["Memory Layer (.claude/memory/)"]
+        style MEMORY_LAYER fill:#dcfce7,stroke:#16a34a,stroke-width:2px
+        MEM_FILES["JSON memory files<br/><i>project-local, gitignored<br/>atomic writes + file locking</i>"]
+        BACKUP["Auto-backup before writes<br/><i>7-day retention</i>"]
+        ROTATION["Size-based rotation at 50KB<br/><i>archive to .archive/</i>"]
+
+        subgraph ISOLATION["Data Isolation Boundary"]
+            style ISOLATION fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#dc2626
+            ISO_NOTE["Memory is PROJECT-LOCAL.<br/>No cross-project access.<br/>No cross-client access."]
+        end
+    end
+
+    subgraph AUDIT["Audit Layer"]
+        style AUDIT fill:#f3e8ff,stroke:#7c3aed,stroke-width:2px
+        AUDIT_LOG["Audit logging (metadata only)<br/><i>no sensitive data logged</i>"]
+        SUPERVISOR["Supervisor agent<br/><i>monitors depth, detects loops,<br/>writes supervisor-alerts.json</i>"]
+    end
+
+    subgraph NETWORK["Network Access"]
+        style NETWORK fill:#fee2e2,stroke:#dc2626,stroke-width:2px
+        PG_OPTIONAL["Optional: Postgres<br/><i>Docker-managed, local only<br/>mg-postgres start</i>"]
+        NO_EXTERNAL["Agent definitions: no network.<br/>Memory: no network.<br/>Skills: no network."]
+    end
+
+    USER_INPUT --> TB1_NOTE --> SKILL
+    SKILL --> AGENT
+    AGENT --> TASK_TOOL
+    TASK_TOOL --> DEPTH_CHECK
+    DEPTH_CHECK --> RESTRICTED & READ_ONLY & FULL_ACCESS
+    FULL_ACCESS --> FS_ACCESS
+    READ_ONLY --> FS_ACCESS
+    FS_ACCESS --> MEM_FILES
+    MEM_FILES --> BACKUP & ROTATION
+    MEM_FILES --> ISO_NOTE
+
+    TASK_TOOL --> SUPERVISOR
+    SUPERVISOR --> AUDIT_LOG
+
+    MEM_FILES -.->|"optional sync"| PG_OPTIONAL
+
+    style USER_INPUT fill:#0d6efd,color:#fff
+    style SUPERVISOR fill:#dc2626,color:#fff
+    style ISO_NOTE fill:#dc2626,color:#fff
+    style TB1_NOTE fill:#fee2e2,stroke:#dc2626

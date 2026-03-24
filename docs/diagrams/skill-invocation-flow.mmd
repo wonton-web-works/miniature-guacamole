@@ -1,0 +1,77 @@
+---
+title: Skill Invocation Flow
+---
+flowchart TD
+    USER(["User<br/><i>types /mg-* command</i>"])
+
+    subgraph INVOKE["Invocation"]
+        style INVOKE fill:#dbeafe,stroke:#2563eb,stroke-width:2px
+        CMD["Slash Command<br/><i>/mg-build, /mg-plan,<br/>/mg-code-review, etc.</i>"]
+        LOADER["Skill Loader<br/><i>skills/{name}/SKILL.md<br/>loaded into context</i>"]
+    end
+
+    subgraph MEMORY_READ["Memory Read"]
+        style MEMORY_READ fill:#fef9c3,stroke:#ca8a04,stroke-width:2px
+        READ_TASKS["Read tasks-{role}.json<br/><i>pending task queue</i>"]
+        READ_WS["Read workstream-{id}-state.json<br/><i>current phase &amp; progress</i>"]
+        READ_DEC["Read agent-*-decisions.json<br/><i>prior decisions &amp; context</i>"]
+    end
+
+    CLASSIFY{"Classification<br/>needed?"}
+
+    subgraph CLASSIFY_STEP["Classification (CAD Step 0)"]
+        style CLASSIFY_STEP fill:#fef9c3,stroke:#ca8a04,stroke-width:2px
+        RULES["Apply R1-R8 / M1-M5 rules"]
+        TRACK{"Track?"}
+        MECH["MECHANICAL<br/><i>Dev solo TDD</i>"]
+        ARCH["ARCHITECTURAL<br/><i>QA + Dev + SE review</i>"]
+    end
+
+    subgraph SPAWN["Agent Spawning"]
+        style SPAWN fill:#dcfce7,stroke:#16a34a,stroke-width:2px
+        TASK_TOOL["Task Tool<br/><i>spawn subagent</i>"]
+        HANDOFF["Delegation Envelope<br/><i>depth, chain path,<br/>objective, context</i>"]
+        DEPTH{"depth &lt; 3?"}
+        REDELEGATE["Re-delegate<br/><i>increment depth</i>"]
+        EXECUTE["Execute Task<br/><i>agent runs, uses tools</i>"]
+        DEPTHERR["Return partial<br/>or escalate"]
+    end
+
+    subgraph MEMORY_WRITE["Memory Write"]
+        style MEMORY_WRITE fill:#dcfce7,stroke:#16a34a,stroke-width:2px
+        WRITE_STATE["Write workstream-{id}-state.json<br/><i>phase transition &amp; gate status</i>"]
+        WRITE_DEC["Write agent-{role}-decisions.json<br/><i>deliverable &amp; decisions</i>"]
+        WRITE_TASKS["Write tasks-{role}.json<br/><i>next agent queue</i>"]
+    end
+
+    RESULT(["Result returned to user<br/><i>structured output</i>"])
+
+    %% Main flow
+    USER --> CMD --> LOADER
+    LOADER --> READ_TASKS & READ_WS & READ_DEC
+    READ_TASKS & READ_WS & READ_DEC --> CLASSIFY
+
+    CLASSIFY -->|Yes| RULES
+    CLASSIFY -->|No| TASK_TOOL
+
+    RULES --> TRACK
+    TRACK -->|MECHANICAL| MECH --> TASK_TOOL
+    TRACK -->|ARCHITECTURAL| ARCH --> TASK_TOOL
+
+    TASK_TOOL --> HANDOFF --> DEPTH
+    DEPTH -->|Yes| EXECUTE
+    DEPTH -->|No| DEPTHERR
+    EXECUTE -->|needs sub-task| REDELEGATE --> DEPTH
+
+    EXECUTE --> WRITE_STATE
+    EXECUTE --> WRITE_DEC
+    EXECUTE --> WRITE_TASKS
+
+    WRITE_STATE & WRITE_DEC & WRITE_TASKS --> RESULT
+
+    %% Styling
+    style USER fill:#0d6efd,color:#fff
+    style RESULT fill:#28a745,color:#fff
+    style DEPTHERR fill:#dc3545,color:#fff
+    style MECH fill:#16a34a,color:#fff
+    style ARCH fill:#ca8a04,color:#fff

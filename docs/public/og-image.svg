@@ -75,12 +75,12 @@
     <!-- Tagline -->
     <text x="520" y="310" font-family="system-ui, -apple-system, sans-serif" font-size="28" font-weight="400" fill="#B8D4B0" opacity="0.9">
       <tspan x="520" dy="0">Turn Claude Code into a</tspan>
-      <tspan x="520" dy="40">20-agent product development team</tspan>
+      <tspan x="520" dy="40">24-agent product development team</tspan>
     </text>
 
     <!-- Feature highlights -->
     <g font-family="system-ui, -apple-system, sans-serif" font-size="20" fill="#7C9C7C" opacity="0.8">
-      <text x="520" y="430">19 Specialized Agents • 16 Skills • CAD Workflows</text>
+      <text x="520" y="430">24 Specialized Agents • 19 Skills • CAD Workflows</text>
     </g>
   </g>
 

@@ -191,11 +191,53 @@ Next steps:
 
 **Absolute paths are NEVER used** in generated files.
 
+### 5. Protect .claude/ Transient Files in .gitignore
+
+Appends MG transient file patterns to the project's `.gitignore`. This prevents
+accidental commits of agent state, install metadata, and log files.
+
+**Behavior:**
+- If `.gitignore` does not exist in the project root, create it first.
+- Check if the MG block is already present before appending (idempotent — skip if patterns
+  are not already absent from the file).
+- Append the following block only when the patterns do not already exist:
+
+```
+# MG framework — transient files (do not commit)
+.claude/memory/*.json
+.claude/settings.json.backup.*
+.claude/*.log
+.claude/MG_PROJECT
+.claude/MG_INSTALL.json
+```
+
+**Preservation**: If the project's `.gitignore` already contains these patterns, nothing
+is appended. Existing `.gitignore` content is never removed or modified.
+
+### 6. Ask Routing Preference
+
+Ask the user how they want to invoke the framework going forward:
+
+```
+Route all work through /mg?
+  (1) /mg          — Route through dispatcher (recommended)
+  (2) No preference — Invoke skills manually
+```
+
+**If /mg chosen**: Append a `## Default Routing` section to the project
+`.claude/CLAUDE.md` noting that all work should be routed through `/mg`.
+
+**If No preference chosen**: No change to CLAUDE.md. The user will invoke
+skills manually (e.g. `/mg-build`, `/mg-code-review`, etc.).
+
+No other routing options are presented.
+
 ## Implementation Notes
 
 - Use `mkdir -p` for idempotent directory creation
 - Check file existence before writing (`[ ! -f path ]`) to preserve user customizations
 - Tech stack detection is file-existence only: package.json (Node.js), tsconfig.json (TypeScript), Cargo.toml (Rust), go.mod (Go), pyproject.toml/requirements.txt (Python)
+- For the gitignore step: check whether the MG block is not already present before appending
 - Related decisions: DEC-INIT-003 (modular rules), DEC-INIT-005 (lightweight detection), DEC-INIT-006 (no overwrite)
 
 ## Constitution

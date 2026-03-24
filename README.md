@@ -157,7 +157,7 @@ dist/miniature-guacamole/install.sh /path/to/your-project
 ## Changelog
 
 **Version 5.0** (March 2026)
-- Sage agent added (enterprise-only — see [private-enterprise.wontonwebworks.com/enterprise](https://private-enterprise.wontonwebworks.com/enterprise))
+- Sage agent added (enterprise-only)
 - CMO/COO and CFO agents added; all existing agents upgraded
 - Enterprise auth pipeline, benchmark harness, 52 boundary integration tests
 - Agent count: 20 → 24

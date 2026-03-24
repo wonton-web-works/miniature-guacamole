@@ -3,6 +3,7 @@
 
 import { spawnSync } from 'child_process';
 import type { DaemonConfig, TicketData } from './types';
+import { resolveGhToken } from './github-auth';
 
 /**
  * Result of PR creation operation
@@ -27,8 +28,8 @@ export function createPR(
 ): PRResult {
   const { key, summary, description, priority, labels, url } = ticketData;
   const { baseBranch } = config.github;
-  // Note: token was removed from GitHubConfig; auth is now handled via gh CLI login
-  const token = (config.github as unknown as Record<string, unknown>).token as string | undefined;
+  // GH-14: resolve account-specific token, or fall back to ambient gh auth
+  const token = resolveGhToken(config.github.account);
 
   // Build PR title
   const title = `[${key}] ${summary}`;
@@ -51,10 +52,7 @@ ${labels.join(', ')}
   const spawnOptions = {
     cwd: process.cwd(),
     encoding: 'utf-8' as const,
-    env: {
-      ...process.env,
-      GITHUB_TOKEN: token,
-    },
+    ...(token ? { env: { ...process.env, GH_TOKEN: token } } : {}),
   };
 
   try {

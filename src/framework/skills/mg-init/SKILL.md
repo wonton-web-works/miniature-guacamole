@@ -8,8 +8,6 @@ metadata:
   version: "1.0"
 ---
 
-> Inherits: [skill-base](../_base/skill-base.md)
-
 # /mg-init
 
 Initialize a project for miniature-guacamole agent collaboration.

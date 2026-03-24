@@ -24,4 +24,4 @@ The framework is open source. The daemon pipeline is available as a commercial p
 
 ---
 
-*Looking for pricing and product information? Visit [private-enterprise.wontonwebworks.com](https://private-enterprise.wontonwebworks.com)*
+*Looking for pricing and product information? Visit [wontonwebworks.com](https://wontonwebworks.com)*

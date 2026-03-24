@@ -1,8 +1,8 @@
 {
   "framework": "miniature-guacamole",
   "version": "4.0.0",
-  "installed_at": "2026-03-22T23:36:28Z",
-  "updated_at": "2026-03-22T23:36:28Z",
+  "installed_at": "2026-03-23T22:09:55Z",
+  "updated_at": "2026-03-23T22:09:55Z",
   "source": "local-build",
   "source_path": "/Users/byaizaki/.miniature-guacamole",
   "install_method": "install.sh",

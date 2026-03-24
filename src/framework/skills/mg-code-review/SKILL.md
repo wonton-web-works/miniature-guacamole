@@ -9,8 +9,6 @@ metadata:
   spawn_cap: "6"
 ---
 
-> Inherits: [skill-base](../_base/skill-base.md)
-
 # Code Review
 
 Coordinates comprehensive code review for implementation quality assurance.
@@ -21,6 +19,7 @@ Coordinates comprehensive code review for implementation quality assurance.
 2. **Test quality matters** - Coverage numbers without quality are meaningless
 3. **Teach through review** - Explain why changes are needed, not just what
 4. **Performance consciousness** - Identify anti-patterns before they reach production
+5. **Follow output format** — See `references/output-format.md` for standard visual patterns
 
 ## Review Areas
 

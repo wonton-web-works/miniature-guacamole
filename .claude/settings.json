@@ -2,39 +2,7 @@
   "env": {
     "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1"
   },
-  "hooks": {
-    "PreToolUse": [
-      {
-        "hooks": [
-          {
-            "command": ".claude/hooks/block-no-verify.sh",
-            "type": "command"
-          }
-        ],
-        "matcher": "Bash"
-      }
-    ],
-    "TaskCompleted": [
-      {
-        "hooks": [
-          {
-            "command": ".claude/hooks/task-completed.sh",
-            "type": "command"
-          }
-        ]
-      }
-    ],
-    "TeammateIdle": [
-      {
-        "hooks": [
-          {
-            "command": ".claude/hooks/teammate-idle.sh",
-            "type": "command"
-          }
-        ]
-      }
-    ]
-  },
+  "teammateMode": "auto",
   "permissions": {
     "allow": [
       "Read",
@@ -61,7 +29,6 @@
       "Bash(cp:*)",
       "Bash(mv:*)",
       "Bash(cat:*)",
-      "Bash(echo:*)",
       "Bash(pwd:*)",
       "Bash(which:*)",
       "Bash(head:*)",
@@ -75,22 +42,12 @@
       "Bash(sed:*)",
       "Bash(awk:*)",
       "Bash(xargs:*)",
-      "Bash(find:*)",
       "Bash(grep:*)",
       "Bash(tree:*)",
       "Bash(test:*)",
       "Bash(gh:*)",
-      "Bash(rsync:*)",
-      "Bash(ssh:*)",
       "Bash(du:*)",
-      "Bash(date:*)",
-      "Bash(python3:*)",
-      "Bash(chmod:*)",
-      "Bash(cd:*)",
-      "Bash(sleep:*)",
-      "Bash(curl:*)",
-      "Bash(pip:*)",
-      "Bash(pip3:*)"
+      "Bash(date:*)"
     ],
     "deny": [
       "Bash(bash:*)",
@@ -102,12 +59,48 @@
       "Bash(rm -rf .)*",
       "Bash(rm:*)",
       "Bash(chmod -R 777)*",
+      "Bash(chmod:*)",
       "Bash(dd if=)*",
       "Bash(mkfs)*",
       "Bash(> /dev/)*",
       "Bash(find:*-delete)*",
-      "Bash(find:*-exec rm)*"
+      "Bash(find:*-exec rm)*",
+      "Bash(python3 -c)*",
+      "Bash(python3 -m)*",
+      "Bash(python:*)",
+      "Bash(perl:*)",
+      "Bash(ruby:*)",
+      "Bash(curl -o)*",
+      "Bash(curl --output)*",
+      "Bash(wget:*)",
+      "Bash(echo:*)",
+      "Bash(rsync:*)",
+      "Bash(ssh:*)",
+      "Bash(scp:*)",
+      "Bash(nc:*)",
+      "Bash(ncat:*)"
     ]
   },
-  "teammateMode": "auto"
+  "hooks": {
+    "TeammateIdle": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": ".claude/hooks/teammate-idle.sh"
+          }
+        ]
+      }
+    ],
+    "TaskCompleted": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": ".claude/hooks/task-completed.sh"
+          }
+        ]
+      }
+    ]
+  }
 }

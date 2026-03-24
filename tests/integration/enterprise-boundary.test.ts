@@ -115,8 +115,8 @@ describe('S3: Build Script Updated — happy path', () => {
 // S4: Edition Detection Still Works
 // ═══════════════════════════════════════════════════════
 
-describe('S4: Edition Detection — happy path', () => {
-  it('leadership-team skill still has edition detection check', () => {
+describe('S4: Edition Detection — enterprise gating', () => {
+  it('leadership-team skill gates enterprise features to enterprise edition', () => {
     const skillPaths = [
       path.join(ROOT, '.claude/skills/mg-leadership-team/SKILL.md'),
       path.join(ROOT, 'src/framework/skills/mg-leadership-team/SKILL.md'),
@@ -131,8 +131,8 @@ describe('S4: Edition Detection — happy path', () => {
     }
 
     if (skillMd) {
-      // Should check for sage/AGENT.md to detect enterprise mode
-      expect(skillMd).toMatch(/sage.*AGENT\.md|ENTERPRISE MODE|COMMUNITY MODE/i);
+      // Community version should gate Sage features to enterprise edition
+      expect(skillMd).toMatch(/sage.*enterprise|enterprise.*edition/i);
     }
   });
 });

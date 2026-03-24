@@ -47,6 +47,7 @@ export interface GitHubConfig {
   token: string;
   primaryRepo: PrimaryRepo;
   contextRepos: ContextRepo[];
+  account?: string; // gh auth username for multi-org (GH-14)
 }
 
 export interface MCPServer {

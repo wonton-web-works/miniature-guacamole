@@ -2,7 +2,7 @@
  * Adapter Registry Unit Tests — WS-SPLIT-4
  *
  * Tests for registerAdapter(), getAdapter(), listAdapters(), clearAdapters().
- * Defines the plugin boundary that lets mg-enterprise (and any third-party
+ * Defines the plugin boundary that lets mg-premium (and any third-party
  * package) register adapters into the OSS factory without touching OSS source.
  *
  * Acceptance Criteria Covered:
@@ -628,10 +628,10 @@ describe('registerAdapter() — GOLDEN PATH', () => {
   // -------------------------------------------------------------------------
 
   describe('Enterprise integration pattern — full plugin boundary (AC-S4-1 through AC-S4-8)', () => {
-    it('Given enterprise package registers PostgresAdapter, When MG_STORAGE_ADAPTER=postgres, Then factory returns postgres instance', async () => {
-      // Simulates what mg-enterprise's entry point does at import time:
+    it('Given premium package registers PostgresAdapter, When MG_STORAGE_ADAPTER=postgres, Then factory returns postgres instance', async () => {
+      // Simulates what mg-premium's entry point does at import time:
       //   import { registerAdapter } from 'miniature-guacamole/memory/adapters/registry';
-      //   import { PostgresAdapter } from '@rivermark/mg-enterprise';
+      //   import { PostgresAdapter } from '@rivermark/mg-premium';
       //   registerAdapter('postgres', PostgresAdapter);
 
       registerAdapter('postgres', MockAdapter); // MockAdapter stands in for PostgresAdapter
@@ -647,14 +647,14 @@ describe('registerAdapter() — GOLDEN PATH', () => {
       await adapter.close();
     });
 
-    it('Given enterprise registers adapter, When listAdapters() called, Then "postgres" visible alongside "file"', () => {
+    it('Given premium registers adapter, When listAdapters() called, Then "postgres" visible alongside "file"', () => {
       registerAdapter('postgres', MockAdapter);
       const names = listAdapters();
       expect(names).toContain('file');
       expect(names).toContain('postgres');
     });
 
-    it('Given OSS source is not modified, When enterprise adapter registered, Then file adapter still works', async () => {
+    it('Given OSS source is not modified, When premium adapter registered, Then file adapter still works', async () => {
       registerAdapter('postgres', MockAdapter);
 
       delete process.env.MG_STORAGE_ADAPTER;

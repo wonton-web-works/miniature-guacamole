@@ -117,7 +117,7 @@ This means that when these agents are spawned, Claude will produce polished-soun
 
 ### 5. Orchestrator/Supervisor Role Boundary Ambiguity (MEDIUM)
 
-The Sage constitution says it "challenges shallow work, enforces process, monitors context usage." The supervisor constitution says it "monitors the agent system, enforces limits, detects issues." Both are watching the system. The Sage additionally acts on what it sees; the supervisor only alerts.
+The Orchestrator constitution says it "challenges shallow work, enforces process, monitors context usage." The supervisor constitution says it "monitors the agent system, enforces limits, detects issues." Both are watching the system. The Orchestrator additionally acts on what it sees; the supervisor only alerts.
 
 The problem: the boundary is defined in Orchestrator's AGENT.md ("supervisor observes, Orchestrator acts") but the supervisor's own AGENT.md makes no mention of this relationship. If supervisor is spawned directly (not via Orchestrator), it has no awareness that its alerts go to the Orchestrator.
 

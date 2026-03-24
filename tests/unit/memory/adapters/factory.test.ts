@@ -2,7 +2,7 @@
  * Adapter Factory Unit Tests
  *
  * Tests for getAdapter() factory function. OSS edition supports FileAdapter only.
- * Postgres adapter is available in mg-enterprise.
+ * Postgres adapter is available in premium edition.
  *
  * AC-ENT-2.11: Backwards compatible — default behavior uses FileAdapter
  *
@@ -40,9 +40,9 @@ describe('getAdapter() Factory — MISUSE CASES', () => {
       await expect(getAdapter()).rejects.toThrow(/unknown|unsupported|invalid/i);
     });
 
-    it('Given MG_STORAGE_ADAPTER=postgres, When getAdapter() called, Then throws (postgres is enterprise-only)', async () => {
+    it('Given MG_STORAGE_ADAPTER=postgres, When getAdapter() called, Then throws (postgres is premium-only)', async () => {
       process.env.MG_STORAGE_ADAPTER = 'postgres';
-      await expect(getAdapter()).rejects.toThrow(/unknown|enterprise/i);
+      await expect(getAdapter()).rejects.toThrow(/unknown|premium/i);
     });
 
     it('Given MG_STORAGE_ADAPTER= (empty string), When getAdapter() called, Then falls back to FileAdapter', async () => {

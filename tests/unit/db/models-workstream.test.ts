@@ -2,7 +2,7 @@ import { describe, it, expect, beforeAll } from 'vitest';
 import { readFileSync, existsSync } from 'fs';
 import { join } from 'path';
 
-const MODELS_PATH = join(process.cwd(), 'enterprise', 'src', 'schema', 'models.ts');
+const MODELS_PATH = join(process.cwd(), 'src', 'schema', 'models.ts');
 
 let src: string;
 // Scoped to the Workstream interface block for field-level optionality checks
@@ -18,7 +18,7 @@ beforeAll(() => {
 });
 
 describe.skipIf(!existsSync(MODELS_PATH))(
-  'enterprise/src/schema/models.ts — Workstream interface',
+  'src/schema/models.ts — Workstream interface',
   () => {
     // -----------------------------------------------------------------------
     // MISUSE CASES

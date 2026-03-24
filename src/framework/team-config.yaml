@@ -19,10 +19,10 @@ providers:
         model: claude-opus-4-6
         alias: opus
       implementation:  # Coding, detailed work, coordination
-        model: claude-sonnet-4-20250514
+        model: claude-sonnet-4-6
         alias: sonnet
       fast:         # Validation, exploration, simple checks
-        model: claude-haiku-3-5-20241022
+        model: claude-haiku-4-5-20251001
         alias: haiku
 
   # Future providers (commented out until needed)

@@ -21,7 +21,7 @@ The framework is architecturally sound and shows clear design intent. The shared
 
 4. **Technical-writer's escalation target is a skill, not an agent** — `ESCALATES TO: mg-document` is structurally wrong. Skills don't receive escalations; agents do. Same issue with copywriter escalating to `mg-write`.
 
-5. **Studio-director is pinned to a specific model version** (`claude-opus-4-5`) inline, which will silently break when that model is deprecated. It also lacks the standard frontmatter format used by all other agents.
+5. **Studio-director is pinned to a specific model version** (`claude-opus-4-6`) inline, which will silently break when that model is deprecated. It also lacks the standard frontmatter format used by all other agents.
 
 ---
 
@@ -51,7 +51,7 @@ Scoring: 1 = poor, 5 = excellent
 | technical-writer | 3 | 3 | 4 | 2 | "Documentation Workflow" is good process. The README Structure template and API Documentation template are copy-pasted content that Claude doesn't need — it already knows how to write JSDoc. These templates burn ~200 tokens to replicate something Claude does natively. Escalation target `mg-document` is a skill, not an agent — structurally wrong. |
 | copywriter | 5 | 5 | 5 | 3 | The anti-AI-patterns list and voice transformation examples are the most operationally effective instruction in the entire framework. They're specific, testable, and produce measurable behavior change. Token cost is justified. The "Tone Calibration Guide" section could be trimmed by 30% — the sentence length examples repeat themselves. Escalation target `mg-write` is a skill, not an agent — structurally wrong. |
 | ai-artist | 4 | 4 | 5 | 4 | Constitution principles are clear and non-negotiable. Pipeline workflow is concrete. The Asset Categories / Model Selection Guide has some redundancy with the tool matrix reference — the quick reference table replicates content that's already in the authoritative source at `docs/design-decisions/ai-generation-tool-matrix.md`. |
-| studio-director | 2 | 3 | 3 | 3 | Highly specific to a single use case (YouTube episodes). Pinned to `claude-opus-4-5` by model version name — will silently break. Missing frontmatter fields (tools, memory, maxTurns). Constitution section appears _after_ the role description, violating the pattern every other agent follows. No escalation path defined. Missing Boundaries section entirely. |
+| studio-director | 2 | 3 | 3 | 3 | Highly specific to a single use case (YouTube episodes). Pinned to `claude-opus-4-6` by model version name — will silently break. Missing frontmatter fields (tools, memory, maxTurns). Constitution section appears _after_ the role description, violating the pattern every other agent follows. No escalation path defined. Missing Boundaries section entirely. |
 | supervisor | 4 | 3 | 4 | 5 | Detection rules are concrete. The "Observe, don't act" constitution is clearly stated and enforced by CANNOT boundaries. One gap: no guidance on what to do when alerts are ignored. If engineering-director doesn't respond to a supervisor alert, what does supervisor do? Currently it just... stops. |
 
 ---
@@ -125,7 +125,7 @@ The problem: the boundary is defined in Sage's AGENT.md ("supervisor observes, S
 
 ### 6. Model Version Hardcoding (LOW)
 
-`studio-director` is pinned to `model: claude-opus-4-5`. All other opus-model agents use `model: opus` (generic). This will silently break when the specific version is deprecated. Change to `model: opus`.
+`studio-director` is pinned to `model: claude-opus-4-6`. All other opus-model agents use `model: opus` (generic). This will silently break when the specific version is deprecated. Change to `model: opus`.
 
 ### 7. Missing `[ART]` Color in Visual Formatting (LOW)
 
@@ -245,7 +245,7 @@ Remove "Follow output format" from all 19 skill constitutions. Add once to `skil
 The QA constitution doesn't mention misuse-first. It's only in tdd-workflow.md. QA is spawned independently of tdd-workflow — the instruction must be present in the QA agent itself.
 
 **7. Fix studio-director AGENT.md structure**
-Change `model: claude-opus-4-5` → `model: opus`. Add missing frontmatter fields (tools, memory, maxTurns). Add Boundaries section. Move constitution section to correct position.
+Change `model: claude-opus-4-6` → `model: opus`. Add missing frontmatter fields (tools, memory, maxTurns). Add Boundaries section. Move constitution section to correct position.
 
 **8. Add supervisor → sage reference**
 One line in supervisor's constitution: "Alert sage — supervisor observes and writes alerts; sage interprets and acts."

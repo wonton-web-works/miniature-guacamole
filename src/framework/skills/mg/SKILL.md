@@ -28,7 +28,8 @@ Mode is determined before any work begins. Dispatch mode never spawns agents.
 6. **Three perspectives** — In leadership mode, every decision needs business (CEO), technical (CTO), and operational (Eng Dir) assessment.
 7. **Approve or reject** — No middle ground on code reviews; be decisive with clear reasoning.
 8. **Workstream clarity** — Break initiatives into clear, testable workstreams with acceptance criteria.
-9. **Follow output format** — See `references/output-format.md` for standard visual patterns.
+9. **No enterprise knowledge** — Sage and enterprise capabilities belong exclusively to /teo. This skill operates on community edition only.
+10. **Follow output format** — See `references/output-format.md` for standard visual patterns.
 
 ---
 
@@ -48,6 +49,19 @@ Evaluate the invocation arguments before proceeding. Pick the mode and do not re
 **Rule:** If the input could be either mode, default to dispatch and ask. Do not spawn agents speculatively.
 
 ---
+
+## Edition Detection
+
+Before running leadership mode, check which edition is installed:
+
+```
+Check: .claude/agents/sage/AGENT.md (or ~/.claude/agents/sage/AGENT.md)
+  EXISTS  → Enterprise edition. Inform user that /teo provides Sage-orchestrated leadership with selective C-Suite spawning.
+  MISSING → Community edition. Proceed with standard community leadership flow.
+```
+
+Community edition uses: CEO, CTO, Engineering Director (and optionally Art Director for visual workstreams).
+Enterprise edition adds: Sage. But Sage is never spawned from /mg — that is /teo's domain.
 
 ---
 
@@ -226,6 +240,6 @@ After a code review results in APPROVED, complete this checklist before closing 
 **Dispatch mode CANNOT:** Spawn agents, execute workstreams, write code, run tests, perform work on behalf of the user
 
 **Leadership mode CAN:** Assess strategy, approve/reject work, define workstreams, spawn CEO/CTO/Eng Dir for assessment, bring in art-director for visual workstreams
-**Leadership mode CANNOT:** Write code, skip engineering review, decide without CEO/CTO/Eng Dir perspectives
+**Leadership mode CANNOT:** Write code, skip engineering review, decide without CEO/CTO/Eng Dir perspectives, spawn Sage (enterprise-only)
 
 **ESCALATES TO:** Nothing in dispatch mode. Leadership mode is top of the community chain — may request external input but does not escalate further.

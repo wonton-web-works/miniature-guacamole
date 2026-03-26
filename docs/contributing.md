@@ -409,6 +409,17 @@ npm run dev  # Preview locally
 npm run build  # Build for production
 ```
 
+## Releasing
+
+Use this checklist when cutting a new release:
+
+- [ ] Bump `version` and `released_at` in `src/installer/VERSION.json` to match the new release tag
+- [ ] Update `CHANGELOG.md` with the release notes
+- [ ] Run `npm test` and confirm all tests pass
+- [ ] Run `./build.sh` to produce the distribution artifacts
+- [ ] Create and push the release tag (`git tag vX.Y.Z && git push origin vX.Y.Z`)
+- [ ] Publish the GitHub release with the changelog entry as the release notes
+
 ## Getting Help
 
 - Review existing code and tests for patterns

@@ -34,7 +34,7 @@ function readContributing(): string {
 
 describe('VERSION.json — misuse cases (stale values must not appear)', () => {
   it('version is not the stale "1.0.0" value', () => {
-    // AC-1: version must be 6.1.2; 1.0.0 is the pre-fix stale value
+    // AC-1: version must be 6.2.0; 1.0.0 is the pre-fix stale value
     const { version } = readVersion();
     expect(version).not.toBe('1.0.0');
   });
@@ -116,10 +116,10 @@ describe('VERSION.json — boundary cases (all required fields must be present)'
 // ─────────────────────────────────────────────────────────────────────────────
 
 describe('VERSION.json — golden path (correct values must appear)', () => {
-  it('version is "6.1.3"', () => {
+  it('version is "6.2.0"', () => {
     // AC-1: must match the current release tag exactly
     const { version } = readVersion();
-    expect(version).toBe('6.1.3');
+    expect(version).toBe('6.2.0');
   });
 
   it('released_at is more recent than the stale 1.0.0 date', () => {

@@ -9,6 +9,19 @@ Versioning follows [Semantic Versioning](https://semver.org/): MAJOR.MINOR.PATCH
 
 ---
 
+## [6.2.0] — 2026-03-26
+
+### Added
+- **Embeddable installer (`install-lib.sh`)** — Installer logic extracted into a sourceable bash library. Downstream frameworks can `source install-lib.sh && mg_install_framework --target "$DIR" --quiet` without forking a subprocess. (#266)
+- **`mg_install_framework()` public API** — Single entry point with `--target`, `--source`, `--force`, `--standalone`, `--quiet`, `--skip-settings-merge`, `--skip-claude-md` flags. Returns 0/1/2/3; never calls `exit`, safe to embed in calling scripts.
+- **`--skip-settings-merge` flag** — Skip `settings.json` creation/merge when the downstream framework manages its own settings.
+- **`--skip-claude-md` flag** — Skip `CLAUDE.md` creation/update when the downstream framework manages its own documentation.
+
+### Changed
+- **`install.sh` rewritten as thin wrapper** — All install logic moved to `install-lib.sh`. CLI interface (flags, output, behavior) is identical for existing users. (#266)
+
+---
+
 ## [6.1.2] — 2026-03-24
 
 ### Fixed

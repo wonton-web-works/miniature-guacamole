@@ -79,6 +79,16 @@ studio-config.local.yaml
 output/
 miniature-guacamole/
 
+# TEO enterprise overlay artifacts (must not enter OSS repo)
+.claude/TEO_INSTALL.json
+.claude/TEO_PROJECT
+
+# Security review findings (internal only — contains vulnerability details)
+docs/security-review.md
+
+# Generated site output
+site/
+
 # mg-daemon config (contains API tokens — never commit)
 .mg-daemon.json
 .mg-daemon/

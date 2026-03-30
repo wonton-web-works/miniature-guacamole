@@ -93,9 +93,16 @@ mg_install_framework() {
 
     local CLAUDE_SOURCE_DIR="$SOURCE_DIR/.claude"
 
+    # Fallback: when running from src/installer/ in the source tree,
+    # the .claude dir lives at src/framework/ not src/installer/.claude
     if [[ ! -d "$CLAUDE_SOURCE_DIR" ]]; then
-        _mg_log_error "Source .claude directory not found at: $CLAUDE_SOURCE_DIR"
-        return 2
+        local FRAMEWORK_DIR="${SOURCE_DIR%/installer}/framework"
+        if [[ -d "$FRAMEWORK_DIR/agents" ]] && [[ -d "$FRAMEWORK_DIR/skills" ]]; then
+            CLAUDE_SOURCE_DIR="$FRAMEWORK_DIR"
+        else
+            _mg_log_error "Source .claude directory not found at: $CLAUDE_SOURCE_DIR"
+            return 2
+        fi
     fi
 
     # ── Derived paths ──────────────────────────────────────────────────────

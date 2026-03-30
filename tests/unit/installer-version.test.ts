@@ -116,10 +116,10 @@ describe('VERSION.json — boundary cases (all required fields must be present)'
 // ─────────────────────────────────────────────────────────────────────────────
 
 describe('VERSION.json — golden path (correct values must appear)', () => {
-  it('version is "6.2.0"', () => {
+  it('version is "6.2.1"', () => {
     // AC-1: must match the current release tag exactly
     const { version } = readVersion();
-    expect(version).toBe('6.2.0');
+    expect(version).toBe('6.2.1');
   });
 
   it('released_at is more recent than the stale 1.0.0 date', () => {

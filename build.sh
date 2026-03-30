@@ -141,6 +141,7 @@ EOF
 echo -e "${GREEN}Copying installer...${NC}"
 
 cp "$INSTALLER_DIR/install.sh" "$DIST_DIR/"
+cp "$INSTALLER_DIR/install-lib.sh" "$DIST_DIR/"
 cp "$INSTALLER_DIR/uninstall.sh" "$DIST_DIR/"
 cp "$INSTALLER_DIR/web-install.sh" "$DIST_DIR/"
 cp "$INSTALLER_DIR/mg-migrate" "$DIST_DIR/"

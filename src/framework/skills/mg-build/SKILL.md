@@ -13,6 +13,10 @@ metadata:
 
 Classifies workstreams at intake, then coordinates the appropriate track: MECHANICAL (single Dev spawn + bash gate) or ARCHITECTURAL (QA, Dev, Staff Engineer, leadership review).
 
+## Pre-flight: Git Hygiene (MANDATORY)
+
+Before Step 0 classification, run `git fetch && git status -sb` on every repo in scope. If any repo is behind or diverged from origin, **STOP and escalate** — do not classify or spawn. Follow the full protocol in [`shared/git-hygiene.md`](../../shared/git-hygiene.md). This is non-negotiable; "build on stale base" is a process violation that will be caught at code review and bounced.
+
 ## Constitution
 
 1. **Classify first** - Determine track at intake before any spawns

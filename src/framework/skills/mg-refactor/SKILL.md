@@ -13,6 +13,10 @@ metadata:
 
 Coordinates qa and dev through structured refactoring workflow with comprehensive test coverage to ensure no functional changes or regressions.
 
+## Pre-flight: Git Hygiene (MANDATORY)
+
+Before writing characterization tests or touching any code, run `git fetch && git status -sb` on every repo in scope. Refactoring on a stale base is the fastest way to fight someone else's already-merged work. If local is behind or diverged, STOP and escalate. See [`shared/git-hygiene.md`](../../shared/git-hygiene.md) for the full protocol.
+
 ## Constitution
 
 1. **Characterization tests first** - QA writes tests capturing current behavior before any refactor

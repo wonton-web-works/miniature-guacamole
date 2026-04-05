@@ -45,14 +45,15 @@ describe('Code Review Skill - WS-13', () => {
       expect(content).toMatch(/^##\s+Constitution\s*$/m);
     });
 
-    it('should have 5 constitutional principles', () => {
+    it('should have 6 constitutional principles', () => {
       const content = fs.readFileSync(skillPath, 'utf-8');
       const constitutionSection = content.split('## Constitution')[1]?.split('##')[0];
       expect(constitutionSection).toBeTruthy();
 
       const principles = constitutionSection.match(/^\d+\.\s+\*\*/gm);
       expect(principles).toBeTruthy();
-      expect(principles?.length).toBe(5);
+      // 6 principles since 2026-04-05 git-hygiene protocol added "Stale base is a blocker"
+      expect(principles?.length).toBe(6);
     });
 
     it('should contain ## Memory Protocol section', () => {

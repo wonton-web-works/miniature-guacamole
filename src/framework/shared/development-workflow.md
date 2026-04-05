@@ -84,6 +84,17 @@ Classification happens **at intake** (Step 0), before any agent spawns. This det
                                           └─────────┘
 ```
 
+## Pre-Work: Repo State Snapshot (MANDATORY)
+
+**Before Step 0 classification, before any read-for-decisions, and before any edit**, every agent operating on a git-versioned repo MUST run:
+
+```bash
+git fetch
+git status -sb
+```
+
+If the local branch is behind or diverged from origin, **STOP and escalate** — do not classify, do not edit, do not spawn. See [`git-hygiene.md`](./git-hygiene.md) for the full protocol, divergence handling, cross-repo rules, and red-flag phrases that trigger a mandatory re-fetch. Skipping this step is a process violation.
+
 ## Step 0: Classification at Intake
 
 Classification happens BEFORE any agent spawns, based on the ticket or request description.

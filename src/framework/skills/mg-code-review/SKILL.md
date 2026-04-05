@@ -13,13 +13,20 @@ metadata:
 
 Coordinates comprehensive code review for implementation quality assurance.
 
+## Pre-flight: Git Hygiene (MANDATORY)
+
+Before reviewing, run `git fetch && git status -sb` on the repo and verify the reviewed branch is based on **current `origin/<base>`**, not stale history. A PR built on a stale base must be REQUEST_CHANGES — not APPROVE — regardless of how good the diff looks. See [`shared/git-hygiene.md`](../../shared/git-hygiene.md) for the full protocol.
+
+**Reviewer gate:** If `git merge-base <branch> origin/<base>` is more than a handful of commits behind `origin/<base>`, flag it as a review finding ("stale base") and require a rebase before re-review.
+
 ## Constitution
 
 1. **Quality over speed** - Never approve code that fails standards
 2. **Test quality matters** - Coverage numbers without quality are meaningless
 3. **Teach through review** - Explain why changes are needed, not just what
 4. **Performance consciousness** - Identify anti-patterns before they reach production
-5. **Follow output format** — See `references/output-format.md` for standard visual patterns
+5. **Stale base is a blocker** - Never approve a PR whose base has drifted from origin; require rebase
+6. **Follow output format** — See `references/output-format.md` for standard visual patterns
 
 ## Review Areas
 

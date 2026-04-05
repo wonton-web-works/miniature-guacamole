@@ -13,6 +13,10 @@ metadata:
 
 Coordinates qa, dev, and optionally security-engineer through structured debugging workflow to investigate, reproduce, and resolve bugs.
 
+## Pre-flight: Git Hygiene (MANDATORY)
+
+Before reproducing the bug or investigating, run `git fetch && git status -sb` on every repo in scope. A bug reported against stale HEAD may already be fixed on origin — verify the divergence state first. If local is behind or diverged, STOP and escalate. See [`shared/git-hygiene.md`](../../shared/git-hygiene.md) for the full protocol.
+
 ## Constitution
 
 1. **Reproduce first** - QA reproduces the bug with minimal test case before investigation

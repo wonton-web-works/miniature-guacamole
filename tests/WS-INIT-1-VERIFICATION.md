@@ -62,7 +62,6 @@ WS-INIT-1 modifies infrastructure files (shell scripts, global configuration) th
   - `handoff-protocol.md`
   - `memory-protocol.md`
   - `tdd-workflow.md`
-  - `visual-formatting.md`
 - Each document is readable
 - Each document has content (not empty)
 - Each document is valid markdown (has headers)
@@ -242,8 +241,7 @@ echo $?  # Should be 0
   ✓ shared/handoff-protocol.md valid
   ✓ shared/memory-protocol.md valid
   ✓ shared/tdd-workflow.md valid
-  ✓ shared/visual-formatting.md valid
-  ✓ All 6 protocol documents present and valid
+  ✓ All 5 protocol documents present and valid
 
 [... more sections ...]
 

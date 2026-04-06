@@ -11,9 +11,7 @@ mg-tidy supports the standard `output_mode` parameter:
 | `compact` | Single-line per event, no ASCII art (default) | Normal tidy runs |
 | `verbose` | Full banners, ASCII art, status boxes | Verbose/debug sessions, explicit request |
 
-Verbose mode visual definitions are in `../shared/visual-formatting.md`.
-
-**Agent badge prefix:** In compact mode, each agent output line is prefixed with a colored badge: `{emoji} [{CATEGORY}] {agent-name}`. The canonical badge-to-agent mapping table is defined in `../shared/visual-formatting.md`.
+**Agent badge prefix:** In compact mode, each agent output line is prefixed with a colored badge: `{emoji} [{CATEGORY}] {agent-name}`.
 
 ## Tidy Report Structure
 

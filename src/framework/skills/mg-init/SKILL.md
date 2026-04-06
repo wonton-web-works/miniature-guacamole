@@ -56,7 +56,6 @@ Installs the 6 shared protocols to `.claude/shared/`:
 3. `handoff-protocol.md` - Agent coordination patterns
 4. `memory-protocol.md` - How agents read/write memory
 5. `tdd-workflow.md` - Test-driven development cycle
-6. `visual-formatting.md` - ASCII art for progress reports
 
 **Why install to each project?** Projects can customize protocols without affecting other projects. This maintains project isolation.
 
@@ -162,7 +161,6 @@ Creating project structure...
   ✓ Copied handoff-protocol.md to .claude/shared/
   ✓ Copied memory-protocol.md to .claude/shared/
   ✓ Copied tdd-workflow.md to .claude/shared/
-  ✓ Copied visual-formatting.md to .claude/shared/
   ✓ Created .claude/rules/README.md
   ✓ Created .claude/rules/project-context.md
   ✓ Created .claude/rules/tech-stack.md

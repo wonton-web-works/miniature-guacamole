@@ -20,9 +20,9 @@ All skills support an `output_mode` parameter controlling terminal verbosity:
 | `compact` | Single-line per event, no ASCII art (default) | Normal runs, bypass mode, long jobs |
 | `verbose` | Full banners, ASCII art, status boxes | Verbose/debug sessions, explicit request |
 
-To request verbose mode, include "verbose" or `output_mode: verbose` in your invocation. Unknown values default to compact. Verbose mode definitions are in `../shared/visual-formatting.md`.
+To request verbose mode, include "verbose" or `output_mode: verbose` in your invocation. Unknown values default to compact.
 
-**Agent badge prefix:** In compact mode, each agent output line is prefixed with a colored badge: `{emoji} [{CATEGORY}] {agent-name}`. The canonical badge-to-agent mapping table is defined in `../shared/visual-formatting.md`.
+**Agent badge prefix:** In compact mode, each agent output line is prefixed with a colored badge: `{emoji} [{CATEGORY}] {agent-name}`. 
 
 ## Standard Sections
 
@@ -172,7 +172,7 @@ Use code blocks to show structure, tables for comparisons:
 
 See [Output Mode Flag](#output-mode-flag) section above. mg-build defaults to compact.
 
-**Status replacement:** Status and progress output uses replacement, not append. Each status update overwrites the prior one — intermediate states are not retained as permanent output. Final build output is a single summary section, not a timeline of intermediate states. See `../shared/visual-formatting.md` for the full replacement rule. Replacement applies to status/progress/dashboard output only — deliverables, findings, decisions, and next action sections are not replaced.
+**Status replacement:** Status and progress output uses replacement, not append. Each status update overwrites the prior one — intermediate states are not retained as permanent output. Final build output is a single summary section, not a timeline of intermediate states. Replacement applies to status/progress/dashboard output only — deliverables, findings, decisions, and next action sections are not replaced.
 
 ```markdown
 ## Workstream {id}: {name}
@@ -381,7 +381,6 @@ In compact mode, use the single-line variants defined in the Output Mode Flag se
 **Version 1.3** (2026-03-04)
 - Added status replacement protocol to Implementation Skills (mg-build) section
 - Status/progress output replaces prior output by default; errors always accumulate
-- Cross-reference to `../shared/visual-formatting.md` for full replacement rule
 
 **Version 1.2** (2026-03-04)
 - Added `output_mode` flag (compact/verbose) to all skills

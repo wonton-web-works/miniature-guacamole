@@ -197,7 +197,6 @@ Six protocol documents live in `src/framework/shared/` and are copied to `.claud
 | `memory-protocol.md` | File patterns, message bus format, rotation, hybrid storage lifecycle |
 | `handoff-protocol.md` | Delegation envelope format, depth tracking, loop prevention, escalation vs consultation |
 | `engineering-principles.md` | TDD, DRY, config-over-composition, 99% coverage, TypeScript strict mode |
-| `visual-formatting.md` | ASCII progress patterns, output modes (compact / full / silent) |
 
 ## Shared Memory System
 

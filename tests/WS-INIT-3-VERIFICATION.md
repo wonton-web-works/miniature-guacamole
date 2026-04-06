@@ -59,7 +59,6 @@ This verification script validates the final integration workstream (WS-INIT-3) 
      - `handoff-protocol.md`
      - `memory-protocol.md`
      - `tdd-workflow.md`
-     - `visual-formatting.md`
 
 **Check Count:** 25+ checks
 

@@ -137,10 +137,9 @@ Memory files contain project-specific agent state and should NEVER be committed 
 3. `handoff-protocol.md`
 4. `memory-protocol.md`
 5. `tdd-workflow.md`
-6. `visual-formatting.md`
 
 **Test methodology:**
-- Verify all 6 protocols exist in `~/.claude/shared/`
+- Verify all 5 protocols exist in `~/.claude/shared/`
 - Grep SKILL.md for "shared.*protocol" or "protocol.*shared"
 - For E2E testing (separate): Execute skill, verify files copied to project `.claude/shared/`, verify they're regular files (not symlinks), compare checksums
 

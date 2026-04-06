@@ -142,9 +142,7 @@ The mandatory test-writing order in TDD cycles: (1) misuse cases — security ex
 
 ### Output Mode
 
-A flag controlling visual feedback verbosity in agent output. `full` shows all banners and ASCII art; `compact` (default) shows single-line events; `silent` shows errors only. Errors are never suppressed regardless of mode.
-
-**Source:** [Visual Formatting](/architecture) · `.claude/shared/visual-formatting.md`
+A flag controlling visual feedback verbosity in agent output. `compact` (default) shows single-line events; `verbose` shows full banners and detail. Errors are never suppressed regardless of mode.
 
 ## R
 
@@ -173,8 +171,6 @@ An automatic process triggered after leadership approval at planning and code re
 ### Tier
 
 A context classification level for [artifact bundle](#artifact-bundle) information. Essential context is always included, references point to additional information, and excluded categories explicitly note what was not passed. Helps agents understand context boundaries.
-
-**Source:** [Visual Formatting](/architecture) · `.claude/shared/visual-formatting.md`
 
 ## W
 

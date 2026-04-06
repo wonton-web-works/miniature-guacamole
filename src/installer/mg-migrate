@@ -93,7 +93,7 @@ MG_SKILLS=(
 MG_SHARED=(
     "development-workflow.md" "engineering-principles.md"
     "handoff-protocol.md" "memory-protocol.md" "tdd-workflow.md"
-    "visual-formatting.md" "script-invocation-protocol.md"
+    "script-invocation-protocol.md"
 )
 
 MG_SCRIPTS=(

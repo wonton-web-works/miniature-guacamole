@@ -127,9 +127,9 @@ The problem: the boundary is defined in Orchestrator's AGENT.md ("supervisor obs
 
 `studio-director` is pinned to `model: claude-opus-4-6`. All other opus-model agents use `model: opus` (generic). This will silently break when the specific version is deprecated. Change to `model: opus`.
 
-### 7. Missing `[ART]` Color in Visual Formatting (LOW)
+### 7. ~~Missing `[ART]` Color in Visual Formatting~~ (RESOLVED)
 
-`visual-formatting.md` defines ANSI colors for `[EM]`, `[CTO]`, `[CEO]`, `[PO]`, `[QA]`, `[SE]`, `[DEV]`, `[GATE]`, `[TIDY]`, `[ED]` — but not `[ART]`, `[DOC]`, `[SEC]`, `[COPY]` even though all four appear in skill output format blocks. These will render without color.
+Visual formatting protocol has been moved to TEO enterprise. This finding is no longer applicable to MG.
 
 ### 8. Design Agent Contradiction with Project Feedback (HIGH)
 
@@ -264,8 +264,8 @@ Remove the embedded README structure template and JSDoc documentation template (
 **11. Deduplicate mg-write anti-AI checklist**
 The Art Director review checklist in mg-write duplicates the copywriter's built-in self-check. Remove from mg-write or replace with: "Anti-AI check — see copywriter constitution for banned patterns."
 
-**12. Add color codes for missing prefix types**
-Add `[ART]`, `[DOC]`, `[SEC]`, `[COPY]` to visual-formatting.md ANSI color section.
+**12. ~~Add color codes for missing prefix types~~ (RESOLVED)**
+Visual formatting protocol moved to TEO enterprise.
 
 ### P3 — Completeness
 

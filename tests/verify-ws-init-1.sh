@@ -207,7 +207,6 @@ verify_shared_protocols() {
         "handoff-protocol.md"
         "memory-protocol.md"
         "tdd-workflow.md"
-        "visual-formatting.md"
     )
 
     local protocols_found=0

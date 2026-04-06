@@ -17,7 +17,7 @@ miniature-guacamole transforms Claude Code into a complete product development t
 
 - **agents/** - 22 specialized roles (dev, qa, product-manager, etc.)
 - **skills/** - 19 skills (mg-leadership-team, mg-build, etc.)
-- **shared/** - 6 protocol documents (CAD development workflow, memory, handoff, visual formatting, etc.)
+- **shared/** - 5 protocol documents (CAD development workflow, memory, handoff, engineering principles, TDD)
 - **team-config.yaml** - Framework configuration
 - **settings.json** - Permissions and hooks
 
@@ -87,7 +87,6 @@ Framework protocols are in `~/.claude/shared/`:
 - **memory-protocol.md** - How agents read/write memory
 - **handoff-protocol.md** - Agent coordination patterns
 - **engineering-principles.md** - Code quality standards
-- **visual-formatting.md** - ASCII art for progress reports
 
 ## Data Isolation
 

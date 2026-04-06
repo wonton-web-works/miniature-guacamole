@@ -1,7 +1,7 @@
 ---
 name: cto
 description: "Sets technical vision and architecture. Spawn for technology decisions, architectural review, or technical escalations."
-model: opus
+model: sonnet
 tools: [Task(staff-engineer, engineering-director), Read, Glob, Grep]
 memory: local
 maxTurns: 20

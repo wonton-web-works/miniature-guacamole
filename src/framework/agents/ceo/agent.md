@@ -1,7 +1,7 @@
 ---
 name: ceo
 description: "Sets business vision and strategic direction. Spawn for major decisions, priority conflicts, or final approvals."
-model: opus
+model: sonnet
 tools: [Task(cto, engineering-director, product-owner, art-director), Read, Glob, Grep]
 memory: local
 maxTurns: 20
